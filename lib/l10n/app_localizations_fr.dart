@@ -3786,6 +3786,30 @@ class SFr extends S {
   String get tagPickerEmpty => 'Aucun tag trouvé';
 
   @override
+  String get studioLabel => 'Studio';
+
+  @override
+  String get studioPickerTitle => 'Choisir un studio';
+
+  @override
+  String get studioPickerSearchHint => 'Rechercher un studio';
+
+  @override
+  String get studioPickerTypeToSearch => 'Saisissez le nom du studio';
+
+  @override
+  String get studioPickerEmpty => 'Aucun studio trouvé';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'Tant qu\'un studio est sélectionné, les autres filtres et le texte de recherche sont ignorés';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'Indisponible tant que $filter est défini';
+  }
+
+  @override
   String get clearAll => 'Tout effacer';
 
   @override

@@ -31,6 +31,7 @@ import '../../collections/helpers/tracker_card_progress.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
+import '../../collections/screens/collection_screen.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../collections/widgets/bulk_action_bar.dart';
 import '../../collections/widgets/selectable_poster_card.dart';
@@ -464,6 +465,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     final List<_CollectionGroup> groups =
         _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
+    final bool selectionActive = ref.watch(
+      allItemsSelectionProvider.select((Set<int> s) => s.isNotEmpty),
+    );
 
     return RefreshIndicator(
       onRefresh: () =>
@@ -475,6 +479,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               child: _buildCollectionDivider(
                 groups[i],
                 isFirst: i == 0,
+                selectionActive: selectionActive,
               ),
             ),
             if (groups[i].isUncategorized)
@@ -541,6 +546,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             ? (collectionNames[colId] ?? 'Unknown')
             : uncategorizedLabel;
         final _CollectionGroup group = _CollectionGroup(
+          collectionId: colId,
           name: name,
           items: <CollectionItem>[item],
           isUncategorized: colId == null,
@@ -560,6 +566,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildCollectionDivider(
     _CollectionGroup group, {
     required bool isFirst,
+    required bool selectionActive,
   }) {
     final Color accent =
         group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
@@ -586,19 +593,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Flexible(
-                child: Container(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  decoration: BoxDecoration(
-                    border:
-                        Border(bottom: BorderSide(color: accent, width: 3)),
-                  ),
-                  child: Text(
-                    group.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
-                  ),
+                child: _CollectionGroupTitle(
+                  name: group.name,
+                  accent: accent,
+                  // Leaving the screen mid-selection would drop the picks.
+                  onTap: selectionActive
+                      ? null
+                      : () => _openCollection(group.collectionId),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -827,6 +828,15 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
   }
 
+  void _openCollection(int? collectionId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            CollectionScreen(collectionId: collectionId),
+      ),
+    );
+  }
+
   void _showItemDetails(
     CollectionItem item,
     Map<int, String> collectionNames,
@@ -915,12 +925,54 @@ class _MediaTypeEntry {
   String get displayLabel => count > 0 ? '$label ($count)' : label;
 }
 
+/// Underlined group name; tappable when it leads to a collection screen.
+class _CollectionGroupTitle extends StatelessWidget {
+  const _CollectionGroupTitle({
+    required this.name,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final String name;
+  final Color accent;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget label = Container(
+      padding: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: accent, width: 3)),
+      ),
+      child: Text(
+        name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+    if (onTap == null) return label;
+    return Tooltip(
+      message: S.of(context).openCollection,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        onTap: onTap,
+        child: label,
+      ),
+    );
+  }
+}
+
 class _CollectionGroup {
   _CollectionGroup({
+    required this.collectionId,
     required this.name,
     required this.items,
     this.isUncategorized = false,
   });
+
+  /// Null for the uncategorized group, which CollectionScreen also takes.
+  final int? collectionId;
   final String name;
   final List<CollectionItem> items;
   final bool isUncategorized;

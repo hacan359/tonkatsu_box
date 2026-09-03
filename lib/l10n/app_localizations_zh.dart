@@ -3509,6 +3509,29 @@ class SZh extends S {
   String get tagPickerEmpty => '未找到标签';
 
   @override
+  String get studioLabel => '工作室';
+
+  @override
+  String get studioPickerTitle => '选择工作室';
+
+  @override
+  String get studioPickerSearchHint => '搜索工作室';
+
+  @override
+  String get studioPickerTypeToSearch => '输入工作室名称';
+
+  @override
+  String get studioPickerEmpty => '未找到工作室';
+
+  @override
+  String get studioFilterExclusiveHint => '选择工作室后，其他筛选条件和搜索文本将被忽略';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return '设置了$filter时不可用';
+  }
+
+  @override
   String get clearAll => '清除全部';
 
   @override

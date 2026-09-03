@@ -86,25 +86,39 @@ class IgdbGamesApi {
         body.write(' offset $offset;');
       }
 
-      final Response<dynamic> response = await _client.post(
-        '/games',
-        data: body.toString(),
+      final List<Game> games =
+          await _postGames(body.toString(), 'Failed to search games');
+      if (games.isNotEmpty || offset > 0) return games;
+
+      // Full-text search drops English stop words, so a title made only of
+      // them ("Until Then") never matches; IGDB's advice is a name filter.
+      final String nameQuery = escapedQuery.replaceAll('*', '').trim();
+      if (nameQuery.isEmpty) return games;
+      final String where = <String>[
+        ...conditions,
+        'name ~ *"$nameQuery"*',
+      ].join(' & ');
+      return await _postGames(
+        '$_gameFields where $where; limit $limit;',
+        'Failed to search games',
       );
-
-      if (response.statusCode != 200 || response.data == null) {
-        throw IgdbApiException(
-          'Failed to search games',
-          statusCode: response.statusCode,
-        );
-      }
-
-      final List<dynamic> data = response.data as List<dynamic>;
-      return data
-          .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
-          .toList();
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to search games');
     }
+  }
+
+  Future<List<Game>> _postGames(String body, String errorMessage) async {
+    final Response<dynamic> response = await _client.post(
+      '/games',
+      data: body,
+    );
+    if (response.statusCode != 200 || response.data == null) {
+      throw IgdbApiException(errorMessage, statusCode: response.statusCode);
+    }
+    final List<dynamic> data = response.data as List<dynamic>;
+    return data
+        .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<int, List<Game>>> multiSearchGamesByName(
@@ -283,24 +297,10 @@ class IgdbGamesApi {
 
         final String idsString = batch.join(',');
 
-        final Response<dynamic> response = await _client.post(
-          '/games',
-          data: '$_gameFields where id = ($idsString); limit 500;',
-        );
-
-        if (response.statusCode != 200 || response.data == null) {
-          throw IgdbApiException(
-            'Failed to fetch games',
-            statusCode: response.statusCode,
-          );
-        }
-
-        final List<dynamic> data = response.data as List<dynamic>;
-        final List<Game> games = data
-            .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
-            .toList();
-
-        allGames.addAll(games);
+        allGames.addAll(await _postGames(
+          '$_gameFields where id = ($idsString); limit 500;',
+          'Failed to fetch games',
+        ));
       }
 
       return allGames;
@@ -375,22 +375,7 @@ class IgdbGamesApi {
       body.write(' sort rating desc;');
       body.write(' limit $limit;');
 
-      final Response<dynamic> response = await _client.post(
-        '/games',
-        data: body.toString(),
-      );
-
-      if (response.statusCode != 200 || response.data == null) {
-        throw IgdbApiException(
-          'Failed to fetch top games',
-          statusCode: response.statusCode,
-        );
-      }
-
-      final List<dynamic> data = response.data as List<dynamic>;
-      return data
-          .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
-          .toList();
+      return await _postGames(body.toString(), 'Failed to fetch top games');
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to fetch top games');
     }
@@ -452,22 +437,7 @@ class IgdbGamesApi {
         body.write(' offset $offset;');
       }
 
-      final Response<dynamic> response = await _client.post(
-        '/games',
-        data: body.toString(),
-      );
-
-      if (response.statusCode != 200 || response.data == null) {
-        throw IgdbApiException(
-          'Failed to browse games',
-          statusCode: response.statusCode,
-        );
-      }
-
-      final List<dynamic> data = response.data as List<dynamic>;
-      return data
-          .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
-          .toList();
+      return await _postGames(body.toString(), 'Failed to browse games');
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to browse games');
     }

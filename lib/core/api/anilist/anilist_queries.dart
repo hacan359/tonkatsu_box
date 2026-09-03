@@ -122,25 +122,9 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 }
 ''';
 
-  static const String animeSearch = r'''
-query ($page: Int, $perPage: Int, $search: String, $genres: [String],
-       $tags: [String],
-       $status: MediaStatus, $format: MediaFormat,
-       $startDateGreater: FuzzyDateInt, $startDateLesser: FuzzyDateInt,
-       $sort: [MediaSort]) {
-  Page(page: $page, perPage: $perPage) {
-    pageInfo {
-      total
-      currentPage
-      lastPage
-      hasNextPage
-    }
-    media(type: ANIME, search: $search, genre_in: $genres,
-          tag_in: $tags,
-          status: $status, format: $format,
-          startDate_greater: $startDateGreater,
-          startDate_lesser: $startDateLesser,
-          sort: $sort) {
+  /// Media fields shared by every anime listing query, so a studio page and a
+  /// search page parse through the same `Anime.fromJson`.
+  static const String _animeMediaFields = '''
       id
       title { romaji english native }
       coverImage { extraLarge large medium }
@@ -157,6 +141,64 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
       source
       studios(isMain: true) { nodes { name } }
       nextAiringEpisode { episode }
+''';
+
+  static const String animeSearch = '''
+query (\$page: Int, \$perPage: Int, \$search: String, \$genres: [String],
+       \$tags: [String],
+       \$status: MediaStatus, \$format: MediaFormat,
+       \$startDateGreater: FuzzyDateInt, \$startDateLesser: FuzzyDateInt,
+       \$sort: [MediaSort]) {
+  Page(page: \$page, perPage: \$perPage) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+    }
+    media(type: ANIME, search: \$search, genre_in: \$genres,
+          tag_in: \$tags,
+          status: \$status, format: \$format,
+          startDate_greater: \$startDateGreater,
+          startDate_lesser: \$startDateLesser,
+          sort: \$sort) {
+$_animeMediaFields
+    }
+  }
+}
+''';
+
+  static const String studioSearch = r'''
+query ($search: String, $perPage: Int) {
+  Page(page: 1, perPage: $perPage) {
+    studios(search: $search) {
+      id
+      name
+      isAnimationStudio
+    }
+  }
+}
+''';
+
+  /// `Studio(search:)` alone 404s on a miss, hence Page; one studio only,
+  /// since the top hit is the exact name and every extra one costs a media page.
+  static const String animeByStudio = '''
+query (\$studio: String, \$page: Int, \$perPage: Int, \$sort: [MediaSort]) {
+  Page(page: 1, perPage: 1) {
+    studios(search: \$studio) {
+      id
+      name
+      media(isMain: true, sort: \$sort, page: \$page, perPage: \$perPage) {
+        pageInfo {
+          total
+          currentPage
+          lastPage
+          hasNextPage
+        }
+        nodes {
+$_animeMediaFields
+        }
+      }
     }
   }
 }

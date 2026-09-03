@@ -2,11 +2,17 @@ import 'package:core/models/media_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:core/models/anime.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/api/anilist_api.dart';
+import 'package:tonkatsu_box/features/search/filters/anilist_studio_filter.dart';
 import 'package:tonkatsu_box/features/search/models/common_filter.dart';
 import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
 import 'package:tonkatsu_box/features/search/sources/search_sources.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
+
+import '../../../helpers/test_helpers.dart';
 
 /// Shared pick that only AniList and MangaDex can answer, standing in for a
 /// value MangaBaka and Kitsu do not have (e.g. "cancelled").
@@ -606,6 +612,116 @@ void main() {
 
       expect(container.read(browseProvider).items, <Object>['d']);
       expect(container.read(browseProvider).isLoading, isFalse);
+    });
+  });
+
+  group('BrowseState.activeExclusiveFilter', () {
+    test('returns the exclusive filter that holds a value', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.anime,
+        ownFilterValues: <String, Map<String, Object?>>{
+          'anilist_anime': <String, Object?>{
+            AniListStudioFilter.filterKey: 'MAPPA',
+            'tag': <String>['Time Loop'],
+          },
+        },
+      );
+
+      expect(
+        state.activeExclusiveFilter('anilist_anime'),
+        isA<AniListStudioFilter>(),
+      );
+    });
+
+    test('ignores non-exclusive values and other sources', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.anime,
+        ownFilterValues: <String, Map<String, Object?>>{
+          'anilist_anime': <String, Object?>{'tag': <String>['Time Loop']},
+        },
+      );
+
+      expect(state.activeExclusiveFilter('anilist_anime'), isNull);
+      expect(state.activeExclusiveFilter('kitsu_anime'), isNull);
+    });
+
+    test('treats a cleared value as not set', () {
+      const BrowseState state = BrowseState(
+        mediaType: MediaType.anime,
+        ownFilterValues: <String, Map<String, Object?>>{
+          'anilist_anime': <String, Object?>{
+            AniListStudioFilter.filterKey: null,
+          },
+        },
+      );
+
+      expect(state.activeExclusiveFilter('anilist_anime'), isNull);
+    });
+  });
+
+  group('BrowseNotifier exclusive filter', () {
+    late MockAniListApi api;
+
+    Future<BrowseNotifier> notifierWithStudio() async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      api = MockAniListApi();
+      when(() => api.browseAnimeByStudio(
+            studio: any(named: 'studio'),
+            sort: any(named: 'sort'),
+            page: any(named: 'page'),
+            perPage: any(named: 'perPage'),
+          )).thenAnswer((_) async =>
+          (<Anime>[createTestAnime(id: 1)], false, 1));
+      final ProviderContainer container = ProviderContainer(
+        overrides: <Override>[
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          aniListApiProvider.overrideWithValue(api),
+        ],
+      );
+      addTearDown(container.dispose);
+      final BrowseNotifier notifier = container.read(browseProvider.notifier);
+      notifier.setSource('anilist_anime');
+      return notifier;
+    }
+
+    test('setOwnFilters stores every key and fetches once', () async {
+      final BrowseNotifier notifier = await notifierWithStudio();
+
+      await notifier.setOwnFilters('anilist_anime', <String, Object?>{
+        AniListStudioFilter.filterKey: 'MAPPA',
+        'format': 'TV',
+      });
+
+      expect(
+        notifier.state.ownFilterValues['anilist_anime'],
+        <String, Object?>{AniListStudioFilter.filterKey: 'MAPPA', 'format': 'TV'},
+      );
+      verify(() => api.browseAnimeByStudio(
+            studio: 'MAPPA',
+            sort: any(named: 'sort'),
+            page: any(named: 'page'),
+            perPage: any(named: 'perPage'),
+          )).called(1);
+      expect(notifier.state.items, hasLength(1));
+    });
+
+    test('typing does not refetch while a studio is set', () async {
+      final BrowseNotifier notifier = await notifierWithStudio();
+      await notifier.setOwnFilter(
+        'anilist_anime',
+        AniListStudioFilter.filterKey,
+        'MAPPA',
+      );
+
+      await notifier.search('violet');
+
+      verify(() => api.browseAnimeByStudio(
+            studio: any(named: 'studio'),
+            sort: any(named: 'sort'),
+            page: any(named: 'page'),
+            perPage: any(named: 'perPage'),
+          )).called(1);
     });
   });
 }

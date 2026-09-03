@@ -52,6 +52,7 @@ class SearchTabRequest {
     this.mediaType,
     this.sourceId,
     this.collectionId,
+    this.filterValues,
   });
 
   /// Query to prefill (and run). When null/empty the Search tab opens empty.
@@ -66,6 +67,10 @@ class SearchTabRequest {
   /// Collection to add results into; preselected in
   /// [searchTargetCollectionsProvider].
   final int? collectionId;
+
+  /// Own filter values to preset on [sourceId] (filter key → value); ignored
+  /// without a source, a shared value has no single owner.
+  final Map<String, Object?>? filterValues;
 }
 
 /// Pending [SearchTabRequest]; see [SearchTabRequest].

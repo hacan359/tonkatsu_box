@@ -40,7 +40,8 @@ class FilterBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final BrowseState state = ref.watch(browseProvider);
     final Color accent = filterAccentForType(state.mediaType);
-    final bool showCustomize = onDiscoverCustomize != null &&
+    final bool showCustomize =
+        onDiscoverCustomize != null &&
         !state.hasSearchQuery &&
         discoverMediaTypes.contains(state.mediaType);
 
@@ -58,6 +59,10 @@ class FilterBar extends ConsumerWidget {
         ? filters.own[state.sources.first.id] ?? const <SearchFilter>[]
         : filters.common;
     final bool showSheetButton = !single && filters.ownCount > 0;
+    final S l = S.of(context);
+    final SearchFilter? exclusive = single
+        ? state.activeExclusiveFilter(state.sources.first.id)
+        : null;
     // Options must come from the provider the sort applies to: `SCORE_DESC`
     // means nothing to MangaDex.
     final List<BrowseSortOption> sortOptions =
@@ -94,6 +99,8 @@ class FilterBar extends ConsumerWidget {
                   value: _valueOf(state, barFilters[i]),
                   accentColor: accent,
                   isLast: trailingCount == 0 && i == barFilters.length - 1,
+                  disabledReason:
+                      exclusiveBlockReason(exclusive, barFilters[i], l),
                   onPick: (Object? value, CommonSelection? selection) {
                     onBeforeFilterChange?.call();
                     _apply(ref, state, barFilters[i], value, selection);
@@ -116,7 +123,7 @@ class FilterBar extends ConsumerWidget {
                 child: _SortChevron(
                   options: sortOptions,
                   current: state.effectiveSortBy,
-                  disabledReason: _sortDisabledReason(state, S.of(context)),
+                  disabledReason: _sortDisabledReason(state, l),
                   accentColor: accent,
                   isLast: !showCustomize,
                   onChanged: (String sortBy) =>
@@ -127,7 +134,7 @@ class FilterBar extends ConsumerWidget {
               SizedBox(
                 width: _kCustomizeWidth,
                 child: ChevronSegment(
-                  label: S.of(context).discoverCustomize,
+                  label: l.discoverCustomize,
                   icon: Icons.tune,
                   selected: false,
                   accentColor: accent,

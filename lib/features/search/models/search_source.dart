@@ -135,6 +135,10 @@ abstract class SearchFilter {
   /// "All" (reset) option.
   FilterOption get allOption;
 
+  /// While this filter holds a value the source answers with it alone: the
+  /// API cannot combine it, so other filters and the text query are ignored.
+  bool get exclusive => false;
+
   /// Bespoke picker replacing the default dropdown; returns the new value or
   /// null to clear. Override only when the default UI is insufficient.
   Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?

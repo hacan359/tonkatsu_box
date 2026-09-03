@@ -6608,6 +6608,48 @@ abstract class S {
   /// **'No tags found'**
   String get tagPickerEmpty;
 
+  /// No description provided for @studioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio'**
+  String get studioLabel;
+
+  /// No description provided for @studioPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select studio'**
+  String get studioPickerTitle;
+
+  /// No description provided for @studioPickerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search studios'**
+  String get studioPickerSearchHint;
+
+  /// No description provided for @studioPickerTypeToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a studio name'**
+  String get studioPickerTypeToSearch;
+
+  /// No description provided for @studioPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No studios found'**
+  String get studioPickerEmpty;
+
+  /// No description provided for @studioFilterExclusiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'While a studio is selected, other filters and the search text are ignored'**
+  String get studioFilterExclusiveHint;
+
+  /// No description provided for @filterBlockedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available while {filter} is set'**
+  String filterBlockedBy(String filter);
+
   /// No description provided for @clearAll.
   ///
   /// In en, this message translates to:

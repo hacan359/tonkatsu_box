@@ -1,4 +1,5 @@
 import 'package:core/models/anime.dart';
+import 'package:core/models/anilist_studio.dart';
 import 'package:core/models/manga.dart';
 
 import 'anilist_queries.dart';
@@ -17,6 +18,29 @@ class AniListMediaParser {
     final (bool hasMore, int lastPage) info = _pageInfo(page);
     final List<Anime> items = _mediaList(page)
         .map((Map<String, dynamic> json) => Anime.fromJson(json))
+        .toList();
+    return (items, info.$1, info.$2);
+  }
+
+  static List<AniListStudio> studios(Map<String, dynamic>? data) =>
+      _studioNodes(data).map(AniListStudio.fromJson).toList();
+
+  /// Reads the media connection of the first (and, with `perPage: 1`, only)
+  /// studio returned by `animeByStudio`.
+  static (List<Anime> items, bool hasMore, int lastPage) animeStudioPage(
+    Map<String, dynamic>? data,
+  ) {
+    final List<Map<String, dynamic>> studios = _studioNodes(data);
+    if (studios.isEmpty) return (<Anime>[], false, 0);
+    final Map<String, dynamic>? media =
+        studios.first['media'] as Map<String, dynamic>?;
+    if (media == null) return (<Anime>[], false, 0);
+
+    final (bool hasMore, int lastPage) info = _pageInfo(media);
+    final List<dynamic> nodes =
+        media['nodes'] as List<dynamic>? ?? <dynamic>[];
+    final List<Anime> items = nodes
+        .map((dynamic n) => Anime.fromJson(n as Map<String, dynamic>))
         .toList();
     return (items, info.$1, info.$2);
   }
@@ -111,6 +135,14 @@ class AniListMediaParser {
     } on ArgumentError {
       return null;
     }
+  }
+
+  static List<Map<String, dynamic>> _studioNodes(Map<String, dynamic>? data) {
+    final Map<String, dynamic>? page =
+        data?['Page'] as Map<String, dynamic>?;
+    final List<dynamic> raw =
+        page?['studios'] as List<dynamic>? ?? <dynamic>[];
+    return raw.map((dynamic s) => s as Map<String, dynamic>).toList();
   }
 
   static (bool hasMore, int lastPage) _pageInfo(Map<String, dynamic> page) {
