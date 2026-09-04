@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
 import '../filters/anilist_genre_filter.dart';
+import '../filters/anilist_studio_filter.dart';
 import '../filters/anilist_tag_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
@@ -18,8 +19,10 @@ const int _aniListPageSize = 20;
 
 /// SearchSource backed by AniList, anime tab.
 class AniListAnimeSource extends SearchSource {
+  static const String sourceId = 'anilist_anime';
+
   @override
-  String get id => 'anilist_anime';
+  String get id => sourceId;
 
   @override
   MediaType get outputMediaType => MediaType.anime;
@@ -40,6 +43,7 @@ class AniListAnimeSource extends SearchSource {
   List<SearchFilter> get filters => <SearchFilter>[
         AniListGenreFilter(forAnime: true),
         AniListTagFilter(forAnime: true),
+        AniListStudioFilter(),
         AniListAnimeStatusFilter(),
         AniListAnimeFormatFilter(),
         YearFilter(),
@@ -68,6 +72,25 @@ class AniListAnimeSource extends SearchSource {
     required int page,
   }) async {
     final AniListApi api = ref.read(aniListApiProvider);
+
+    // Exclusive: Studio.media cannot be combined with any other argument.
+    final Object? studio = filterValues[AniListStudioFilter.filterKey];
+    if (studio is String && studio.trim().isNotEmpty) {
+      final (List<Anime> animes, bool hasMore, int totalPages) =
+          await api.browseAnimeByStudio(
+        studio: studio,
+        sort: sortBy,
+        page: page,
+        perPage: _aniListPageSize,
+      );
+      return BrowseResult(
+        items: animes,
+        mediaType: MediaType.anime,
+        hasMore: hasMore,
+        totalPages: totalPages,
+        currentPage: page,
+      );
+    }
 
     final List<String>? genres = readFilterStringList(filterValues['genre']);
     final List<String>? tags = readFilterStringList(filterValues['tag']);

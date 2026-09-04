@@ -3780,6 +3780,30 @@ class SEs extends S {
   String get tagPickerEmpty => 'No se encontraron etiquetas';
 
   @override
+  String get studioLabel => 'Estudio';
+
+  @override
+  String get studioPickerTitle => 'Seleccionar estudio';
+
+  @override
+  String get studioPickerSearchHint => 'Buscar estudios';
+
+  @override
+  String get studioPickerTypeToSearch => 'Escribe el nombre del estudio';
+
+  @override
+  String get studioPickerEmpty => 'No se encontraron estudios';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'Mientras haya un estudio seleccionado, los demás filtros y el texto de búsqueda se ignoran';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'No disponible mientras $filter esté activo';
+  }
+
+  @override
   String get clearAll => 'Limpiar todo';
 
   @override

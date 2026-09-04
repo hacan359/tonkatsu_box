@@ -98,7 +98,7 @@ class ExportService {
   final TrackerDao? _trackerDao;
   final CollectionHeroService? _heroService;
 
-  /// Creates a v2 light export (.xcoll).
+  /// Creates a light export (.xcoll) at [xcollFormatVersion].
   XcollFile createLightExport(
     Collection collection,
     List<CollectionItem> items, {

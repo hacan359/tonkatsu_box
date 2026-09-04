@@ -3724,6 +3724,30 @@ class SEn extends S {
   String get tagPickerEmpty => 'No tags found';
 
   @override
+  String get studioLabel => 'Studio';
+
+  @override
+  String get studioPickerTitle => 'Select studio';
+
+  @override
+  String get studioPickerSearchHint => 'Search studios';
+
+  @override
+  String get studioPickerTypeToSearch => 'Type a studio name';
+
+  @override
+  String get studioPickerEmpty => 'No studios found';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'While a studio is selected, other filters and the search text are ignored';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'Not available while $filter is set';
+  }
+
+  @override
   String get clearAll => 'Clear all';
 
   @override

@@ -11,6 +11,8 @@ import '../../../core/api/anilist_api.dart';
 import '../../../core/api/kitsu_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/navigation/search_providers.dart';
+import '../../search/helpers/studio_search.dart';
 import '../../search/widgets/item_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart'
     show settingsNotifierProvider;
@@ -121,6 +123,9 @@ class AnimeSimilarsSection extends ConsumerWidget {
         onAddToCollection: () => onAddAnime?.call(anime),
         animeMangaTitleLanguage:
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+        onStudioTap: (String studio) => ref
+            .read(searchTabRequestProvider.notifier)
+            .state = studioSearchRequest(studio),
       ),
     );
   }

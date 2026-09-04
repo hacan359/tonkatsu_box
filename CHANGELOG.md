@@ -7,6 +7,91 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Open a collection from the All items screen**
+
+  - Tapping a collection name above its group opens that collection.
+  - The name stays inert while a multi-select is running.
+
+  * lib/features/home/screens/all_items_screen.dart (_CollectionGroup.collectionId,
+    _CollectionGroupTitle, _AllItemsScreenState._openCollection,
+    _AllItemsScreenState._buildCollectionDivider): New tappable header title.
+
+- **Search anime by studio**
+
+  - A "Studio" filter on the AniList anime tab, picked from live suggestions.
+  - Results list that studio's works, page by page.
+  - The other filters and the search text stay off while a studio is picked,
+    with a note saying so.
+  - A studio on an anime card or in a search result sheet opens this search.
+
+  * lib/core/api/anilist/anilist_queries.dart (AniListQueries.studioSearch,
+    AniListQueries.animeByStudio, AniListQueries._animeMediaFields): New
+    queries; the anime media field list is shared with animeSearch.
+  * lib/core/api/anilist/anilist_media_parser.dart (AniListMediaParser.studios,
+    AniListMediaParser.animeStudioPage): New.
+  * lib/core/api/anilist/anilist_media_api.dart (AniListMediaApi.searchStudios,
+    AniListMediaApi.browseAnimeByStudio), lib/core/api/anilist_api.dart
+    (AniListApi.searchStudios, AniListApi.browseAnimeByStudio): New.
+  * packages/core/lib/models/anilist_studio.dart (AniListStudio): New.
+  * lib/features/search/models/search_source.dart (SearchFilter.exclusive):
+    New flag; a source answers with such a filter alone.
+  * lib/features/search/filters/anilist_studio_filter.dart (AniListStudioFilter),
+    lib/features/search/widgets/anilist_studio_picker.dart
+    (showAniListStudioPicker): New.
+  * lib/features/search/sources/anilist_anime_source.dart
+    (AniListAnimeSource.sourceId, AniListAnimeSource.filters,
+    AniListAnimeSource.fetch): Add the studio filter; fetch studio pages
+    through browseAnimeByStudio.
+  * lib/features/search/providers/browse_provider.dart
+    (BrowseState.activeExclusiveFilter, BrowseNotifier.setOwnFilters,
+    BrowseNotifier._signature): New; the text query leaves the signature
+    while an exclusive filter is set.
+  * lib/features/search/utils/filter_ui.dart (exclusiveBlockReason): New.
+  * lib/features/search/widgets/filter_control.dart (FilterChevron.disabledReason),
+    lib/features/search/widgets/filter_bar.dart (FilterBar.build),
+    lib/features/search/widgets/filter_sheet.dart (_FilterRow.disabledReason):
+    Dim the other filters while an exclusive one holds a value.
+  * lib/shared/navigation/search_providers.dart (SearchTabRequest.filterValues),
+    lib/shared/navigation/app_shell.dart (_AppShellState._openSearchTab):
+    Preset own filters when another tab opens the search.
+  * lib/features/search/helpers/studio_search.dart (studioSearchRequest): New.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet.anime,
+    ItemDetailsSheet.infoChips, ItemDetailsSheet._buildInfoChip): Info chips
+    are MediaDetailChip; each studio becomes a tappable chip via onStudioTap.
+  * lib/features/search/handlers/media_handlers.dart,
+    lib/features/collections/widgets/anime_similars_section.dart (_showAnime):
+    Pass onStudioTap.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_buildChips): One tappable chip per studio.
+  * lib/l10n/app_*.arb: studioLabel, studioPickerTitle, studioPickerSearchHint,
+    studioPickerTypeToSearch, studioPickerEmpty, studioFilterExclusiveHint,
+    filterBlockedBy in all locales.
+  * packages/core/lib/testing/builders.dart (createTestAnime): studios parameter.
+
+### Fixed
+
+- **Shimmer placeholders keep quiet when a screen goes away**
+
+  - Leaving a screen while its skeletons are on it logs nothing.
+  - The placeholders animate as before.
+
+  * lib/shared/widgets/shimmer_loading.dart (_ShimmerTimeline.release): Reset
+    the shared phase after the frame, so the boxes that still listen are not
+    marked dirty from didChangeDependencies or dispose.
+
+- **IGDB search finds titles made of common words**
+
+  - A game such as "Until Then" now shows up in the results.
+  - An empty first page is retried as a name filter, keeping the platform,
+    genre, mode, rating and year filters.
+
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.searchGames,
+    IgdbGamesApi._postGames): Name-filter retry on an empty first page; the
+    shared request and parse helper also serves getGamesByIds,
+    getTopGamesByPlatform and browseGames.
+
 ## [0.43.0] - 2026-08-20
 
 ### Added

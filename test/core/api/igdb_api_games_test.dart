@@ -788,4 +788,119 @@ void main() {
       });
     });
   });
+
+  group('IgdbApi.searchGames name fallback', () {
+    late MockDio dio;
+    late IgdbApi igdb;
+    late List<String> bodies;
+
+    Response<dynamic> page(List<Map<String, dynamic>> data) =>
+        Response<dynamic>(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: data,
+        );
+
+    void stubSequence(List<Response<dynamic>> responses) {
+      int call = 0;
+      when(() => dio.post<dynamic>(
+            any(),
+            options: any(named: 'options'),
+            data: any(named: 'data'),
+          )).thenAnswer((Invocation inv) async {
+        bodies.add(inv.namedArguments[const Symbol('data')] as String);
+        return responses[call++];
+      });
+    }
+
+    setUp(() {
+      dio = MockDio();
+      igdb = IgdbApi(dio: dio);
+      igdb.setCredentials(clientId: 'c', accessToken: 't');
+      bodies = <String>[];
+    });
+
+    test('retries with a name filter when full-text search is empty',
+        () async {
+      stubSequence(<Response<dynamic>>[
+        page(<Map<String, dynamic>>[]),
+        page(<Map<String, dynamic>>[
+          <String, dynamic>{'id': 134165, 'name': 'Until Then'},
+        ]),
+      ]);
+
+      final List<Game> r = await igdb.searchGames(query: 'Until Then');
+
+      expect(r.single.id, 134165);
+      expect(bodies, hasLength(2));
+      expect(bodies[0], contains('search "Until Then"'));
+      expect(bodies[1], contains('where name ~ *"Until Then"*'));
+      expect(bodies[1], isNot(contains('search ')));
+    });
+
+    test('keeps the user filters in the fallback', () async {
+      stubSequence(<Response<dynamic>>[
+        page(<Map<String, dynamic>>[]),
+        page(<Map<String, dynamic>>[]),
+      ]);
+
+      await igdb.searchGames(query: 'Until Then', platformIds: <int>[6]);
+
+      expect(bodies[1], contains('where platforms = (6) & name ~ *"Until Then"*'));
+    });
+
+    test('strips wildcard characters from the fallback query', () async {
+      stubSequence(<Response<dynamic>>[
+        page(<Map<String, dynamic>>[]),
+        page(<Map<String, dynamic>>[]),
+      ]);
+
+      await igdb.searchGames(query: 'until*then');
+
+      expect(bodies[1], contains('name ~ *"untilthen"*'));
+    });
+
+    test('maps a network failure inside the fallback to IgdbApiException',
+        () async {
+      int call = 0;
+      when(() => dio.post<dynamic>(
+            any(),
+            options: any(named: 'options'),
+            data: any(named: 'data'),
+          )).thenAnswer((_) async {
+        if (call++ == 0) return page(<Map<String, dynamic>>[]);
+        throw DioException(
+          requestOptions: RequestOptions(path: ''),
+          type: DioExceptionType.connectionTimeout,
+        );
+      });
+
+      await expectLater(
+        igdb.searchGames(query: 'Until Then'),
+        throwsA(isA<IgdbApiException>()),
+      );
+    });
+
+    test('does not retry when the first page has results', () async {
+      stubSequence(<Response<dynamic>>[
+        page(<Map<String, dynamic>>[
+          <String, dynamic>{'id': 1, 'name': 'Until Dawn'},
+        ]),
+      ]);
+
+      await igdb.searchGames(query: 'Until Dawn');
+
+      expect(bodies, hasLength(1));
+    });
+
+    test('does not retry past the first page', () async {
+      stubSequence(<Response<dynamic>>[page(<Map<String, dynamic>>[])]);
+
+      final List<Game> r =
+          await igdb.searchGames(query: 'Until Then', offset: 20);
+
+      expect(r, isEmpty);
+      expect(bodies, hasLength(1));
+    });
+  });
 }

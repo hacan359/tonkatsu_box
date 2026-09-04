@@ -3789,6 +3789,30 @@ class SRu extends S {
   String get tagPickerEmpty => 'Тэги не найдены';
 
   @override
+  String get studioLabel => 'Студия';
+
+  @override
+  String get studioPickerTitle => 'Выбор студии';
+
+  @override
+  String get studioPickerSearchHint => 'Поиск студий';
+
+  @override
+  String get studioPickerTypeToSearch => 'Введите название студии';
+
+  @override
+  String get studioPickerEmpty => 'Студии не найдены';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'Пока выбрана студия, остальные фильтры и текст поиска не действуют';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'Недоступно, пока задан фильтр «$filter»';
+  }
+
+  @override
   String get clearAll => 'Очистить всё';
 
   @override

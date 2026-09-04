@@ -398,8 +398,12 @@ class _AppShellState extends ConsumerState<AppShell> {
         collectionId,
       };
     }
-    if (request.sourceId != null) {
-      ref.read(browseProvider.notifier).setSource(request.sourceId!);
+    final String? sourceId = request.sourceId;
+    if (sourceId != null) {
+      final BrowseNotifier browse = ref.read(browseProvider.notifier);
+      browse.setSource(sourceId);
+      final Map<String, Object?>? filters = request.filterValues;
+      if (filters != null) unawaited(browse.setOwnFilters(sourceId, filters));
     } else if (request.mediaType != null) {
       ref.read(browseProvider.notifier).setMediaType(request.mediaType!);
     }
@@ -410,9 +414,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
-  /// Handles the back button (Android back, Gamepad B).
-  ///
-  /// Returns `true` if navigation was handled; `false` if the app should exit.
+  /// Android back / gamepad B; `false` means the app should exit.
   bool _handleBack() {
     if (_personalizationOpen) {
       setState(() => _personalizationOpen = false);

@@ -3766,6 +3766,30 @@ class SPt extends S {
   String get tagPickerEmpty => 'Nenhuma tag encontrada';
 
   @override
+  String get studioLabel => 'Estúdio';
+
+  @override
+  String get studioPickerTitle => 'Selecionar estúdio';
+
+  @override
+  String get studioPickerSearchHint => 'Buscar estúdios';
+
+  @override
+  String get studioPickerTypeToSearch => 'Digite o nome do estúdio';
+
+  @override
+  String get studioPickerEmpty => 'Nenhum estúdio encontrado';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'Enquanto um estúdio estiver selecionado, os outros filtros e o texto da busca são ignorados';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'Indisponível enquanto $filter estiver definido';
+  }
+
+  @override
   String get clearAll => 'Limpar tudo';
 
   @override

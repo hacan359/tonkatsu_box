@@ -1,3 +1,4 @@
+import 'package:core/models/anilist_studio.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/manga.dart';
 import 'package:dio/dio.dart';
@@ -813,6 +814,115 @@ void main() {
         when(() => mockDio.close()).thenReturn(null);
         api.dispose();
         verify(() => mockDio.close()).called(1);
+      });
+    });
+  });
+
+  group('AniListApi studios', () {
+    Map<String, dynamic>? capturedData;
+
+    Response<dynamic> studioResponse({
+      List<Map<String, dynamic>> studios = const <Map<String, dynamic>>[],
+    }) =>
+        Response<dynamic>(
+          data: <String, dynamic>{
+            'data': <String, dynamic>{
+              'Page': <String, dynamic>{'studios': studios},
+            },
+          },
+          statusCode: 200,
+          requestOptions: RequestOptions(path: ''),
+        );
+
+    void stubPost(Response<dynamic> response) {
+      capturedData = null;
+      when(() => mockDio.post<dynamic>(
+            any(),
+            data: any(named: 'data'),
+          )).thenAnswer((Invocation inv) async {
+        capturedData = inv.namedArguments[const Symbol('data')]
+            as Map<String, dynamic>?;
+        return response;
+      });
+    }
+
+    group('searchStudios', () {
+      test('should skip the request for a blank query', () async {
+        final List<AniListStudio> r = await api.searchStudios('   ');
+
+        expect(r, isEmpty);
+        verifyNever(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            ));
+      });
+
+      test('should send the trimmed query and perPage', () async {
+        stubPost(studioResponse(studios: <Map<String, dynamic>>[
+          <String, dynamic>{'id': 2, 'name': 'Kyoto Animation'},
+        ]));
+
+        final List<AniListStudio> r =
+            await api.searchStudios(' kyoto ', perPage: 7);
+
+        final Map<String, dynamic> variables =
+            capturedData!['variables'] as Map<String, dynamic>;
+        expect(variables['search'], 'kyoto');
+        expect(variables['perPage'], 7);
+        expect(capturedData!['query'] as String, contains('studios(search:'));
+        expect(r.single.id, 2);
+      });
+    });
+
+    group('browseAnimeByStudio', () {
+      test('should pass studio, sort and paging as variables', () async {
+        stubPost(studioResponse(studios: <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 2,
+            'name': 'Kyoto Animation',
+            'media': <String, dynamic>{
+              'pageInfo': <String, dynamic>{
+                'hasNextPage': true,
+                'lastPage': 9,
+              },
+              'nodes': <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'id': 21827,
+                  'title': <String, dynamic>{'romaji': 'Violet Evergarden'},
+                },
+              ],
+            },
+          },
+        ]));
+
+        final (List<Anime> animes, bool hasMore, int totalPages) =
+            await api.browseAnimeByStudio(
+          studio: 'Kyoto Animation',
+          sort: 'SCORE_DESC',
+          page: 3,
+          perPage: 20,
+        );
+
+        final Map<String, dynamic> variables =
+            capturedData!['variables'] as Map<String, dynamic>;
+        expect(variables['studio'], 'Kyoto Animation');
+        expect(variables['sort'], <String>['SCORE_DESC']);
+        expect(variables['page'], 3);
+        expect(variables['perPage'], 20);
+        expect(animes.single.id, 21827);
+        expect(hasMore, isTrue);
+        expect(totalPages, 9);
+      });
+
+      test('should return an empty page when no studio matches', () async {
+        stubPost(studioResponse());
+
+        final (List<Anime> animes, bool hasMore, int totalPages) =
+            await api.browseAnimeByStudio(studio: 'nonexistent');
+
+        expect(animes, isEmpty);
+        expect(hasMore, isFalse);
+        expect(totalPages, 0);
       });
     });
   });
