@@ -69,6 +69,18 @@ void main() {
       expect(find.text('Plot Twist'), findsNothing);
     });
 
+    testWidgets('renders without overflow when the keyboard leaves little room',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 300);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await openPicker(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Apply'), findsOneWidget);
+    });
+
     testWidgets('Show 18+ toggle reveals adult tags',
         (WidgetTester tester) async {
       await openPicker(tester);

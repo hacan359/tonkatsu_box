@@ -3631,6 +3631,13 @@ class SEn extends S {
   String get settingsCardScaleSubtitle => 'Card size in collection grids';
 
   @override
+  String get settingsTextScale => 'Text size';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Interface text size, on top of the system setting';
+
+  @override
   String get collectionEditHeroImage => 'Cover image';
 
   @override
@@ -3953,6 +3960,19 @@ class SEn extends S {
 
   @override
   String get appBarSearchHint => 'Start typing to search';
+
+  @override
+  String get appBarMetaSearchHint =>
+      'Genre, author, studio… comma = and, / = or';
+
+  @override
+  String get searchModeTooltip => 'Search mode';
+
+  @override
+  String get searchModeTitle => 'By title';
+
+  @override
+  String get searchModeMeta => 'By details';
 
   @override
   String get insertLink => 'Insert link';

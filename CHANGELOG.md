@@ -9,6 +9,71 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Search the library by details**
+
+  - The search field on Home and Collections gets a mode menu in front of it:
+    "By title" (the current search) or "By details".
+  - Details mode matches genres, tags, studios, authors, publishers, subjects,
+    developers, artists, label, platform, format, season and release year of
+    every media type.
+  - A comma joins conditions with AND, a slash (or `|`) inside a condition
+    gives OR: `horror / thriller, 2019`. The matcher takes a phrase whole, so
+    `kyoto animation` is one value.
+  - Genres, anime and manga tags, manga authors, an album label and a custom
+    item's platform are tappable chips on the item card. A tap closes the
+    card and runs that value as a details search on the screen underneath;
+    with a details query already showing, the tap adds the value as one more
+    AND condition. From Search and Releases the tap lands on Home.
+
+  * packages/core/lib/utils/meta_search.dart (SearchMode, parseMetaQuery,
+    matchesMetaQuery, matchesParsedMetaQuery, normalizeMetaValue, metaTermFor,
+    appendMetaTerm): New.
+  * packages/core/lib/models/collection_item.dart (CollectionItem.searchableMeta):
+    New getter listing the stored descriptors of the attached sub-model.
+  * lib/shared/navigation/search_providers.dart (searchModeProvider,
+    MetaSearchRequest, homeMetaSearchRequestProvider, applyMetaSearch,
+    SearchContext.supportsMetaSearch): New.
+  * lib/shared/navigation/app_top_bar.dart (_SearchModeMenu, _SearchField.mode,
+    _SearchField.onModeChanged): Mode menu and hint per mode.
+  * lib/shared/constants/search_mode_ui.dart (SearchModeUi.localizedLabel): New.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.searchMode, CollectionFilters.apply): Details mode
+    through ItemSearch.
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState.build, _AllItemsScreenState._applyFilter,
+    _AllItemsScreenState._countByMediaType,
+    _AllItemsScreenState._matchesNonTypeFilters,
+    _AllItemsScreenState._showItemDetails): Details mode through ItemSearch;
+    applies the popped chip value.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._showItemDetails): Applies the popped chip value.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_metaSearchTap, _buildChips): Per-value chips that pop a MetaSearchRequest.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._openCardLink): Forwards the result of a nested card.
+  * lib/features/releases/screens/releases_screen.dart (_ReleasesScreenState._open),
+    lib/features/search/screens/search_screen.dart
+    (_SearchScreenState._navigateToItemDetail): Forward the result to Home.
+  * lib/shared/navigation/app_shell.dart (_AppShellState.build): Listens for
+    homeMetaSearchRequestProvider and switches to Home.
+  * lib/l10n/app_*.arb (appBarMetaSearchHint, searchModeTooltip,
+    searchModeTitle, searchModeMeta): New strings.
+
+- **Text size setting**
+
+  - A "Text size" slider in Settings → Appearance, 85% to 130% in four steps,
+    with live preview.
+  - The value multiplies the system text scale.
+
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.textScale,
+    SettingsKeys.textScaleStep, SettingsKeys.cardScaleStep, SettingsState.textScale,
+    SettingsNotifier.setTextScale, SettingsNotifier.clearSettings): New setting.
+  * lib/app.dart (_TextScaleScope, _MultipliedTextScaler): Wraps the app in a
+    MediaQuery whose textScaler multiplies the system one.
+  * lib/features/settings/screens/settings_screen.dart (_ScaleSlider): Shared
+    slider for cover size and text size.
+  * lib/l10n/app_*.arb (settingsTextScale, settingsTextScaleSubtitle): New strings.
+
 - **Open a collection from the All items screen**
 
   - Tapping a collection name above its group opens that collection.
@@ -71,6 +136,31 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * packages/core/lib/testing/builders.dart (createTestAnime): studios parameter.
 
 ### Fixed
+
+- **Search inside a collection matches album artists and book authors**
+
+  The collection screen and the All items screen run the same title search:
+  name, tag names, comments, and the artist of an album or the author of a
+  book.
+
+  * packages/core/lib/utils/item_search.dart (ItemSearch, ItemSearch.matches,
+    ItemSearch.creatorsOf): New; one matcher for both search modes.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply): Delegates the search step to ItemSearch.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState.build,
+    _AllItemsScreenState._applyFilter, _AllItemsScreenState._countByMediaType,
+    _AllItemsScreenState._matchesNonTypeFilters): Take one ItemSearch built per
+    build; _matchesTagName and _matchesCreator removed.
+
+- **AniList tag picker survives a small sheet**
+
+  With the on-screen keyboard up, the picker's title, search field and
+  toggles scroll together with the tag list; the action row stays put.
+
+  * lib/features/search/widgets/anilist_tag_picker.dart
+    (_AniListTagPickerState.build, _AniListTagPickerState._buildHeader,
+    _AniListTagPickerState._buildList): Header and list moved into one
+    CustomScrollView; the list is a SliverList.
 
 - **Shimmer placeholders keep quiet when a screen goes away**
 

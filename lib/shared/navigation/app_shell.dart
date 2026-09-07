@@ -104,6 +104,18 @@ class _AppShellState extends ConsumerState<AppShell> {
         ref.read(searchTabRequestProvider.notifier).state = null;
       },
     );
+    ref.listen<MetaSearchRequest?>(
+      homeMetaSearchRequestProvider,
+      (MetaSearchRequest? previous, MetaSearchRequest? request) {
+        if (request == null) return;
+        // The Home query is off-screen while another tab is up, so a stale
+        // meta query is replaced rather than narrowed.
+        applyMetaSearch(ref, homeSearchQueryProvider, request.query,
+            narrow: false);
+        _onDestinationSelected(NavTab.home.index);
+        ref.read(homeMetaSearchRequestProvider.notifier).state = null;
+      },
+    );
     // Release notes after an app update, once per version. The version is
     // remembered on close, so a launch killed mid-dialog shows it again.
     ref.listen<AsyncValue<WhatsNewContent?>>(

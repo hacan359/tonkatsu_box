@@ -3687,6 +3687,13 @@ class SEs extends S {
       'Tamaño de las tarjetas en las cuadrículas de colecciones';
 
   @override
+  String get settingsTextScale => 'Tamaño del texto';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Tamaño del texto de la interfaz, además del ajuste del sistema';
+
+  @override
   String get collectionEditHeroImage => 'Imagen de portada';
 
   @override
@@ -4010,6 +4017,18 @@ class SEs extends S {
 
   @override
   String get appBarSearchHint => 'Empieza a escribir para buscar';
+
+  @override
+  String get appBarMetaSearchHint => 'Género, autor, estudio… coma = y, / = o';
+
+  @override
+  String get searchModeTooltip => 'Modo de búsqueda';
+
+  @override
+  String get searchModeTitle => 'Por título';
+
+  @override
+  String get searchModeMeta => 'Por detalles';
 
   @override
   String get insertLink => 'Insertar enlace';

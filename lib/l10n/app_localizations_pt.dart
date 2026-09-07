@@ -3673,6 +3673,13 @@ class SPt extends S {
       'Tamanho dos cards nas grades de coleções';
 
   @override
+  String get settingsTextScale => 'Tamanho do texto';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Tamanho do texto da interface, além da configuração do sistema';
+
+  @override
   String get collectionEditHeroImage => 'Imagem de capa';
 
   @override
@@ -3996,6 +4003,19 @@ class SPt extends S {
 
   @override
   String get appBarSearchHint => 'Comece a digitar para buscar';
+
+  @override
+  String get appBarMetaSearchHint =>
+      'Gênero, autor, estúdio… vírgula = e, / = ou';
+
+  @override
+  String get searchModeTooltip => 'Modo de busca';
+
+  @override
+  String get searchModeTitle => 'Por título';
+
+  @override
+  String get searchModeMeta => 'Por detalhes';
 
   @override
   String get insertLink => 'Inserir link';

@@ -1,9 +1,12 @@
+import 'package:core/utils/meta_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/update_service.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
+import '../constants/search_mode_ui.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -124,6 +127,13 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
 
     final bool isIdle =
         !focusNode.hasFocus && _controller.text.isEmpty;
+    final bool metaSearchAvailable = ctx?.supportsMetaSearch ?? false;
+    final SearchMode mode = metaSearchAvailable
+        ? ref.watch(searchModeProvider)
+        : SearchMode.title;
+    final String hint = mode == SearchMode.meta
+        ? S.of(context).appBarMetaSearchHint
+        : ctx?.hint ?? '';
     final double statusBarHeight = MediaQuery.paddingOf(context).top;
 
     return Container(
@@ -153,7 +163,13 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
                   controller: _controller,
                   focusNode: focusNode,
                   enabled: enabled,
-                  hint: ctx?.hint ?? '',
+                  hint: hint,
+                  mode: mode,
+                  onModeChanged: metaSearchAvailable
+                      ? (SearchMode value) => ref
+                          .read(searchModeProvider.notifier)
+                          .state = value
+                      : null,
                   onChanged: (String value) {
                     if (ctx == null) return;
                     ref.read(ctx.queryProvider.notifier).state = value;
@@ -233,6 +249,8 @@ class _SearchField extends StatelessWidget {
     required this.focusNode,
     required this.enabled,
     required this.hint,
+    required this.mode,
+    required this.onModeChanged,
     required this.onChanged,
     required this.onClear,
   });
@@ -241,6 +259,10 @@ class _SearchField extends StatelessWidget {
   final FocusNode focusNode;
   final bool enabled;
   final String hint;
+  final SearchMode mode;
+
+  /// Null hides the mode menu: the tab has no metadata to search.
+  final ValueChanged<SearchMode>? onModeChanged;
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
 
@@ -254,9 +276,22 @@ class _SearchField extends StatelessWidget {
     final double clearIconSize = compact ? 14 : 16;
     final double clearButtonSize = compact ? 24 : 28;
 
+    final Widget searchIcon = Icon(
+      mode == SearchMode.meta ? Icons.manage_search : Icons.search,
+      size: searchIconSize,
+      color: iconColor,
+    );
+
     return Row(
       children: <Widget>[
-        Icon(Icons.search, size: searchIconSize, color: iconColor),
+        if (onModeChanged != null && enabled)
+          _SearchModeMenu(
+            mode: mode,
+            icon: searchIcon,
+            onSelected: onModeChanged!,
+          )
+        else
+          searchIcon,
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: TextField(
@@ -302,6 +337,59 @@ class _SearchField extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Title / metadata switch in front of the field; the arrow is the only hint
+/// the icon is a menu, so it stays visible even when the field is idle.
+class _SearchModeMenu extends StatelessWidget {
+  const _SearchModeMenu({
+    required this.mode,
+    required this.icon,
+    required this.onSelected,
+  });
+
+  final SearchMode mode;
+  final Widget icon;
+  final ValueChanged<SearchMode> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    return PopupMenuButton<SearchMode>(
+      tooltip: l.searchModeTooltip,
+      padding: EdgeInsets.zero,
+      offset: const Offset(0, AppSpacing.xl),
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      ),
+      onSelected: onSelected,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<SearchMode>>[
+        for (final SearchMode value in SearchMode.values)
+          CheckedPopupMenuItem<SearchMode>(
+            value: value,
+            checked: value == mode,
+            child: Text(
+              value.localizedLabel(l),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+      ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          icon,
+          Icon(
+            Icons.arrow_drop_down,
+            size: AppSpacing.md,
+            color: AppColors.textTertiary,
+          ),
+        ],
+      ),
     );
   }
 }

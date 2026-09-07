@@ -195,6 +195,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       statuses: _filterStatuses,
       favoriteOnly: _filterFavoriteOnly,
       searchQuery: searchQuery,
+      searchMode: ref.watch(searchModeProvider),
     );
     final S l = S.of(context);
     // The rich banner carries the back arrow and title itself; the plain
@@ -586,10 +587,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return counts;
   }
 
-  void _showItemDetails(CollectionItem item) {
+  Future<void> _showItemDetails(CollectionItem item) async {
     final bool isEditable = _canEdit;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
+    final MetaSearchRequest? request =
+        await Navigator.of(context).push<MetaSearchRequest?>(
+      MaterialPageRoute<MetaSearchRequest?>(
         builder: (BuildContext context) => ItemDetailScreen(
           collectionId: widget.collectionId,
           itemId: item.id,
@@ -597,6 +599,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
       ),
     );
+    if (request == null || !mounted) return;
+    applyMetaSearch(ref, collectionsSearchQueryProvider, request.query);
   }
 
   void _handleCycleViewMode() {

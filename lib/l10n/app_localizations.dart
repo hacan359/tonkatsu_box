@@ -6434,6 +6434,18 @@ abstract class S {
   /// **'Card size in collection grids'**
   String get settingsCardScaleSubtitle;
 
+  /// No description provided for @settingsTextScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsTextScale;
+
+  /// No description provided for @settingsTextScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface text size, on top of the system setting'**
+  String get settingsTextScaleSubtitle;
+
   /// No description provided for @collectionEditHeroImage.
   ///
   /// In en, this message translates to:
@@ -7063,6 +7075,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Start typing to search'**
   String get appBarSearchHint;
+
+  /// No description provided for @appBarMetaSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre, author, studio… comma = and, / = or'**
+  String get appBarMetaSearchHint;
+
+  /// No description provided for @searchModeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Search mode'**
+  String get searchModeTooltip;
+
+  /// No description provided for @searchModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'By title'**
+  String get searchModeTitle;
+
+  /// No description provided for @searchModeMeta.
+  ///
+  /// In en, this message translates to:
+  /// **'By details'**
+  String get searchModeMeta;
 
   /// No description provided for @insertLink.
   ///

@@ -150,6 +150,20 @@ abstract class SettingsKeys {
   static const double cardScaleMin = 0.7;
 
   static const double cardScaleMax = 1.6;
+
+  static const double cardScaleStep = 0.1;
+
+  /// UI text multiplier applied on top of the system text scale.
+  static const String textScale = 'text_scale';
+
+  static const double textScaleDefault = 1.0;
+
+  static const double textScaleMin = 0.85;
+
+  static const double textScaleMax = 1.3;
+
+  /// Slider step; 0.85 / 1.0 / 1.15 / 1.3 are the intended stops.
+  static const double textScaleStep = 0.15;
 }
 
 class SettingsState {
@@ -189,6 +203,7 @@ class SettingsState {
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
     this.cardScale = SettingsKeys.cardScaleDefault,
+    this.textScale = SettingsKeys.textScaleDefault,
     this.appTheme = AppThemeId.dark,
   });
 
@@ -288,6 +303,9 @@ class SettingsState {
 
   /// Grid card size multiplier (1.0 = default size).
   final double cardScale;
+
+  /// UI text multiplier on top of the system scale (1.0 = system only).
+  final double textScale;
 
   /// Selected app theme.
   final AppThemeId appTheme;
@@ -410,6 +428,7 @@ class SettingsState {
     String? dateFormat,
     String? animeMangaTitleLanguage,
     double? cardScale,
+    double? textScale,
     AppThemeId? appTheme,
   }) {
     return SettingsState(
@@ -455,6 +474,7 @@ class SettingsState {
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
       cardScale: cardScale ?? this.cardScale,
+      textScale: textScale ?? this.textScale,
       appTheme: appTheme ?? this.appTheme,
     );
   }
@@ -639,6 +659,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final double cardScale = (_prefs.getDouble(SettingsKeys.cardScale) ??
             SettingsKeys.cardScaleDefault)
         .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    final double textScale = (_prefs.getDouble(SettingsKeys.textScale) ??
+            SettingsKeys.textScaleDefault)
+        .clamp(SettingsKeys.textScaleMin, SettingsKeys.textScaleMax);
     final AppThemeId appTheme =
         AppThemeId.fromId(_prefs.getString(SettingsKeys.appTheme));
 
@@ -684,6 +707,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
       cardScale: cardScale,
+      textScale: textScale,
       appTheme: appTheme,
     );
 
@@ -1086,6 +1110,24 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
+  /// Set [persist] to false for live slider preview; the final value must be
+  /// saved with a persisting call.
+  Future<void> setTextScale(double scale, {bool persist = true}) async {
+    // Slider stops arrive as 0.9999999999999999; two decimals keep the 1.0
+    // fast path in the app root alive.
+    final double clamped = (scale.clamp(
+              SettingsKeys.textScaleMin,
+              SettingsKeys.textScaleMax,
+            ) *
+            100)
+        .roundToDouble() /
+        100;
+    state = state.copyWith(textScale: clamped);
+    if (persist) {
+      await _prefs.setDouble(SettingsKeys.textScale, clamped);
+    }
+  }
+
   /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetTmdbApiKeyToDefault() async {
     await _writeCredential(SettingsKeys.tmdbApiKey, '');
@@ -1251,6 +1293,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.cardScale);
+    await _prefs.remove(SettingsKeys.textScale);
     await _prefs.remove(SettingsKeys.appTheme);
     await _writeCredential(SettingsKeys.raUsername, '');
     await _writeCredential(SettingsKeys.raApiKey, '');

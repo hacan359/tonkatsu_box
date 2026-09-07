@@ -3697,6 +3697,13 @@ class SRu extends S {
   String get settingsCardScaleSubtitle => 'Размер карточек в сетках коллекций';
 
   @override
+  String get settingsTextScale => 'Размер текста';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Размер текста интерфейса поверх системной настройки';
+
+  @override
   String get collectionEditHeroImage => 'Обложка';
 
   @override
@@ -4019,6 +4026,19 @@ class SRu extends S {
 
   @override
   String get appBarSearchHint => 'Начните печатать для поиска';
+
+  @override
+  String get appBarMetaSearchHint =>
+      'Жанр, автор, студия… запятая = и, / = или';
+
+  @override
+  String get searchModeTooltip => 'Режим поиска';
+
+  @override
+  String get searchModeTitle => 'По названию';
+
+  @override
+  String get searchModeMeta => 'По описанию';
 
   @override
   String get insertLink => 'Вставить ссылку';

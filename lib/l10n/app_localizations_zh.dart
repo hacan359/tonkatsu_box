@@ -3420,6 +3420,12 @@ class SZh extends S {
   String get settingsCardScaleSubtitle => '收藏网格中卡片的大小';
 
   @override
+  String get settingsTextScale => '文字大小';
+
+  @override
+  String get settingsTextScaleSubtitle => '界面文字大小，在系统设置基础上调整';
+
+  @override
   String get collectionEditHeroImage => '封面图片';
 
   @override
@@ -3737,6 +3743,18 @@ class SZh extends S {
 
   @override
   String get appBarSearchHint => '输入以搜索';
+
+  @override
+  String get appBarMetaSearchHint => '类型、作者、制作公司… 逗号 = 且，/ = 或';
+
+  @override
+  String get searchModeTooltip => '搜索模式';
+
+  @override
+  String get searchModeTitle => '按标题';
+
+  @override
+  String get searchModeMeta => '按详情';
 
   @override
   String get insertLink => '插入链接';

@@ -3693,6 +3693,13 @@ class SFr extends S {
       'Taille des cartes dans les collections (mode grille)';
 
   @override
+  String get settingsTextScale => 'Taille du texte';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Taille du texte de l’interface, en plus du réglage système';
+
+  @override
   String get collectionEditHeroImage => 'Bannière';
 
   @override
@@ -4016,6 +4023,19 @@ class SFr extends S {
 
   @override
   String get appBarSearchHint => 'Écrivez pour commencer la recherche';
+
+  @override
+  String get appBarMetaSearchHint =>
+      'Genre, auteur, studio… virgule = et, / = ou';
+
+  @override
+  String get searchModeTooltip => 'Mode de recherche';
+
+  @override
+  String get searchModeTitle => 'Par titre';
+
+  @override
+  String get searchModeMeta => 'Par détails';
 
   @override
   String get insertLink => 'Insérer un lien';

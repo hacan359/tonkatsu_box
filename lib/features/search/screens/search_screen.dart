@@ -233,9 +233,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         .forSource(mediaType, source);
   }
 
-  void _navigateToItemDetail(CollectedItemInfo info) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
+  Future<void> _navigateToItemDetail(CollectedItemInfo info) async {
+    final MetaSearchRequest? request =
+        await Navigator.of(context).push<MetaSearchRequest?>(
+      MaterialPageRoute<MetaSearchRequest?>(
         builder: (BuildContext context) => ItemDetailScreen(
           collectionId: info.collectionId,
           itemId: info.recordId,
@@ -243,6 +244,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
       ),
     );
+    if (request == null || !mounted) return;
+    ref.read(homeMetaSearchRequestProvider.notifier).state = request;
   }
 
   void _onItemTap(Object item, MediaType mediaType) {

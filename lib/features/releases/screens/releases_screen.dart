@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/utils/date_format_preset.dart';
@@ -801,17 +802,22 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     return AppColors.statusCompleted;
   }
 
-  void _open(Object? payload) {
+  Future<void> _open(Object? payload) async {
     if (payload is! ReleaseEvent) return;
     final int? itemId = payload.itemId;
     if (itemId == null) return;
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (BuildContext context) => ItemDetailScreen(
-        collectionId: payload.collectionId,
-        itemId: itemId,
-        isEditable: true,
+    final MetaSearchRequest? request =
+        await Navigator.of(context).push<MetaSearchRequest?>(
+      MaterialPageRoute<MetaSearchRequest?>(
+        builder: (BuildContext context) => ItemDetailScreen(
+          collectionId: payload.collectionId,
+          itemId: itemId,
+          isEditable: true,
+        ),
       ),
-    ));
+    );
+    if (request == null || !mounted) return;
+    ref.read(homeMetaSearchRequestProvider.notifier).state = request;
   }
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);

@@ -2,6 +2,7 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
+import 'package:core/utils/meta_search.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/helpers/collection_filters.dart';
 
@@ -294,6 +295,97 @@ void main() {
         statuses: <ItemStatus>{ItemStatus.completed},
       ).apply(items, tags, noLinks);
       expect(r.map((CollectionItem i) => i.id), <int>[1]);
+    });
+
+    test('search matches album artists and book authors', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        createTestCollectionItem(
+          id: 1,
+          externalId: 1,
+          mediaType: MediaType.audio,
+          audioItem: createTestAudioItem(
+            title: 'The Wall',
+            artists: <String>['Pink Floyd'],
+          ),
+        ),
+        createTestCollectionItem(
+          id: 2,
+          externalId: 2,
+          mediaType: MediaType.book,
+          book: createTestBook(title: 'Dune', authors: <String>['Frank Herbert']),
+        ),
+        make(id: 3, name: 'Unrelated'),
+      ];
+      expect(
+        const CollectionFilters(searchQuery: 'pink floyd')
+            .apply(items, tags, noLinks)
+            .map((CollectionItem i) => i.id),
+        <int>[1],
+      );
+      expect(
+        const CollectionFilters(searchQuery: 'herbert')
+            .apply(items, tags, noLinks)
+            .map((CollectionItem i) => i.id),
+        <int>[2],
+      );
+    });
+
+    group('searchMode', () {
+      final List<CollectionItem> items = <CollectionItem>[
+        createTestCollectionItem(
+          id: 1,
+          externalId: 1,
+          overrideName: 'Horror Story',
+          game: createTestGame(genres: <String>['Puzzle']),
+        ),
+        createTestCollectionItem(
+          id: 2,
+          externalId: 2,
+          overrideName: 'Quiet Night',
+          game: createTestGame(genres: <String>['Horror', 'Adventure']),
+        ),
+      ];
+
+      test('title mode ignores genres', () {
+        final List<CollectionItem> r = const CollectionFilters(
+          searchQuery: 'horror',
+        ).apply(items, tags, noLinks);
+        expect(r.map((CollectionItem i) => i.id), <int>[1]);
+      });
+
+      test('meta mode matches descriptors and ignores the name', () {
+        final List<CollectionItem> r = const CollectionFilters(
+          searchQuery: 'horror',
+          searchMode: SearchMode.meta,
+        ).apply(items, tags, noLinks);
+        expect(r.map((CollectionItem i) => i.id), <int>[2]);
+      });
+
+      test('meta mode honours AND and OR groups', () {
+        expect(
+          const CollectionFilters(
+            searchQuery: 'horror, adventure',
+            searchMode: SearchMode.meta,
+          ).apply(items, tags, noLinks).map((CollectionItem i) => i.id),
+          <int>[2],
+        );
+        expect(
+          const CollectionFilters(
+            searchQuery: 'puzzle / adventure',
+            searchMode: SearchMode.meta,
+          ).apply(items, tags, noLinks).map((CollectionItem i) => i.id),
+          <int>[1, 2],
+        );
+      });
+
+      test('meta mode still applies the other filters first', () {
+        final List<CollectionItem> r = const CollectionFilters(
+          searchQuery: 'horror',
+          searchMode: SearchMode.meta,
+          statuses: <ItemStatus>{ItemStatus.completed},
+        ).apply(items, tags, noLinks);
+        expect(r, isEmpty);
+      });
     });
   });
 }
