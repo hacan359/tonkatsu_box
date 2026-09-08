@@ -26,16 +26,16 @@ class AppTopBar extends ConsumerStatefulWidget {
   const AppTopBar({
     required this.activeTab,
     required this.onSettingsTap,
-    this.suppressSearch = false,
+    this.personalizationOpen = false,
     super.key,
   });
 
   /// Decides which provider the search field writes to.
   final NavTab activeTab;
 
-  /// A disabled field drops focus, which on mobile hides the keyboard that would
-  /// otherwise pop up when personalization opens.
-  final bool suppressSearch;
+  /// With the hub open the field serves the likes page or nothing at all; a
+  /// disabled field drops focus, which on mobile also hides the keyboard.
+  final bool personalizationOpen;
 
   final VoidCallback onSettingsTap;
 
@@ -112,9 +112,12 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    final SearchContext? ctx = widget.suppressSearch
-        ? null
-        : searchContextFor(widget.activeTab, context);
+    final SearchContext? ctx = activeSearchContext(
+      tab: widget.activeTab,
+      personalizationOpen: widget.personalizationOpen,
+      likesSearchActive: ref.watch(likesSearchActiveProvider),
+      context: context,
+    );
     _syncSubscription(ctx);
 
     final FocusNode focusNode = ref.watch(appTopBarFocusProvider);

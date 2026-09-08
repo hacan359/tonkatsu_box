@@ -5243,7 +5243,50 @@ class SEn extends S {
   String get screenScraperMediaMix => 'Mix';
 
   @override
-  String get genreCloudTitle => 'Personalization';
+  String get genreCloudTitle => 'Genre cloud';
+
+  @override
+  String get personalizationTitle => 'Personalization';
+
+  @override
+  String get personalizationStatsHint => 'Your library in numbers';
+
+  @override
+  String get personalizationRecommendationsHint =>
+      'Based on what you finished and rated';
+
+  @override
+  String get likesTitle => 'Likes & notes';
+
+  @override
+  String get personalizationLikesHint =>
+      'Episodes, chapters and tracks you marked';
+
+  @override
+  String get likesEmptyTitle => 'Nothing marked yet';
+
+  @override
+  String get likesEmptyBody =>
+      'Like an episode or leave a note in a title\'s tracker and it will show up here.';
+
+  @override
+  String get likesNoMatches => 'Nothing matches the filter';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return 'Track $track · Disc $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marks',
+      one: '1 mark',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => 'No genres yet';
@@ -5276,9 +5319,6 @@ class SEn extends S {
 
   @override
   String get facetDecade => 'Decades';
-
-  @override
-  String get personalizationTabCloud => 'Genre cloud';
 
   @override
   String get recommendationsEmpty => 'No recommendations yet';

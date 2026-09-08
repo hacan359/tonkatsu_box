@@ -1,4 +1,3 @@
-import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
@@ -28,6 +27,7 @@ import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
+import '../../collections/helpers/item_editability.dart';
 import '../../collections/helpers/tracker_card_progress.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -693,17 +693,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  bool _isItemEditable(CollectionItem item) {
-    if (item.isUncategorized) return true;
-    final List<Collection>? collections =
-        ref.read(collectionsProvider).valueOrNull;
-    final Collection? collection =
-        collections?.cast<Collection?>().firstWhere(
-      (Collection? c) => c?.id == item.collectionId,
-      orElse: () => null,
-    );
-    return collection?.isEditable ?? false;
-  }
+  bool _isItemEditable(CollectionItem item) =>
+      isItemEditable(item, ref.read(collectionsProvider).valueOrNull);
 
   Future<void> _showItemContextMenu(Offset position, CollectionItem item) async {
     if (!_isItemEditable(item)) return;

@@ -4,6 +4,7 @@ import 'package:core/models/item_mark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../likes/providers/marked_units_provider.dart';
 
 /// Key identifying a unit within an item.
 typedef UnitKey = ({String unitType, int parent, int unit});
@@ -130,5 +131,8 @@ class ItemMarksNotifier extends FamilyNotifier<ItemMarksState, int> {
       next[key] = mark;
     }
     state = ItemMarksState(marks: next);
+    // The likes page aggregates every item; a mark set here must show up
+    // there without a restart.
+    ref.invalidate(markedUnitsProvider);
   }
 }

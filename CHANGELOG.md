@@ -135,6 +135,87 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     filterBlockedBy in all locales.
   * packages/core/lib/testing/builders.dart (createTestAnime): studios parameter.
 
+- **Likes and notes page**
+
+  - The personalization hub gets a third section: every liked or noted
+    episode, season, chapter, volume, page, part or track in the library,
+    grouped by title, freshest title first.
+  - Each unit shows its number and the cached episode or track name, a heart
+    when liked, and the note text cut at two lines.
+  - One row of icon toggles: a heart and a note pick likes, notes or both, and
+    a chip per media type narrows further. The top-bar search field matches
+    note text, unit names and the title the same way Home does.
+  - Tapping a title or a unit opens the item card. A mark set or removed in a
+    card shows up on the page without a restart.
+  - The hub card previews the mark count and the two freshest marks.
+
+  * packages/core/lib/database/dao/item_mark_dao.dart (ItemMarkDao.getAllMarks):
+    New; joins tv_episodes_cache and audio_tracks_cache for the unit name.
+  * packages/core/lib/models/marked_unit.dart (MarkedUnit): New.
+  * packages/core/lib/rpc/generated/item_mark_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/item_mark_dao.remote.rpc.dart: Regenerated.
+  * packages/core/lib/rpc/protocol.dart (kProtocolVersion): 3.
+  * lib/features/likes/providers/marked_units_provider.dart (MarkedUnitGroup,
+    markedUnitsProvider, MarkedUnitsNotifier, LikesKind, LikesFilter,
+    likesFilterProvider, LikesFilterNotifier, filteredMarkedUnitsProvider,
+    markedMediaTypesProvider): New.
+  * lib/features/likes/screens/likes_screen.dart (LikesScreen),
+    lib/features/likes/widgets/marked_group_tile.dart (MarkedGroupTile),
+    lib/features/likes/utils/marked_unit_label.dart (markedUnitLabel): New.
+  * lib/features/personalization/widgets/hub_likes_preview.dart (HubLikesPreview):
+    New.
+  * lib/features/collections/providers/item_marks_provider.dart
+    (ItemMarksNotifier._apply): Invalidates markedUnitsProvider.
+  * lib/shared/navigation/search_providers.dart (likesSearchQueryProvider,
+    likesSearchActiveProvider, activeSearchContext): New; the top-bar field
+    serves the likes page while it is open.
+  * lib/shared/navigation/app_top_bar.dart (AppTopBar.personalizationOpen),
+    lib/shared/navigation/app_shell.dart (_AppShellState._handleTypeToSearch):
+    Resolve the field through activeSearchContext.
+  * lib/features/collections/helpers/item_editability.dart (isItemEditable):
+    New; lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._isItemEditable) delegates to it.
+  * lib/l10n/app_*.arb (likesTitle, personalizationLikesHint, likesEmptyTitle,
+    likesEmptyBody, likesNoMatches, likesTrackWithDisc, likesMarkCount): New
+    strings.
+
+### Changed
+
+- **Personalization hub opens on a landing page of section cards**
+
+  - Statistics, Recommendations and Likes are cards with a live preview: the
+    headline numbers, a strip of recommended posters, the latest marks. A tap
+    opens the section full screen with a back arrow.
+  - The genre cloud moves to an icon in the statistics header, next to Share.
+  - Pressing the centre button while a section is open returns to the landing
+    page; Android back and gamepad B pop the section before closing the hub.
+
+  * lib/features/personalization/screens/personalization_screen.dart
+    (PersonalizationScreen): Hosts the hub's own Navigator.
+  * lib/features/personalization/screens/personalization_hub_screen.dart
+    (PersonalizationHubScreen),
+    lib/features/personalization/widgets/hub_section_card.dart (HubSectionCard),
+    lib/features/personalization/widgets/hub_stats_preview.dart (HubStatsPreview),
+    lib/features/personalization/widgets/hub_recommendations_preview.dart
+    (HubRecommendationsPreview),
+    lib/features/personalization/widgets/personalization_sub_screen.dart
+    (PersonalizationSubScreen, pushPersonalizationSection): New.
+  * lib/features/statistics/screens/statistics_screen.dart
+    (_StatisticsScreenState._openGenreCloud): Genre cloud button in the header.
+  * lib/features/recommendations/utils/recommendation_cover.dart
+    (recommendationCoverCache): New;
+    lib/features/recommendations/widgets/recommendation_row.dart
+    (_RecommendationRowWidgetState.build) uses it.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openPreferenceCloud,
+    _AppShellState._handleBack): Pop the hub's navigator first.
+  * lib/features/welcome/widgets/menu_tour_items.dart,
+    lib/shared/navigation/app_bottom_bar.dart,
+    lib/shared/navigation/app_sidebar.dart: Centre button labelled
+    "Personalization".
+  * lib/l10n/app_*.arb (personalizationTitle, personalizationStatsHint,
+    personalizationRecommendationsHint): New; genreCloudTitle now reads
+    "Genre cloud"; personalizationTabCloud removed.
+
 ### Fixed
 
 - **Search inside a collection matches album artists and book authors**

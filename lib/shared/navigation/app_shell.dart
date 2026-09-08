@@ -207,7 +207,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       ),
       child: AppTopBar(
         activeTab: activeTab,
-        suppressSearch: _personalizationOpen,
+        personalizationOpen: _personalizationOpen,
         onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
       ),
     );
@@ -246,10 +246,18 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// area and highlighting the centre nav button like a selected tab).
   bool _personalizationOpen = false;
 
+  final GlobalKey<NavigatorState> _personalizationNavKey =
+      GlobalKey<NavigatorState>();
+
   /// A sibling of the tab navigators rather than a route on one, so switching
   /// tabs hides the cloud instead of leaving it on that tab's stack.
   void _openPreferenceCloud() {
-    if (_personalizationOpen) return;
+    if (_personalizationOpen) {
+      // Same gesture as a tab: pressing again returns to the hub's landing.
+      _personalizationNavKey.currentState
+          ?.popUntil((Route<dynamic> route) => route.isFirst);
+      return;
+    }
     // Drop any focus the top-bar search field holds so the mobile keyboard
     // doesn't stay up over a view that has no search of its own.
     FocusManager.instance.primaryFocus?.unfocus();
@@ -260,15 +268,15 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// focus is not already inside a text field.
   KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
-    // Personalization has no search field; don't hijack typing for it.
-    if (_personalizationOpen) return KeyEventResult.ignored;
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
 
-    final SearchContext? ctx = searchContextFor(
-      NavTab.values[_selectedIndex],
-      context,
+    final SearchContext? ctx = activeSearchContext(
+      tab: NavTab.values[_selectedIndex],
+      personalizationOpen: _personalizationOpen,
+      likesSearchActive: ref.read(likesSearchActiveProvider),
+      context: context,
     );
     if (ctx == null) return KeyEventResult.ignored;
 
@@ -319,7 +327,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         // An extra IndexedStack child, not a tab route — switching tabs hides
         // it. Not kept alive: the subtree is heavy, providers carry the state.
         if (_personalizationOpen)
-          const PersonalizationScreen()
+          PersonalizationScreen(navigatorKey: _personalizationNavKey)
         else
           const SizedBox.shrink(),
       ],
@@ -429,6 +437,11 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// Android back / gamepad B; `false` means the app should exit.
   bool _handleBack() {
     if (_personalizationOpen) {
+      final NavigatorState? hubNav = _personalizationNavKey.currentState;
+      if (hubNav != null && hubNav.canPop()) {
+        hubNav.pop();
+        return true;
+      }
       setState(() => _personalizationOpen = false);
       return true;
     }

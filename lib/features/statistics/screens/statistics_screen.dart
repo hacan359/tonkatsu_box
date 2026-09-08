@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -9,6 +11,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/logo_loader.dart';
+import '../../genre_cloud/screens/genre_cloud_screen.dart';
+import '../../personalization/widgets/personalization_sub_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../layout/stats_layout_scope.dart';
 import '../models/library_stats.dart';
@@ -181,14 +185,34 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         for (final int year in stats.availableYears.take(_maxYearOptions))
           StatsPeriod.year(year),
       ],
-      trailing: stats.isEmpty
-          ? null
-          : IconButton(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          IconButton(
+            tooltip: l.genreCloudTitle,
+            onPressed: _openGenreCloud,
+            icon: const Icon(Icons.bubble_chart_outlined, size: 20),
+            style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
+          ),
+          if (!stats.isEmpty)
+            IconButton(
               tooltip: l.statsExportTitle,
               onPressed: _exporting ? null : () => _exportShareCard(stats),
               icon: const Icon(Icons.ios_share, size: 20),
               style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _openGenreCloud() {
+    unawaited(
+      pushPersonalizationSection(
+        context,
+        title: S.of(context).genreCloudTitle,
+        child: const GenreCloudScreen(showTitle: false),
+      ),
     );
   }
 

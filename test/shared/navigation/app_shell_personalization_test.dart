@@ -11,7 +11,12 @@ import 'package:tonkatsu_box/core/services/update_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/genre_cloud/providers/genre_cloud_provider.dart';
 import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
+import 'package:tonkatsu_box/features/collections/providers/item_tags_provider.dart';
+import 'package:tonkatsu_box/features/likes/providers/marked_units_provider.dart';
+import 'package:tonkatsu_box/features/personalization/screens/personalization_hub_screen.dart';
 import 'package:tonkatsu_box/features/personalization/screens/personalization_screen.dart';
+import 'package:tonkatsu_box/features/personalization/widgets/hub_section_card.dart';
+import 'package:tonkatsu_box/features/recommendations/providers/recommendations_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/features/statistics/providers/statistics_provider.dart';
 import 'package:tonkatsu_box/features/statistics/screens/statistics_screen.dart';
@@ -21,6 +26,16 @@ import 'package:tonkatsu_box/shared/navigation/nav_center_button.dart';
 import 'package:tonkatsu_box/shared/navigation/nav_icon_button.dart';
 
 import '../../helpers/test_helpers.dart';
+
+class _EmptyMarkedUnits extends MarkedUnitsNotifier {
+  @override
+  Future<List<MarkedUnitGroup>> build() async => const <MarkedUnitGroup>[];
+}
+
+class _NoItemTags extends ItemTagsNotifier {
+  @override
+  Future<Map<int, List<int>>> build() async => <int, List<int>>{};
+}
 
 void main() {
   group('AppShell personalization destination', () {
@@ -68,6 +83,14 @@ void main() {
             libraryStatsProvider.overrideWith(
               (Ref ref) async => createEmptyLibraryStats(),
             ),
+            recommendationsProvider.overrideWith(
+              (Ref ref) async =>
+                  const RecommendationResult.state(RecommendationStatus.empty),
+            ),
+            collectedRecommendationIdsProvider
+                .overrideWith((Ref ref) async => <String>{}),
+            markedUnitsProvider.overrideWith(_EmptyMarkedUnits.new),
+            itemTagsProvider.overrideWith(_NoItemTags.new),
           ],
           child: const TonkatsuBoxApp(),
         ),
@@ -81,23 +104,23 @@ void main() {
       WidgetTester tester,
     ) async {
       await pumpShell(tester);
-      expect(find.byType(StatisticsScreen), findsNothing);
+      expect(find.byType(PersonalizationHubScreen), findsNothing);
 
       // Open Personalization via the centre nav button.
       await tester.tap(find.byType(NavCenterButton));
       await tester.pumpAndSettle();
-      expect(find.byType(StatisticsScreen), findsOneWidget);
+      expect(find.byType(PersonalizationHubScreen), findsOneWidget);
 
       // Switch to another tab — the cloud must be hidden.
       await tester.tap(find.byType(NavIconButton).at(1));
       await tester.pumpAndSettle();
-      expect(find.byType(StatisticsScreen), findsNothing);
+      expect(find.byType(PersonalizationHubScreen), findsNothing);
 
       // Return to the first tab — the cloud must NOT reappear (the regression:
       // it used to stay glued to that tab's navigator while Home was highlighted).
       await tester.tap(find.byType(NavIconButton).at(0));
       await tester.pumpAndSettle();
-      expect(find.byType(StatisticsScreen), findsNothing);
+      expect(find.byType(PersonalizationHubScreen), findsNothing);
     });
 
     testWidgets('should fully unmount Personalization after leaving', (
@@ -117,9 +140,28 @@ void main() {
         findsNothing,
       );
       expect(
-        find.byType(StatisticsScreen, skipOffstage: false),
+        find.byType(PersonalizationHubScreen, skipOffstage: false),
         findsNothing,
       );
+    });
+
+    testWidgets('should return to the hub landing on a second centre press', (
+      WidgetTester tester,
+    ) async {
+      await pumpShell(tester);
+
+      await tester.tap(find.byType(NavCenterButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(HubSectionCard).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(StatisticsScreen), findsOneWidget);
+
+      // Same gesture as re-pressing a tab: back to the section list, the hub
+      // itself stays open.
+      await tester.tap(find.byType(NavCenterButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(StatisticsScreen), findsNothing);
+      expect(find.byType(PersonalizationHubScreen), findsOneWidget);
     });
 
     testWidgets('should mute tickers of hidden tabs', (
@@ -170,7 +212,31 @@ void main() {
       expect(tester.widget<TextField>(searchField).enabled, isTrue);
     });
 
-    testWidgets('should reopen statistics from the centre button', (
+    testWidgets('should hand the top-bar search to the likes page', (
+      WidgetTester tester,
+    ) async {
+      await pumpShell(tester);
+      final Finder searchField = find.descendant(
+        of: find.byType(AppTopBar),
+        matching: find.byType(TextField),
+      );
+
+      await tester.tap(find.byType(NavCenterButton));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(searchField).enabled, isFalse);
+
+      // The likes page is the one hub section that searches.
+      await tester.tap(find.byType(HubSectionCard).at(2));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(searchField).enabled, isTrue);
+
+      // Back to the landing: the field goes quiet again.
+      await tester.tap(find.byType(NavCenterButton));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(searchField).enabled, isFalse);
+    });
+
+    testWidgets('should reopen the hub from the centre button', (
       WidgetTester tester,
     ) async {
       await pumpShell(tester);
@@ -179,11 +245,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byType(NavIconButton).at(0));
       await tester.pumpAndSettle();
-      expect(find.byType(StatisticsScreen), findsNothing);
+      expect(find.byType(PersonalizationHubScreen), findsNothing);
 
       await tester.tap(find.byType(NavCenterButton));
       await tester.pumpAndSettle();
-      expect(find.byType(StatisticsScreen), findsOneWidget);
+      expect(find.byType(PersonalizationHubScreen), findsOneWidget);
     });
   });
 }

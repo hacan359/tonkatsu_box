@@ -101,7 +101,7 @@ class AppBottomBar extends ConsumerWidget {
                                   : null,
                               width: itemWidth,
                               height: kAppBottomBarHeight,
-                              tooltip: S.of(context).genreCloudTitle,
+                              tooltip: S.of(context).personalizationTitle,
                               onTap: onCenterTap,
                             ),
                           NavIconButton(

@@ -9293,8 +9293,68 @@ abstract class S {
   /// No description provided for @genreCloudTitle.
   ///
   /// In en, this message translates to:
-  /// **'Personalization'**
+  /// **'Genre cloud'**
   String get genreCloudTitle;
+
+  /// No description provided for @personalizationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalization'**
+  String get personalizationTitle;
+
+  /// No description provided for @personalizationStatsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library in numbers'**
+  String get personalizationStatsHint;
+
+  /// No description provided for @personalizationRecommendationsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on what you finished and rated'**
+  String get personalizationRecommendationsHint;
+
+  /// No description provided for @likesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes & notes'**
+  String get likesTitle;
+
+  /// No description provided for @personalizationLikesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes, chapters and tracks you marked'**
+  String get personalizationLikesHint;
+
+  /// No description provided for @likesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing marked yet'**
+  String get likesEmptyTitle;
+
+  /// No description provided for @likesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Like an episode or leave a note in a title\'s tracker and it will show up here.'**
+  String get likesEmptyBody;
+
+  /// No description provided for @likesNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches the filter'**
+  String get likesNoMatches;
+
+  /// No description provided for @likesTrackWithDisc.
+  ///
+  /// In en, this message translates to:
+  /// **'Track {track} · Disc {disc}'**
+  String likesTrackWithDisc(int track, int disc);
+
+  /// No description provided for @likesMarkCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 mark} other{{count} marks}}'**
+  String likesMarkCount(int count);
 
   /// No description provided for @genreCloudEmpty.
   ///
@@ -9343,12 +9403,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Decades'**
   String get facetDecade;
-
-  /// No description provided for @personalizationTabCloud.
-  ///
-  /// In en, this message translates to:
-  /// **'Genre cloud'**
-  String get personalizationTabCloud;
 
   /// No description provided for @recommendationsEmpty.
   ///

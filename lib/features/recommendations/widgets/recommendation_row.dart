@@ -1,5 +1,3 @@
-import 'package:core/models/media_type.dart';
-import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/services/image_cache_service.dart';
@@ -12,6 +10,7 @@ import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../providers/recommendations_provider.dart';
+import '../utils/recommendation_cover.dart';
 
 /// Section card for one "because you liked …" group: reason header, the
 /// cluster's genre chips and a horizontal carousel of recommended titles.
@@ -147,39 +146,7 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                     final RecommendedItem item = widget.items[index];
                     final bool isOwned = widget.ownedIds.contains(item.tasteId);
                     final ({ImageType type, String id}) cache =
-                        switch (item.mediaType) {
-                          MediaType.movie => (
-                            type: ImageType.moviePoster,
-                            id: coverImageId(
-                              mediaType: MediaType.movie,
-                              externalId: item.externalId,
-                              source: item.source,
-                            ),
-                          ),
-                          MediaType.anime => (
-                            type: ImageType.animeCover,
-                            id: coverImageId(
-                              mediaType: MediaType.anime,
-                              externalId: item.externalId,
-                              source: item.source,
-                            ),
-                          ),
-                          MediaType.manga => (
-                            type: ImageType.mangaCover,
-                            id: coverImageId(
-                              mediaType: MediaType.manga,
-                              externalId: item.externalId,
-                              source: item.source,
-                            ),
-                          ),
-                          _ => (
-                            type: ImageType.tvShowPoster,
-                            id: coverImageId(
-                              mediaType: MediaType.tvShow,
-                              externalId: item.externalId,
-                            ),
-                          ),
-                        };
+                        recommendationCoverCache(item);
                     // Constant wrapper shape: toggling Opacity/IgnorePointer
                     // structurally would re-parent and reload the poster.
                     return SizedBox(

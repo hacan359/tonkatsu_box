@@ -5333,7 +5333,51 @@ class SRu extends S {
   String get screenScraperMediaMix => 'Микс';
 
   @override
-  String get genreCloudTitle => 'Персонализация';
+  String get genreCloudTitle => 'Облако жанров';
+
+  @override
+  String get personalizationTitle => 'Персонализация';
+
+  @override
+  String get personalizationStatsHint => 'Ваша библиотека в цифрах';
+
+  @override
+  String get personalizationRecommendationsHint =>
+      'По тому, что вы прошли, досмотрели и оценили';
+
+  @override
+  String get likesTitle => 'Лайки и заметки';
+
+  @override
+  String get personalizationLikesHint => 'Отмеченные серии, главы и треки';
+
+  @override
+  String get likesEmptyTitle => 'Пока ничего не отмечено';
+
+  @override
+  String get likesEmptyBody =>
+      'Поставьте сердечко на серию или напишите заметку в трекере тайтла, и они появятся здесь.';
+
+  @override
+  String get likesNoMatches => 'Под фильтр ничего не попало';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return 'Трек $track · Диск $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count отметки',
+      many: '$count отметок',
+      few: '$count отметки',
+      one: '1 отметка',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => 'Пока нет жанров';
@@ -5369,9 +5413,6 @@ class SRu extends S {
 
   @override
   String get facetDecade => 'Десятилетия';
-
-  @override
-  String get personalizationTabCloud => 'Облако жанров';
 
   @override
   String get recommendationsEmpty => 'Пока нет рекомендаций';

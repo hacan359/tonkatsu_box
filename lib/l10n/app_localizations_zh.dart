@@ -4975,7 +4975,46 @@ class SZh extends S {
   String get screenScraperMediaMix => '混合';
 
   @override
-  String get genreCloudTitle => '个性化';
+  String get genreCloudTitle => '类型词云';
+
+  @override
+  String get personalizationTitle => '个性化';
+
+  @override
+  String get personalizationStatsHint => '你的收藏数据一览';
+
+  @override
+  String get personalizationRecommendationsHint => '基于你完成并评分的作品';
+
+  @override
+  String get likesTitle => '点赞与笔记';
+
+  @override
+  String get personalizationLikesHint => '你标记过的剧集、章节和曲目';
+
+  @override
+  String get likesEmptyTitle => '还没有标记';
+
+  @override
+  String get likesEmptyBody => '在作品的进度追踪里给某一集点赞或写下笔记，它们就会显示在这里。';
+
+  @override
+  String get likesNoMatches => '没有符合筛选条件的内容';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return '曲目 $track · 光盘 $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 个标记',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => '暂无类型';
@@ -5002,9 +5041,6 @@ class SZh extends S {
 
   @override
   String get facetDecade => '年代';
-
-  @override
-  String get personalizationTabCloud => '类型词云';
 
   @override
   String get recommendationsEmpty => '暂无推荐';

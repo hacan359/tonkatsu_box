@@ -30,6 +30,15 @@ final StateProvider<String> searchTabQueryProvider =
 final StateProvider<String> settingsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
+/// Note text filter of the likes page; the page is the only hub section that
+/// searches, so it is also the only one that may claim the top-bar field.
+final StateProvider<String> likesSearchQueryProvider =
+    StateProvider<String>((Ref ref) => '');
+
+/// Raised while the likes page is on top of the hub's navigator.
+final StateProvider<bool> likesSearchActiveProvider =
+    StateProvider<bool>((Ref ref) => false);
+
 /// Shared by Home and Collections so a mode picked on one tab carries over;
 /// not persisted, every launch starts with the plain title search.
 final StateProvider<SearchMode> searchModeProvider =
@@ -128,6 +137,23 @@ class SearchContext {
 
   /// Whether the tab filters library items and honours [searchModeProvider].
   final bool supportsMetaSearch;
+}
+
+/// The context the shared field serves right now. With the hub open the tab
+/// underneath is hidden, so its search must not be reachable either.
+SearchContext? activeSearchContext({
+  required NavTab tab,
+  required bool personalizationOpen,
+  required bool likesSearchActive,
+  required BuildContext context,
+}) {
+  if (!personalizationOpen) return searchContextFor(tab, context);
+  if (!likesSearchActive) return null;
+  return SearchContext(
+    queryProvider: likesSearchQueryProvider,
+    hint: S.of(context).appBarSearchHint,
+    supportsMetaSearch: true,
+  );
 }
 
 /// Returns the search context for [tab], or `null` if the tab does not

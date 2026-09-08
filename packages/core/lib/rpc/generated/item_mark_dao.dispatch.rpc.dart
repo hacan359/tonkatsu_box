@@ -3,6 +3,7 @@
 
 import 'package:core/database/dao/item_mark_dao.dart';
 import 'package:core/models/item_mark.dart';
+import 'package:core/models/marked_unit.dart';
 import 'package:core/rpc/rpc_codec.dart';
 
 /// Server-side entry point: runs [method] on a real [ItemMarkDao].
@@ -20,6 +21,27 @@ Future<Object?> dispatchItemMarkDao(
         decodeInt(args['unit']),
       );
       return null;
+
+    case 'getAllMarks':
+      final List<MarkedUnit> value = await dao.getAllMarks();
+      return value
+          .map(
+            (MarkedUnit e) => <String, Object?>{
+              'mark': <String, Object?>{
+                'id': encodeInt(e.mark.id),
+                'itemId': encodeInt(e.mark.itemId),
+                'unitType': e.mark.unitType,
+                'parentNumber': encodeInt(e.mark.parentNumber),
+                'unitNumber': encodeInt(e.mark.unitNumber),
+                'isFavorite': e.mark.isFavorite,
+                'updatedAt': encodeDateTime(e.mark.updatedAt),
+                'userComment': e.mark.userComment,
+                'likedAt': encodeDateTimeOrNull(e.mark.likedAt),
+              },
+              'unitTitle': e.unitTitle,
+            },
+          )
+          .toList();
 
     case 'getMarksForItem':
       final List<ItemMark> value = await dao.getMarksForItem(

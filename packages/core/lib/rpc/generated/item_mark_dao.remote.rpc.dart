@@ -3,6 +3,7 @@
 
 import 'package:core/database/dao/item_mark_dao.dart';
 import 'package:core/models/item_mark.dart';
+import 'package:core/models/marked_unit.dart';
 import 'package:core/rpc/rpc_codec.dart';
 import 'package:core/rpc/rpc_transport.dart';
 
@@ -26,6 +27,42 @@ class RemoteItemMarkDao implements ItemMarkDao {
       'unit': encodeInt(unit),
     });
     return;
+  }
+
+  @override
+  Future<List<MarkedUnit>> getAllMarks() async {
+    final Object? result = await _transport.call(
+      'ItemMarkDao',
+      'getAllMarks',
+      <String, Object?>{},
+    );
+    return asList(result)
+        .map(
+          (Object? e) => MarkedUnit(
+            mark: ItemMark(
+              id: decodeInt(asObject(asObject(e)['mark'])['id']),
+              itemId: decodeInt(asObject(asObject(e)['mark'])['itemId']),
+              unitType: asObject(asObject(e)['mark'])['unitType'] as String,
+              parentNumber: decodeInt(
+                asObject(asObject(e)['mark'])['parentNumber'],
+              ),
+              unitNumber: decodeInt(
+                asObject(asObject(e)['mark'])['unitNumber'],
+              ),
+              isFavorite: asObject(asObject(e)['mark'])['isFavorite'] as bool,
+              updatedAt: decodeDateTime(
+                asObject(asObject(e)['mark'])['updatedAt'],
+              ),
+              userComment:
+                  asObject(asObject(e)['mark'])['userComment'] as String?,
+              likedAt: decodeDateTimeOrNull(
+                asObject(asObject(e)['mark'])['likedAt'],
+              ),
+            ),
+            unitTitle: asObject(e)['unitTitle'] as String?,
+          ),
+        )
+        .toList();
   }
 
   @override

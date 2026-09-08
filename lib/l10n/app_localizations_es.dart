@@ -5312,7 +5312,50 @@ class SEs extends S {
   String get screenScraperMediaMix => 'Mix';
 
   @override
-  String get genreCloudTitle => 'Personalización';
+  String get genreCloudTitle => 'Nube de géneros';
+
+  @override
+  String get personalizationTitle => 'Personalización';
+
+  @override
+  String get personalizationStatsHint => 'Tu biblioteca en cifras';
+
+  @override
+  String get personalizationRecommendationsHint =>
+      'Según lo que terminaste y valoraste';
+
+  @override
+  String get likesTitle => 'Me gusta y notas';
+
+  @override
+  String get personalizationLikesHint =>
+      'Episodios, capítulos y pistas que marcaste';
+
+  @override
+  String get likesEmptyTitle => 'Aún no hay nada marcado';
+
+  @override
+  String get likesEmptyBody =>
+      'Marca un episodio con me gusta o deja una nota en el rastreador de un título y aparecerá aquí.';
+
+  @override
+  String get likesNoMatches => 'Nada coincide con el filtro';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return 'Pista $track · Disco $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marcas',
+      one: '1 marca',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => 'Aún no hay géneros';
@@ -5346,9 +5389,6 @@ class SEs extends S {
 
   @override
   String get facetDecade => 'Décadas';
-
-  @override
-  String get personalizationTabCloud => 'Nube de géneros';
 
   @override
   String get recommendationsEmpty => 'Aún no hay recomendaciones';

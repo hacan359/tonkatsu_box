@@ -5330,7 +5330,50 @@ class SFr extends S {
   String get screenScraperMediaMix => 'Mix';
 
   @override
-  String get genreCloudTitle => 'Personnalisation';
+  String get genreCloudTitle => 'Nuage de genres';
+
+  @override
+  String get personalizationTitle => 'Personnalisation';
+
+  @override
+  String get personalizationStatsHint => 'Votre bibliothèque en chiffres';
+
+  @override
+  String get personalizationRecommendationsHint =>
+      'D\'après ce que vous avez terminé et noté';
+
+  @override
+  String get likesTitle => 'Favoris et notes';
+
+  @override
+  String get personalizationLikesHint =>
+      'Épisodes, chapitres et pistes que vous avez marqués';
+
+  @override
+  String get likesEmptyTitle => 'Rien de marqué pour l\'instant';
+
+  @override
+  String get likesEmptyBody =>
+      'Aimez un épisode ou laissez une note dans le suivi d\'un titre, et ils apparaîtront ici.';
+
+  @override
+  String get likesNoMatches => 'Rien ne correspond au filtre';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return 'Piste $track · Disque $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marques',
+      one: '1 marque',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => 'Aucun genre pour l\'instant';
@@ -5364,9 +5407,6 @@ class SFr extends S {
 
   @override
   String get facetDecade => 'Décennies';
-
-  @override
-  String get personalizationTabCloud => 'Cloud';
 
   @override
   String get recommendationsEmpty => 'Aucune recommandation pour l\'instant';

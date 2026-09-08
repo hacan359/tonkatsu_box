@@ -1,5 +1,7 @@
-import '../../models/item_mark.dart';
 import 'package:sqflite_common/sqlite_api.dart';
+
+import '../../models/item_mark.dart';
+import '../../models/marked_unit.dart';
 
 /// Writes read-modify-write inside a transaction, then `INSERT OR REPLACE` or
 /// delete once the mark is empty, so the table never accumulates blank rows.
@@ -45,6 +47,36 @@ class ItemMarkDao {
       result.addAll(rows.map(ItemMark.fromDb));
     }
     return result;
+  }
+
+  /// Every mark in the library that still says something (liked or noted),
+  /// newest first, with the unit's cached name joined in. Marks whose item is
+  /// gone are already cascaded away, so no orphan filtering is needed here.
+  Future<List<MarkedUnit>> getAllMarks() async {
+    final Database db = await _getDatabase();
+    // One LEFT JOIN per cache that knows unit names; a mark on a unit type
+    // without a cache (chapter, part, custom) simply gets NULL.
+    final List<Map<String, dynamic>> rows = await db.rawQuery('''
+      SELECT im.*, COALESCE(ep.name, tr.title) AS unit_title
+      FROM item_marks im
+      JOIN collection_items ci ON ci.id = im.item_id
+      LEFT JOIN tv_episodes_cache ep
+        ON im.unit_type = ?
+       AND ep.source = COALESCE(ci.source, 'tmdb')
+       AND ep.tmdb_show_id = ci.external_id
+       AND ep.season_number = im.parent_number
+       AND ep.episode_number = im.unit_number
+      LEFT JOIN audio_tracks_cache tr
+        ON im.unit_type = ?
+       AND tr.source = ci.source
+       AND tr.audio_id = ci.external_id
+       AND tr.disc_number = im.parent_number
+       AND tr.position = im.unit_number
+      WHERE im.is_favorite = 1
+         OR (im.user_comment IS NOT NULL AND TRIM(im.user_comment) <> '')
+      ORDER BY COALESCE(im.liked_at, im.updated_at) DESC, im.id DESC
+    ''', <Object?>[kUnitEpisode, kUnitTrack]);
+    return rows.map(MarkedUnit.fromDb).toList();
   }
 
   /// Sets (or clears) the like flag on a unit, merging with any existing note.
