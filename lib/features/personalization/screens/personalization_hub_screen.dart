@@ -6,10 +6,12 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../likes/screens/likes_screen.dart';
 import '../../recommendations/screens/recommendations_screen.dart';
+import '../../showcase/screens/showcase_screen.dart';
 import '../../statistics/screens/statistics_screen.dart';
 import '../widgets/hub_likes_preview.dart';
 import '../widgets/hub_recommendations_preview.dart';
 import '../widgets/hub_section_card.dart';
+import '../widgets/hub_showcase_preview.dart';
 import '../widgets/hub_stats_preview.dart';
 import '../widgets/personalization_sub_screen.dart';
 
@@ -66,6 +68,18 @@ class PersonalizationHubScreen extends StatelessWidget {
                   context,
                   title: l.recommendationsTitle,
                   child: const RecommendationsScreen(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              HubSectionCard(
+                icon: Icons.storefront_outlined,
+                title: l.showcaseTitle,
+                hint: l.showcaseHint,
+                preview: const HubShowcasePreview(),
+                onTap: () => pushPersonalizationSection(
+                  context,
+                  title: l.showcaseTitle,
+                  child: const ShowcaseScreen(),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),

@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:core/models/audio_item.dart';
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
-import 'package:core/models/movie.dart';
 import 'package:core/models/platform.dart';
-import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,15 +19,11 @@ import '../../collections/screens/item_detail_screen.dart';
 import '../handlers/media_handlers.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
-import '../providers/discover_provider.dart';
 import '../sources/search_sources.dart';
 import '../widgets/browse_grid.dart';
-import '../widgets/audio_discover_feed.dart';
 import '../widgets/browse_sections.dart';
 import '../widgets/browse_sections_compact.dart';
 import '../widgets/collection_chips_row.dart';
-import '../widgets/discover_customize_sheet.dart';
-import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/source_chips_row.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -260,22 +253,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  void _showDiscoverCustomizeSheet() {
-    final Size screenSize = MediaQuery.sizeOf(context);
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      constraints: BoxConstraints(
-        maxWidth: screenSize.width,
-        maxHeight: screenSize.height * 0.85,
-      ),
-      builder: (BuildContext _) => DiscoverCustomizeSheet(
-        mediaType: ref.read(browseProvider).mediaType,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final BrowseState browseState = ref.watch(browseProvider);
@@ -286,10 +263,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     final Widget body = Column(
       children: <Widget>[
-        FilterBar(
-          onBeforeFilterChange: _syncSearchText,
-          onDiscoverCustomize: _showDiscoverCustomizeSheet,
-        ),
+        FilterBar(onBeforeFilterChange: _syncSearchText),
         if (!isCompactScreen(context)) const SourceChipsRow(),
         const CollectionChipsRow(),
         const SizedBox(height: AppSpacing.xs),
@@ -301,31 +275,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _buildContent(BrowseState browseState) {
-    if (!browseState.hasActiveQuery) {
-      if (browseState.mediaType == MediaType.audio) {
-        return AudioDiscoverFeed(
-          onItemTap: (AudioItem album) =>
-              _handlers.onTap(context, album, MediaType.audio),
-        );
-      }
-      if (discoverMediaTypes.contains(browseState.mediaType)) {
-        final MediaType outputMediaType = browseState.mediaType;
-        return DiscoverFeed(
-          mediaType: outputMediaType,
-          onAddMovie: (Movie movie) => _handlers.addToAnyCollection(
-            context,
-            movie,
-            outputMediaType,
-          ),
-          onAddTvShow: (TvShow tvShow) => _handlers.addToAnyCollection(
-            context,
-            tvShow,
-            outputMediaType,
-          ),
-        );
-      }
-      return _buildEmptyFilterState();
-    }
+    if (!browseState.hasActiveQuery) return _buildEmptyFilterState();
 
     // One provider answering means one honest order, so the flat grid stays.
     // Several answer per source instead — see the ADR in the layout widgets.

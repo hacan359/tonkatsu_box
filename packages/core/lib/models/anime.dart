@@ -87,6 +87,8 @@ class Anime {
     }
 
     final int id = json['id'] as int;
+    final Map<String, dynamic>? nextAiring =
+        json['nextAiringEpisode'] as Map<String, dynamic>?;
 
     return Anime(
       id: id,
@@ -109,9 +111,8 @@ class Anime {
       tags: tags,
       studios: studios,
       bannerUrl: json['bannerImage'] as String?,
-      nextAiringEpisode:
-          (json['nextAiringEpisode'] as Map<String, dynamic>?)?['episode']
-              as int?,
+      nextAiringEpisode: nextAiring?['episode'] as int?,
+      nextAiringAt: nextAiring?['airingAt'] as int?,
       externalUrl: 'https://anilist.co/anime/$id',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );

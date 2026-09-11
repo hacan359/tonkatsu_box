@@ -140,7 +140,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       format
       source
       studios(isMain: true) { nodes { name } }
-      nextAiringEpisode { episode }
+      nextAiringEpisode { episode airingAt }
 ''';
 
   static const String animeSearch = '''
@@ -148,6 +148,7 @@ query (\$page: Int, \$perPage: Int, \$search: String, \$genres: [String],
        \$tags: [String],
        \$status: MediaStatus, \$format: MediaFormat,
        \$startDateGreater: FuzzyDateInt, \$startDateLesser: FuzzyDateInt,
+       \$season: MediaSeason, \$seasonYear: Int,
        \$sort: [MediaSort]) {
   Page(page: \$page, perPage: \$perPage) {
     pageInfo {
@@ -161,6 +162,7 @@ query (\$page: Int, \$perPage: Int, \$search: String, \$genres: [String],
           status: \$status, format: \$format,
           startDate_greater: \$startDateGreater,
           startDate_lesser: \$startDateLesser,
+          season: \$season, seasonYear: \$seasonYear,
           sort: \$sort) {
 $_animeMediaFields
     }
@@ -222,7 +224,7 @@ query ($id: Int) {
     format
     source
     studios(isMain: true) { nodes { name } }
-    nextAiringEpisode { episode }
+    nextAiringEpisode { episode airingAt }
   }
 }
 ''';
@@ -247,7 +249,7 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
       format
       source
       studios(isMain: true) { nodes { name } }
-      nextAiringEpisode { episode }
+      nextAiringEpisode { episode airingAt }
     }
   }
 }
@@ -301,7 +303,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       format
       source
       studios(isMain: true) { nodes { name } }
-      nextAiringEpisode { episode }
+      nextAiringEpisode { episode airingAt }
     }
   }
 }
@@ -326,7 +328,7 @@ duration
 format
 source
 studios(isMain: true) { nodes { name } }
-nextAiringEpisode { episode }
+nextAiringEpisode { episode airingAt }
 ''';
 
   static const String _mangaRecommendationFields = '''
@@ -411,7 +413,7 @@ query ($userName: String) {
           format
           source
           studios(isMain: true) { nodes { name } }
-          nextAiringEpisode { episode }
+          nextAiringEpisode { episode airingAt }
         }
       }
     }

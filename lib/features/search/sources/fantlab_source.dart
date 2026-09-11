@@ -75,6 +75,4 @@ class FantlabSource extends SearchSource {
     );
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

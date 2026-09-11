@@ -9,6 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/widgets/genre_chip.dart';
 import '../providers/recommendations_provider.dart';
 import '../utils/recommendation_cover.dart';
 
@@ -115,7 +116,7 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                     runSpacing: AppSpacing.xs,
                     children: <Widget>[
                       for (final String genre in widget.genres)
-                        _GenreChip(genre),
+                        GenreChip(genre),
                     ],
                   ),
                 ],
@@ -200,30 +201,6 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
 }
 
 /// A pill chip for one of a row's rationale genres.
-class _GenreChip extends StatelessWidget {
-  const _GenreChip(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: 3,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
-      ),
-    );
-  }
-}
-
 /// Centered placeholder for the empty / no-candidates states.
 class RecommendationsEmptyState extends StatelessWidget {
   /// Creates an empty-state panel.

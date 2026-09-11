@@ -442,4 +442,30 @@ class IgdbGamesApi {
       throw _client.handleDioException(e, 'Failed to browse games');
     }
   }
+
+  /// Releases due within [days]. `hype > 0` drops the long tail of unknown
+  /// titles that would otherwise fill the list with coverless entries.
+  Future<List<Game>> getUpcomingGames({
+    int days = 90,
+    int limit = 20,
+    DateTime? now,
+  }) async {
+    _client.ensureCredentials();
+
+    final DateTime from = now ?? DateTime.now();
+    final int start = from.millisecondsSinceEpoch ~/ 1000;
+    final int end = from.add(Duration(days: days)).millisecondsSinceEpoch ~/ 1000;
+    // `hypes` is IGDB's pre-release follower count. Most-anticipated first:
+    // by date the window opens with the hundreds of one-follower indies.
+    final String body = '$_gameFields'
+        ' where first_release_date >= $start & first_release_date < $end'
+        ' & hypes > 0;'
+        ' sort hypes desc;'
+        ' limit $limit;';
+    try {
+      return await _postGames(body, 'Failed to fetch upcoming games');
+    } on DioException catch (e) {
+      throw _client.handleDioException(e, 'Failed to fetch upcoming games');
+    }
+  }
 }

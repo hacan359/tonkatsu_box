@@ -2516,9 +2516,6 @@ class SRu extends S {
   String get musicDiscoverFreshReleases => 'Новые релизы';
 
   @override
-  String get musicDiscoverUnavailable => 'Discover недоступен';
-
-  @override
   String get musicSearchArtist => 'Исполнитель';
 
   @override
@@ -3570,45 +3567,6 @@ class SRu extends S {
   String vgmapsFailedInit(String error) {
     return 'Не удалось инициализировать WebView: $error';
   }
-
-  @override
-  String get discoverTitle => 'Подборки';
-
-  @override
-  String get discoverCustomize => 'Настроить';
-
-  @override
-  String get discoverTrending => 'Тренды недели';
-
-  @override
-  String get discoverTopRatedMovies => 'Лучшие фильмы';
-
-  @override
-  String get discoverTopRatedTvShows => 'Лучшие сериалы';
-
-  @override
-  String get discoverPopularTvShows => 'Популярные сериалы';
-
-  @override
-  String get discoverUpcoming => 'Скоро в кино';
-
-  @override
-  String get discoverCustomizeTitle => 'Настроить подборки';
-
-  @override
-  String get discoverCustomizeHint => 'Выберите какие секции показывать';
-
-  @override
-  String get discoverResetDefault => 'По умолчанию';
-
-  @override
-  String get discoverAlreadyInCollection => 'Уже в коллекции';
-
-  @override
-  String get discoverShowWithBadge => 'Показывать с отметкой';
-
-  @override
-  String get discoverHideCompletely => 'Скрывать';
 
   @override
   String get recommendationsTitle => 'Рекомендации';
@@ -5336,6 +5294,138 @@ class SRu extends S {
   String get genreCloudTitle => 'Облако жанров';
 
   @override
+  String get showcaseTitle => 'Витрина';
+
+  @override
+  String get showcaseHint => 'Что выходит сейчас и что смотрят';
+
+  @override
+  String get showcaseGroupAiring => 'Сейчас выходит';
+
+  @override
+  String get showcaseGroupPopular => 'Популярное';
+
+  @override
+  String get showcaseAnimeThisSeason => 'Аниме этого сезона';
+
+  @override
+  String get showcaseAnimeNextSeason => 'Аниме следующего сезона';
+
+  @override
+  String get showcaseNowPlaying => 'Сейчас в кино';
+
+  @override
+  String get showcaseUpcomingMovies => 'Скоро в кино';
+
+  @override
+  String get showcaseTvEpisodesThisWeek => 'Новые серии на неделе';
+
+  @override
+  String get showcaseUpcomingGames => 'Ближайшие релизы игр';
+
+  @override
+  String get showcaseTrendingMovies => 'Фильмы в тренде';
+
+  @override
+  String get showcaseTrendingTvShows => 'Сериалы в тренде';
+
+  @override
+  String get showcasePopularAnime => 'Популярное аниме';
+
+  @override
+  String get showcaseSettingsTitle => 'Настроить витрину';
+
+  @override
+  String get showcaseSettingsHint => 'Выберите, какие ряды показывать';
+
+  @override
+  String get showcaseResetDefault => 'По умолчанию';
+
+  @override
+  String get showcaseAlreadyInCollection => 'Уже в коллекции';
+
+  @override
+  String get showcaseShowWithBadge => 'Показывать с отметкой';
+
+  @override
+  String get showcaseHideCompletely => 'Скрывать';
+
+  @override
+  String get showcaseRowError => 'Не удалось загрузить ряд';
+
+  @override
+  String showcaseRetryIn(int seconds) {
+    return 'Лимит запросов, повтор через $seconds с';
+  }
+
+  @override
+  String get showcaseAllRowsHidden =>
+      'Все ряды скрыты. Включите нужные в настройках витрины.';
+
+  @override
+  String showcaseEpisodeShort(int number) {
+    return 'Серия $number';
+  }
+
+  @override
+  String showcaseSeasonEpisodeShort(int season, int episode) {
+    return 'S${season}E$episode';
+  }
+
+  @override
+  String showcaseCountdownIn(String countdown) {
+    return 'через $countdown';
+  }
+
+  @override
+  String showcaseCountdownDaysHours(int days, int hours) {
+    return '$daysд $hoursч';
+  }
+
+  @override
+  String showcaseCountdownHoursMinutes(int hours, int minutes) {
+    return '$hoursч $minutesм';
+  }
+
+  @override
+  String showcaseCountdownMinutes(int minutes) {
+    return '$minutesм';
+  }
+
+  @override
+  String showcaseCountdownDays(int days) {
+    return '$daysд';
+  }
+
+  @override
+  String get showcaseOutNow => 'Уже вышло';
+
+  @override
+  String get showcasePremiere => 'Премьера';
+
+  @override
+  String get showcaseRelease => 'Релиз';
+
+  @override
+  String showcaseEpisodesCount(int count) {
+    return '$count сер.';
+  }
+
+  @override
+  String get showcaseViewList => 'Список';
+
+  @override
+  String get showcaseViewByDay => 'По дням';
+
+  @override
+  String get showcaseDateTba => 'Дата не объявлена';
+
+  @override
+  String showcaseShowAll(int count) {
+    return 'Показать все ($count)';
+  }
+
+  @override
   String get personalizationTitle => 'Персонализация';
 
   @override
@@ -5917,9 +6007,6 @@ class SRu extends S {
   String podcastEpisodesCount(int count) {
     return '$count эпизодов';
   }
-
-  @override
-  String get podcastDiscoverTrending => 'Популярные подкасты';
 
   @override
   String get credentialsPodcastIndexSection => 'Podcast Index API';

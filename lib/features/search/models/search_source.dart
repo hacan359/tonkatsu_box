@@ -195,8 +195,6 @@ abstract class SearchSource {
     required int page,
   });
 
-  /// Discover feed widget for the no-filters mode. Return null to opt out.
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref);
 
   List<BrowseSortOption> get sortOptions;
 

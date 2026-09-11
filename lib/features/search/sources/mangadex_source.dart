@@ -119,6 +119,4 @@ class MangaDexSource extends SearchSource {
     'followedCount': 'desc',
   };
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

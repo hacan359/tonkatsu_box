@@ -143,11 +143,6 @@ class TmdbMoviesSource extends SearchSource {
     );
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) {
-    // null falls back to the shared Discover feed widget.
-    return null;
-  }
 }
 
 List<int>? _readGenreIds(Object? value) {

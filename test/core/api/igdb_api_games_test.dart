@@ -903,4 +903,38 @@ void main() {
       expect(bodies, hasLength(1));
     });
   });
+
+  group('getUpcomingGames', () {
+    test('asks for hyped titles inside the window, most anticipated first',
+        () async {
+      String? capturedData;
+      when(() => mockDio.post<dynamic>(
+            any(),
+            options: any(named: 'options'),
+            data: any(named: 'data'),
+          )).thenAnswer((Invocation invocation) async {
+        capturedData =
+            invocation.namedArguments[const Symbol('data')] as String?;
+        return Response<dynamic>(
+          data: <dynamic>[],
+          statusCode: 200,
+          requestOptions: RequestOptions(),
+        );
+      });
+
+      final List<Game> result = await api.getUpcomingGames(days: 30, limit: 5);
+
+      expect(result, isEmpty);
+      expect(capturedData, contains('first_release_date >='));
+      expect(capturedData, contains('first_release_date <'));
+      expect(capturedData, contains('hypes > 0'));
+      expect(capturedData, contains('sort hypes desc'));
+      expect(capturedData, contains('limit 5'));
+    });
+
+    test('throws without credentials', () async {
+      final IgdbApi bare = IgdbApi(dio: mockDio);
+      expect(bare.getUpcomingGames(), throwsA(isA<IgdbApiException>()));
+    });
+  });
 }

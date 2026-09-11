@@ -136,6 +136,4 @@ class MusicBrainzAlbumsSource extends SearchSource {
         _ => (null, null),
       };
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

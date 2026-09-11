@@ -2508,9 +2508,6 @@ class SFr extends S {
   String get musicDiscoverFreshReleases => 'Nouvelles sorties';
 
   @override
-  String get musicDiscoverUnavailable => 'Discover indisponible';
-
-  @override
   String get musicSearchArtist => 'Artiste';
 
   @override
@@ -3564,45 +3561,6 @@ class SFr extends S {
   String vgmapsFailedInit(String error) {
     return 'Impossible de démarrer WebView : $error';
   }
-
-  @override
-  String get discoverTitle => 'Découvrir';
-
-  @override
-  String get discoverCustomize => 'Personnaliser';
-
-  @override
-  String get discoverTrending => 'Populaire cette semaine';
-
-  @override
-  String get discoverTopRatedMovies => 'Films les mieux notés';
-
-  @override
-  String get discoverTopRatedTvShows => 'Séries les mieux notées';
-
-  @override
-  String get discoverPopularTvShows => 'Séries populaires';
-
-  @override
-  String get discoverUpcoming => 'À venir';
-
-  @override
-  String get discoverCustomizeTitle => 'Personnaliser Découvrir';
-
-  @override
-  String get discoverCustomizeHint => 'Choisissez quelles sections montrer';
-
-  @override
-  String get discoverResetDefault => 'Réinitialiser l\'affichage';
-
-  @override
-  String get discoverAlreadyInCollection => 'Déjà dans la collection';
-
-  @override
-  String get discoverShowWithBadge => 'Montrer avec un badge';
-
-  @override
-  String get discoverHideCompletely => 'Cacher totalement';
 
   @override
   String get recommendationsTitle => 'Recommandations';
@@ -5333,6 +5291,138 @@ class SFr extends S {
   String get genreCloudTitle => 'Nuage de genres';
 
   @override
+  String get showcaseTitle => 'Vitrine';
+
+  @override
+  String get showcaseHint => 'Ce qui sort maintenant et ce que l\'on regarde';
+
+  @override
+  String get showcaseGroupAiring => 'En ce moment';
+
+  @override
+  String get showcaseGroupPopular => 'Populaire';
+
+  @override
+  String get showcaseAnimeThisSeason => 'Anime de la saison';
+
+  @override
+  String get showcaseAnimeNextSeason => 'Anime de la saison prochaine';
+
+  @override
+  String get showcaseNowPlaying => 'Au cinéma en ce moment';
+
+  @override
+  String get showcaseUpcomingMovies => 'Bientôt au cinéma';
+
+  @override
+  String get showcaseTvEpisodesThisWeek => 'Nouveaux épisodes cette semaine';
+
+  @override
+  String get showcaseUpcomingGames => 'Sorties de jeux à venir';
+
+  @override
+  String get showcaseTrendingMovies => 'Films tendance';
+
+  @override
+  String get showcaseTrendingTvShows => 'Séries tendance';
+
+  @override
+  String get showcasePopularAnime => 'Anime populaire';
+
+  @override
+  String get showcaseSettingsTitle => 'Personnaliser la vitrine';
+
+  @override
+  String get showcaseSettingsHint => 'Choisissez les rangées à afficher';
+
+  @override
+  String get showcaseResetDefault => 'Par défaut';
+
+  @override
+  String get showcaseAlreadyInCollection => 'Déjà dans la collection';
+
+  @override
+  String get showcaseShowWithBadge => 'Afficher avec un badge';
+
+  @override
+  String get showcaseHideCompletely => 'Masquer';
+
+  @override
+  String get showcaseRowError => 'Impossible de charger cette rangée';
+
+  @override
+  String showcaseRetryIn(int seconds) {
+    return 'Limite atteinte, réessai dans $seconds s';
+  }
+
+  @override
+  String get showcaseAllRowsHidden =>
+      'Toutes les rangées sont masquées. Activez-en dans les réglages de la vitrine.';
+
+  @override
+  String showcaseEpisodeShort(int number) {
+    return 'Ép. $number';
+  }
+
+  @override
+  String showcaseSeasonEpisodeShort(int season, int episode) {
+    return 'S${season}E$episode';
+  }
+
+  @override
+  String showcaseCountdownIn(String countdown) {
+    return 'dans $countdown';
+  }
+
+  @override
+  String showcaseCountdownDaysHours(int days, int hours) {
+    return '${days}j ${hours}h';
+  }
+
+  @override
+  String showcaseCountdownHoursMinutes(int hours, int minutes) {
+    return '${hours}h ${minutes}min';
+  }
+
+  @override
+  String showcaseCountdownMinutes(int minutes) {
+    return '${minutes}min';
+  }
+
+  @override
+  String showcaseCountdownDays(int days) {
+    return '${days}j';
+  }
+
+  @override
+  String get showcaseOutNow => 'Déjà sorti';
+
+  @override
+  String get showcasePremiere => 'Première';
+
+  @override
+  String get showcaseRelease => 'Sortie';
+
+  @override
+  String showcaseEpisodesCount(int count) {
+    return '$count ép.';
+  }
+
+  @override
+  String get showcaseViewList => 'Liste';
+
+  @override
+  String get showcaseViewByDay => 'Par jour';
+
+  @override
+  String get showcaseDateTba => 'Date à venir';
+
+  @override
+  String showcaseShowAll(int count) {
+    return 'Tout afficher ($count)';
+  }
+
+  @override
   String get personalizationTitle => 'Personnalisation';
 
   @override
@@ -5912,9 +6002,6 @@ class SFr extends S {
   String podcastEpisodesCount(int count) {
     return '$count épisodes';
   }
-
-  @override
-  String get podcastDiscoverTrending => 'Podcasts tendance';
 
   @override
   String get credentialsPodcastIndexSection => 'API Podcast Index';

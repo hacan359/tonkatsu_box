@@ -226,7 +226,7 @@ void main() {
       expect(tester.widget<TextField>(searchField).enabled, isFalse);
 
       // The likes page is the one hub section that searches.
-      await tester.tap(find.byType(HubSectionCard).at(2));
+      await tester.tap(find.byType(HubSectionCard).at(3));
       await tester.pumpAndSettle();
       expect(tester.widget<TextField>(searchField).enabled, isTrue);
 

@@ -79,6 +79,4 @@ class HardcoverSource extends SearchSource {
     );
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

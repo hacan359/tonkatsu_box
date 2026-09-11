@@ -539,6 +539,49 @@ void main() {
         expect(variables['search'], 'bebop');
       });
 
+      test('passes season and seasonYear through to the query', () async {
+        Map<String, dynamic>? capturedData;
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedData = inv.namedArguments[const Symbol('data')]
+              as Map<String, dynamic>?;
+          return makeResponse(
+            animePageResponse(media: <Map<String, dynamic>>[]),
+          );
+        });
+
+        await api.browseAnime(season: 'FALL', seasonYear: 2026);
+
+        final Map<String, dynamic> variables =
+            capturedData!['variables'] as Map<String, dynamic>;
+        expect(variables['season'], 'FALL');
+        expect(variables['seasonYear'], 2026);
+        expect(capturedData!['query'], contains('season: \$season'));
+      });
+
+      test('omits season variables when not given', () async {
+        Map<String, dynamic>? capturedData;
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedData = inv.namedArguments[const Symbol('data')]
+              as Map<String, dynamic>?;
+          return makeResponse(
+            animePageResponse(media: <Map<String, dynamic>>[]),
+          );
+        });
+
+        await api.browseAnime();
+
+        final Map<String, dynamic> variables =
+            capturedData!['variables'] as Map<String, dynamic>;
+        expect(variables.containsKey('season'), isFalse);
+        expect(variables.containsKey('seasonYear'), isFalse);
+      });
+
       test('должен передать genre и status в переменные', () async {
         Map<String, dynamic>? capturedData;
         when(() => mockDio.post<dynamic>(

@@ -310,9 +310,9 @@ void main() {
         );
       });
 
-      test('должен выбросить исключение для getPopularTvShows без ключа', () {
+      test('должен выбросить исключение для getTopRatedTvShows без ключа', () {
         expect(
-          () => sut.getPopularTvShows(),
+          () => sut.getTopRatedTvShows(),
           throwsA(isA<TmdbApiException>().having(
             (TmdbApiException e) => e.message,
             'message',
@@ -1351,94 +1351,6 @@ void main() {
       });
     });
 
-    group('getPopularTvShows', () {
-      setUp(() {
-        sut.setApiKey(testApiKey);
-      });
-
-      test('should return список популярных сериалов', () async {
-        final Map<String, dynamic> tvShow1 = createTvShowJson();
-        final Map<String, dynamic> tvShow2 = createTvShowJson(
-          id: 1399,
-          name: 'Игра престолов',
-        );
-
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[tvShow1, tvShow2],
-                'total_results': 2,
-                'total_pages': 1,
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        final List<TvShow> result = await sut.getPopularTvShows();
-
-        expect(result, hasLength(2));
-        expect(result[0].tmdbId, equals(1396));
-        expect(result[1].tmdbId, equals(1399));
-      });
-
-      test('should return пустой список when empty результатах', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        final List<TvShow> result = await sut.getPopularTvShows();
-
-        expect(result, isEmpty);
-      });
-
-      test('должен выбросить TmdbApiException при DioException', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenThrow(DioException(
-          response: Response<dynamic>(
-            statusCode: 429,
-            requestOptions: RequestOptions(),
-          ),
-          requestOptions: RequestOptions(),
-        ));
-
-        expect(
-          () => sut.getPopularTvShows(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'Rate limit exceeded. Please try again later',
-          )),
-        );
-      });
-
-      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: null,
-              statusCode: 503,
-              requestOptions: RequestOptions(),
-            ));
-
-        expect(
-          () => sut.getPopularTvShows(),
-          throwsA(isA<TmdbApiException>()),
-        );
-      });
-    });
-
     group('multiSearch', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -1848,7 +1760,7 @@ void main() {
         ));
 
         expect(
-          () => sut.getPopularTvShows(),
+          () => sut.getTopRatedTvShows(),
           throwsA(isA<TmdbApiException>().having(
             (TmdbApiException e) => e.message,
             'message',
@@ -2890,238 +2802,165 @@ void main() {
       });
     });
 
-    group('getUpcomingMovies', () {
+    group('getNextEpisodeToAir', () {
       setUp(() {
         sut.setApiKey(testApiKey);
       });
 
-      test('should return список предстоящих фильмов', () async {
-        final Map<String, dynamic> movie1 = createMovieJson();
-
+      Future<void> answerDetails(Map<String, dynamic> data) async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[movie1],
-              },
+              data: data,
               statusCode: 200,
               requestOptions: RequestOptions(),
             ));
+      }
 
-        final List<Movie> result = await sut.getUpcomingMovies();
+      test('reads season, episode and air date', () async {
+        await answerDetails(<String, dynamic>{
+          'id': 1396,
+          'next_episode_to_air': <String, dynamic>{
+            'air_date': '2026-09-16',
+            'season_number': 4,
+            'episode_number': 8,
+          },
+        });
 
-        expect(result, hasLength(1));
-        expect(result[0].tmdbId, equals(550));
+        final TmdbNextEpisode? next = await sut.getNextEpisodeToAir(1396);
+
+        expect(next, isNotNull);
+        expect(next?.season, 4);
+        expect(next?.episode, 8);
+        expect(next?.airDate, '2026-09-16');
       });
 
-      test('should call правильный URL', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
+      test('null when nothing is scheduled or the date is empty', () async {
+        await answerDetails(<String, dynamic>{'id': 1, 'next_episode_to_air': null});
+        expect(await sut.getNextEpisodeToAir(1), isNull);
 
-        await sut.getUpcomingMovies();
-
-        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
-              captureAny(),
-              queryParameters: any(named: 'queryParameters'),
-            ));
-        verification.called(1);
-
-        final String url = verification.captured.first as String;
-        expect(url, contains('/movie/upcoming'));
+        await answerDetails(<String, dynamic>{
+          'id': 1,
+          'next_episode_to_air': <String, dynamic>{
+            'air_date': '',
+            'season_number': 1,
+            'episode_number': 2,
+          },
+        });
+        expect(await sut.getNextEpisodeToAir(1), isNull);
       });
 
-      test('should return пустой список when empty результатах', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        final List<Movie> result = await sut.getUpcomingMovies();
-
-        expect(result, isEmpty);
-      });
-
-      test('должен выбросить TmdbApiException если ключ не установлен', () {
-        sut.clearApiKey();
-
-        expect(
-          () => sut.getUpcomingMovies(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'API key not set',
-          )),
-        );
-      });
-
-      test('должен выбросить TmdbApiException при DioException', () async {
+      test('null on 404', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
             )).thenThrow(DioException(
+          requestOptions: RequestOptions(),
           response: Response<dynamic>(
-            statusCode: 401,
+            statusCode: 404,
             requestOptions: RequestOptions(),
           ),
-          requestOptions: RequestOptions(),
         ));
 
-        expect(
-          () => sut.getUpcomingMovies(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'Invalid API key',
-          )),
-        );
-      });
-
-      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: null,
-              statusCode: 500,
-              requestOptions: RequestOptions(),
-            ));
-
-        expect(
-          () => sut.getUpcomingMovies(),
-          throwsA(isA<TmdbApiException>()),
-        );
+        expect(await sut.getNextEpisodeToAir(1), isNull);
       });
     });
 
-    group('getNowPlayingMovies', () {
+    group('discoverTvShows air date window', () {
       setUp(() {
         sut.setApiKey(testApiKey);
       });
 
-      test('should return список фильмов в прокате', () async {
-        final Map<String, dynamic> movie1 = createMovieJson();
-
+      test('passes air_date bounds and excluded genres', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[movie1],
-              },
+              data: <String, dynamic>{'results': <Map<String, dynamic>>[]},
               statusCode: 200,
               requestOptions: RequestOptions(),
             ));
 
-        final List<Movie> result = await sut.getNowPlayingMovies();
+        await sut.discoverTvShows(
+          airDateGte: '2026-09-11',
+          airDateLte: '2026-09-18',
+          withoutGenreIds: <int>[10763, 10767],
+          voteCountGte: 10,
+        );
 
-        expect(result, hasLength(1));
-        expect(result[0].tmdbId, equals(550));
+        final Map<String, dynamic> params = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            )).captured.single as Map<String, dynamic>;
+        expect(params['air_date.gte'], '2026-09-11');
+        expect(params['air_date.lte'], '2026-09-18');
+        expect(params['without_genres'], '10763,10767');
+        expect(params['vote_count.gte'], 10);
+        expect(params.containsKey('first_air_date.gte'), isFalse);
+      });
+    });
+
+    group('getNowPlayingMovieReleases', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
       });
 
-      test('should call правильный URL', () async {
+      test('pairs each movie with its full release date', () async {
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => Response<dynamic>(
               data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
+                'results': <Map<String, dynamic>>[
+                  createMovieJson(id: 1, releaseDate: '2026-09-25'),
+                  createMovieJson(id: 2, releaseDate: ''),
+                  createMovieJson(id: 3, releaseDate: null),
+                ],
               },
               statusCode: 200,
               requestOptions: RequestOptions(),
             ));
 
-        await sut.getNowPlayingMovies();
+        final List<(Movie, String?)> result =
+            await sut.getNowPlayingMovieReleases(region: 'RU');
+
+        expect(result, hasLength(3));
+        expect(result[0].$1.tmdbId, 1);
+        expect(result[0].$2, '2026-09-25');
+        // TMDB's empty string is as much "no date" as a missing key.
+        expect(result[1].$2, isNull);
+        expect(result[2].$2, isNull);
+      });
+
+      test('upcoming and now playing hit their own paths with the region',
+          () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{'results': <Map<String, dynamic>>[]},
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getUpcomingMovieReleases(region: 'RU');
+        await sut.getNowPlayingMovieReleases();
 
         final VerificationResult verification = verify(() => mockDio.get<dynamic>(
               captureAny(),
-              queryParameters: any(named: 'queryParameters'),
+              queryParameters: captureAny(named: 'queryParameters'),
             ));
-        verification.called(1);
-
-        final String url = verification.captured.first as String;
-        expect(url, contains('/movie/now_playing'));
-      });
-
-      test('should return пустой список when empty результатах', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        final List<Movie> result = await sut.getNowPlayingMovies();
-
-        expect(result, isEmpty);
-      });
-
-      test('должен выбросить TmdbApiException если ключ не установлен', () {
-        sut.clearApiKey();
-
+        verification.called(2);
+        expect(verification.captured[0], endsWith('/movie/upcoming'));
         expect(
-          () => sut.getNowPlayingMovies(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'API key not set',
-          )),
+          (verification.captured[1] as Map<String, dynamic>)['region'],
+          'RU',
         );
-      });
-
-      test('должен выбросить TmdbApiException при DioException', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenThrow(DioException(
-          response: Response<dynamic>(
-            statusCode: 401,
-            requestOptions: RequestOptions(),
-          ),
-          requestOptions: RequestOptions(),
-        ));
-
+        expect(verification.captured[2], endsWith('/movie/now_playing'));
         expect(
-          () => sut.getNowPlayingMovies(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'Invalid API key',
-          )),
-        );
-      });
-
-      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: null,
-              statusCode: 500,
-              requestOptions: RequestOptions(),
-            ));
-
-        expect(
-          () => sut.getNowPlayingMovies(),
-          throwsA(isA<TmdbApiException>()),
+          (verification.captured[3] as Map<String, dynamic>).containsKey('region'),
+          isFalse,
         );
       });
     });
@@ -3244,124 +3083,6 @@ void main() {
 
         expect(
           () => sut.getTopRatedTvShows(),
-          throwsA(isA<TmdbApiException>()),
-        );
-      });
-    });
-
-    group('getOnTheAirTvShows', () {
-      setUp(() {
-        sut.setApiKey(testApiKey);
-      });
-
-      test('should return список сериалов на воздухе', () async {
-        final Map<String, dynamic> tvShow1 = createTvShowJson();
-
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[tvShow1],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        final List<TvShow> result = await sut.getOnTheAirTvShows();
-
-        expect(result, hasLength(1));
-        expect(result[0].tmdbId, equals(1396));
-      });
-
-      test('should call правильный URL', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        await sut.getOnTheAirTvShows();
-
-        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
-              captureAny(),
-              queryParameters: any(named: 'queryParameters'),
-            ));
-        verification.called(1);
-
-        final String url = verification.captured.first as String;
-        expect(url, contains('/tv/on_the_air'));
-      });
-
-      test('should return пустой список when empty результатах', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: <String, dynamic>{
-                'results': <Map<String, dynamic>>[],
-              },
-              statusCode: 200,
-              requestOptions: RequestOptions(),
-            ));
-
-        final List<TvShow> result = await sut.getOnTheAirTvShows();
-
-        expect(result, isEmpty);
-      });
-
-      test('должен выбросить TmdbApiException если ключ не установлен', () {
-        sut.clearApiKey();
-
-        expect(
-          () => sut.getOnTheAirTvShows(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'API key not set',
-          )),
-        );
-      });
-
-      test('должен выбросить TmdbApiException при DioException', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenThrow(DioException(
-          response: Response<dynamic>(
-            statusCode: 429,
-            requestOptions: RequestOptions(),
-          ),
-          requestOptions: RequestOptions(),
-        ));
-
-        expect(
-          () => sut.getOnTheAirTvShows(),
-          throwsA(isA<TmdbApiException>().having(
-            (TmdbApiException e) => e.message,
-            'message',
-            'Rate limit exceeded. Please try again later',
-          )),
-        );
-      });
-
-      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
-        when(() => mockDio.get<dynamic>(
-              any(),
-              queryParameters: any(named: 'queryParameters'),
-            )).thenAnswer((_) async => Response<dynamic>(
-              data: null,
-              statusCode: 503,
-              requestOptions: RequestOptions(),
-            ));
-
-        expect(
-          () => sut.getOnTheAirTvShows(),
           throwsA(isA<TmdbApiException>()),
         );
       });

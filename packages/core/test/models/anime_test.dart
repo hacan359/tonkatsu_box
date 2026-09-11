@@ -123,6 +123,33 @@ void main() {
         final Anime anime = Anime.fromJson(json);
         expect(anime.studios, isNull);
       });
+
+      test('reads the next episode number and its airing timestamp', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+          'nextAiringEpisode': <String, dynamic>{
+            'episode': 5,
+            'airingAt': 1789000000,
+          },
+        };
+
+        final Anime anime = Anime.fromJson(json);
+
+        expect(anime.nextAiringEpisode, 5);
+        expect(anime.nextAiringAt, 1789000000);
+        expect(anime.hasNextAiring, isTrue);
+      });
+
+      test('a missing nextAiringEpisode leaves both halves null', () {
+        final Anime anime = Anime.fromJson(<String, dynamic>{
+          'id': 1,
+          'title': <String, dynamic>{'romaji': 'X'},
+        });
+
+        expect(anime.nextAiringEpisode, isNull);
+        expect(anime.nextAiringAt, isNull);
+      });
     });
 
     group('fromDb', () {

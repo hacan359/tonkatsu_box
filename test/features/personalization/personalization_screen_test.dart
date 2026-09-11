@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/genre_cloud/providers/genre_cloud_provider.dart';
+import 'package:tonkatsu_box/features/home/providers/all_items_provider.dart';
 import 'package:tonkatsu_box/features/genre_cloud/screens/genre_cloud_screen.dart';
 import 'package:tonkatsu_box/features/likes/providers/marked_units_provider.dart';
 import 'package:tonkatsu_box/features/likes/screens/likes_screen.dart';
@@ -11,6 +12,10 @@ import 'package:tonkatsu_box/features/personalization/screens/personalization_sc
 import 'package:tonkatsu_box/features/personalization/widgets/hub_section_card.dart';
 import 'package:tonkatsu_box/features/recommendations/providers/recommendations_provider.dart';
 import 'package:tonkatsu_box/features/recommendations/screens/recommendations_screen.dart';
+import 'package:tonkatsu_box/features/showcase/models/showcase_item.dart';
+import 'package:tonkatsu_box/features/showcase/providers/showcase_rows_provider.dart';
+import 'package:tonkatsu_box/features/showcase/providers/showcase_settings_provider.dart';
+import 'package:tonkatsu_box/features/showcase/screens/showcase_screen.dart';
 import 'package:tonkatsu_box/features/statistics/providers/statistics_provider.dart';
 import 'package:tonkatsu_box/features/statistics/screens/statistics_screen.dart';
 import 'package:tonkatsu_box/shared/widgets/sub_screen_title_bar.dart';
@@ -39,6 +44,14 @@ void main() {
           collectedRecommendationIdsProvider
               .overrideWith((Ref ref) async => <String>{}),
           markedUnitsProvider.overrideWith(_EmptyMarkedUnits.new),
+          visibleAllItemsProvider.overrideWith(
+            (Ref ref) =>
+                const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]),
+          ),
+          // The showcase preview fetches its first row; keep it offline.
+          for (final ShowcaseRowId id in ShowcaseRowId.values)
+            showcaseRowProvider(id)
+                .overrideWith((Ref ref) async => const <ShowcaseItem>[]),
         ];
 
     Finder cards() => find.byType(HubSectionCard);
@@ -53,11 +66,12 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(PersonalizationHubScreen), findsOneWidget);
-      expect(cards(), findsNWidgets(3));
+      expect(cards(), findsNWidgets(4));
       // Sections are routes, not tabs: none is built until opened.
       expect(find.byType(StatisticsScreen), findsNothing);
       expect(find.byType(GenreCloudScreen), findsNothing);
       expect(find.byType(RecommendationsScreen), findsNothing);
+      expect(find.byType(ShowcaseScreen), findsNothing);
     });
 
     testWidgets('pushes statistics over the hub and pops back', (
@@ -86,7 +100,7 @@ void main() {
       expect(find.byType(PersonalizationHubScreen), findsOneWidget);
     });
 
-    testWidgets('pushes the likes page from the third card', (
+    testWidgets('pushes the showcase from the third card', (
       WidgetTester tester,
     ) async {
       await tester.pumpApp(
@@ -95,6 +109,20 @@ void main() {
       );
 
       await tester.tap(cards().at(2));
+      await tester.pumpAndSettle();
+      expect(find.byType(ShowcaseScreen), findsOneWidget);
+      expect(find.byType(StatisticsScreen), findsNothing);
+    });
+
+    testWidgets('pushes the likes page from the fourth card', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        const PersonalizationScreen(),
+        overrides: overrides(),
+      );
+
+      await tester.tap(cards().at(3));
       await tester.pumpAndSettle();
       expect(find.byType(LikesScreen), findsOneWidget);
       expect(find.byType(StatisticsScreen), findsNothing);
@@ -144,7 +172,7 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
-      expect(cards(), findsNWidgets(3));
+      expect(cards(), findsNWidgets(4));
 
       await tester.tap(cards().at(0));
       await tester.pumpAndSettle();

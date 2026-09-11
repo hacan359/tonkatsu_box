@@ -38,12 +38,5 @@ void main() {
         expect(source.defaultSort.id, 'relevance');
       });
     });
-
-    group('buildDiscoverFeed', () {
-      test('opts out (no discover feed)', () {
-        // Property check only — calling it needs a BuildContext / WidgetRef.
-        expect(source.buildDiscoverFeed, isNotNull);
-      });
-    });
   });
 }

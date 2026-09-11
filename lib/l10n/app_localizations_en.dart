@@ -2471,9 +2471,6 @@ class SEn extends S {
   String get musicDiscoverFreshReleases => 'New releases';
 
   @override
-  String get musicDiscoverUnavailable => 'Discover is unavailable';
-
-  @override
   String get musicSearchArtist => 'Artist';
 
   @override
@@ -3505,45 +3502,6 @@ class SEn extends S {
   String vgmapsFailedInit(String error) {
     return 'Failed to initialize WebView: $error';
   }
-
-  @override
-  String get discoverTitle => 'Discover';
-
-  @override
-  String get discoverCustomize => 'Customize';
-
-  @override
-  String get discoverTrending => 'Trending This Week';
-
-  @override
-  String get discoverTopRatedMovies => 'Top Rated Movies';
-
-  @override
-  String get discoverTopRatedTvShows => 'Top Rated TV Shows';
-
-  @override
-  String get discoverPopularTvShows => 'Popular TV Shows';
-
-  @override
-  String get discoverUpcoming => 'Upcoming';
-
-  @override
-  String get discoverCustomizeTitle => 'Customize Discover';
-
-  @override
-  String get discoverCustomizeHint => 'Choose which sections to show';
-
-  @override
-  String get discoverResetDefault => 'Reset to default';
-
-  @override
-  String get discoverAlreadyInCollection => 'Already in collection';
-
-  @override
-  String get discoverShowWithBadge => 'Show with badge';
-
-  @override
-  String get discoverHideCompletely => 'Hide completely';
 
   @override
   String get recommendationsTitle => 'Recommendations';
@@ -5246,6 +5204,138 @@ class SEn extends S {
   String get genreCloudTitle => 'Genre cloud';
 
   @override
+  String get showcaseTitle => 'Showcase';
+
+  @override
+  String get showcaseHint => 'What\'s out now and what people are watching';
+
+  @override
+  String get showcaseGroupAiring => 'Out now';
+
+  @override
+  String get showcaseGroupPopular => 'Popular';
+
+  @override
+  String get showcaseAnimeThisSeason => 'Anime this season';
+
+  @override
+  String get showcaseAnimeNextSeason => 'Anime next season';
+
+  @override
+  String get showcaseNowPlaying => 'In theaters now';
+
+  @override
+  String get showcaseUpcomingMovies => 'Coming to theaters';
+
+  @override
+  String get showcaseTvEpisodesThisWeek => 'New episodes this week';
+
+  @override
+  String get showcaseUpcomingGames => 'Upcoming game releases';
+
+  @override
+  String get showcaseTrendingMovies => 'Trending movies';
+
+  @override
+  String get showcaseTrendingTvShows => 'Trending TV shows';
+
+  @override
+  String get showcasePopularAnime => 'Popular anime';
+
+  @override
+  String get showcaseSettingsTitle => 'Customize showcase';
+
+  @override
+  String get showcaseSettingsHint => 'Choose which rows to show';
+
+  @override
+  String get showcaseResetDefault => 'Reset to default';
+
+  @override
+  String get showcaseAlreadyInCollection => 'Already in collection';
+
+  @override
+  String get showcaseShowWithBadge => 'Show with badge';
+
+  @override
+  String get showcaseHideCompletely => 'Hide completely';
+
+  @override
+  String get showcaseRowError => 'Couldn\'t load this row';
+
+  @override
+  String showcaseRetryIn(int seconds) {
+    return 'Rate limit reached, retry in $seconds s';
+  }
+
+  @override
+  String get showcaseAllRowsHidden =>
+      'All rows are hidden. Turn some on in the showcase settings.';
+
+  @override
+  String showcaseEpisodeShort(int number) {
+    return 'Ep $number';
+  }
+
+  @override
+  String showcaseSeasonEpisodeShort(int season, int episode) {
+    return 'S${season}E$episode';
+  }
+
+  @override
+  String showcaseCountdownIn(String countdown) {
+    return 'in $countdown';
+  }
+
+  @override
+  String showcaseCountdownDaysHours(int days, int hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String showcaseCountdownHoursMinutes(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String showcaseCountdownMinutes(int minutes) {
+    return '${minutes}m';
+  }
+
+  @override
+  String showcaseCountdownDays(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get showcaseOutNow => 'Out now';
+
+  @override
+  String get showcasePremiere => 'Premiere';
+
+  @override
+  String get showcaseRelease => 'Release';
+
+  @override
+  String showcaseEpisodesCount(int count) {
+    return '$count ep';
+  }
+
+  @override
+  String get showcaseViewList => 'List';
+
+  @override
+  String get showcaseViewByDay => 'By day';
+
+  @override
+  String get showcaseDateTba => 'Date TBA';
+
+  @override
+  String showcaseShowAll(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
   String get personalizationTitle => 'Personalization';
 
   @override
@@ -5820,9 +5910,6 @@ class SEn extends S {
   String podcastEpisodesCount(int count) {
     return '$count episodes';
   }
-
-  @override
-  String get podcastDiscoverTrending => 'Trending podcasts';
 
   @override
   String get credentialsPodcastIndexSection => 'Podcast Index API';

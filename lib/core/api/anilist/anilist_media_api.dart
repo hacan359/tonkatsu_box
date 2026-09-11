@@ -68,6 +68,8 @@ class AniListMediaApi {
     String? format,
     int? startYear,
     int? endYear,
+    String? season,
+    int? seasonYear,
     String sort = 'POPULARITY_DESC',
     int page = 1,
     int perPage = 20,
@@ -85,6 +87,8 @@ class AniListMediaApi {
     }
     if (status != null) variables['status'] = status;
     if (format != null) variables['format'] = format;
+    if (season != null) variables['season'] = season;
+    if (seasonYear != null) variables['seasonYear'] = seasonYear;
     _addFuzzyDateRange(variables, startYear, endYear);
 
     final Map<String, dynamic> body = await _client.post(

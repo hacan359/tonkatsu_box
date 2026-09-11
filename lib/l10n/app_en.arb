@@ -1106,7 +1106,6 @@
   "@musicTracksCount": {"placeholders": {"count": {"type": "int"}}},
   "musicTrackerNoTracks": "No track list",
   "musicDiscoverFreshReleases": "New releases",
-  "musicDiscoverUnavailable": "Discover is unavailable",
   "musicSearchArtist": "Artist",
   "language": "Language",
   "bookFilterSearchBy": "Search by",
@@ -1546,19 +1545,6 @@
       "error": {"type": "String"}
     }
   },
-  "discoverTitle": "Discover",
-  "discoverCustomize": "Customize",
-  "discoverTrending": "Trending This Week",
-  "discoverTopRatedMovies": "Top Rated Movies",
-  "discoverTopRatedTvShows": "Top Rated TV Shows",
-  "discoverPopularTvShows": "Popular TV Shows",
-  "discoverUpcoming": "Upcoming",
-  "discoverCustomizeTitle": "Customize Discover",
-  "discoverCustomizeHint": "Choose which sections to show",
-  "discoverResetDefault": "Reset to default",
-  "discoverAlreadyInCollection": "Already in collection",
-  "discoverShowWithBadge": "Show with badge",
-  "discoverHideCompletely": "Hide completely",
   "recommendationsTitle": "Recommendations",
   "reviewsTitle": "Reviews",
   "reviewsShowAll": "Show all {count} reviews",
@@ -2359,6 +2345,96 @@
   "screenScraperMediaFanart": "Fanart",
   "screenScraperMediaMix": "Mix",
   "genreCloudTitle": "Genre cloud",
+  "showcaseTitle": "Showcase",
+  "showcaseHint": "What's out now and what people are watching",
+  "showcaseGroupAiring": "Out now",
+  "showcaseGroupPopular": "Popular",
+  "showcaseAnimeThisSeason": "Anime this season",
+  "showcaseAnimeNextSeason": "Anime next season",
+  "showcaseNowPlaying": "In theaters now",
+  "showcaseUpcomingMovies": "Coming to theaters",
+  "showcaseTvEpisodesThisWeek": "New episodes this week",
+  "showcaseUpcomingGames": "Upcoming game releases",
+  "showcaseTrendingMovies": "Trending movies",
+  "showcaseTrendingTvShows": "Trending TV shows",
+  "showcasePopularAnime": "Popular anime",
+  "showcaseSettingsTitle": "Customize showcase",
+  "showcaseSettingsHint": "Choose which rows to show",
+  "showcaseResetDefault": "Reset to default",
+  "showcaseAlreadyInCollection": "Already in collection",
+  "showcaseShowWithBadge": "Show with badge",
+  "showcaseHideCompletely": "Hide completely",
+  "showcaseRowError": "Couldn't load this row",
+  "showcaseRetryIn": "Rate limit reached, retry in {seconds} s",
+  "@showcaseRetryIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "showcaseAllRowsHidden": "All rows are hidden. Turn some on in the showcase settings.",
+  "showcaseEpisodeShort": "Ep {number}",
+  "@showcaseEpisodeShort": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "showcaseSeasonEpisodeShort": "S{season}E{episode}",
+  "@showcaseSeasonEpisodeShort": {
+    "placeholders": {
+      "season": {"type": "int"},
+      "episode": {"type": "int"}
+    }
+  },
+  "showcaseCountdownIn": "in {countdown}",
+  "@showcaseCountdownIn": {
+    "placeholders": {
+      "countdown": {"type": "String"}
+    }
+  },
+  "showcaseCountdownDaysHours": "{days}d {hours}h",
+  "@showcaseCountdownDaysHours": {
+    "placeholders": {
+      "days": {"type": "int"},
+      "hours": {"type": "int"}
+    }
+  },
+  "showcaseCountdownHoursMinutes": "{hours}h {minutes}m",
+  "@showcaseCountdownHoursMinutes": {
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"}
+    }
+  },
+  "showcaseCountdownMinutes": "{minutes}m",
+  "@showcaseCountdownMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "showcaseCountdownDays": "{days}d",
+  "@showcaseCountdownDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "showcaseOutNow": "Out now",
+  "showcasePremiere": "Premiere",
+  "showcaseRelease": "Release",
+  "showcaseEpisodesCount": "{count} ep",
+  "@showcaseEpisodesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "showcaseViewList": "List",
+  "showcaseViewByDay": "By day",
+  "showcaseDateTba": "Date TBA",
+  "showcaseShowAll": "Show all ({count})",
+  "@showcaseShowAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "personalizationTitle": "Personalization",
   "personalizationStatsHint": "Your library in numbers",
   "personalizationRecommendationsHint": "Based on what you finished and rated",
@@ -2566,7 +2642,6 @@
   "podcastSheetNoEpisodes": "Episode list unavailable",
   "podcastEpisodesCount": "{count} episodes",
   "@podcastEpisodesCount": {"placeholders": {"count": {"type": "int"}}},
-  "podcastDiscoverTrending": "Trending podcasts",
   "credentialsPodcastIndexSection": "Podcast Index API",
   "credentialsEnterPodcastIndexKey": "Enter your Podcast Index API key",
   "credentialsEnterPodcastIndexSecret": "Enter your Podcast Index API secret",

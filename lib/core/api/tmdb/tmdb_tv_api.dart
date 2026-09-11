@@ -207,28 +207,6 @@ class TmdbTvApi {
     }
   }
 
-  Future<List<TvShow>> getPopularTvShows({int page = 1}) async {
-    _client.ensureApiKey();
-
-    try {
-      final Response<dynamic> response = await _client.get(
-        '/tv/popular',
-        queryParameters: <String, dynamic>{'page': page},
-      );
-
-      final List<Map<String, dynamic>> items = _client.extractResults(
-          response, 'Failed to fetch popular TV shows');
-      final Map<int, String> genreMap = await _genres.ensureTvGenreMap();
-      _genres.resolveGenreIds(items, genreMap);
-
-      return items
-          .map((Map<String, dynamic> json) => TvShow.fromJson(json))
-          .toList();
-    } on DioException catch (e) {
-      throw _client.handleDioException(e, 'Failed to fetch popular TV shows');
-    }
-  }
-
   Future<List<TvShow>> getTvRecommendations(int tmdbId, {int page = 1}) {
     return _fetchTvShowList('/tv/$tmdbId/recommendations', page: page);
   }
@@ -248,16 +226,38 @@ class TmdbTvApi {
     return _fetchTvShowList('/tv/top_rated', page: page);
   }
 
-  Future<List<TvShow>> getOnTheAirTvShows({int page = 1}) {
-    return _fetchTvShowList('/tv/on_the_air', page: page);
+  /// `next_episode_to_air` of `/tv/{id}`; null when nothing is scheduled or
+  /// the show is unknown.
+  Future<TmdbNextEpisode?> getNextEpisodeToAir(int tmdbId) async {
+    _client.ensureApiKey();
+    try {
+      final Response<dynamic> response = await _client.get('/tv/$tmdbId');
+      final Map<String, dynamic>? data =
+          response.data as Map<String, dynamic>?;
+      final Map<String, dynamic>? next =
+          data?['next_episode_to_air'] as Map<String, dynamic>?;
+      final String? airDate = next?['air_date'] as String?;
+      final int? season = next?['season_number'] as int?;
+      final int? episode = next?['episode_number'] as int?;
+      if (airDate == null || airDate.isEmpty || season == null || episode == null) {
+        return null;
+      }
+      return (season: season, episode: episode, airDate: airDate);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      throw _client.handleDioException(e, 'Failed to fetch TV show');
+    }
   }
 
+  /// [airDateGte]/[airDateLte] match shows with an episode in that window.
   Future<List<TvShow>> discoverTvShows({
     int? genreId,
     String? genreIds,
     int? year,
     String? firstAirDateGte,
     String? firstAirDateLte,
+    String? airDateGte,
+    String? airDateLte,
     int? voteCountGte,
     double? voteAverageGte,
     String? originalLanguage,
@@ -284,6 +284,8 @@ class TmdbTvApi {
       if (firstAirDateLte != null) {
         params['first_air_date.lte'] = firstAirDateLte;
       }
+      if (airDateGte != null) params['air_date.gte'] = airDateGte;
+      if (airDateLte != null) params['air_date.lte'] = airDateLte;
       if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
       if (voteAverageGte != null) {
         params['vote_average.gte'] = voteAverageGte;

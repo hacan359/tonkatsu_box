@@ -286,6 +286,4 @@ class _TestSource extends SearchSource {
     return const BrowseResult(items: <Object>[], mediaType: MediaType.movie);
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

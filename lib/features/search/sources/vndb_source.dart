@@ -122,6 +122,4 @@ class VndbSource extends SearchSource {
     }
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

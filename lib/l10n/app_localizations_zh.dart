@@ -2343,9 +2343,6 @@ class SZh extends S {
   String get musicDiscoverFreshReleases => '新专辑';
 
   @override
-  String get musicDiscoverUnavailable => '无法加载推荐';
-
-  @override
   String get musicSearchArtist => '艺术家';
 
   @override
@@ -3299,45 +3296,6 @@ class SZh extends S {
   String vgmapsFailedInit(String error) {
     return '初始化 WebView 失败：$error';
   }
-
-  @override
-  String get discoverTitle => '发现';
-
-  @override
-  String get discoverCustomize => '自定义';
-
-  @override
-  String get discoverTrending => '本周热门';
-
-  @override
-  String get discoverTopRatedMovies => '高分电影';
-
-  @override
-  String get discoverTopRatedTvShows => '高分电视剧';
-
-  @override
-  String get discoverPopularTvShows => '热门电视剧';
-
-  @override
-  String get discoverUpcoming => '即将上映';
-
-  @override
-  String get discoverCustomizeTitle => '自定义发现';
-
-  @override
-  String get discoverCustomizeHint => '选择要显示的板块';
-
-  @override
-  String get discoverResetDefault => '重置为默认';
-
-  @override
-  String get discoverAlreadyInCollection => '已在收藏中';
-
-  @override
-  String get discoverShowWithBadge => '带标签显示';
-
-  @override
-  String get discoverHideCompletely => '完全隐藏';
 
   @override
   String get recommendationsTitle => '推荐';
@@ -4978,6 +4936,137 @@ class SZh extends S {
   String get genreCloudTitle => '类型词云';
 
   @override
+  String get showcaseTitle => '橱窗';
+
+  @override
+  String get showcaseHint => '正在上映和大家在看的内容';
+
+  @override
+  String get showcaseGroupAiring => '正在播出';
+
+  @override
+  String get showcaseGroupPopular => '热门';
+
+  @override
+  String get showcaseAnimeThisSeason => '本季动画';
+
+  @override
+  String get showcaseAnimeNextSeason => '下季动画';
+
+  @override
+  String get showcaseNowPlaying => '正在上映';
+
+  @override
+  String get showcaseUpcomingMovies => '即将上映';
+
+  @override
+  String get showcaseTvEpisodesThisWeek => '本周新剧集';
+
+  @override
+  String get showcaseUpcomingGames => '即将发售的游戏';
+
+  @override
+  String get showcaseTrendingMovies => '热门电影';
+
+  @override
+  String get showcaseTrendingTvShows => '热门剧集';
+
+  @override
+  String get showcasePopularAnime => '热门动画';
+
+  @override
+  String get showcaseSettingsTitle => '自定义橱窗';
+
+  @override
+  String get showcaseSettingsHint => '选择要显示的栏目';
+
+  @override
+  String get showcaseResetDefault => '恢复默认';
+
+  @override
+  String get showcaseAlreadyInCollection => '已在收藏中';
+
+  @override
+  String get showcaseShowWithBadge => '显示标记';
+
+  @override
+  String get showcaseHideCompletely => '隐藏';
+
+  @override
+  String get showcaseRowError => '无法加载此栏目';
+
+  @override
+  String showcaseRetryIn(int seconds) {
+    return '已达请求上限，$seconds 秒后重试';
+  }
+
+  @override
+  String get showcaseAllRowsHidden => '所有栏目均已隐藏。请在橱窗设置中开启。';
+
+  @override
+  String showcaseEpisodeShort(int number) {
+    return '第 $number 集';
+  }
+
+  @override
+  String showcaseSeasonEpisodeShort(int season, int episode) {
+    return '第$season季第$episode集';
+  }
+
+  @override
+  String showcaseCountdownIn(String countdown) {
+    return '$countdown后';
+  }
+
+  @override
+  String showcaseCountdownDaysHours(int days, int hours) {
+    return '$days天 $hours小时';
+  }
+
+  @override
+  String showcaseCountdownHoursMinutes(int hours, int minutes) {
+    return '$hours小时 $minutes分';
+  }
+
+  @override
+  String showcaseCountdownMinutes(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String showcaseCountdownDays(int days) {
+    return '$days天';
+  }
+
+  @override
+  String get showcaseOutNow => '已上线';
+
+  @override
+  String get showcasePremiere => '首播';
+
+  @override
+  String get showcaseRelease => '发售';
+
+  @override
+  String showcaseEpisodesCount(int count) {
+    return '$count 集';
+  }
+
+  @override
+  String get showcaseViewList => '列表';
+
+  @override
+  String get showcaseViewByDay => '按日';
+
+  @override
+  String get showcaseDateTba => '日期待定';
+
+  @override
+  String showcaseShowAll(int count) {
+    return '显示全部（$count）';
+  }
+
+  @override
   String get personalizationTitle => '个性化';
 
   @override
@@ -5527,9 +5616,6 @@ class SZh extends S {
   String podcastEpisodesCount(int count) {
     return '$count 集';
   }
-
-  @override
-  String get podcastDiscoverTrending => '热门播客';
 
   @override
   String get credentialsPodcastIndexSection => 'Podcast Index API';

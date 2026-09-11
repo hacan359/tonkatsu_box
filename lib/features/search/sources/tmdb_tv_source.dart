@@ -152,8 +152,6 @@ class TmdbTvSource extends SearchSource {
     );
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
 List<int>? _readGenreIds(Object? value) {

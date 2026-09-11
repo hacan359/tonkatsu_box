@@ -98,8 +98,6 @@ class TvdbSeriesSource extends SearchSource {
     );
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 
   static int? _year(Object? value) => switch (value) {
         final int year => year,

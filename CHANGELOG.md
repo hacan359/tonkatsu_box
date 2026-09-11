@@ -59,6 +59,108 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_*.arb (appBarMetaSearchHint, searchModeTooltip,
     searchModeTitle, searchModeMeta): New strings.
 
+- **Showcase section in the personalization hub**
+
+  - A fourth card on the hub landing opens a page of release boards in two
+    blocks. "Out now": anime this season, anime next season, in theaters now,
+    coming to theaters, new episodes this week, upcoming game releases, new
+    albums. "Popular": trending movies, trending TV shows, popular anime.
+  - A card carries the cover, the countdown to the next episode, premiere or
+    release ("S4E8 · in 5d", "Premiere · Today", "Release · Out now"), the
+    weekday and date, format, episode count, runtime, studio or artist,
+    genres and a description. Over a day out the countdown shows days and
+    hours, under it hours and minutes. It ticks once a minute.
+  - Boards sort by the nearest date; entries without one go last. Anime this
+    season and new episodes this week switch to a per-day view. A board
+    longer than six cards collapses behind "Show all".
+  - Blocks order their boards by how many items of that media type the
+    library holds.
+  - One board's error or empty answer leaves the others alone. Each keeps its
+    own retry button, and on an AniList rate limit it counts down the wait.
+  - A sheet in the title bar lists every board with a checkbox, plus a switch
+    for titles already in a collection: badge or hide. Boards hidden in the
+    old Discover feed stay hidden.
+
+  * lib/features/showcase/models/showcase_item.dart (ShowcaseItem): New;
+    flattens a movie, show, anime, game or album into one card model.
+  * lib/features/showcase/providers/showcase_rows_provider.dart
+    (animeThisSeasonProvider, animeNextSeasonProvider, popularAnimeProvider,
+    nowPlayingProvider, upcomingMoviesProvider, trendingMoviesProvider,
+    tvEpisodesThisWeekProvider, trendingTvShowsProvider, upcomingGamesProvider,
+    freshAlbumsProvider, showcaseRowProvider, showcaseRowOrderProvider,
+    showcaseLibraryCountsProvider, showcaseOwnedIdsProvider, refreshShowcase):
+    New; one hour-cached provider per board.
+  * lib/features/showcase/providers/showcase_settings_provider.dart
+    (ShowcaseRowId, ShowcaseGroup, ShowcaseSettings, ShowcaseSettingsNotifier,
+    legacyDiscoverSections): New; stores the hidden boards.
+  * lib/features/showcase/providers/showcase_clock_provider.dart
+    (showcaseClockProvider, showcaseNowProvider, ShowcaseNowNotifier): New;
+    one minute tick for every countdown on screen.
+  * lib/features/showcase/screens/showcase_screen.dart (ShowcaseScreen,
+    showcaseTargetCollectionsProvider): New.
+  * lib/features/showcase/widgets/release_card.dart (ReleaseCard),
+    lib/features/showcase/widgets/release_board.dart (ReleaseBoard,
+    ReleaseGrid, ShowcaseRowTitle),
+    lib/features/showcase/widgets/showcase_row_section.dart
+    (ShowcaseRowSection),
+    lib/features/showcase/widgets/showcase_group_title.dart
+    (ShowcaseGroupTitle),
+    lib/features/showcase/widgets/showcase_settings_sheet.dart
+    (ShowcaseSettingsSheet): New.
+  * lib/features/showcase/utils/release_schedule.dart (sortByNextDate,
+    groupByDay, countdownTo, Countdown),
+    lib/features/showcase/utils/release_labels.dart (releaseHeadline,
+    releaseDateText, releaseDayTitle, releaseMeta, countdownText),
+    lib/features/showcase/utils/anime_season.dart (AnimeSeason, animeSeasonFor,
+    nextAnimeSeason), lib/features/showcase/utils/tmdb_region.dart
+    (tmdbRegionFromLanguage),
+    lib/features/showcase/utils/showcase_cover.dart (showcaseCoverCache): New.
+  * lib/features/personalization/screens/personalization_hub_screen.dart
+    (PersonalizationHubScreen.build): Fourth card.
+  * lib/features/personalization/widgets/hub_showcase_preview.dart
+    (HubShowcasePreview), hub_poster_strip.dart (HubPosterStrip, HubPoster,
+    HubPreviewNote): New; the landing preview fetches one board.
+  * lib/features/personalization/widgets/hub_recommendations_preview.dart
+    (HubRecommendationsPreview): Draws through HubPosterStrip.
+  * lib/shared/utils/provider_cache.dart (cacheFor),
+    lib/shared/utils/cover_cache_slot.dart (coverCacheSlot),
+    lib/shared/widgets/genre_chip.dart (GenreChip): New.
+  * lib/features/recommendations/utils/recommendation_cover.dart
+    (recommendationCoverCache),
+    lib/features/recommendations/widgets/recommendation_row.dart: Through
+    coverCacheSlot and GenreChip.
+  * lib/core/api/anilist/anilist_queries.dart (AniListQueries.animeSearch,
+    AniListQueries._animeMediaFields), anilist_media_api.dart
+    (AniListMediaApi.browseAnime), lib/core/api/anilist_api.dart
+    (AniListApi.browseAnime): Season and seasonYear arguments; the airing
+    timestamp of the next episode.
+  * packages/core/lib/models/anime.dart (Anime.fromJson): Reads nextAiringAt.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.getUpcomingGames),
+    lib/core/api/igdb_api.dart (IgdbApi.getUpcomingGames): New; the most
+    anticipated releases of the next ninety days.
+  * lib/core/api/igdb/igdb_http_client.dart (IgdbHttpClient.hasCredentials),
+    lib/core/api/tmdb/tmdb_http_client.dart (TmdbHttpClient.hasApiKey): New;
+    a keyless build skips the request instead of collecting an error.
+  * lib/core/api/tmdb/tmdb_movies_api.dart
+    (TmdbMoviesApi.getNowPlayingMovieReleases,
+    TmdbMoviesApi.getUpcomingMovieReleases), lib/core/api/tmdb/tmdb_tv_api.dart
+    (TmdbTvApi.getNextEpisodeToAir, TmdbTvApi.discoverTvShows),
+    lib/core/api/tmdb/tmdb_types.dart (TmdbNextEpisode),
+    lib/core/api/tmdb_api.dart: Release dates alongside the films, the next
+    episode of a show, and an air-date window for discover.
+  * lib/l10n/app_*.arb (showcaseTitle, showcaseHint, showcaseGroupAiring,
+    showcaseGroupPopular, showcaseAnimeThisSeason, showcaseAnimeNextSeason,
+    showcaseNowPlaying, showcaseUpcomingMovies, showcaseTvEpisodesThisWeek,
+    showcaseUpcomingGames, showcaseTrendingMovies, showcaseTrendingTvShows,
+    showcasePopularAnime, showcaseEpisodeShort, showcaseSeasonEpisodeShort,
+    showcaseCountdownIn, showcaseCountdownDays, showcaseCountdownDaysHours,
+    showcaseCountdownHoursMinutes, showcaseCountdownMinutes, showcaseOutNow,
+    showcasePremiere, showcaseRelease, showcaseEpisodesCount, showcaseViewList,
+    showcaseViewByDay, showcaseDateTba, showcaseShowAll, showcaseSettingsTitle,
+    showcaseSettingsHint, showcaseResetDefault, showcaseAlreadyInCollection,
+    showcaseShowWithBadge, showcaseHideCompletely, showcaseRowError,
+    showcaseRetryIn, showcaseAllRowsHidden): New strings.
+
 - **Text size setting**
 
   - A "Text size" slider in Settings → Appearance, 85% to 130% in four steps,
@@ -181,11 +283,29 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Search shows no feeds on an empty query**
+
+  Every media type gets the same empty state. The poster feeds moved to the
+  showcase.
+
+  * lib/features/search/screens/search_screen.dart
+    (_SearchScreenState._buildContent): One empty state for every media type.
+  * lib/features/search/widgets/filter_bar.dart (FilterBar),
+    lib/features/search/widgets/filter_bar_compact.dart (FilterBarCompact):
+    Drop the "Customize" button.
+  * lib/features/search/providers/discover_provider.dart,
+    lib/features/search/widgets/discover_feed.dart, discover_row.dart,
+    discover_customize_sheet.dart, audio_discover_feed.dart: Deleted.
+  * lib/features/search/models/search_source.dart (SearchSource): Drop
+    buildDiscoverFeed, along with its twenty-three implementations under
+    lib/features/search/sources/.
+
 - **Personalization hub opens on a landing page of section cards**
 
-  - Statistics, Recommendations and Likes are cards with a live preview: the
-    headline numbers, a strip of recommended posters, the latest marks. A tap
-    opens the section full screen with a back arrow.
+  - Statistics, Recommendations, Showcase and Likes are cards with a live
+    preview: the headline numbers, a strip of recommended posters, what is
+    out now, the latest marks. A tap opens the section full screen with a
+    back arrow.
   - The genre cloud moves to an icon in the statistics header, next to Share.
   - Pressing the centre button while a section is open returns to the landing
     page; Android back and gamepad B pop the section before closing the hub.

@@ -32,6 +32,8 @@ class IgdbHttpClient {
 
   bool _isRefreshing = false;
 
+  bool get hasCredentials => _clientId != null && _accessToken != null;
+
   void setCredentials({
     required String clientId,
     required String accessToken,

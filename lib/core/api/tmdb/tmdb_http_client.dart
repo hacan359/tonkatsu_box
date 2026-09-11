@@ -30,6 +30,8 @@ class TmdbHttpClient {
     _language = language;
   }
 
+  bool get hasApiKey => _apiKey != null;
+
   void setApiKey(String apiKey) {
     _apiKey = apiKey;
   }
