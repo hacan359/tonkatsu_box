@@ -46,6 +46,8 @@ String _whatAirs(S l, ShowcaseItem item) {
 final Map<String, DateFormat> _dayFormats = <String, DateFormat>{};
 final Map<String, DateFormat> _timeFormats = <String, DateFormat>{};
 final Map<String, DateFormat> _dayTitleFormats = <String, DateFormat>{};
+final Map<String, DateFormat> _weekdayFormats = <String, DateFormat>{};
+final Map<String, DateFormat> _monthDayFormats = <String, DateFormat>{};
 
 /// `Fri, Sep 13` for a date-only item, with ` · 21:00` when the time is known.
 String releaseDateText(ShowcaseItem item, String locale) {
@@ -59,9 +61,30 @@ String releaseDateText(ShowcaseItem item, String locale) {
   return '${day.format(date)} · ${time.format(date)}';
 }
 
-String releaseDayTitle(DateTime day, String locale) => _dayTitleFormats
-    .putIfAbsent(locale, () => DateFormat('EEEE, d MMM', locale))
-    .format(day);
+/// `Friday` for a weekday bucket, `29 Sep - 5 Oct` for a week, and
+/// `Friday, 3 Oct` for a single day.
+String releaseGroupTitle(
+  DateTime date,
+  ReleaseGrouping grouping,
+  String locale,
+) {
+  switch (grouping) {
+    case ReleaseGrouping.weekday:
+      return _weekdayFormats
+          .putIfAbsent(locale, () => DateFormat('EEEE', locale))
+          .format(date);
+    case ReleaseGrouping.week:
+      final DateFormat monthDay =
+          _monthDayFormats.putIfAbsent(locale, () => DateFormat.MMMd(locale));
+      final DateTime end = DateTime(date.year, date.month, date.day + 6);
+      return '${monthDay.format(date)} - ${monthDay.format(end)}';
+    case ReleaseGrouping.list:
+    case ReleaseGrouping.day:
+      return _dayTitleFormats
+          .putIfAbsent(locale, () => DateFormat('EEEE, d MMM', locale))
+          .format(date);
+  }
+}
 
 /// `TV · 12 ep · 24m · MAPPA` — whichever parts the source gave.
 String releaseMeta(S l, ShowcaseItem item) {

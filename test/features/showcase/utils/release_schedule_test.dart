@@ -46,33 +46,95 @@ void main() {
     });
   });
 
-  group('groupByDay', () {
+  group('groupReleases', () {
     test('buckets by local calendar day, undated last', () {
-      final List<ReleaseDayGroup> groups = groupByDay(<ShowcaseItem>[
+      final List<ReleaseGroup> groups = groupReleases(<ShowcaseItem>[
         _item(1, nextDate: DateTime(2026, 9, 13, 23, 30)),
         _item(2),
         _item(3, nextDate: DateTime(2026, 9, 12, 1)),
         _item(4, nextDate: DateTime(2026, 9, 13, 2)),
-      ]);
+      ], ReleaseGrouping.day);
 
       expect(groups, hasLength(3));
-      expect(groups[0].day, DateTime(2026, 9, 12));
+      expect(groups[0].date, DateTime(2026, 9, 12));
       expect(groups[0].items.single.externalId, 3);
-      expect(groups[1].day, DateTime(2026, 9, 13));
+      expect(groups[1].date, DateTime(2026, 9, 13));
       expect(
         groups[1].items.map((ShowcaseItem i) => i.externalId),
         <int>[4, 1],
       );
-      expect(groups[2].day, isNull);
+      expect(groups[2].date, isNull);
       expect(groups[2].items.single.externalId, 2);
     });
 
     test('no undated group when every item has a date', () {
-      final List<ReleaseDayGroup> groups = groupByDay(<ShowcaseItem>[
-        _item(1, nextDate: DateTime(2026, 9, 12)),
-      ]);
+      final List<ReleaseGroup> groups = groupReleases(
+        <ShowcaseItem>[_item(1, nextDate: DateTime(2026, 9, 12))],
+        ReleaseGrouping.day,
+      );
 
-      expect(groups.single.day, isNotNull);
+      expect(groups.single.date, isNotNull);
+    });
+
+    test('weekday folds every date sharing a day of the week', () {
+      // 11 and 18 Sep 2026 are Fridays, 12 Sep a Saturday.
+      final List<ReleaseGroup> groups = groupReleases(<ShowcaseItem>[
+        _item(1, nextDate: DateTime(2026, 9, 11)),
+        _item(2, nextDate: DateTime(2026, 9, 12)),
+        _item(3, nextDate: DateTime(2026, 9, 18)),
+      ], ReleaseGrouping.weekday);
+
+      expect(groups, hasLength(2));
+      expect(
+        groups[0].items.map((ShowcaseItem i) => i.externalId),
+        <int>[1, 3],
+      );
+      expect(groups[0].date?.weekday, DateTime.friday);
+      expect(groups[1].items.single.externalId, 2);
+      expect(groups[1].date?.weekday, DateTime.saturday);
+    });
+
+    test('week anchors every bucket on its Monday', () {
+      final List<ReleaseGroup> groups = groupReleases(<ShowcaseItem>[
+        _item(1, nextDate: DateTime(2026, 9, 11)),
+        _item(2, nextDate: DateTime(2026, 9, 13)),
+        _item(3, nextDate: DateTime(2026, 9, 14)),
+      ], ReleaseGrouping.week);
+
+      expect(groups, hasLength(2));
+      expect(groups[0].date, DateTime(2026, 9, 7));
+      expect(
+        groups[0].items.map((ShowcaseItem i) => i.externalId),
+        <int>[1, 2],
+      );
+      expect(groups[1].date, DateTime(2026, 9, 14));
+    });
+
+    test('bucket order follows the nearest release, not the calendar', () {
+      // The Monday premiere is a week later than the Wednesday one.
+      final List<ReleaseGroup> groups = groupReleases(<ShowcaseItem>[
+        _item(1, nextDate: DateTime(2026, 9, 16)),
+        _item(2, nextDate: DateTime(2026, 9, 21)),
+      ], ReleaseGrouping.weekday);
+
+      expect(groups.first.date?.weekday, DateTime.wednesday);
+    });
+
+    test('empty input yields no groups', () {
+      expect(
+        groupReleases(const <ShowcaseItem>[], ReleaseGrouping.weekday),
+        isEmpty,
+      );
+    });
+  });
+
+  group('startOfWeek', () {
+    test('a Monday is its own week start', () {
+      expect(startOfWeek(DateTime(2026, 9, 14)), DateTime(2026, 9, 14));
+    });
+
+    test('walks back across a month boundary', () {
+      expect(startOfWeek(DateTime(2026, 10, 2)), DateTime(2026, 9, 28));
     });
   });
 

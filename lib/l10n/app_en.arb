@@ -2427,7 +2427,9 @@
     }
   },
   "showcaseViewList": "List",
-  "showcaseViewByDay": "By day",
+  "showcaseViewByDay": "By date",
+  "showcaseViewByWeekday": "By weekday",
+  "showcaseViewByWeek": "By week",
   "showcaseDateTba": "Date TBA",
   "showcaseShowAll": "Show all ({count})",
   "@showcaseShowAll": {

@@ -5056,7 +5056,13 @@ class SZh extends S {
   String get showcaseViewList => '列表';
 
   @override
-  String get showcaseViewByDay => '按日';
+  String get showcaseViewByDay => '按日期';
+
+  @override
+  String get showcaseViewByWeekday => '按星期';
+
+  @override
+  String get showcaseViewByWeek => '按周';
 
   @override
   String get showcaseDateTba => '日期待定';

@@ -70,9 +70,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     weekday and date, format, episode count, runtime, studio or artist,
     genres and a description. Over a day out the countdown shows days and
     hours, under it hours and minutes. It ticks once a minute.
-  - Boards sort by the nearest date; entries without one go last. Anime this
-    season and new episodes this week switch to a per-day view. A board
-    longer than six cards collapses behind "Show all".
+  - Boards sort by the nearest date; entries without one go last. A dated
+    board switches between a plain list and buckets by weekday, by date or by
+    week: anime this season and new episodes this week open by weekday, anime
+    next season by week. A board longer than six cards collapses behind
+    "Show all".
   - Blocks order their boards by how many items of that media type the
     library holds.
   - One board's error or empty answer leaves the others alone. Each keeps its
@@ -108,9 +110,10 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/showcase/widgets/showcase_settings_sheet.dart
     (ShowcaseSettingsSheet): New.
   * lib/features/showcase/utils/release_schedule.dart (sortByNextDate,
-    groupByDay, countdownTo, Countdown),
+    ReleaseGrouping, ReleaseGroup, groupReleases, releaseBucketKey,
+    startOfWeek, countdownTo, Countdown),
     lib/features/showcase/utils/release_labels.dart (releaseHeadline,
-    releaseDateText, releaseDayTitle, releaseMeta, countdownText),
+    releaseDateText, releaseGroupTitle, releaseMeta, countdownText),
     lib/features/showcase/utils/anime_season.dart (AnimeSeason, animeSeasonFor,
     nextAnimeSeason), lib/features/showcase/utils/tmdb_region.dart
     (tmdbRegionFromLanguage),
@@ -156,7 +159,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     showcaseCountdownIn, showcaseCountdownDays, showcaseCountdownDaysHours,
     showcaseCountdownHoursMinutes, showcaseCountdownMinutes, showcaseOutNow,
     showcasePremiere, showcaseRelease, showcaseEpisodesCount, showcaseViewList,
-    showcaseViewByDay, showcaseDateTba, showcaseShowAll, showcaseSettingsTitle,
+    showcaseViewByDay, showcaseViewByWeekday, showcaseViewByWeek,
+    showcaseDateTba, showcaseShowAll, showcaseSettingsTitle,
     showcaseSettingsHint, showcaseResetDefault, showcaseAlreadyInCollection,
     showcaseShowWithBadge, showcaseHideCompletely, showcaseRowError,
     showcaseRetryIn, showcaseAllRowsHidden): New strings.

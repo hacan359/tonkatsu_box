@@ -62,7 +62,7 @@ class ShowcaseRowSection extends ConsumerWidget {
               items: visible.take(showcaseRowLimit).toList(),
               isOwned: owned.contains,
               onTap: onTap,
-              allowsDayGrouping: rowId.allowsDayGrouping,
+              defaultGrouping: rowId.defaultGrouping,
             );
           },
         );

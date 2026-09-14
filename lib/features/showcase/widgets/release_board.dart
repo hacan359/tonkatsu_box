@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -10,15 +12,15 @@ import '../utils/release_labels.dart';
 import '../utils/release_schedule.dart';
 import 'release_card.dart';
 
-/// A widest card the grid still splits into columns; a desktop pane gets
-/// two or three, a phone one.
-const double releaseBoardMaxCardWidth = 460;
+/// Below this a card has no room left for its text column, so the grid drops
+/// a column rather than squeeze one. A phone always lands on a single card.
+const double releaseBoardMinCardWidth = 380;
 
 /// Cards shown before "Show all": two desktop rows, so eight boards do not
 /// turn the section into an endless page.
 const int releaseBoardCollapsedCount = 6;
 
-/// One feed as a schedule: soonest first, optionally bucketed by day.
+/// One feed as a schedule: soonest first, optionally bucketed by date.
 class ReleaseBoard extends StatefulWidget {
   const ReleaseBoard({
     required this.title,
@@ -26,7 +28,7 @@ class ReleaseBoard extends StatefulWidget {
     required this.onTap,
     this.icon,
     this.isOwned,
-    this.allowsDayGrouping = false,
+    this.defaultGrouping = ReleaseGrouping.list,
     super.key,
   });
 
@@ -35,7 +37,10 @@ class ReleaseBoard extends StatefulWidget {
   final void Function(ShowcaseItem item) onTap;
   final IconData? icon;
   final bool Function(ShowcaseItem item)? isOwned;
-  final bool allowsDayGrouping;
+
+  /// The bucketing the row opens on; [ReleaseGrouping.list] also means the
+  /// row has no schedule worth bucketing and hides the switch.
+  final ReleaseGrouping defaultGrouping;
 
   @override
   State<ReleaseBoard> createState() => _ReleaseBoardState();
@@ -43,17 +48,17 @@ class ReleaseBoard extends StatefulWidget {
 
 class _ReleaseBoardState extends State<ReleaseBoard> {
   bool _expanded = false;
-  bool _byDay = false;
+  late ReleaseGrouping _grouping = widget.defaultGrouping;
 
   @override
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) return const SizedBox.shrink();
     final S l = S.of(context);
     final List<ShowcaseItem> sorted = sortByNextDate(widget.items);
-    // The per-day view is the schedule itself; hiding later days behind
+    // A bucketed view is the schedule itself; hiding later buckets behind
     // "Show all" would defeat it.
-    final bool collapsible =
-        !_byDay && sorted.length > releaseBoardCollapsedCount;
+    final bool collapsible = _grouping == ReleaseGrouping.list &&
+        sorted.length > releaseBoardCollapsedCount;
     final List<ShowcaseItem> visible = collapsible && !_expanded
         ? sorted.take(releaseBoardCollapsedCount).toList()
         : sorted;
@@ -61,15 +66,13 @@ class _ReleaseBoardState extends State<ReleaseBoard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        ShowcaseRowTitle(
-          title: widget.title,
-          icon: widget.icon,
-          trailing: widget.allowsDayGrouping ? _viewToggle(l) : null,
-        ),
+        ShowcaseRowTitle(title: widget.title, icon: widget.icon),
+        if (widget.defaultGrouping != ReleaseGrouping.list) _groupingBar(l),
         const SizedBox(height: AppSpacing.sm),
-        if (_byDay)
-          for (final ReleaseDayGroup group in groupByDay(visible)) ...<Widget>[
-            _DayTitle(group: group),
+        if (_grouping != ReleaseGrouping.list)
+          for (final ReleaseGroup group
+              in groupReleases(visible, _grouping)) ...<Widget>[
+            _GroupTitle(group: group, grouping: _grouping),
             _grid(group.items),
           ]
         else
@@ -95,28 +98,49 @@ class _ReleaseBoardState extends State<ReleaseBoard> {
     );
   }
 
-  Widget _viewToggle(S l) {
-    return SegmentedButton<bool>(
-      showSelectedIcon: false,
-      style: const ButtonStyle(
-        visualDensity: VisualDensity.compact,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  /// Its own row: four segments plus a title do not fit a phone's width.
+  Widget _groupingBar(S l) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.md,
+        top: AppSpacing.xs,
       ),
-      segments: <ButtonSegment<bool>>[
-        ButtonSegment<bool>(
-          value: false,
-          icon: const Icon(Icons.view_list_outlined, size: 16),
-          tooltip: l.showcaseViewList,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: SegmentedButton<ReleaseGrouping>(
+          showSelectedIcon: false,
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          segments: <ButtonSegment<ReleaseGrouping>>[
+            ButtonSegment<ReleaseGrouping>(
+              value: ReleaseGrouping.list,
+              icon: const Icon(Icons.view_list_outlined, size: 16),
+              tooltip: l.showcaseViewList,
+            ),
+            ButtonSegment<ReleaseGrouping>(
+              value: ReleaseGrouping.weekday,
+              icon: const Icon(Icons.calendar_view_week_outlined, size: 16),
+              tooltip: l.showcaseViewByWeekday,
+            ),
+            ButtonSegment<ReleaseGrouping>(
+              value: ReleaseGrouping.day,
+              icon: const Icon(Icons.calendar_view_day_outlined, size: 16),
+              tooltip: l.showcaseViewByDay,
+            ),
+            ButtonSegment<ReleaseGrouping>(
+              value: ReleaseGrouping.week,
+              icon: const Icon(Icons.date_range_outlined, size: 16),
+              tooltip: l.showcaseViewByWeek,
+            ),
+          ],
+          selected: <ReleaseGrouping>{_grouping},
+          onSelectionChanged: (Set<ReleaseGrouping> selection) =>
+              setState(() => _grouping = selection.first),
         ),
-        ButtonSegment<bool>(
-          value: true,
-          icon: const Icon(Icons.calendar_view_day_outlined, size: 16),
-          tooltip: l.showcaseViewByDay,
-        ),
-      ],
-      selected: <bool>{_byDay},
-      onSelectionChanged: (Set<bool> selection) =>
-          setState(() => _byDay = selection.first),
+      ),
     );
   }
 
@@ -154,33 +178,52 @@ class ReleaseGrid extends StatelessWidget {
       compact: isCompactScreen(context),
       textScaler: MediaQuery.textScalerOf(context),
     );
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: releaseBoardMaxCardWidth,
-        mainAxisExtent: height,
-        crossAxisSpacing: AppSpacing.sm,
-        mainAxisSpacing: AppSpacing.sm,
-      ),
-      itemCount: itemCount,
-      itemBuilder: itemBuilder,
+    // The pane, not the window: a desktop grid sits beside the side menu.
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columnsFor(constraints.maxWidth),
+            mainAxisExtent: height,
+            crossAxisSpacing: AppSpacing.sm,
+            mainAxisSpacing: AppSpacing.sm,
+          ),
+          itemCount: itemCount,
+          itemBuilder: itemBuilder,
+        );
+      },
     );
+  }
+
+  /// Columns that fit [availableWidth] at [releaseBoardMinCardWidth] apiece,
+  /// never fewer than one however narrow the pane gets.
+  static int columnsFor(double availableWidth) {
+    final double grid = availableWidth - AppSpacing.md * 2;
+    final int columns = (grid + AppSpacing.sm) ~/
+        (releaseBoardMinCardWidth + AppSpacing.sm);
+    return math.max(1, columns);
   }
 }
 
-class _DayTitle extends StatelessWidget {
-  const _DayTitle({required this.group});
+class _GroupTitle extends StatelessWidget {
+  const _GroupTitle({required this.group, required this.grouping});
 
-  final ReleaseDayGroup group;
+  final ReleaseGroup group;
+  final ReleaseGrouping grouping;
 
   @override
   Widget build(BuildContext context) {
-    final DateTime? day = group.day;
-    final String text = day == null
+    final DateTime? date = group.date;
+    final String text = date == null
         ? S.of(context).showcaseDateTba
-        : releaseDayTitle(day, Localizations.localeOf(context).toString());
+        : releaseGroupTitle(
+            date,
+            grouping,
+            Localizations.localeOf(context).toString(),
+          );
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -200,16 +243,10 @@ class _DayTitle extends StatelessWidget {
 }
 
 class ShowcaseRowTitle extends StatelessWidget {
-  const ShowcaseRowTitle({
-    required this.title,
-    this.icon,
-    this.trailing,
-    super.key,
-  });
+  const ShowcaseRowTitle({required this.title, this.icon, super.key});
 
   final String title;
   final IconData? icon;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +264,6 @@ class ShowcaseRowTitle extends StatelessWidget {
               style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
-          if (trailing case final Widget trailing) trailing,
         ],
       ),
     );

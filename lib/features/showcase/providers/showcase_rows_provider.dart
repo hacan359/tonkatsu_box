@@ -31,10 +31,10 @@ import 'showcase_settings_provider.dart';
 /// well under its shared 90 requests-per-minute budget.
 const Duration showcaseCacheTtl = Duration(hours: 1);
 
-/// Cards a board shows; feeds that take a size fetch [showcaseFetchLimit] so
-/// hiding owned titles leaves something to show.
-const int showcaseRowLimit = 20;
-const int showcaseFetchLimit = 40;
+/// Cards a board shows, and the page a sized feed asks for. 50 is AniList's
+/// cap, so a row cannot go wider without a second request.
+const int showcaseRowLimit = 50;
+const int showcaseFetchLimit = 50;
 
 final Logger _log = Logger('Showcase');
 
@@ -154,6 +154,10 @@ const int _tvMinVoteCount = 10;
 /// TMDB has no per-host pacing here; a 20-wide burst congests a phone link.
 const int _tvDetailsConcurrency = 5;
 
+/// Each card here costs its own details call, so this row stays shorter than
+/// the feeds that arrive complete.
+const int tvEpisodesRowLimit = 20;
+
 /// Shows with an episode in the coming week, most popular first. The list
 /// lacks the episode number, so each show costs one details call.
 final ShowcaseRowProvider tvEpisodesThisWeekProvider =
@@ -171,7 +175,7 @@ final ShowcaseRowProvider tvEpisodesThisWeekProvider =
       voteCountGte: _tvMinVoteCount,
     ),
   );
-  final List<TvShow> shown = shows.take(showcaseRowLimit).toList();
+  final List<TvShow> shown = shows.take(tvEpisodesRowLimit).toList();
   final List<TmdbNextEpisode?> episodes = await _nextEpisodes(tmdb, shown);
   cacheFor(ref, showcaseCacheTtl);
   return <ShowcaseItem>[

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/showcase/models/showcase_item.dart';
 import 'package:tonkatsu_box/features/showcase/providers/showcase_clock_provider.dart';
+import 'package:tonkatsu_box/features/showcase/utils/release_schedule.dart';
 import 'package:tonkatsu_box/features/showcase/widgets/release_board.dart';
 import 'package:tonkatsu_box/features/showcase/widgets/release_card.dart';
 
@@ -40,13 +41,13 @@ List<Override> _fixedClock() => <Override>[
 
 Widget _board(
   List<ShowcaseItem> items, {
-  bool allowsDayGrouping = false,
+  ReleaseGrouping defaultGrouping = ReleaseGrouping.list,
 }) =>
     SingleChildScrollView(
       child: ReleaseBoard(
         title: 'Board',
         items: items,
-        allowsDayGrouping: allowsDayGrouping,
+        defaultGrouping: defaultGrouping,
         onTap: (_) {},
       ),
     );
@@ -193,7 +194,7 @@ void main() {
       expect(find.textContaining('Show all'), findsNothing);
     });
 
-    testWidgets('by-day view adds a heading per day and a TBA tail', (
+    testWidgets('by-date view adds a heading per day and a TBA tail', (
       WidgetTester tester,
     ) async {
       await tester.pumpApp(
@@ -204,15 +205,10 @@ void main() {
             _item(3, nextDate: DateTime(2026, 9, 14, 9)),
             _item(4),
           ],
-          allowsDayGrouping: true,
+          defaultGrouping: ReleaseGrouping.day,
         ),
         overrides: _fixedClock(),
       );
-
-      expect(find.text('Date TBA'), findsNothing);
-
-      await tester.tap(find.byIcon(Icons.calendar_view_day_outlined));
-      await tester.pumpAndSettle();
 
       expect(find.text('Saturday, 12 Sep'), findsOneWidget);
       expect(find.text('Monday, 14 Sep'), findsOneWidget);
@@ -220,7 +216,58 @@ void main() {
       expect(find.byType(ReleaseCard), findsNWidgets(4));
     });
 
-    testWidgets('by-day view shows every day, not just the collapsed head', (
+    testWidgets('the weekday view names the day and drops the date', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        _board(
+          <ShowcaseItem>[
+            _item(1, nextDate: DateTime(2026, 9, 11, 20)),
+            _item(2, nextDate: DateTime(2026, 9, 18, 20)),
+          ],
+          defaultGrouping: ReleaseGrouping.weekday,
+        ),
+        overrides: _fixedClock(),
+      );
+
+      expect(find.text('Friday'), findsOneWidget);
+      expect(find.byType(ReleaseCard), findsNWidgets(2));
+    });
+
+    testWidgets('the week view heads each bucket with its date range', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        _board(
+          <ShowcaseItem>[_item(1, nextDate: DateTime(2026, 9, 11, 20))],
+          defaultGrouping: ReleaseGrouping.week,
+        ),
+        overrides: _fixedClock(),
+      );
+
+      expect(find.text('Sep 7 - Sep 13'), findsOneWidget);
+    });
+
+    testWidgets('switching back to the list drops every heading', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        _board(
+          <ShowcaseItem>[_item(1, nextDate: DateTime(2026, 9, 12, 20))],
+          defaultGrouping: ReleaseGrouping.day,
+        ),
+        overrides: _fixedClock(),
+      );
+      expect(find.text('Saturday, 12 Sep'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.view_list_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Saturday, 12 Sep'), findsNothing);
+      expect(find.byType(ReleaseCard), findsOneWidget);
+    });
+
+    testWidgets('a bucketed view shows every group, not a collapsed head', (
       WidgetTester tester,
     ) async {
       final List<ShowcaseItem> items = <ShowcaseItem>[
@@ -228,22 +275,15 @@ void main() {
           _item(i, nextDate: DateTime(2026, 9, 11 + i)),
       ];
       await tester.pumpApp(
-        _board(items, allowsDayGrouping: true),
+        _board(items, defaultGrouping: ReleaseGrouping.day),
         overrides: _fixedClock(),
       );
-      expect(
-        find.byType(ReleaseCard),
-        findsNWidgets(releaseBoardCollapsedCount),
-      );
-
-      await tester.tap(find.byIcon(Icons.calendar_view_day_outlined));
-      await tester.pumpAndSettle();
 
       expect(find.byType(ReleaseCard), findsNWidgets(items.length));
       expect(find.textContaining('Show all'), findsNothing);
     });
 
-    testWidgets('the view toggle is absent unless the row allows it', (
+    testWidgets('the grouping switch is absent unless the row allows it', (
       WidgetTester tester,
     ) async {
       await tester.pumpApp(
@@ -251,7 +291,29 @@ void main() {
         overrides: _fixedClock(),
       );
 
-      expect(find.byIcon(Icons.calendar_view_day_outlined), findsNothing);
+      expect(find.byIcon(Icons.calendar_view_week_outlined), findsNothing);
+    });
+
+    testWidgets('a phone width lays the cards out one per row', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpApp(
+        _board(<ShowcaseItem>[
+          _item(1, nextDate: DateTime(2026, 9, 12)),
+          _item(2, nextDate: DateTime(2026, 9, 13)),
+        ]),
+        overrides: _fixedClock(),
+      );
+
+      final List<ReleaseCard> cards =
+          tester.widgetList<ReleaseCard>(find.byType(ReleaseCard)).toList();
+      expect(tester.getTopLeft(find.byWidget(cards[0])).dx,
+          tester.getTopLeft(find.byWidget(cards[1])).dx);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('empty items render nothing', (WidgetTester tester) async {
@@ -261,6 +323,25 @@ void main() {
       );
 
       expect(find.text('Board'), findsNothing);
+    });
+  });
+
+  group('ReleaseGrid.columnsFor', () {
+    test('a phone pane keeps a single column', () {
+      expect(ReleaseGrid.columnsFor(360), 1);
+    });
+
+    test('a pane too narrow for two full cards stays single', () {
+      expect(ReleaseGrid.columnsFor(599), 1);
+    });
+
+    test('a desktop pane splits into as many full-width cards as fit', () {
+      expect(ReleaseGrid.columnsFor(800), 2);
+      expect(ReleaseGrid.columnsFor(1200), 3);
+    });
+
+    test('a pane narrower than one card still gets a column', () {
+      expect(ReleaseGrid.columnsFor(0), 1);
     });
   });
 }

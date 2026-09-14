@@ -5394,7 +5394,13 @@ class SEs extends S {
   String get showcaseViewList => 'Lista';
 
   @override
-  String get showcaseViewByDay => 'Por día';
+  String get showcaseViewByDay => 'Por fecha';
+
+  @override
+  String get showcaseViewByWeekday => 'Por día de la semana';
+
+  @override
+  String get showcaseViewByWeek => 'Por semana';
 
   @override
   String get showcaseDateTba => 'Fecha por anunciar';

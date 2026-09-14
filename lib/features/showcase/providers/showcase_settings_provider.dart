@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../utils/release_schedule.dart';
 
 abstract final class ShowcaseSettingsKeys {
   /// JSON array of row keys the user turned off. Stored as the hidden set so
@@ -44,12 +45,14 @@ enum ShowcaseRowId {
   /// Library type whose count orders the row within its group.
   final MediaType mediaType;
 
-  /// Weekly-rhythm feeds get a per-day view on top of the plain list.
-  bool get allowsDayGrouping => switch (this) {
+  /// How a dated feed opens, and whether it offers the switch at all: a
+  /// weekly rhythm reads best by weekday, a season of premieres by week.
+  ReleaseGrouping get defaultGrouping => switch (this) {
         ShowcaseRowId.animeThisSeason ||
         ShowcaseRowId.tvEpisodesThisWeek =>
-          true,
-        _ => false,
+          ReleaseGrouping.weekday,
+        ShowcaseRowId.animeNextSeason => ReleaseGrouping.week,
+        _ => ReleaseGrouping.list,
       };
 
   IconData get icon => switch (this) {

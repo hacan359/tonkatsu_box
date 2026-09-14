@@ -5377,7 +5377,13 @@ class SPt extends S {
   String get showcaseViewList => 'Lista';
 
   @override
-  String get showcaseViewByDay => 'Por dia';
+  String get showcaseViewByDay => 'Por data';
+
+  @override
+  String get showcaseViewByWeekday => 'Por dia da semana';
+
+  @override
+  String get showcaseViewByWeek => 'Por semana';
 
   @override
   String get showcaseDateTba => 'Data a anunciar';

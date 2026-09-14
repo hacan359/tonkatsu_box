@@ -5412,7 +5412,13 @@ class SFr extends S {
   String get showcaseViewList => 'Liste';
 
   @override
-  String get showcaseViewByDay => 'Par jour';
+  String get showcaseViewByDay => 'Par date';
+
+  @override
+  String get showcaseViewByWeekday => 'Par jour de la semaine';
+
+  @override
+  String get showcaseViewByWeek => 'Par semaine';
 
   @override
   String get showcaseDateTba => 'Date à venir';

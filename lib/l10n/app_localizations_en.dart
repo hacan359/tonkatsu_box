@@ -5325,7 +5325,13 @@ class SEn extends S {
   String get showcaseViewList => 'List';
 
   @override
-  String get showcaseViewByDay => 'By day';
+  String get showcaseViewByDay => 'By date';
+
+  @override
+  String get showcaseViewByWeekday => 'By weekday';
+
+  @override
+  String get showcaseViewByWeek => 'By week';
 
   @override
   String get showcaseDateTba => 'Date TBA';

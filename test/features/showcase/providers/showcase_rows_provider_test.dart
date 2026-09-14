@@ -112,7 +112,7 @@ void main() {
     test('should cap the row and ask for details only that many times',
         () async {
       answerDiscover(<TvShow>[
-        for (int i = 1; i <= showcaseRowLimit + 5; i++)
+        for (int i = 1; i <= tvEpisodesRowLimit + 5; i++)
           createTestTvShow(tmdbId: i, title: 'Show $i'),
       ]);
       when(() => tmdb.getNextEpisodeToAir(any())).thenAnswer((_) async => null);
@@ -120,9 +120,9 @@ void main() {
       final List<ShowcaseItem> items =
           await createContainer().read(tvEpisodesThisWeekProvider.future);
 
-      expect(items, hasLength(showcaseRowLimit));
+      expect(items, hasLength(tvEpisodesRowLimit));
       verify(() => tmdb.getNextEpisodeToAir(any()))
-          .called(showcaseRowLimit);
+          .called(tvEpisodesRowLimit);
     });
 
     test('should skip TMDB entirely without an API key', () async {

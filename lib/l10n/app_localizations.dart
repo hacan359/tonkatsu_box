@@ -9419,8 +9419,20 @@ abstract class S {
   /// No description provided for @showcaseViewByDay.
   ///
   /// In en, this message translates to:
-  /// **'By day'**
+  /// **'By date'**
   String get showcaseViewByDay;
+
+  /// No description provided for @showcaseViewByWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'By weekday'**
+  String get showcaseViewByWeekday;
+
+  /// No description provided for @showcaseViewByWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'By week'**
+  String get showcaseViewByWeek;
 
   /// No description provided for @showcaseDateTba.
   ///

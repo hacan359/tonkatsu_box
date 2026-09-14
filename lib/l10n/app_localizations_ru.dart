@@ -5415,7 +5415,13 @@ class SRu extends S {
   String get showcaseViewList => 'Список';
 
   @override
-  String get showcaseViewByDay => 'По дням';
+  String get showcaseViewByDay => 'По датам';
+
+  @override
+  String get showcaseViewByWeekday => 'По дням недели';
+
+  @override
+  String get showcaseViewByWeek => 'По неделям';
 
   @override
   String get showcaseDateTba => 'Дата не объявлена';
