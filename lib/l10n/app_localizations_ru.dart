@@ -3436,6 +3436,9 @@ class SRu extends S {
   String get dualDatePickerNoDate => 'Без даты';
 
   @override
+  String get dualDatePickerBothDates => 'Начал и закончил в этот день';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Введите дату';
 
   @override
@@ -5442,10 +5445,11 @@ class SRu extends S {
       'По тому, что вы прошли, досмотрели и оценили';
 
   @override
-  String get likesTitle => 'Лайки и заметки';
+  String get likesTitle => 'Лайки, заметки, повторы';
 
   @override
-  String get personalizationLikesHint => 'Отмеченные серии, главы и треки';
+  String get personalizationLikesHint =>
+      'Отмеченные серии и главы, пересмотренные тайтлы';
 
   @override
   String get likesEmptyTitle => 'Пока ничего не отмечено';
@@ -5471,6 +5475,28 @@ class SRu extends S {
       many: '$count отметок',
       few: '$count отметки',
       one: '1 отметка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Повторы';
+
+  @override
+  String get likesSectionMarks => 'Лайки и заметки';
+
+  @override
+  String get likesRewatchFilter => 'С повторами';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count повтора',
+      many: '$count повторов',
+      few: '$count повтора',
+      one: '1 повтор',
     );
     return '$_temp0';
   }

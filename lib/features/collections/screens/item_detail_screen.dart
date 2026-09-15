@@ -1272,15 +1272,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     ActivityDateField field,
     DateTime? date,
   ) async {
-    final bool started = field == ActivityDateField.started;
+    final (bool touchesStart, bool touchesCompletion) = switch (field) {
+      ActivityDateField.started => (true, false),
+      ActivityDateField.completed => (false, true),
+      ActivityDateField.both => (true, true),
+    };
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateActivityDates(
           id,
-          startedAt: started ? date : null,
-          completedAt: started ? null : date,
-          clearStartedAt: started && date == null,
-          clearCompletedAt: !started && date == null,
+          startedAt: touchesStart ? date : null,
+          completedAt: touchesCompletion ? date : null,
+          clearStartedAt: touchesStart && date == null,
+          clearCompletedAt: touchesCompletion && date == null,
           lastActivityAt: DateTime.now(),
         );
   }

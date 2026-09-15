@@ -214,6 +214,108 @@ void main() {
       });
     });
 
+    group('синхронизация статуса при установке обеих дат одним днём', () {
+      test('should set completed with both dates when it was notStarted', () async {
+        final CollectionItem item = _makeItem(status: ItemStatus.notStarted);
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime day = DateTime(2024, 6, 1);
+
+        await notifier.updateActivityDates(
+          1,
+          startedAt: day,
+          completedAt: day,
+          lastActivityAt: DateTime.now(),
+        );
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items, isNotNull);
+        expect(items!.first.startedAt, day);
+        expect(items.first.completedAt, day);
+        expect(items.first.status, ItemStatus.completed);
+      });
+
+      test('should set completed with both dates when it was planned', () async {
+        final CollectionItem item = _makeItem(status: ItemStatus.planned);
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime day = DateTime(2024, 6, 1);
+
+        await notifier.updateActivityDates(
+          1,
+          startedAt: day,
+          completedAt: day,
+          lastActivityAt: DateTime.now(),
+        );
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items!.first.status, ItemStatus.completed);
+      });
+
+      test('should overwrite older dates and set completed when it was inProgress', () async {
+        final CollectionItem item = _makeItem(
+          status: ItemStatus.inProgress,
+          startedAt: DateTime(2024, 1, 1),
+        );
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime day = DateTime(2024, 6, 1);
+
+        await notifier.updateActivityDates(
+          1,
+          startedAt: day,
+          completedAt: day,
+          lastActivityAt: DateTime.now(),
+        );
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items!.first.startedAt, day);
+        expect(items.first.completedAt, day);
+        expect(items.first.status, ItemStatus.completed);
+      });
+
+      test('should keep completed and not bump rewatch count when already completed', () async {
+        final CollectionItem item = _makeItem(
+          status: ItemStatus.completed,
+          startedAt: DateTime(2024, 1, 1),
+          completedAt: DateTime(2024, 2, 1),
+        );
+        final ProviderContainer container = createContainer(initialItems: <CollectionItem>[item]);
+        await waitForLoad(container, testCollectionId);
+
+        final CollectionItemsNotifier notifier =
+            container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
+        final DateTime day = DateTime(2024, 6, 1);
+        final int? rewatchBefore = item.rewatchCount;
+
+        await notifier.updateActivityDates(
+          1,
+          startedAt: day,
+          completedAt: day,
+          lastActivityAt: DateTime.now(),
+        );
+
+        final List<CollectionItem>? items =
+            container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
+        expect(items!.first.status, ItemStatus.completed);
+        expect(items.first.startedAt, day);
+        expect(items.first.completedAt, day);
+        expect(items.first.rewatchCount, rewatchBefore);
+      });
+    });
+
     group('синхронизация статуса при установке completedAt', () {
       test('should change status to completed when completedAt is set (was notStarted)', () async {
         final CollectionItem item = _makeItem(status: ItemStatus.notStarted);

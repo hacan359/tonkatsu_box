@@ -11,9 +11,14 @@ import '../../collections/providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 
-/// One title on the likes page: the item and every mark on its units.
+/// One title on the likes page: the item, every mark on its units, and the
+/// replay counter — a mark on the title itself rather than on a unit.
 class MarkedUnitGroup {
-  const MarkedUnitGroup({required this.item, required this.units});
+  const MarkedUnitGroup({
+    required this.item,
+    required this.units,
+    this.rewatchCount = 0,
+  });
 
   final CollectionItem item;
 
@@ -21,13 +26,39 @@ class MarkedUnitGroup {
   /// scans better than a shuffle by when each was liked.
   final List<MarkedUnit> units;
 
-  /// The freshest activity in the group; groups are ordered by it.
-  DateTime get latest => units
-      .map((MarkedUnit u) => u.mark.likedAt ?? u.mark.updatedAt)
-      .reduce((DateTime a, DateTime b) => a.isAfter(b) ? a : b);
+  /// Mirrors `rewatch_count`, where 0 means "finished once": only a count
+  /// above zero is a replay, so 0 doubles as "no replay row".
+  final int rewatchCount;
 
-  MarkedUnitGroup copyWith({List<MarkedUnit>? units}) =>
-      MarkedUnitGroup(item: item, units: units ?? this.units);
+  bool get isReplayed => rewatchCount > 0;
+
+  /// The freshest activity in the group; groups are ordered by it. A title
+  /// that only carries replays has no mark dates to go by.
+  DateTime get latest => units.isEmpty
+      ? item.lastActivityAt ?? item.completedAt ?? item.addedAt
+      : units
+          .map((MarkedUnit u) => u.mark.likedAt ?? u.mark.updatedAt)
+          .reduce((DateTime a, DateTime b) => a.isAfter(b) ? a : b);
+
+  MarkedUnitGroup copyWith({List<MarkedUnit>? units, int? rewatchCount}) =>
+      MarkedUnitGroup(
+        item: item,
+        units: units ?? this.units,
+        rewatchCount: rewatchCount ?? this.rewatchCount,
+      );
+}
+
+/// `latest` reduces over the units, so it is read once per group rather
+/// than twice per comparison.
+List<MarkedUnitGroup> _newestFirst(Iterable<MarkedUnitGroup> groups) {
+  final List<(DateTime, MarkedUnitGroup)> keyed = <(DateTime, MarkedUnitGroup)>[
+    for (final MarkedUnitGroup g in groups) (g.latest, g),
+  ];
+  keyed.sort(
+    ((DateTime, MarkedUnitGroup) a, (DateTime, MarkedUnitGroup) b) =>
+        b.$1.compareTo(a.$1),
+  );
+  return <MarkedUnitGroup>[for (final (DateTime, MarkedUnitGroup) k in keyed) k.$2];
 }
 
 /// Every marked unit in the library, grouped by title, newest group first.
@@ -52,15 +83,11 @@ class MarkedUnitsNotifier extends AsyncNotifier<List<MarkedUnitGroup>> {
     final List<CollectionItem> items =
         await db.collectionDao.getItemsWithDataByRowIds(byItem.keys.toList());
 
-    final List<MarkedUnitGroup> groups = <MarkedUnitGroup>[
+    return _newestFirst(<MarkedUnitGroup>[
       for (final CollectionItem item in items)
         if (byItem[item.id] case final List<MarkedUnit> marks)
           MarkedUnitGroup(item: item, units: _inReadingOrder(marks)),
-    ];
-    groups.sort(
-      (MarkedUnitGroup a, MarkedUnitGroup b) => b.latest.compareTo(a.latest),
-    );
-    return groups;
+    ]);
   }
 
   static List<MarkedUnit> _inReadingOrder(List<MarkedUnit> marks) {
@@ -76,8 +103,55 @@ class MarkedUnitsNotifier extends AsyncNotifier<List<MarkedUnitGroup>> {
   }
 }
 
-/// What a mark carries; the page filters by it.
-enum LikesKind { liked, noted }
+/// Titles the user went through more than once. `rewatch_count` is MAL "times
+/// watched": `null` is "not tracked" and `0` is "finished once", so only above
+/// zero is a replay. Comes from the library list already in memory.
+final Provider<AsyncValue<List<CollectionItem>>> rewatchedItemsProvider =
+    Provider<AsyncValue<List<CollectionItem>>>((Ref ref) {
+  return ref.watch(visibleAllItemsProvider).whenData(
+        (List<CollectionItem> items) => <CollectionItem>[
+          for (final CollectionItem i in items)
+            if ((i.rewatchCount ?? 0) > 0) i,
+        ],
+      );
+});
+
+/// Marks and replays in one list of titles, newest first. A replayed title
+/// with no marks joins as a group of its own.
+final Provider<AsyncValue<List<MarkedUnitGroup>>> likesEntriesProvider =
+    Provider<AsyncValue<List<MarkedUnitGroup>>>((Ref ref) {
+  // A library that failed to load must not blank the marks: replays are the
+  // optional half of the page.
+  final List<CollectionItem> replayed =
+      ref.watch(rewatchedItemsProvider).valueOrNull ?? const <CollectionItem>[];
+  return ref.watch(markedUnitsProvider).whenData(
+        (List<MarkedUnitGroup> groups) => _withReplays(groups, replayed),
+      );
+});
+
+List<MarkedUnitGroup> _withReplays(
+  List<MarkedUnitGroup> groups,
+  List<CollectionItem> replayed,
+) {
+  if (replayed.isEmpty) return groups;
+  final Map<int, MarkedUnitGroup> byItem = <int, MarkedUnitGroup>{
+    for (final MarkedUnitGroup g in groups) g.item.id: g,
+  };
+  for (final CollectionItem item in replayed) {
+    final int count = item.rewatchCount ?? 0;
+    byItem[item.id] = byItem[item.id]?.copyWith(rewatchCount: count) ??
+        MarkedUnitGroup(
+          item: item,
+          units: const <MarkedUnit>[],
+          rewatchCount: count,
+        );
+  }
+  return _newestFirst(byItem.values);
+}
+
+/// What a mark carries; the page filters by it. A replay marks the title, the
+/// other two mark a unit.
+enum LikesKind { liked, noted, rewatched }
 
 /// The page's filter state. Lives apart from the data so a toggle never
 /// refetches — on web every fetch is a round trip. The query comes from the
@@ -90,7 +164,8 @@ class LikesFilter {
     this.itemSearch,
   });
 
-  /// Empty or full means every mark; one kind narrows to it.
+  /// Empty means every kind; a selection narrows to the picked ones, so
+  /// replays alone, replays with likes and likes alone are all reachable.
   final Set<LikesKind> kinds;
 
   /// Empty means every type.
@@ -119,11 +194,12 @@ class LikesFilter {
     );
   }
 
+  bool _wants(LikesKind kind) => kinds.isEmpty || kinds.contains(kind);
+
   bool _kindAllows(MarkedUnit unit) {
-    if (kinds.isEmpty || kinds.length == LikesKind.values.length) return true;
-    return kinds.contains(LikesKind.liked)
-        ? unit.mark.isFavorite
-        : unit.mark.note != null;
+    if (kinds.isEmpty) return true;
+    return (_wants(LikesKind.liked) && unit.mark.isFavorite) ||
+        (_wants(LikesKind.noted) && unit.mark.note != null);
   }
 
   bool _unitMatchesQuery(MarkedUnit unit) {
@@ -134,27 +210,32 @@ class LikesFilter {
         (title != null && title.toLowerCase().contains(q));
   }
 
-  /// Applies the filter to grouped data, dropping titles left with no units.
+  /// Applies the filter to grouped data, dropping titles left with nothing.
   /// A title that matches the query keeps all its units; otherwise only the
   /// units whose own text matches survive.
   List<MarkedUnitGroup> apply(List<MarkedUnitGroup> groups) {
-    final String q = query.trim();
+    final bool hasQuery = query.trim().isNotEmpty;
     return <MarkedUnitGroup>[
       for (final MarkedUnitGroup g in groups)
         if (types.isEmpty || types.contains(g.item.mediaType))
-          if (_keptUnits(g, q.isNotEmpty) case final List<MarkedUnit> kept
-              when kept.isNotEmpty)
-            g.copyWith(units: kept),
+          if (_kept(g, hasQuery) case final MarkedUnitGroup kept
+              when kept.units.isNotEmpty || kept.isReplayed)
+            kept,
     ];
   }
 
-  List<MarkedUnit> _keptUnits(MarkedUnitGroup g, bool hasQuery) {
+  /// A replay row carries no text of its own, so a query reaches it only
+  /// through the title.
+  MarkedUnitGroup _kept(MarkedUnitGroup g, bool hasQuery) {
     final bool titleHit = hasQuery && (itemSearch?.matches(g.item) ?? false);
-    return <MarkedUnit>[
+    final List<MarkedUnit> units = <MarkedUnit>[
       for (final MarkedUnit u in g.units)
         if (_kindAllows(u) && (!hasQuery || titleHit || _unitMatchesQuery(u)))
           u,
     ];
+    final bool keepReplays =
+        _wants(LikesKind.rewatched) && (!hasQuery || titleHit);
+    return g.copyWith(units: units, rewatchCount: keepReplays ? null : 0);
   }
 }
 
@@ -202,15 +283,15 @@ final Provider<AsyncValue<List<MarkedUnitGroup>>> filteredMarkedUnitsProvider =
         itemSearch: itemSearch,
       );
   return ref
-      .watch(markedUnitsProvider)
+      .watch(likesEntriesProvider)
       .whenData((List<MarkedUnitGroup> groups) => filter.apply(groups));
 });
 
-/// Media types that actually carry marks — the chips the page offers.
+/// Media types that actually carry marks or replays — the chips the page offers.
 final Provider<List<MediaType>> markedMediaTypesProvider =
     Provider<List<MediaType>>((Ref ref) {
   final List<MarkedUnitGroup> groups =
-      ref.watch(markedUnitsProvider).valueOrNull ?? const <MarkedUnitGroup>[];
+      ref.watch(likesEntriesProvider).valueOrNull ?? const <MarkedUnitGroup>[];
   final Set<MediaType> present = <MediaType>{
     for (final MarkedUnitGroup g in groups) g.item.mediaType,
   };

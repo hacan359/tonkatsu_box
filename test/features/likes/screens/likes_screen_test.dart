@@ -1,4 +1,5 @@
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:core/models/marked_unit.dart';
 import 'package:core/models/media_type.dart';
@@ -91,9 +92,13 @@ void main() {
   List<Override> overrides(
     List<MarkedUnitGroup> groups, {
     String query = '',
+    List<CollectionItem> replayed = const <CollectionItem>[],
   }) =>
       <Override>[
         markedUnitsProvider.overrideWith(() => _FakeMarkedUnits(groups)),
+        rewatchedItemsProvider.overrideWithValue(
+          AsyncValue<List<CollectionItem>>.data(replayed),
+        ),
         collectionsProvider.overrideWith(_FakeCollections.new),
         itemTagsProvider.overrideWith(_NoItemTags.new),
         allTagsMapProvider.overrideWith((Ref ref) => <int, Tag>{}),
@@ -276,6 +281,53 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(MarkedGroupTile), findsNWidgets(2));
+    });
+
+    testWidgets('the replay chip narrows to titles that were replayed', (
+      WidgetTester tester,
+    ) async {
+      final CollectionItem replayed = createTestCollectionItem(
+        id: 3,
+        collectionId: 1,
+        mediaType: MediaType.movie,
+      ).copyWith(rewatchCount: 2);
+      await tester.pumpApp(
+        const LikesScreen(),
+        overrides: overrides(sample, replayed: <CollectionItem>[replayed]),
+      );
+      await tester.pumpAndSettle();
+
+      // Marks and replays share the list until a chip narrows it.
+      expect(find.byType(MarkedGroupTile), findsNWidgets(3));
+
+      await tester.tap(kindChip(LikesKind.rewatched));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarkedGroupTile), findsOneWidget);
+      expect(find.byKey(const ValueKey<int>(3)), findsOneWidget);
+
+      // Replays and likes together bring the marked titles back.
+      await tester.tap(kindChip(LikesKind.liked));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarkedGroupTile), findsNWidgets(3));
+    });
+
+    testWidgets('a replayed title drops out when only likes are picked', (
+      WidgetTester tester,
+    ) async {
+      final CollectionItem replayed = createTestCollectionItem(
+        id: 3,
+        collectionId: 1,
+        mediaType: MediaType.movie,
+      ).copyWith(rewatchCount: 2);
+      await tester.pumpApp(
+        const LikesScreen(),
+        overrides: overrides(sample, replayed: <CollectionItem>[replayed]),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(kindChip(LikesKind.liked));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey<int>(3)), findsNothing);
     });
   });
 }

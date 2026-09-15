@@ -3166,6 +3166,9 @@ class SZh extends S {
   String get dualDatePickerNoDate => '无日期';
 
   @override
+  String get dualDatePickerBothDates => '当天开始并完成';
+
+  @override
   String get dualDatePickerErrorEmpty => '请输入日期';
 
   @override
@@ -5082,10 +5085,10 @@ class SZh extends S {
   String get personalizationRecommendationsHint => '基于你完成并评分的作品';
 
   @override
-  String get likesTitle => '点赞与笔记';
+  String get likesTitle => '点赞、笔记与重看';
 
   @override
-  String get personalizationLikesHint => '你标记过的剧集、章节和曲目';
+  String get personalizationLikesHint => '你标记的剧集与章节，重看过的作品';
 
   @override
   String get likesEmptyTitle => '还没有标记';
@@ -5107,6 +5110,25 @@ class SZh extends S {
       count,
       locale: localeName,
       other: '$count 个标记',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => '重看';
+
+  @override
+  String get likesSectionMarks => '点赞与笔记';
+
+  @override
+  String get likesRewatchFilter => '含重看';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '重看 $count 次',
     );
     return '$_temp0';
   }

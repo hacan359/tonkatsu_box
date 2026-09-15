@@ -2,22 +2,17 @@
 
 **だってばよ 0.44**
 
-**Search your library by details.** Switch the search field to "By details" and type a genre, a studio, an author,
-a tag, a label or a year: anything the app stores about a title. A comma means "and", a slash means "or":
-`horror / thriller, 2019`. Tap a genre, tag or author chip on an item card to run that search, then tap another chip
-to narrow it.
+**The personalization hub got a rebuild.** It opens on cards for Statistics, Recommendations, Showcase and Likes,
+each with a live preview. Showcase is new: release boards for anime, films, episodes, games and albums.
 
-**Likes and notes in one place.** The personalization hub (the centre button) gets a "Likes & notes" page:
-every episode, chapter or track you hearted or wrote a note on, grouped by title, with the episode or track name
-where the app knows it. Toggle likes or notes, narrow by media type, or type in the search field to find a note.
-
-The rest of the release, in short:
-
-- The personalization hub opens on cards for Statistics, Recommendations and Likes, each with a live preview.
-  The genre cloud sits in the statistics header.
-- Anime search by studio on the AniList tab; the studio name on a card opens it.
-- Text size slider in Settings, applied on top of the system setting.
-- Tapping a collection name on the All items screen opens that collection.
+- Search the library by details: genre, studio, author, tag, label or year. Chips on an item card run that search.
+- Likes, notes and replays: everything you hearted, noted or went through twice, grouped by title.
+- "Started and finished this day" on the item card fills both dates and marks the title Completed.
+- Anime search by studio on the AniList tab.
+- Text size slider in Settings.
+- A collection name on the All items screen opens that collection.
+- Search opens empty; poster feeds moved to the showcase.
+- Search inside a collection matches album artists and book authors.
 - IGDB search finds titles made of common words, such as "Until Then".
 
 A friendly reminder: our cozy [Discord](https://discord.gg/JZVNPF7cS2) server is where you can directly influence

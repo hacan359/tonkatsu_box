@@ -57,7 +57,7 @@ class _LikesScreenState extends ConsumerState<LikesScreen> {
     final AsyncValue<List<MarkedUnitGroup>> groups =
         ref.watch(filteredMarkedUnitsProvider);
     final bool hasAnyMarks =
-        ref.watch(markedUnitsProvider).valueOrNull?.isNotEmpty ?? false;
+        ref.watch(likesEntriesProvider).valueOrNull?.isNotEmpty ?? false;
 
     return Material(
       color: AppColors.background,
@@ -108,8 +108,8 @@ class _LikesScreenState extends ConsumerState<LikesScreen> {
   }
 }
 
-/// One scrolling row: the two kind toggles, then a chip per media type that
-/// carries marks. Nothing selected and everything selected both mean "all".
+/// One scrolling row: the three kind toggles, then a chip per media type
+/// present. Nothing selected and everything selected both mean "all".
 class _FilterRow extends ConsumerWidget {
   const _FilterRow({required this.filter, required this.types});
 
@@ -149,6 +149,15 @@ class _FilterRow extends ConsumerWidget {
             color: AppColors.textSecondary,
             active: allKinds || filter.kinds.contains(LikesKind.noted),
             onTap: () => notifier.toggleKind(LikesKind.noted),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _FilterChip(
+            key: const ValueKey<LikesKind>(LikesKind.rewatched),
+            tooltip: l.likesRewatchFilter,
+            icon: Icons.replay,
+            color: AppColors.statusReplaying,
+            active: allKinds || filter.kinds.contains(LikesKind.rewatched),
+            onTap: () => notifier.toggleKind(LikesKind.rewatched),
           ),
           if (types.length > 1) ...<Widget>[
             const SizedBox(width: AppSpacing.sm + AppSpacing.xs),
@@ -229,6 +238,9 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
+/// Replays first, then the marked titles, each block under its own heading.
+/// A title that was replayed lands in the replay block with all its rows, so
+/// nothing shows up twice.
 class _GroupList extends StatelessWidget {
   const _GroupList({required this.groups, required this.onOpen});
 
@@ -237,24 +249,87 @@ class _GroupList extends StatelessWidget {
 
   static const double _maxWidth = 920;
 
+  /// A heading and then its cards, flattened so the list stays lazy.
+  List<_Row> _rows(S l) {
+    final List<_Row> replays = <_Row>[
+      for (final MarkedUnitGroup g in groups)
+        if (g.isReplayed) _Card(g),
+    ];
+    final List<_Row> marks = <_Row>[
+      for (final MarkedUnitGroup g in groups)
+        if (!g.isReplayed) _Card(g),
+    ];
+    return <_Row>[
+      if (replays.isNotEmpty) ...<_Row>[_Heading(l.likesSectionRewatch), ...replays],
+      if (marks.isNotEmpty) ...<_Row>[_Heading(l.likesSectionMarks), ...marks],
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<_Row> rows = _rows(S.of(context));
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: _maxWidth),
         child: ListView.separated(
           padding: const EdgeInsets.all(AppSpacing.md),
-          itemCount: groups.length,
+          itemCount: rows.length,
           separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-          itemBuilder: (BuildContext context, int index) {
-            final MarkedUnitGroup group = groups[index];
-            return MarkedGroupTile(
-              key: ValueKey<int>(group.item.id),
-              group: group,
-              onOpen: () => onOpen(group),
-            );
+          itemBuilder: (BuildContext context, int index) =>
+              switch (rows[index]) {
+            _Heading(:final String title) =>
+              _SectionTitle(title: title, first: index == 0),
+            _Card(:final MarkedUnitGroup group) => MarkedGroupTile(
+                key: ValueKey<int>(group.item.id),
+                group: group,
+                onOpen: () => onOpen(group),
+              ),
           },
+        ),
+      ),
+    );
+  }
+}
+
+sealed class _Row {
+  const _Row();
+}
+
+class _Heading extends _Row {
+  const _Heading(this.title);
+
+  final String title;
+}
+
+class _Card extends _Row {
+  const _Card(this.group);
+
+  final MarkedUnitGroup group;
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title, required this.first});
+
+  final String title;
+
+  /// The list's own padding already spaces the first heading off the top.
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.xs,
+        top: first ? 0 : AppSpacing.md,
+        bottom: AppSpacing.xs,
+      ),
+      child: Text(
+        title,
+        style: AppTypography.bodySmall.copyWith(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.6,
         ),
       ),
     );

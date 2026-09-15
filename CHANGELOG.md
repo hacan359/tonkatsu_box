@@ -241,19 +241,24 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     filterBlockedBy in all locales.
   * packages/core/lib/testing/builders.dart (createTestAnime): studios parameter.
 
-- **Likes and notes page**
+- **Likes, notes and replays page**
 
   - The personalization hub gets a third section: every liked or noted
     episode, season, chapter, volume, page, part or track in the library,
     grouped by title, freshest title first.
+  - Titles with a replay count above zero join the list too, under their own
+    "Replays" heading ahead of the marked titles. A replayed title that also
+    carries marks shows the replay row first, then its units.
   - Each unit shows its number and the cached episode or track name, a heart
     when liked, and the note text cut at two lines.
-  - One row of icon toggles: a heart and a note pick likes, notes or both, and
-    a chip per media type narrows further. The top-bar search field matches
-    note text, unit names and the title the same way Home does.
+  - One row of icon toggles: a heart, a note and a replay arrow pick any
+    combination of likes, notes and replays, and a chip per media type narrows
+    further. The top-bar search field matches note text, unit names and the
+    title the same way Home does; a replay row is reached through its title.
   - Tapping a title or a unit opens the item card. A mark set or removed in a
     card shows up on the page without a restart.
-  - The hub card previews the mark count and the two freshest marks.
+  - The hub card previews the mark and replay count and the two freshest
+    entries.
 
   * packages/core/lib/database/dao/item_mark_dao.dart (ItemMarkDao.getAllMarks):
     New; joins tv_episodes_cache and audio_tracks_cache for the unit name.
@@ -262,8 +267,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     packages/core/lib/rpc/generated/item_mark_dao.remote.rpc.dart: Regenerated.
   * packages/core/lib/rpc/protocol.dart (kProtocolVersion): 3.
   * lib/features/likes/providers/marked_units_provider.dart (MarkedUnitGroup,
-    markedUnitsProvider, MarkedUnitsNotifier, LikesKind, LikesFilter,
-    likesFilterProvider, LikesFilterNotifier, filteredMarkedUnitsProvider,
+    markedUnitsProvider, MarkedUnitsNotifier, rewatchedItemsProvider,
+    likesEntriesProvider, LikesKind, LikesFilter, likesFilterProvider,
+    LikesFilterNotifier, filteredMarkedUnitsProvider,
     markedMediaTypesProvider): New.
   * lib/features/likes/screens/likes_screen.dart (LikesScreen),
     lib/features/likes/widgets/marked_group_tile.dart (MarkedGroupTile),
@@ -282,8 +288,28 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     New; lib/features/home/screens/all_items_screen.dart
     (_AllItemsScreenState._isItemEditable) delegates to it.
   * lib/l10n/app_*.arb (likesTitle, personalizationLikesHint, likesEmptyTitle,
-    likesEmptyBody, likesNoMatches, likesTrackWithDisc, likesMarkCount): New
-    strings.
+    likesEmptyBody, likesNoMatches, likesTrackWithDisc, likesMarkCount,
+    likesSectionRewatch, likesSectionMarks, likesRewatchFilter,
+    likesRewatchTimes): New strings.
+
+- **Set the start and completion date in one tap**
+
+  The date dialog behind the Started and Completed tiles on the item card
+  gets a "Started and finished this day" action. It writes the picked day
+  into both fields, and the title moves to Completed unless it is there
+  already.
+
+  * lib/shared/widgets/dual_date_picker_dialog.dart (DualDateResult.pickedBoth,
+    DualDateResult.appliesToBoth, showDualDatePickerResult.allowBoth,
+    DualDatePickerDialog.allowBoth): New; the action row wraps so the four
+    buttons fit a phone-width dialog.
+  * lib/shared/widgets/media_detail_view.dart (ActivityDateField.both,
+    _MediaDetailViewState._pickActivityDate): Offer the action from both
+    tiles and report the new field.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._updateActivityDate): Write both dates for the
+    new field in one update.
+  * lib/l10n/app_*.arb (dualDatePickerBothDates): New string.
 
 ### Changed
 

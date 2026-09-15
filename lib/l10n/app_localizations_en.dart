@@ -3371,6 +3371,9 @@ class SEn extends S {
   String get dualDatePickerNoDate => 'No date';
 
   @override
+  String get dualDatePickerBothDates => 'Started and finished this day';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Enter a date';
 
   @override
@@ -5352,11 +5355,11 @@ class SEn extends S {
       'Based on what you finished and rated';
 
   @override
-  String get likesTitle => 'Likes & notes';
+  String get likesTitle => 'Likes, notes & replays';
 
   @override
   String get personalizationLikesHint =>
-      'Episodes, chapters and tracks you marked';
+      'Episodes and chapters you marked, titles you replayed';
 
   @override
   String get likesEmptyTitle => 'Nothing marked yet';
@@ -5380,6 +5383,26 @@ class SEn extends S {
       locale: localeName,
       other: '$count marks',
       one: '1 mark',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Replays';
+
+  @override
+  String get likesSectionMarks => 'Likes & notes';
+
+  @override
+  String get likesRewatchFilter => 'With replays';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count replays',
+      one: '1 replay',
     );
     return '$_temp0';
   }

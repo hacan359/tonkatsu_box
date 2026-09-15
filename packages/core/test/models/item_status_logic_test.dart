@@ -298,6 +298,34 @@ void main() {
   });
 
   group('computeStatusForDates', () {
+    test('both dates on the same day set completed from any open status', () {
+      final DateTime day = DateTime(2024, 6, 1);
+      for (final ItemStatus status in <ItemStatus>[
+        ItemStatus.notStarted,
+        ItemStatus.planned,
+        ItemStatus.inProgress,
+        ItemStatus.dropped,
+      ]) {
+        expect(
+          computeStatusForDates(
+            currentStatus: status,
+            newCompletedAt: day,
+            newStartedAt: day,
+          ),
+          ItemStatus.completed,
+          reason: 'from $status',
+        );
+      }
+      expect(
+        computeStatusForDates(
+          currentStatus: ItemStatus.completed,
+          newCompletedAt: day,
+          newStartedAt: day,
+        ),
+        isNull,
+      );
+    });
+
     test('completedAt ставит completed если был другой статус', () {
       final ItemStatus? result = computeStatusForDates(
         currentStatus: ItemStatus.inProgress,

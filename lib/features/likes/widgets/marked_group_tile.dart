@@ -89,8 +89,22 @@ class MarkedGroupTile extends ConsumerWidget {
             ),
           ),
           Divider(height: 0.5, thickness: 0.5, color: AppColors.surfaceBorder),
+          // The replay counter marks the whole title, so it leads the units.
+          if (group.isReplayed)
+            _MarkRow(
+              icons: <_MarkIcon>[
+                (icon: Icons.replay, color: AppColors.statusReplaying),
+              ],
+              label: l.likesRewatchTimes(group.rewatchCount),
+              onTap: onOpen,
+            ),
           for (final MarkedUnit unit in group.units)
-            _UnitRow(unit: unit, label: markedUnitLabel(l, unit), onTap: onOpen),
+            _MarkRow(
+              icons: _unitIcons(unit),
+              label: markedUnitLabel(l, unit),
+              note: unit.mark.note,
+              onTap: onOpen,
+            ),
           const SizedBox(height: AppSpacing.xs),
         ],
       ),
@@ -135,25 +149,37 @@ class _Cover extends StatelessWidget {
   }
 }
 
-class _UnitRow extends StatelessWidget {
-  const _UnitRow({
-    required this.unit,
+typedef _MarkIcon = ({IconData icon, Color color});
+
+/// Both icons can show at once: a unit may be liked and noted.
+List<_MarkIcon> _unitIcons(MarkedUnit unit) => <_MarkIcon>[
+      if (unit.mark.isFavorite)
+        (icon: Icons.favorite, color: AppColors.favorite),
+      if (unit.mark.note != null)
+        (icon: Icons.sticky_note_2_outlined, color: AppColors.textTertiary),
+    ];
+
+class _MarkRow extends StatelessWidget {
+  const _MarkRow({
+    required this.icons,
     required this.label,
     required this.onTap,
+    this.note,
   });
 
-  final MarkedUnit unit;
+  final List<_MarkIcon> icons;
   final String label;
+  final String? note;
   final VoidCallback onTap;
 
-  /// Fixed slot for the two mark icons so labels line up across rows.
+  /// Fixed slot for the mark icons so labels line up across rows.
   static const double _iconSlot = 40;
   static const double _iconSize = 14;
   static const double _noteGap = 2;
 
   @override
   Widget build(BuildContext context) {
-    final String? note = unit.mark.note;
+    final String? note = this.note;
     final TextStyle labelStyle =
         AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w500);
     // The slot is exactly one label line tall so the icons sit centred on
@@ -173,27 +199,15 @@ class _UnitRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Both icons can show at once: a unit may be liked and noted.
             SizedBox(
               width: _iconSlot,
               height: lineHeight,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                spacing: AppSpacing.xs,
                 children: <Widget>[
-                  if (unit.mark.isFavorite)
-                    Icon(
-                      Icons.favorite,
-                      size: _iconSize,
-                      color: AppColors.favorite,
-                    ),
-                  if (unit.mark.isFavorite && note != null)
-                    const SizedBox(width: AppSpacing.xs),
-                  if (note != null)
-                    Icon(
-                      Icons.sticky_note_2_outlined,
-                      size: _iconSize,
-                      color: AppColors.textTertiary,
-                    ),
+                  for (final _MarkIcon m in icons)
+                    Icon(m.icon, size: _iconSize, color: m.color),
                 ],
               ),
             ),

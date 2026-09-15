@@ -5960,6 +5960,12 @@ abstract class S {
   /// **'No date'**
   String get dualDatePickerNoDate;
 
+  /// No description provided for @dualDatePickerBothDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Started and finished this day'**
+  String get dualDatePickerBothDates;
+
   /// No description provided for @dualDatePickerErrorEmpty.
   ///
   /// In en, this message translates to:
@@ -9467,13 +9473,13 @@ abstract class S {
   /// No description provided for @likesTitle.
   ///
   /// In en, this message translates to:
-  /// **'Likes & notes'**
+  /// **'Likes, notes & replays'**
   String get likesTitle;
 
   /// No description provided for @personalizationLikesHint.
   ///
   /// In en, this message translates to:
-  /// **'Episodes, chapters and tracks you marked'**
+  /// **'Episodes and chapters you marked, titles you replayed'**
   String get personalizationLikesHint;
 
   /// No description provided for @likesEmptyTitle.
@@ -9505,6 +9511,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 mark} other{{count} marks}}'**
   String likesMarkCount(int count);
+
+  /// No description provided for @likesSectionRewatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Replays'**
+  String get likesSectionRewatch;
+
+  /// No description provided for @likesSectionMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes & notes'**
+  String get likesSectionMarks;
+
+  /// No description provided for @likesRewatchFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'With replays'**
+  String get likesRewatchFilter;
+
+  /// No description provided for @likesRewatchTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 replay} other{{count} replays}}'**
+  String likesRewatchTimes(int count);
 
   /// No description provided for @genreCloudEmpty.
   ///

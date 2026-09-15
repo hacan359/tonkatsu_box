@@ -52,9 +52,18 @@ void main() {
     when(() => mockDb.collectionDao).thenReturn(items);
   });
 
-  ProviderContainer makeContainer() {
+  /// The replay half comes from the library list; these tests pin it so the
+  /// whole all-items stack (sort, prefs, collections) stays out of them.
+  ProviderContainer makeContainer({
+    List<CollectionItem> replayed = const <CollectionItem>[],
+  }) {
     final ProviderContainer container = ProviderContainer(
-      overrides: <Override>[databaseServiceProvider.overrideWithValue(mockDb)],
+      overrides: <Override>[
+        databaseServiceProvider.overrideWithValue(mockDb),
+        rewatchedItemsProvider.overrideWithValue(
+          AsyncValue<List<CollectionItem>>.data(replayed),
+        ),
+      ],
     );
     addTearDown(container.dispose);
     return container;
@@ -249,6 +258,134 @@ void main() {
         container.read(markedMediaTypesProvider),
         <MediaType>[MediaType.movie, MediaType.anime],
       );
+    });
+  });
+
+  group('likesEntriesProvider', () {
+    setUp(() {
+      when(marks.getAllMarks).thenAnswer(
+        (_) async => <MarkedUnit>[_unit(itemId: 1)],
+      );
+      when(() => items.getItemsWithDataByRowIds(any())).thenAnswer(
+        (_) async => <CollectionItem>[
+          createTestCollectionItem(id: 1, mediaType: MediaType.anime),
+        ],
+      );
+    });
+
+    test('hangs the replay counter on a title that also carries marks',
+        () async {
+      final ProviderContainer container = makeContainer(
+        replayed: <CollectionItem>[
+          createTestCollectionItem(id: 1, mediaType: MediaType.anime)
+              .copyWith(rewatchCount: 3),
+        ],
+      );
+      await container.read(markedUnitsProvider.future);
+
+      final List<MarkedUnitGroup> entries =
+          container.read(likesEntriesProvider).requireValue;
+      expect(entries, hasLength(1));
+      expect(entries.single.rewatchCount, 3);
+      expect(entries.single.units, hasLength(1));
+    });
+
+    test('orders a replay-only title by its last activity', () async {
+      final ProviderContainer container = makeContainer(
+        replayed: <CollectionItem>[
+          createTestCollectionItem(
+            id: 2,
+            mediaType: MediaType.movie,
+            rewatchCount: 1,
+            lastActivityAt: DateTime(2030),
+          ),
+          createTestCollectionItem(
+            id: 3,
+            mediaType: MediaType.movie,
+            rewatchCount: 1,
+            lastActivityAt: DateTime(1960),
+          ),
+        ],
+      );
+      await container.read(markedUnitsProvider.future);
+
+      final List<MarkedUnitGroup> entries =
+          container.read(likesEntriesProvider).requireValue;
+      // The mark on item 1 is dated 1970, so it lands between the two.
+      expect(entries.map((MarkedUnitGroup g) => g.item.id), <int>[2, 1, 3]);
+    });
+
+    test('adds a replayed title that carries no marks at all', () async {
+      final ProviderContainer container = makeContainer(
+        replayed: <CollectionItem>[
+          createTestCollectionItem(id: 2, mediaType: MediaType.movie)
+              .copyWith(rewatchCount: 1),
+        ],
+      );
+      await container.read(markedUnitsProvider.future);
+
+      final List<MarkedUnitGroup> entries =
+          container.read(likesEntriesProvider).requireValue;
+      expect(
+        entries.map((MarkedUnitGroup g) => g.item.id).toSet(),
+        <int>{1, 2},
+      );
+      expect(
+        entries.firstWhere((MarkedUnitGroup g) => g.item.id == 2).units,
+        isEmpty,
+      );
+    });
+  });
+
+  group('LikesFilter kinds', () {
+    MarkedUnitGroup liked() => MarkedUnitGroup(
+          item: createTestCollectionItem(id: 1, mediaType: MediaType.anime),
+          units: <MarkedUnit>[_unit(itemId: 1)],
+        );
+    MarkedUnitGroup replayed() => MarkedUnitGroup(
+          item: createTestCollectionItem(id: 2, mediaType: MediaType.movie),
+          units: const <MarkedUnit>[],
+          rewatchCount: 2,
+        );
+
+    List<MarkedUnitGroup> apply(Set<LikesKind> kinds) =>
+        LikesFilter(kinds: kinds).apply(<MarkedUnitGroup>[liked(), replayed()]);
+
+    test('nothing selected keeps marks and replays', () {
+      expect(apply(const <LikesKind>{}), hasLength(2));
+    });
+
+    test('replays alone drop the marked-only title', () {
+      final List<MarkedUnitGroup> shown =
+          apply(const <LikesKind>{LikesKind.rewatched});
+      expect(shown.map((MarkedUnitGroup g) => g.item.id), <int>[2]);
+      expect(shown.single.rewatchCount, 2);
+    });
+
+    test('likes alone drop the replay-only title', () {
+      final List<MarkedUnitGroup> shown =
+          apply(const <LikesKind>{LikesKind.liked});
+      expect(shown.map((MarkedUnitGroup g) => g.item.id), <int>[1]);
+    });
+
+    test('likes and replays together keep both', () {
+      expect(
+        apply(const <LikesKind>{LikesKind.liked, LikesKind.rewatched}),
+        hasLength(2),
+      );
+    });
+
+    test('a kind that is off strips the replay row off a marked title', () {
+      final MarkedUnitGroup both = MarkedUnitGroup(
+        item: createTestCollectionItem(id: 3, mediaType: MediaType.anime),
+        units: <MarkedUnit>[_unit(itemId: 3)],
+        rewatchCount: 4,
+      );
+      final List<MarkedUnitGroup> shown =
+          const LikesFilter(kinds: <LikesKind>{LikesKind.liked})
+              .apply(<MarkedUnitGroup>[both]);
+      expect(shown.single.units, hasLength(1));
+      expect(shown.single.isReplayed, isFalse);
     });
   });
 }

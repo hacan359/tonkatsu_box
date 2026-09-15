@@ -3425,6 +3425,9 @@ class SEs extends S {
   String get dualDatePickerNoDate => 'Sin fecha';
 
   @override
+  String get dualDatePickerBothDates => 'Empezado y terminado este día';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Introduce una fecha';
 
   @override
@@ -5421,11 +5424,11 @@ class SEs extends S {
       'Según lo que terminaste y valoraste';
 
   @override
-  String get likesTitle => 'Me gusta y notas';
+  String get likesTitle => 'Me gusta, notas y repeticiones';
 
   @override
   String get personalizationLikesHint =>
-      'Episodios, capítulos y pistas que marcaste';
+      'Episodios y capítulos que marcaste, títulos que repetiste';
 
   @override
   String get likesEmptyTitle => 'Aún no hay nada marcado';
@@ -5449,6 +5452,26 @@ class SEs extends S {
       locale: localeName,
       other: '$count marcas',
       one: '1 marca',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Repeticiones';
+
+  @override
+  String get likesSectionMarks => 'Me gusta y notas';
+
+  @override
+  String get likesRewatchFilter => 'Con repeticiones';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repeticiones',
+      one: '1 repetición',
     );
     return '$_temp0';
   }

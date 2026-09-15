@@ -3429,6 +3429,9 @@ class SFr extends S {
   String get dualDatePickerNoDate => 'Sans date';
 
   @override
+  String get dualDatePickerBothDates => 'Commencé et terminé ce jour';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Entrez une date';
 
   @override
@@ -5439,11 +5442,11 @@ class SFr extends S {
       'D\'après ce que vous avez terminé et noté';
 
   @override
-  String get likesTitle => 'Favoris et notes';
+  String get likesTitle => 'Favoris, notes et re-vues';
 
   @override
   String get personalizationLikesHint =>
-      'Épisodes, chapitres et pistes que vous avez marqués';
+      'Épisodes et chapitres marqués, titres re-vus';
 
   @override
   String get likesEmptyTitle => 'Rien de marqué pour l\'instant';
@@ -5467,6 +5470,26 @@ class SFr extends S {
       locale: localeName,
       other: '$count marques',
       one: '1 marque',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Re-vues';
+
+  @override
+  String get likesSectionMarks => 'Favoris et notes';
+
+  @override
+  String get likesRewatchFilter => 'Avec re-vues';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count re-vues',
+      one: '1 re-vue',
     );
     return '$_temp0';
   }

@@ -10,14 +10,23 @@ const String _isoPattern = 'yyyy-MM-dd';
 /// Distinguishes "clear the date" from a picked date; a dismissed dialog
 /// yields no result at all (null from the show function).
 class DualDateResult {
-  const DualDateResult.picked(DateTime this.date) : cleared = false;
+  const DualDateResult.picked(DateTime this.date)
+      : cleared = false,
+        appliesToBoth = false;
+
+  /// The same day is both the start and the completion date.
+  const DualDateResult.pickedBoth(DateTime this.date)
+      : cleared = false,
+        appliesToBoth = true;
 
   const DualDateResult.cleared()
       : date = null,
-        cleared = true;
+        cleared = true,
+        appliesToBoth = false;
 
   final DateTime? date;
   final bool cleared;
+  final bool appliesToBoth;
 }
 
 Future<DateTime?> showDualDatePicker({
@@ -37,7 +46,8 @@ Future<DateTime?> showDualDatePicker({
   return result?.date;
 }
 
-/// [allowClear] adds a "No date" action so an already-set date can be erased.
+/// [allowClear] adds a "No date" action so an already-set date can be erased;
+/// [allowBoth] adds a "start and finish" action for a single-day activity.
 Future<DualDateResult?> showDualDatePickerResult({
   required BuildContext context,
   required DateTime initialDate,
@@ -45,6 +55,7 @@ Future<DualDateResult?> showDualDatePickerResult({
   required DateTime lastDate,
   String? helpText,
   bool allowClear = false,
+  bool allowBoth = false,
 }) {
   return showDialog<DualDateResult>(
     context: context,
@@ -54,6 +65,7 @@ Future<DualDateResult?> showDualDatePickerResult({
       lastDate: lastDate,
       helpText: helpText,
       allowClear: allowClear,
+      allowBoth: allowBoth,
     ),
   );
 }
@@ -65,6 +77,7 @@ class DualDatePickerDialog extends StatefulWidget {
     required this.lastDate,
     this.helpText,
     this.allowClear = false,
+    this.allowBoth = false,
     super.key,
   });
 
@@ -73,6 +86,7 @@ class DualDatePickerDialog extends StatefulWidget {
   final DateTime lastDate;
   final String? helpText;
   final bool allowClear;
+  final bool allowBoth;
 
   @override
   State<DualDatePickerDialog> createState() => _DualDatePickerDialogState();
@@ -234,7 +248,12 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
                 ),
               Expanded(child: body),
               const SizedBox(height: AppSpacing.sm),
-              Row(
+              // Wrap, not Row: three left actions plus two right ones do not
+              // fit a phone-width dialog on one line.
+              Wrap(
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppSpacing.sm,
                 children: <Widget>[
                   if (widget.allowClear)
                     TextButton(
@@ -242,12 +261,18 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
                           .pop(const DualDateResult.cleared()),
                       child: Text(l.dualDatePickerNoDate),
                     ),
-                  const Spacer(),
+                  if (widget.allowBoth)
+                    TextButton(
+                      onPressed: _errorKey == null
+                          ? () => Navigator.of(context)
+                              .pop(DualDateResult.pickedBoth(_selected))
+                          : null,
+                      child: Text(l.dualDatePickerBothDates),
+                    ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(l.cancel),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
                   TextButton(
                     onPressed: _errorKey == null
                         ? () => Navigator.of(context)

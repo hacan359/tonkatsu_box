@@ -3412,6 +3412,9 @@ class SPt extends S {
   String get dualDatePickerNoDate => 'Sem data';
 
   @override
+  String get dualDatePickerBothDates => 'Começado e terminado neste dia';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Digite uma data';
 
   @override
@@ -5404,11 +5407,11 @@ class SPt extends S {
       'Com base no que você concluiu e avaliou';
 
   @override
-  String get likesTitle => 'Curtidas e notas';
+  String get likesTitle => 'Curtidas, notas e repetições';
 
   @override
   String get personalizationLikesHint =>
-      'Episódios, capítulos e faixas que você marcou';
+      'Episódios e capítulos marcados, títulos repetidos';
 
   @override
   String get likesEmptyTitle => 'Nada marcado ainda';
@@ -5432,6 +5435,26 @@ class SPt extends S {
       locale: localeName,
       other: '$count marcas',
       one: '1 marca',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Repetições';
+
+  @override
+  String get likesSectionMarks => 'Curtidas e notas';
+
+  @override
+  String get likesRewatchFilter => 'Com repetições';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count repetições',
+      one: '1 repetição',
     );
     return '$_temp0';
   }
