@@ -1,0 +1,7 @@
+v0.44.0
+
+* Personalization hub rebuilt: cards for Statistics, Recommendations, Showcase and Likes with live previews.
+* Showcase: release boards for anime, films, episodes, games and albums with countdowns.
+* Search the library by details: genre, studio, author, tag, label or year.
+* Likes, notes and replays page, grouped by title.
+* Anime search by studio, text size slider, "started and finished this day" on the item card.
