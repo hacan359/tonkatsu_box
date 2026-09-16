@@ -353,7 +353,6 @@ class TmdbAnimeSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }
 
 /// Normalizes the `genre` filter value (multi-select or single) into IDs.

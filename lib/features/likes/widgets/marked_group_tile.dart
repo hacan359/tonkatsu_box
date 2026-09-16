@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/media_type_ui.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -124,7 +125,7 @@ class _Cover extends StatelessWidget {
       color: AppColors.surfaceLight,
       alignment: Alignment.center,
       child: Icon(
-        MediaTypeTheme.placeholderIconFor(item.mediaType),
+        item.placeholderIcon,
         size: 16,
         color: AppColors.textTertiary,
       ),

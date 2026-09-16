@@ -74,5 +74,4 @@ class FantlabSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

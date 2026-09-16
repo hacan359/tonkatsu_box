@@ -112,8 +112,11 @@ Countdown countdownTo(
   required bool wholeDays,
 }) {
   if (wholeDays) {
-    final DateTime targetDay = DateTime(target.year, target.month, target.day);
-    final DateTime today = DateTime(now.year, now.month, now.day);
+    // UTC dates: a local difference across a DST switch is 23 or 25 hours
+    // and would round tomorrow (or yesterday) down to "today".
+    final DateTime targetDay =
+        DateTime.utc(target.year, target.month, target.day);
+    final DateTime today = DateTime.utc(now.year, now.month, now.day);
     final int days = targetDay.difference(today).inDays;
     if (days < 0) return const CountdownPassed();
     if (days == 0) return const CountdownToday();

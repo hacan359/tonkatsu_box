@@ -28,6 +28,7 @@ import '../widgets/filter_bar.dart';
 import '../widgets/source_chips_row.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/platform_ui.dart';
+import '../../../shared/widgets/min_height_body.dart';
 
 /// Search and browse screen — two modes: Browse (filter bar + Discover/Grid)
 /// and Search (query field + results).
@@ -261,17 +262,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _onQueryChanged(next);
     });
 
-    final Widget body = Column(
-      children: <Widget>[
-        FilterBar(onBeforeFilterChange: _syncSearchText),
-        if (!isCompactScreen(context)) const SourceChipsRow(),
-        const CollectionChipsRow(),
-        const SizedBox(height: AppSpacing.xs),
-        Expanded(child: _buildContent(browseState)),
-      ],
+    return MinHeightBody(
+      child: Column(
+        children: <Widget>[
+          FilterBar(onBeforeFilterChange: _syncSearchText),
+          if (!isCompactScreen(context)) const SourceChipsRow(),
+          const CollectionChipsRow(),
+          const SizedBox(height: AppSpacing.xs),
+          Expanded(child: _buildContent(browseState)),
+        ],
+      ),
     );
-
-    return body;
   }
 
   Widget _buildContent(BrowseState browseState) {

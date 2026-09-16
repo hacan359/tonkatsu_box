@@ -200,7 +200,6 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
   }
 }
 
-/// A pill chip for one of a row's rationale genres.
 /// Centered placeholder for the empty / no-candidates states.
 class RecommendationsEmptyState extends StatelessWidget {
   /// Creates an empty-state panel.

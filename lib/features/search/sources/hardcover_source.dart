@@ -78,5 +78,4 @@ class HardcoverSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

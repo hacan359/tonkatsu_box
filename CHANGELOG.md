@@ -12,7 +12,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - **Search the library by details**
 
   - The search field on Home and Collections gets a mode menu in front of it:
-    "By title" (the current search) or "By details".
+    "By title" or "By details".
   - Details mode matches genres, tags, studios, authors, publishers, subjects,
     developers, artists, label, platform, format, season and release year of
     every media type.
@@ -39,6 +39,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/collections/helpers/collection_filters.dart
     (CollectionFilters.searchMode, CollectionFilters.apply): Details mode
     through ItemSearch.
+  * lib/features/home/providers/all_items_provider.dart (itemSearchProvider):
+    New; one matcher for Home and the likes page.
   * lib/features/home/screens/all_items_screen.dart
     (_AllItemsScreenState.build, _AllItemsScreenState._applyFilter,
     _AllItemsScreenState._countByMediaType,
@@ -80,8 +82,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   - One board's error or empty answer leaves the others alone. Each keeps its
     own retry button, and on an AniList rate limit it counts down the wait.
   - A sheet in the title bar lists every board with a checkbox, plus a switch
-    for titles already in a collection: badge or hide. Boards hidden in the
-    old Discover feed stay hidden.
+    for titles already in a collection: badge or hide. The choices are kept
+    per profile; a board switched off in Discover stays off.
 
   * lib/features/showcase/models/showcase_item.dart (ShowcaseItem): New;
     flattens a movie, show, anime, game or album into one card model.
@@ -94,7 +96,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     New; one hour-cached provider per board.
   * lib/features/showcase/providers/showcase_settings_provider.dart
     (ShowcaseRowId, ShowcaseGroup, ShowcaseSettings, ShowcaseSettingsNotifier,
-    legacyDiscoverSections): New; stores the hidden boards.
+    legacyDiscoverSections): New; stores the hidden boards per profile.
   * lib/features/showcase/providers/showcase_clock_provider.dart
     (showcaseClockProvider, showcaseNowProvider, ShowcaseNowNotifier): New;
     one minute tick for every countdown on screen.
@@ -127,7 +129,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (HubRecommendationsPreview): Draws through HubPosterStrip.
   * lib/shared/utils/provider_cache.dart (cacheFor),
     lib/shared/utils/cover_cache_slot.dart (coverCacheSlot),
-    lib/shared/widgets/genre_chip.dart (GenreChip): New.
+    lib/shared/widgets/genre_chip.dart (GenreChip),
+    lib/shared/widgets/in_collection_badge.dart (InCollectionBadge): New;
+    the badge is the one MediaPosterCard draws.
+  * lib/shared/widgets/media_poster_card.dart (_MediaPosterCardState.build):
+    Draws InCollectionBadge.
   * lib/features/recommendations/utils/recommendation_cover.dart
     (recommendationCoverCache),
     lib/features/recommendations/widgets/recommendation_row.dart: Through
@@ -143,7 +149,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     anticipated releases of the next ninety days.
   * lib/core/api/igdb/igdb_http_client.dart (IgdbHttpClient.hasCredentials),
     lib/core/api/tmdb/tmdb_http_client.dart (TmdbHttpClient.hasApiKey): New;
-    a keyless build skips the request instead of collecting an error.
+    a keyless build makes no request.
   * lib/core/api/tmdb/tmdb_movies_api.dart
     (TmdbMoviesApi.getNowPlayingMovieReleases,
     TmdbMoviesApi.getUpcomingMovieReleases), lib/core/api/tmdb/tmdb_tv_api.dart
@@ -256,7 +262,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     further. The top-bar search field matches note text, unit names and the
     title the same way Home does; a replay row is reached through its title.
   - Tapping a title or a unit opens the item card. A mark set or removed in a
-    card shows up on the page without a restart.
+    card shows up on the page at once.
   - The hub card previews the mark and replay count and the two freshest
     entries.
 
@@ -301,8 +307,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/shared/widgets/dual_date_picker_dialog.dart (DualDateResult.pickedBoth,
     DualDateResult.appliesToBoth, showDualDatePickerResult.allowBoth,
-    DualDatePickerDialog.allowBoth): New; the action row wraps so the four
-    buttons fit a phone-width dialog.
+    DualDatePickerDialog.allowBoth): New; the action row wraps on a phone,
+    and the dialog height follows the space left by the keyboard.
   * lib/shared/widgets/media_detail_view.dart (ActivityDateField.both,
     _MediaDetailViewState._pickActivityDate): Offer the action from both
     tiles and report the new field.
@@ -324,10 +330,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/search/widgets/filter_bar_compact.dart (FilterBarCompact):
     Drop the "Customize" button.
   * lib/features/search/providers/discover_provider.dart,
-    lib/features/search/widgets/discover_feed.dart, discover_row.dart,
-    discover_customize_sheet.dart, audio_discover_feed.dart: Deleted.
+    lib/features/search/widgets/discover_feed.dart,
+    lib/features/search/widgets/discover_row.dart,
+    lib/features/search/widgets/audio_discover_feed.dart: Deleted.
+  * lib/features/search/widgets/discover_customize_sheet.dart: Moved to
+    lib/features/showcase/widgets/showcase_settings_sheet.dart.
   * lib/features/search/models/search_source.dart (SearchSource): Drop
-    buildDiscoverFeed, along with its twenty-three implementations under
+    buildDiscoverFeed, along with its twenty-one implementations under
     lib/features/search/sources/.
 
 - **Personalization hub opens on a landing page of section cards**
@@ -336,7 +345,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     preview: the headline numbers, a strip of recommended posters, what is
     out now, the latest marks. A tap opens the section full screen with a
     back arrow.
-  - The genre cloud moves to an icon in the statistics header, next to Share.
+  - The genre cloud is an icon in the statistics header, next to Share.
   - Pressing the centre button while a section is open returns to the landing
     page; Android back and gamepad B pop the section before closing the hub.
 
@@ -380,8 +389,32 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (CollectionFilters.apply): Delegates the search step to ItemSearch.
   * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState.build,
     _AllItemsScreenState._applyFilter, _AllItemsScreenState._countByMediaType,
-    _AllItemsScreenState._matchesNonTypeFilters): Take one ItemSearch built per
-    build; _matchesTagName and _matchesCreator removed.
+    _AllItemsScreenState._matchesNonTypeFilters): Match through
+    itemSearchProvider; _matchesTagName and _matchesCreator removed.
+
+- **Adding a title no longer flashes the library through its loader**
+
+  Home, the showcase boards and the hub previews keep what they show while
+  the list reloads; the new title and its badge appear in place.
+
+  * lib/features/home/providers/all_items_provider.dart (AllItemsNotifier.build,
+    AllItemsNotifier.refresh, AllItemsNotifier._loading): Keep the previous
+    list under a reload.
+
+- **The window survives a landscape phone with the keyboard up**
+
+  The top-bar search field, or a filter sheet with a text field such as the
+  AniList tag or studio picker, used to leave the sidebar and the screen
+  behind it a few dozen pixels tall and overflowing. They now scroll within
+  that space.
+
+  * lib/shared/widgets/min_height_body.dart (MinHeightBody, kMinBodyHeight):
+    New.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._buildScaffold):
+    Sidebar row wrapped in MinHeightBody.
+  * lib/features/search/screens/search_screen.dart (_SearchScreenState.build),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState.build): Body wrapped in MinHeightBody.
 
 - **AniList tag picker survives a small sheet**
 
@@ -395,16 +428,22 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Shimmer placeholders keep quiet when a screen goes away**
 
-  - Leaving a screen while its skeletons are on it logs nothing.
-  - The placeholders animate as before.
+  Leaving a screen while its skeletons are on it logs nothing.
 
   * lib/shared/widgets/shimmer_loading.dart (_ShimmerTimeline.release): Reset
-    the shared phase after the frame, so the boxes that still listen are not
-    marked dirty from didChangeDependencies or dispose.
+    the shared phase after the frame.
+
+- **Linux window keeps the GTK header bar to GNOME**
+
+  Outside GNOME the window uses the desktop's own title bar, on Wayland as
+  well as on X11.
+
+  * linux/runner/my_application.cc (desktop_wants_header_bar): New; reads
+    XDG_CURRENT_DESKTOP first, then the X11 window manager name.
 
 - **IGDB search finds titles made of common words**
 
-  - A game such as "Until Then" now shows up in the results.
+  - A game such as "Until Then" shows up in the results.
   - An empty first page is retried as a name filter, keeping the platform,
     genre, mode, rating and year filters.
 

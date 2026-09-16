@@ -138,5 +138,4 @@ class AniListAnimeSource extends SearchSource {
       rethrow;
     }
   }
-
 }

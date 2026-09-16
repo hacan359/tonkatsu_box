@@ -99,5 +99,4 @@ class ComicVineSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

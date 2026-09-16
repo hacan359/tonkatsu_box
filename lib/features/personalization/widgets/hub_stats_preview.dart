@@ -9,13 +9,11 @@ import '../../statistics/models/library_stats.dart';
 import '../../statistics/providers/statistics_provider.dart';
 import '../../statistics/widgets/stats_cards.dart';
 import '../../statistics/widgets/stats_hero_common.dart';
+import 'hub_poster_strip.dart';
 
 /// The headline numbers of the statistics hero, compressed into one strip.
 class HubStatsPreview extends ConsumerWidget {
   const HubStatsPreview({super.key});
-
-  /// Height of the strip until the numbers arrive, so the card does not jump.
-  static const double _placeholderHeight = 40;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +21,7 @@ class HubStatsPreview extends ConsumerWidget {
     final AsyncValue<LibraryStats> statsAsync =
         ref.watch(libraryStatsProvider);
     return statsAsync.when(
-      loading: () => const SizedBox(height: _placeholderHeight),
+      loading: () => const SizedBox(height: kHubPreviewPlaceholderHeight),
       error: (Object error, StackTrace _) => Text(
         '${l.settingsError}: $error',
         style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
@@ -31,11 +29,7 @@ class HubStatsPreview extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       data: (LibraryStats stats) => stats.isEmpty
-          ? Text(
-              l.statsEmptyTitle,
-              style: AppTypography.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
-            )
+          ? HubPreviewNote(l.statsEmptyTitle)
           : _Metrics(stats: stats),
     );
   }

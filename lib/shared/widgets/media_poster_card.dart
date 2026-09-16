@@ -12,6 +12,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'in_collection_badge.dart';
 import 'cached_image.dart';
 import 'dual_rating_badge.dart';
 import 'source_logo.dart';
@@ -481,18 +482,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                             compact: _isCompact,
                             onTap: widget.onOpenInCollection!,
                           )
-                        : Container(
-                            padding: EdgeInsets.all(_isCompact ? 2 : 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check,
-                              color: AppColors.onOverlay,
-                              size: _isCompact ? 8 : 12,
-                            ),
-                          )
+                        : InCollectionBadge(compact: _isCompact)
                   // Platform text badge — fallback when there's no overlay.
                   else if (showPlatformBadge)
                     Container(

@@ -33,7 +33,6 @@ void main() {
     test('empty or blank query matches everything', () {
       expect(search('').matches(game), isTrue);
       expect(search('   ').matches(game), isTrue);
-      expect(search('  ').isEmpty, isTrue);
     });
 
     test('matches the display name case-insensitively', () {

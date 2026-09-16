@@ -121,5 +121,4 @@ class VndbSource extends SearchSource {
       rethrow;
     }
   }
-
 }

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -93,6 +95,10 @@ class DualDatePickerDialog extends StatefulWidget {
 }
 
 class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
+  static const double _mobileHeight = 520;
+  static const double _desktopHeight = 440;
+  static const double _minHeight = 240;
+
   late DateTime _selected;
   late final TextEditingController _controller;
   final DateFormat _isoFormat = DateFormat(_isoPattern);
@@ -225,64 +231,70 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
     final MediaQueryData mq = MediaQuery.of(context);
     final double maxHeight = mq.size.height - mq.viewInsets.bottom - 48;
     final double dialogWidth = isMobile ? 360 : 620;
-    final double dialogHeight =
-        (isMobile ? 520.0 : 440.0).clamp(240.0, maxHeight);
+    // A landscape phone with the keyboard up leaves less than the floor: the
+    // outer scroll view then scrolls the box (clamp would throw, bounds inverted).
+    final double dialogHeight = math.min(
+      isMobile ? _mobileHeight : _desktopHeight,
+      math.max(_minHeight, maxHeight),
+    );
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: SizedBox(
-        width: dialogWidth,
-        height: dialogHeight,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              if (widget.helpText != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Text(
-                    widget.helpText!,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-              Expanded(child: body),
-              const SizedBox(height: AppSpacing.sm),
-              // Wrap, not Row: three left actions plus two right ones do not
-              // fit a phone-width dialog on one line.
-              Wrap(
-                alignment: WrapAlignment.end,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: AppSpacing.sm,
-                children: <Widget>[
-                  if (widget.allowClear)
-                    TextButton(
-                      onPressed: () => Navigator.of(context)
-                          .pop(const DualDateResult.cleared()),
-                      child: Text(l.dualDatePickerNoDate),
+      child: SingleChildScrollView(
+        child: SizedBox(
+          width: dialogWidth,
+          height: dialogHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                if (widget.helpText != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: Text(
+                      widget.helpText!,
+                      style: theme.textTheme.titleMedium,
                     ),
-                  if (widget.allowBoth)
+                  ),
+                Expanded(child: body),
+                const SizedBox(height: AppSpacing.sm),
+                // Wrap, not Row: three left actions plus two right ones do not
+                // fit a phone-width dialog on one line.
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.sm,
+                  children: <Widget>[
+                    if (widget.allowClear)
+                      TextButton(
+                        onPressed: () => Navigator.of(context)
+                            .pop(const DualDateResult.cleared()),
+                        child: Text(l.dualDatePickerNoDate),
+                      ),
+                    if (widget.allowBoth)
+                      TextButton(
+                        onPressed: _errorKey == null
+                            ? () => Navigator.of(context)
+                                .pop(DualDateResult.pickedBoth(_selected))
+                            : null,
+                        child: Text(l.dualDatePickerBothDates),
+                      ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(l.cancel),
+                    ),
                     TextButton(
                       onPressed: _errorKey == null
                           ? () => Navigator.of(context)
-                              .pop(DualDateResult.pickedBoth(_selected))
+                              .pop(DualDateResult.picked(_selected))
                           : null,
-                      child: Text(l.dualDatePickerBothDates),
+                      child: Text(l.confirm),
                     ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l.cancel),
-                  ),
-                  TextButton(
-                    onPressed: _errorKey == null
-                        ? () => Navigator.of(context)
-                            .pop(DualDateResult.picked(_selected))
-                        : null,
-                    child: Text(l.confirm),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

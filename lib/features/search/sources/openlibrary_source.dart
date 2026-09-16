@@ -86,5 +86,4 @@ class OpenLibrarySource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

@@ -9,9 +9,13 @@ class ItemSearch {
     required String query,
     required this.mode,
     required this.itemTags,
-    required this.tagNames,
+    required Map<int, String> tagNames,
     required this.titleLanguage,
   })  : _query = query.trim().toLowerCase(),
+        _tagNames = <int, String>{
+          for (final MapEntry<int, String> e in tagNames.entries)
+            e.key: e.value.toLowerCase(),
+        },
         _metaGroups = mode == SearchMode.meta
             ? parseMetaQuery(query)
             : const <List<String>>[];
@@ -21,14 +25,12 @@ class ItemSearch {
   /// Item id → global tag ids.
   final Map<int, List<int>> itemTags;
 
-  /// Tag id → name, any case.
-  final Map<int, String> tagNames;
+  /// Tag id → lowercased name; lowercased once here, not per item per tag.
+  final Map<int, String> _tagNames;
 
   final String titleLanguage;
   final String _query;
   final List<List<String>> _metaGroups;
-
-  bool get isEmpty => _query.isEmpty;
 
   bool matches(CollectionItem item) {
     if (_query.isEmpty) return true;
@@ -47,7 +49,7 @@ class ItemSearch {
     final List<int>? ids = itemTags[item.id];
     if (ids == null) return false;
     return ids.any(
-      (int id) => tagNames[id]?.toLowerCase().contains(_query) ?? false,
+      (int id) => _tagNames[id]?.contains(_query) ?? false,
     );
   }
 

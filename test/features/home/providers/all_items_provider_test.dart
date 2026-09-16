@@ -349,6 +349,32 @@ void main() {
       );
     });
 
+    test('should keep the previous list while reloading', () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1, addedAt: DateTime(2026, 1, 1)),
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+      final ProviderContainer container = createContainer();
+      container.read(allItemsNotifierProvider);
+      await _pump();
+
+      container.invalidate(allItemsNotifierProvider);
+      final AsyncValue<List<CollectionItem>> reloading =
+          container.read(allItemsNotifierProvider);
+      expect(reloading.isLoading, isTrue);
+      expect(reloading.valueOrNull?.single.id, 1);
+
+      final Future<void> refreshing =
+          container.read(allItemsNotifierProvider.notifier).refresh();
+      final AsyncValue<List<CollectionItem>> refreshingState =
+          container.read(allItemsNotifierProvider);
+      expect(refreshingState.isLoading, isTrue);
+      expect(refreshingState.valueOrNull?.single.id, 1);
+      await refreshing;
+      expect(container.read(allItemsNotifierProvider).isLoading, isFalse);
+    });
+
     test('пересортирует при смене режима сортировки', () async {
       final List<CollectionItem> items = <CollectionItem>[
         _makeItem(id: 1, name: 'Zelda', addedAt: DateTime(2026, 1, 1)),

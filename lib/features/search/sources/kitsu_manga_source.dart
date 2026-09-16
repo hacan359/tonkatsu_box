@@ -84,5 +84,4 @@ class KitsuMangaSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

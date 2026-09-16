@@ -86,5 +86,4 @@ class MangaBakaSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

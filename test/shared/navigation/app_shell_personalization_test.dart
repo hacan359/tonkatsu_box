@@ -57,11 +57,17 @@ void main() {
       when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
     });
 
-    Future<void> pumpShell(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
+    Future<void> pumpShell(
+      WidgetTester tester, {
+      Size size = const Size(1200, 800),
+      double keyboardHeight = 0,
+    }) async {
+      tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = FakeViewPadding(bottom: keyboardHeight);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
 
       SharedPreferences.setMockInitialValues(<String, Object>{
         kWelcomeCompletedKey: true,
@@ -99,6 +105,19 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
     }
+
+    testWidgets('should lay out a landscape phone with the keyboard up', (
+      WidgetTester tester,
+    ) async {
+      // Leaves the body about 28px: a zero-height flex paints nothing and
+      // would never report the overflow this guards against.
+      await pumpShell(
+        tester,
+        size: const Size(640, 300),
+        keyboardHeight: 216,
+      );
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('should not stay shown after switching tabs and returning', (
       WidgetTester tester,

@@ -145,7 +145,6 @@ class IgdbGamesSource extends SearchSource {
       return games;
     }
   }
-
 }
 
 /// Normalizes a filter value (multi-select or single) into a [List] of int.

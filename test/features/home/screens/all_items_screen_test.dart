@@ -242,6 +242,20 @@ void main() {
     });
 
     testWidgets(
+        'should render on a landscape phone with the keyboard up',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(640, 300);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 270);
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
         'заголовок группы с длинным именем не переполняется на узком экране',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(360, 640);

@@ -97,11 +97,9 @@ final ShowcaseRowProvider popularAnimeProvider =
 bool _tmdbUnavailable(TmdbApi api) => !kIsWebBuild && !api.hasApiKey;
 
 /// TMDB localizes titles and overviews, so a language switch must refetch.
-void _watchTmdbLanguage(Ref ref) {
-  ref.watch(
-    settingsNotifierProvider.select((SettingsState s) => s.tmdbLanguage),
-  );
-}
+String _tmdbLanguage(Ref ref) => ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.tmdbLanguage),
+    );
 
 typedef _MovieRelease = (Movie, String? releaseDate);
 
@@ -111,15 +109,13 @@ Future<List<ShowcaseItem>> _movieReleases(
   Ref ref,
   Future<List<_MovieRelease>> Function(TmdbApi api, String? region) fetch,
 ) async {
-  final String language = ref.watch(
-    settingsNotifierProvider.select((SettingsState s) => s.tmdbLanguage),
-  );
+  final String language = _tmdbLanguage(ref);
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   if (_tmdbUnavailable(tmdb)) return const <ShowcaseItem>[];
-  final Map<String, String> genreMap =
-      await ref.watch(movieGenreMapProvider.future);
-  final List<_MovieRelease> releases =
-      await fetch(tmdb, tmdbRegionFromLanguage(language));
+  final (Map<String, String> genreMap, List<_MovieRelease> releases) = await (
+    ref.watch(movieGenreMapProvider.future),
+    fetch(tmdb, tmdbRegionFromLanguage(language)),
+  ).wait;
   cacheFor(ref, showcaseCacheTtl);
   final List<Movie> movies = resolveMovieGenres(
     releases.map((_MovieRelease r) => r.$1).toList(),
@@ -137,12 +133,12 @@ Future<List<TvShow>> _tmdbTvShows(
   Ref ref,
   Future<List<TvShow>> Function(TmdbApi api) fetch,
 ) async {
-  _watchTmdbLanguage(ref);
+  _tmdbLanguage(ref);
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   if (_tmdbUnavailable(tmdb)) return const <TvShow>[];
-  final Map<String, String> genreMap =
-      await ref.watch(tvGenreMapProvider.future);
-  return resolveTvGenres(await fetch(tmdb), genreMap);
+  final (Map<String, String> genreMap, List<TvShow> shows) =
+      await (ref.watch(tvGenreMapProvider.future), fetch(tmdb)).wait;
+  return resolveTvGenres(shows, genreMap);
 }
 
 /// TMDB genres dropped from the week's episodes: news, reality, soap, talk,
@@ -285,11 +281,13 @@ ShowcaseRowProvider showcaseRowProvider(ShowcaseRowId id) => switch (id) {
       ShowcaseRowId.popularAnime => popularAnimeProvider,
     };
 
-/// Drops every row's cache so the next build refetches all of them.
+/// Drops every row's cache and the ownership set, so a refresh also picks
+/// up what was added to the library since.
 void refreshShowcase(WidgetRef ref) {
   for (final ShowcaseRowId id in ShowcaseRowId.values) {
     ref.invalidate(showcaseRowProvider(id));
   }
+  ref.invalidate(showcaseOwnedIdsProvider);
 }
 
 /// Rows of [group] with the user's biggest library types first; ties keep the

@@ -26,6 +26,7 @@ import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../keyboard/keyboard_shortcuts.dart';
 import '../keyboard/keyboard_shortcuts_dialog.dart';
+import '../widgets/min_height_body.dart';
 import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
 import 'app_sidebar.dart';
@@ -228,16 +229,20 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
     return Scaffold(
       appBar: topBar,
-      body: Row(
-        children: <Widget>[
-          AppSidebar(
-            selectedTab: activeTab,
-            onDestinationSelected: onTabSelected,
-            onCenterTap: _openPreferenceCloud,
-            centerActive: _personalizationOpen,
-          ),
-          Expanded(child: _buildContent()),
-        ],
+      // A landscape phone with the keyboard up leaves the body a few dozen
+      // pixels; the sidebar's rail of buttons cannot shrink that far.
+      body: MinHeightBody(
+        child: Row(
+          children: <Widget>[
+            AppSidebar(
+              selectedTab: activeTab,
+              onDestinationSelected: onTabSelected,
+              onCenterTap: _openPreferenceCloud,
+              centerActive: _personalizationOpen,
+            ),
+            Expanded(child: _buildContent()),
+          ],
+        ),
       ),
     );
   }

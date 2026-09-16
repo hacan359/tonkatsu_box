@@ -216,6 +216,28 @@ void main() {
           isA<CountdownPassed>(),
         );
       });
+
+      test('should count a full day across the spring DST switch', () {
+        // 2026-03-29 is the EU switch; a local midnight-to-midnight
+        // difference here is 23 hours and would round the day away.
+        final Countdown c = countdownTo(
+          DateTime(2026, 3, 29),
+          DateTime(2026, 3, 28, 23, 59),
+          wholeDays: true,
+        );
+        expect(c, isA<CountdownDays>());
+        expect((c as CountdownDays).days, 1);
+      });
+
+      test('should count a full day across the autumn DST switch', () {
+        final Countdown c = countdownTo(
+          DateTime(2026, 10, 26),
+          DateTime(2026, 10, 25, 0, 30),
+          wholeDays: true,
+        );
+        expect(c, isA<CountdownDays>());
+        expect((c as CountdownDays).days, 1);
+      });
     });
   });
 }

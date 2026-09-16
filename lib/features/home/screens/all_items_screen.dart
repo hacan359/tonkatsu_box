@@ -25,6 +25,7 @@ import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../../shared/widgets/min_height_body.dart';
 import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/helpers/item_editability.dart';
@@ -79,42 +80,36 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Set<ItemStatus> filterStatuses =
         ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
-    final ItemSearch search = ItemSearch(
-      query: ref.watch(homeSearchQueryProvider),
-      mode: ref.watch(searchModeProvider),
-      itemTags: itemTags,
-      tagNames: <int, String>{
-        for (final Tag tag in tagsMap.values) tag.id: tag.name,
-      },
-      titleLanguage:
-          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
-    );
+    final ItemSearch search =
+        ref.watch(itemSearchProvider(ref.watch(homeSearchQueryProvider)));
 
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
         _applyFilter(allItems, filterStatuses, favoriteOnly, search);
 
-    return Column(
-      children: <Widget>[
-        _buildMediaTypeBar(itemsAsync, filterStatuses, favoriteOnly, search),
-        SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-        _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
-        Expanded(
-          child: itemsAsync.when(
-            data: (List<CollectionItem> items) {
-              if (visibleItems.isEmpty) {
-                return _buildEmptyState(items.isEmpty);
-              }
-              return _buildGridView(
-                  visibleItems, collectionNames, tagsMap, itemTags);
-            },
-            loading: () => const Center(child: LogoLoader()),
-            error: (Object error, StackTrace stack) =>
-                _buildErrorState(error),
+    return MinHeightBody(
+      child: Column(
+        children: <Widget>[
+          _buildMediaTypeBar(itemsAsync, filterStatuses, favoriteOnly, search),
+          SubfilterBar(groups: _subfilterGroups(itemsAsync)),
+          _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
+          Expanded(
+            child: itemsAsync.when(
+              data: (List<CollectionItem> items) {
+                if (visibleItems.isEmpty) {
+                  return _buildEmptyState(items.isEmpty);
+                }
+                return _buildGridView(
+                    visibleItems, collectionNames, tagsMap, itemTags);
+              },
+              loading: () => const Center(child: LogoLoader()),
+              error: (Object error, StackTrace stack) =>
+                  _buildErrorState(error),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -385,7 +380,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return totals;
   }
 
-  /// True when any of the item's tags matches the search query.
   /// Applies every active filter except the media-type one, so each chevron
   /// shows how many items would be visible if the user picked it.
   Map<MediaType, int> _countByMediaType(

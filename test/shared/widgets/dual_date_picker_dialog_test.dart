@@ -285,6 +285,20 @@ void main() {
         );
         expect(t.takeException(), isNull);
       });
+
+      testWidgets('should render on a landscape phone with the keyboard up',
+          (WidgetTester t) async {
+        t.view.physicalSize = const Size(640, 300);
+        t.view.devicePixelRatio = 1;
+        t.view.viewInsets = const FakeViewPadding(bottom: 150);
+        addTearDown(t.view.reset);
+        await openResultAndGet(
+          t,
+          allowBoth: true,
+          interact: (WidgetTester t) async => t.tap(find.text('Cancel')),
+        );
+        expect(t.takeException(), isNull);
+      });
     });
   });
 }

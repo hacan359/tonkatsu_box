@@ -8,6 +8,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../likes/providers/marked_units_provider.dart';
 import '../../likes/utils/marked_unit_label.dart';
+import 'hub_poster_strip.dart';
 
 /// The mark and replay count and the freshest couple of entries, one line
 /// each.
@@ -15,7 +16,6 @@ class HubLikesPreview extends ConsumerWidget {
   const HubLikesPreview({super.key});
 
   static const int _shownLines = 2;
-  static const double _placeholderHeight = 40;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +23,7 @@ class HubLikesPreview extends ConsumerWidget {
     final AsyncValue<List<MarkedUnitGroup>> async =
         ref.watch(likesEntriesProvider);
     return async.when(
-      loading: () => const SizedBox(height: _placeholderHeight),
+      loading: () => const SizedBox(height: kHubPreviewPlaceholderHeight),
       error: (Object error, StackTrace _) => Text(
         '${l.settingsError}: $error',
         style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
@@ -31,13 +31,7 @@ class HubLikesPreview extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       data: (List<MarkedUnitGroup> groups) {
-        if (groups.isEmpty) {
-          return Text(
-            l.likesEmptyTitle,
-            style: AppTypography.bodySmall
-                .copyWith(color: AppColors.textSecondary),
-          );
-        }
+        if (groups.isEmpty) return HubPreviewNote(l.likesEmptyTitle);
         // A replay is one mark on the title itself.
         final int total = groups.fold<int>(
           0,
@@ -47,11 +41,7 @@ class HubLikesPreview extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              l.likesMarkCount(total),
-              style: AppTypography.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
-            ),
+            HubPreviewNote(l.likesMarkCount(total)),
             const SizedBox(height: AppSpacing.xs),
             for (final MarkedUnitGroup g in groups.take(_shownLines))
               _Line(group: g, l: l),

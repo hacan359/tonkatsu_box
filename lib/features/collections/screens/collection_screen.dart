@@ -867,5 +867,4 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       item: item,
     );
   }
-
 }

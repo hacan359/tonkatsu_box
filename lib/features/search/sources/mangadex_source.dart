@@ -118,5 +118,4 @@ class MangaDexSource extends SearchSource {
   static const Map<String, String> _byFollowed = <String, String>{
     'followedCount': 'desc',
   };
-
 }

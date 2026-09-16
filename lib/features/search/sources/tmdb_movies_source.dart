@@ -142,7 +142,6 @@ class TmdbMoviesSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }
 
 List<int>? _readGenreIds(Object? value) {

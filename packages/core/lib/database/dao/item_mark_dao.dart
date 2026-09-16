@@ -1,5 +1,6 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
+import '../../models/data_source.dart';
 import '../../models/item_mark.dart';
 import '../../models/marked_unit.dart';
 
@@ -49,9 +50,8 @@ class ItemMarkDao {
     return result;
   }
 
-  /// Every mark in the library that still says something (liked or noted),
-  /// newest first, with the unit's cached name joined in. Marks whose item is
-  /// gone are already cascaded away, so no orphan filtering is needed here.
+  /// Only marks that still say something (liked or noted), newest first. Marks
+  /// of a deleted item are already cascaded away, so no orphan filtering here.
   Future<List<MarkedUnit>> getAllMarks() async {
     final Database db = await _getDatabase();
     // One LEFT JOIN per cache that knows unit names; a mark on a unit type
@@ -62,7 +62,7 @@ class ItemMarkDao {
       JOIN collection_items ci ON ci.id = im.item_id
       LEFT JOIN tv_episodes_cache ep
         ON im.unit_type = ?
-       AND ep.source = COALESCE(ci.source, 'tmdb')
+       AND ep.source = COALESCE(ci.source, ?)
        AND ep.tmdb_show_id = ci.external_id
        AND ep.season_number = im.parent_number
        AND ep.episode_number = im.unit_number
@@ -75,7 +75,7 @@ class ItemMarkDao {
       WHERE im.is_favorite = 1
          OR (im.user_comment IS NOT NULL AND TRIM(im.user_comment) <> '')
       ORDER BY COALESCE(im.liked_at, im.updated_at) DESC, im.id DESC
-    ''', <Object?>[kUnitEpisode, kUnitTrack]);
+    ''', <Object?>[kUnitEpisode, DataSource.tmdb.key, kUnitTrack]);
     return rows.map(MarkedUnit.fromDb).toList();
   }
 

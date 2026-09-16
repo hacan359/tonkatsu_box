@@ -1,15 +1,12 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/marked_unit.dart';
 import 'package:core/models/media_type.dart';
-import 'package:core/models/tag.dart';
 import 'package:core/utils/item_search.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../shared/navigation/search_providers.dart';
-import '../../collections/providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
-import '../../settings/providers/settings_provider.dart';
 
 /// One title on the likes page: the item, every mark on its units, and the
 /// replay counter — a mark on the title itself rather than on a unit.
@@ -103,9 +100,8 @@ class MarkedUnitsNotifier extends AsyncNotifier<List<MarkedUnitGroup>> {
   }
 }
 
-/// Titles the user went through more than once. `rewatch_count` is MAL "times
-/// watched": `null` is "not tracked" and `0` is "finished once", so only above
-/// zero is a replay. Comes from the library list already in memory.
+/// `rewatch_count` follows MAL "times watched": `null` is untracked and `0` is
+/// "finished once", so only a value above zero counts as a replay.
 final Provider<AsyncValue<List<CollectionItem>>> rewatchedItemsProvider =
     Provider<AsyncValue<List<CollectionItem>>>((Ref ref) {
   return ref.watch(visibleAllItemsProvider).whenData(
@@ -153,9 +149,8 @@ List<MarkedUnitGroup> _withReplays(
 /// other two mark a unit.
 enum LikesKind { liked, noted, rewatched }
 
-/// The page's filter state. Lives apart from the data so a toggle never
-/// refetches — on web every fetch is a round trip. The query comes from the
-/// shared top-bar field, not from here.
+/// Kept apart from the data so a toggle never refetches (on web every fetch is
+/// a round trip); the query itself comes from the shared top-bar field.
 class LikesFilter {
   const LikesFilter({
     this.kinds = const <LikesKind>{},
@@ -202,23 +197,21 @@ class LikesFilter {
         (_wants(LikesKind.noted) && unit.mark.note != null);
   }
 
-  bool _unitMatchesQuery(MarkedUnit unit) {
-    final String q = query.toLowerCase();
+  bool _unitMatchesQuery(MarkedUnit unit, String q) {
     final String? note = unit.mark.note;
     final String? title = unit.unitTitle;
     return (note != null && note.toLowerCase().contains(q)) ||
         (title != null && title.toLowerCase().contains(q));
   }
 
-  /// Applies the filter to grouped data, dropping titles left with nothing.
-  /// A title that matches the query keeps all its units; otherwise only the
-  /// units whose own text matches survive.
+  /// A title matching the query keeps all its units; otherwise only the units
+  /// whose own text matches survive, and titles left empty are dropped.
   List<MarkedUnitGroup> apply(List<MarkedUnitGroup> groups) {
-    final bool hasQuery = query.trim().isNotEmpty;
+    final String q = query.trim().toLowerCase();
     return <MarkedUnitGroup>[
       for (final MarkedUnitGroup g in groups)
         if (types.isEmpty || types.contains(g.item.mediaType))
-          if (_kept(g, hasQuery) case final MarkedUnitGroup kept
+          if (_kept(g, q) case final MarkedUnitGroup kept
               when kept.units.isNotEmpty || kept.isReplayed)
             kept,
     ];
@@ -226,11 +219,13 @@ class LikesFilter {
 
   /// A replay row carries no text of its own, so a query reaches it only
   /// through the title.
-  MarkedUnitGroup _kept(MarkedUnitGroup g, bool hasQuery) {
+  MarkedUnitGroup _kept(MarkedUnitGroup g, String q) {
+    final bool hasQuery = q.isNotEmpty;
     final bool titleHit = hasQuery && (itemSearch?.matches(g.item) ?? false);
     final List<MarkedUnit> units = <MarkedUnit>[
       for (final MarkedUnit u in g.units)
-        if (_kindAllows(u) && (!hasQuery || titleHit || _unitMatchesQuery(u)))
+        if (_kindAllows(u) &&
+            (!hasQuery || titleHit || _unitMatchesQuery(u, q)))
           u,
     ];
     final bool keepReplays =
@@ -268,19 +263,9 @@ class LikesFilterNotifier extends Notifier<LikesFilter> {
 final Provider<AsyncValue<List<MarkedUnitGroup>>> filteredMarkedUnitsProvider =
     Provider<AsyncValue<List<MarkedUnitGroup>>>((Ref ref) {
   final String query = ref.watch(likesSearchQueryProvider).trim();
-  final Map<int, Tag> tags = ref.watch(allTagsMapProvider);
-  final ItemSearch itemSearch = ItemSearch(
-    query: query,
-    mode: ref.watch(searchModeProvider),
-    itemTags: ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{},
-    tagNames: <int, String>{
-      for (final Tag tag in tags.values) tag.id: tag.name,
-    },
-    titleLanguage: ref.watch(sharedPreferencesProvider).animeMangaTitleLanguage,
-  );
   final LikesFilter filter = ref.watch(likesFilterProvider).copyWith(
         query: query,
-        itemSearch: itemSearch,
+        itemSearch: ref.watch(itemSearchProvider(query)),
       );
   return ref
       .watch(likesEntriesProvider)

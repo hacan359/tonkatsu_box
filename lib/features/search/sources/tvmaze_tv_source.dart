@@ -78,5 +78,4 @@ class TvMazeTvSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

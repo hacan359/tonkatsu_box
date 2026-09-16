@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:core/models/anilist_studio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/api/anilist_api.dart';
 import '../../../l10n/app_localizations.dart';
@@ -35,6 +36,8 @@ Future<Object?> showAniListStudioPicker(
   );
 }
 
+final Logger _log = Logger('AniListStudioPicker');
+
 class _AniListStudioPicker extends ConsumerStatefulWidget {
   const _AniListStudioPicker({required this.current, required this.l});
 
@@ -52,7 +55,7 @@ class _AniListStudioPickerState extends ConsumerState<_AniListStudioPicker> {
   int _generation = 0;
   List<AniListStudio> _results = const <AniListStudio>[];
   bool _loading = false;
-  String? _error;
+  bool _failed = false;
 
   @override
   void dispose() {
@@ -73,13 +76,13 @@ class _AniListStudioPickerState extends ConsumerState<_AniListStudioPicker> {
       setState(() {
         _results = const <AniListStudio>[];
         _loading = false;
-        _error = null;
+        _failed = false;
       });
       return;
     }
     setState(() {
       _loading = true;
-      _error = null;
+      _failed = false;
     });
     try {
       final List<AniListStudio> found = await ref
@@ -93,10 +96,11 @@ class _AniListStudioPickerState extends ConsumerState<_AniListStudioPicker> {
         _loading = false;
       });
     } on Object catch (e) {
+      _log.warning('Studio search failed', e);
       if (gen != _generation || !mounted) return;
       setState(() {
         _loading = false;
-        _error = e.toString();
+        _failed = true;
       });
     }
   }
@@ -186,9 +190,8 @@ class _AniListStudioPickerState extends ConsumerState<_AniListStudioPicker> {
         ),
       );
     }
-    final String? error = _error;
-    if (error != null) {
-      return _Hint(text: error, color: AppColors.error);
+    if (_failed) {
+      return _Hint(text: l.searchFailed, color: AppColors.error);
     }
     if (_controller.text.trim().isEmpty) {
       return _Hint(text: l.studioPickerTypeToSearch);

@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:core/models/media_type.dart';
+import 'package:core/models/profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/features/showcase/providers/showcase_settings_provider.dart';
 
@@ -65,12 +67,27 @@ void main() {
   group('ShowcaseSettingsNotifier', () {
     Future<ProviderContainer> createContainer({
       Map<String, Object> initialPrefs = const <String, Object>{},
+      String profileId = 'default',
     }) async {
       SharedPreferences.setMockInitialValues(initialPrefs);
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       final ProviderContainer container = ProviderContainer(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
+          profilesDataProvider.overrideWith(
+            (Ref ref) => ProfilesData(
+              version: 1,
+              currentProfileId: profileId,
+              profiles: <Profile>[
+                Profile(
+                  id: profileId,
+                  name: profileId,
+                  color: '#000000',
+                  createdAt: DateTime(2024),
+                ),
+              ],
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -88,9 +105,9 @@ void main() {
     test('reads the hidden set and hideOwned from prefs', () async {
       final ProviderContainer container = await createContainer(
         initialPrefs: <String, Object>{
-          ShowcaseSettingsKeys.hiddenRows:
+          ShowcaseSettingsKeys.hiddenRows('default'):
               jsonEncode(<String>['now_playing', 'bogus_key']),
-          ShowcaseSettingsKeys.hideOwned: true,
+          ShowcaseSettingsKeys.hideOwned('default'): true,
         },
       );
       final ShowcaseSettings settings =
@@ -138,7 +155,7 @@ void main() {
         expect(hidden, isNot(contains(ShowcaseRowId.nowPlaying)));
       });
 
-      test('is converted on load and dropped on the first save', () async {
+      test('is converted on load and kept for other profiles', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             ShowcaseSettingsKeys.legacySections:
@@ -156,14 +173,14 @@ void main() {
             .read(showcaseSettingsProvider.notifier)
             .setHideOwned(value: true);
         final SharedPreferences prefs = await SharedPreferences.getInstance();
-        expect(prefs.getString(ShowcaseSettingsKeys.legacySections), isNull);
-        expect(prefs.getString(ShowcaseSettingsKeys.hiddenRows), isNotNull);
+        expect(prefs.getString(ShowcaseSettingsKeys.legacySections), isNotNull);
+        expect(prefs.getString(ShowcaseSettingsKeys.hiddenRows('default')), isNotNull);
       });
 
       test('the new key wins over a leftover legacy list', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
-            ShowcaseSettingsKeys.hiddenRows: jsonEncode(<String>[]),
+            ShowcaseSettingsKeys.hiddenRows('default'): jsonEncode(<String>[]),
             ShowcaseSettingsKeys.legacySections: jsonEncode(<String>[]),
           },
         );
@@ -185,7 +202,7 @@ void main() {
       );
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       expect(
-        prefs.getString(ShowcaseSettingsKeys.hiddenRows),
+        prefs.getString(ShowcaseSettingsKeys.hiddenRows('default')),
         jsonEncode(<String>['upcoming_games']),
       );
 
@@ -201,8 +218,8 @@ void main() {
     test('resetToDefault clears the hidden set and hideOwned', () async {
       final ProviderContainer container = await createContainer(
         initialPrefs: <String, Object>{
-          ShowcaseSettingsKeys.hiddenRows: jsonEncode(<String>['now_playing']),
-          ShowcaseSettingsKeys.hideOwned: true,
+          ShowcaseSettingsKeys.hiddenRows('default'): jsonEncode(<String>['now_playing']),
+          ShowcaseSettingsKeys.hideOwned('default'): true,
         },
       );
       await container.read(showcaseSettingsProvider.notifier).resetToDefault();
@@ -210,6 +227,53 @@ void main() {
           container.read(showcaseSettingsProvider);
       expect(settings.hiddenRows, isEmpty);
       expect(settings.hideOwned, isFalse);
+    });
+
+    test('should keep the settings of each profile apart', () async {
+      final ProviderContainer container = await createContainer(
+        initialPrefs: <String, Object>{
+          ShowcaseSettingsKeys.hiddenRows('default'):
+              jsonEncode(<String>['now_playing']),
+          ShowcaseSettingsKeys.hideOwned('default'): true,
+        },
+        profileId: 'second',
+      );
+      final ShowcaseSettings loaded = container.read(showcaseSettingsProvider);
+      expect(loaded.hiddenRows, isEmpty);
+      expect(loaded.hideOwned, isFalse);
+
+      await container
+          .read(showcaseSettingsProvider.notifier)
+          .toggleRow(ShowcaseRowId.freshAlbums);
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.getString(ShowcaseSettingsKeys.hiddenRows('second')),
+        jsonEncode(<String>['fresh_albums']),
+      );
+      expect(
+        prefs.getString(ShowcaseSettingsKeys.hiddenRows('default')),
+        jsonEncode(<String>['now_playing']),
+      );
+    });
+
+    test('should fall back to the unsuffixed Discover hide-owned flag',
+        () async {
+      final ProviderContainer container = await createContainer(
+        initialPrefs: <String, Object>{
+          ShowcaseSettingsKeys.legacyHideOwned: true,
+        },
+      );
+      expect(container.read(showcaseSettingsProvider).hideOwned, isTrue);
+    });
+
+    test('should show everything when the stored list is not valid JSON',
+        () async {
+      final ProviderContainer container = await createContainer(
+        initialPrefs: <String, Object>{
+          ShowcaseSettingsKeys.hiddenRows('default'): '{broken',
+        },
+      );
+      expect(container.read(showcaseSettingsProvider).hiddenRows, isEmpty);
     });
   });
 }

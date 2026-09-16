@@ -12,6 +12,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/genre_chip.dart';
+import '../../../shared/widgets/in_collection_badge.dart';
 import '../../../shared/widgets/rating_badge.dart';
 import '../models/showcase_item.dart';
 import '../providers/showcase_clock_provider.dart';
@@ -36,6 +37,10 @@ class ReleaseCard extends StatelessWidget {
   static const double _coverWidthCompact = 84;
   static const int _maxGenres = 3;
 
+  /// Past this the cover would outgrow the row; text keeps scaling, the
+  /// card height stops.
+  static const double _maxTextScaleGrowth = 1.6;
+
   static double coverWidth({required bool compact}) =>
       compact ? _coverWidthCompact : _coverWidth;
 
@@ -47,7 +52,7 @@ class ReleaseCard extends StatelessWidget {
   }) {
     final double base =
         coverWidth(compact: compact) / AppSpacing.posterAspectRatio;
-    return base * textScaler.scale(1).clamp(1.0, 1.6);
+    return base * textScaler.scale(1).clamp(1.0, _maxTextScaleGrowth);
   }
 
   @override
@@ -222,17 +227,10 @@ class _Cover extends StatelessWidget {
             child: Container(width: 3, color: accent),
           ),
           if (isOwned)
-            Positioned(
+            const Positioned(
               top: AppSpacing.xs,
               right: AppSpacing.xs,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: AppColors.badge,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.check, size: 12, color: AppColors.onBadge),
-              ),
+              child: InCollectionBadge(),
             ),
         ],
       ),

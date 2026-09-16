@@ -135,5 +135,4 @@ class MusicBrainzAlbumsSource extends SearchSource {
         (final int from, final int to) => (from, to),
         _ => (null, null),
       };
-
 }

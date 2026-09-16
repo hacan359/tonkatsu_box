@@ -1,23 +1,28 @@
 import 'dart:convert';
 
 import 'package:core/models/media_type.dart';
+import 'package:core/utils/json_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../utils/release_schedule.dart';
 
 abstract final class ShowcaseSettingsKeys {
   /// JSON array of row keys the user turned off. Stored as the hidden set so
   /// a row added in a later release shows up for everyone by default.
-  static const String hiddenRows = 'showcase_hidden_rows';
+  static String hiddenRows(String profileId) =>
+      'showcase_hidden_rows_$profileId';
 
-  /// Inherited from Discover unchanged so the old choice survives the move.
-  static const String hideOwned = 'discover_hide_owned';
+  static String hideOwned(String profileId) =>
+      'showcase_hide_owned_$profileId';
 
-  /// Discover's enabled-section list; read once and converted to [hiddenRows].
+  /// Discover stored both without a profile suffix; they seed every profile
+  /// that has no showcase keys of its own yet.
+  static const String legacyHideOwned = 'discover_hide_owned';
   static const String legacySections = 'discover_sections';
 }
 
@@ -133,17 +138,22 @@ final NotifierProvider<ShowcaseSettingsNotifier, ShowcaseSettings>
 
 class ShowcaseSettingsNotifier extends Notifier<ShowcaseSettings> {
   late SharedPreferences _prefs;
+  late String _profileId;
 
   @override
   ShowcaseSettings build() {
     _prefs = ref.watch(sharedPreferencesProvider);
+    _profileId = ref.watch(currentProfileProvider).id;
     return _load();
   }
 
   ShowcaseSettings _load() {
     final bool hideOwned =
-        _prefs.getBool(ShowcaseSettingsKeys.hideOwned) ?? false;
-    final String? hiddenJson = _prefs.getString(ShowcaseSettingsKeys.hiddenRows);
+        _prefs.getBool(ShowcaseSettingsKeys.hideOwned(_profileId)) ??
+            _prefs.getBool(ShowcaseSettingsKeys.legacyHideOwned) ??
+            false;
+    final String? hiddenJson =
+        _prefs.getString(ShowcaseSettingsKeys.hiddenRows(_profileId));
     if (hiddenJson != null) {
       return ShowcaseSettings(
         hiddenRows: _decodeRows(hiddenJson),
@@ -154,7 +164,7 @@ class ShowcaseSettingsNotifier extends Notifier<ShowcaseSettings> {
         _prefs.getString(ShowcaseSettingsKeys.legacySections);
     if (legacyJson == null) return ShowcaseSettings(hideOwned: hideOwned);
     return ShowcaseSettings(
-      hiddenRows: hiddenRowsFromLegacy(_decodeKeys(legacyJson)),
+      hiddenRows: hiddenRowsFromLegacy(decodeJsonStringList(legacyJson).toSet()),
       hideOwned: hideOwned,
     );
   }
@@ -169,16 +179,11 @@ class ShowcaseSettingsNotifier extends Notifier<ShowcaseSettings> {
     };
   }
 
-  static Set<String> _decodeKeys(String json) {
-    final Object? decoded = jsonDecode(json);
-    if (decoded is! List<Object?>) return const <String>{};
-    return decoded.whereType<String>().toSet();
-  }
-
-  static Set<ShowcaseRowId> _decodeRows(String json) => _decodeKeys(json)
-      .map(ShowcaseRowId.fromKey)
-      .whereType<ShowcaseRowId>()
-      .toSet();
+  static Set<ShowcaseRowId> _decodeRows(String json) =>
+      decodeJsonStringList(json)
+          .map(ShowcaseRowId.fromKey)
+          .whereType<ShowcaseRowId>()
+          .toSet();
 
   Future<void> toggleRow(ShowcaseRowId row) async {
     final Set<ShowcaseRowId> hidden = Set<ShowcaseRowId>.from(state.hiddenRows);
@@ -200,10 +205,13 @@ class ShowcaseSettingsNotifier extends Notifier<ShowcaseSettings> {
   Future<void> _save() async {
     final List<String> keys =
         state.hiddenRows.map((ShowcaseRowId r) => r.key).toList();
-    await _prefs.setString(ShowcaseSettingsKeys.hiddenRows, jsonEncode(keys));
-    await _prefs.setBool(ShowcaseSettingsKeys.hideOwned, state.hideOwned);
-    // The legacy list is consumed on first load; keeping it would re-import
-    // the old choice if the new key ever went missing.
-    await _prefs.remove(ShowcaseSettingsKeys.legacySections);
+    await _prefs.setString(
+      ShowcaseSettingsKeys.hiddenRows(_profileId),
+      jsonEncode(keys),
+    );
+    await _prefs.setBool(
+      ShowcaseSettingsKeys.hideOwned(_profileId),
+      state.hideOwned,
+    );
   }
 }

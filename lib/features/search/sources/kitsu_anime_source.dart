@@ -84,5 +84,4 @@ class KitsuAnimeSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

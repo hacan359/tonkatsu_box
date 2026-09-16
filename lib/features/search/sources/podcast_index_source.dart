@@ -70,5 +70,4 @@ class PodcastIndexSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

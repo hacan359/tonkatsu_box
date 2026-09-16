@@ -113,5 +113,4 @@ class AniListMangaSource extends SearchSource {
       rethrow;
     }
   }
-
 }

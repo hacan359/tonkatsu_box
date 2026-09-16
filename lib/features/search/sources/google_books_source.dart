@@ -90,5 +90,4 @@ class GoogleBooksSource extends SearchSource {
       currentPage: page,
     );
   }
-
 }

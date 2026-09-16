@@ -238,9 +238,8 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-/// Replays first, then the marked titles, each block under its own heading.
-/// A title that was replayed lands in the replay block with all its rows, so
-/// nothing shows up twice.
+/// A replayed title lands in the replay block with all its rows, so nothing
+/// shows up twice under the marked-titles heading.
 class _GroupList extends StatelessWidget {
   const _GroupList({required this.groups, required this.onOpen});
 

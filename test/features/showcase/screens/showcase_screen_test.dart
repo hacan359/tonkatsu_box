@@ -17,6 +17,7 @@ import 'package:tonkatsu_box/features/showcase/providers/showcase_settings_provi
 import 'package:tonkatsu_box/features/showcase/screens/showcase_screen.dart';
 import 'package:tonkatsu_box/features/showcase/widgets/release_board.dart';
 import 'package:tonkatsu_box/features/showcase/widgets/release_card.dart';
+import 'package:tonkatsu_box/shared/widgets/in_collection_badge.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -126,7 +127,7 @@ void main() {
       WidgetTester tester,
     ) async {
       final SharedPreferences prefs = await prefsWith(<String, Object>{
-        ShowcaseSettingsKeys.hiddenRows: '["now_playing"]',
+        ShowcaseSettingsKeys.hiddenRows('default'): '["now_playing"]',
       });
       await tester.pumpApp(
         const ShowcaseScreen(),
@@ -150,7 +151,7 @@ void main() {
       WidgetTester tester,
     ) async {
       final SharedPreferences prefs = await prefsWith(<String, Object>{
-        ShowcaseSettingsKeys.hideOwned: true,
+        ShowcaseSettingsKeys.hideOwned('default'): true,
       });
       await tester.pumpApp(
         const ShowcaseScreen(),
@@ -169,6 +170,46 @@ void main() {
 
       expect(find.text('Owned Movie'), findsNothing);
       expect(find.text('New Movie'), findsOneWidget);
+    });
+
+    testWidgets('should badge a collected item when hideOwned is off', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        const ShowcaseScreen(),
+        overrides: overrides(
+          rows: <ShowcaseRowId, List<ShowcaseItem>>{
+            ShowcaseRowId.nowPlaying: <ShowcaseItem>[
+              _item(1, 'Owned Movie'),
+              _item(2, 'New Movie'),
+            ],
+          },
+          owned: const ShowcaseOwnedIds(tmdbMovies: <int>{1}),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final Finder ownedCard = find.ancestor(
+        of: find.text('Owned Movie'),
+        matching: find.byType(ReleaseCard),
+      );
+      final Finder newCard = find.ancestor(
+        of: find.text('New Movie'),
+        matching: find.byType(ReleaseCard),
+      );
+      expect(tester.widget<ReleaseCard>(ownedCard).isOwned, isTrue);
+      expect(tester.widget<ReleaseCard>(newCard).isOwned, isFalse);
+      expect(
+        find.descendant(
+          of: ownedCard,
+          matching: find.byType(InCollectionBadge),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: newCard, matching: find.byType(InCollectionBadge)),
+        findsNothing,
+      );
     });
 
     testWidgets('rows follow the library: bigger types first', (
@@ -202,7 +243,7 @@ void main() {
       WidgetTester tester,
     ) async {
       final SharedPreferences prefs = await prefsWith(<String, Object>{
-        ShowcaseSettingsKeys.hiddenRows:
+        ShowcaseSettingsKeys.hiddenRows('default'):
             '[${ShowcaseRowId.values.map((ShowcaseRowId r) => '"${r.key}"').join(',')}]',
       });
       await tester.pumpApp(

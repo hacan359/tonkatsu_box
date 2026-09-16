@@ -1,6 +1,7 @@
 import 'package:core/models/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -15,6 +16,8 @@ import '../providers/showcase_settings_provider.dart';
 import '../widgets/showcase_group_title.dart';
 import '../widgets/showcase_row_section.dart';
 import '../widgets/showcase_settings_sheet.dart';
+
+final Logger _log = Logger('ShowcaseScreen');
 
 /// Add-target chips of this screen, independent of the Search tab's pick.
 final StateProvider<Set<int>> showcaseTargetCollectionsProvider =
@@ -45,9 +48,17 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen> {
     _loadPlatforms();
   }
 
+  /// Without the map the game sheet only loses platform labels, so a failure
+  /// is logged and the screen stays up.
   Future<void> _loadPlatforms() async {
-    final List<Platform> platforms =
-        await ref.read(databaseServiceProvider).gameDao.getAllPlatforms();
+    final List<Platform> platforms;
+    try {
+      platforms =
+          await ref.read(databaseServiceProvider).gameDao.getAllPlatforms();
+    } on Object catch (e, st) {
+      _log.warning('Platform list failed to load', e, st);
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _platformMap = <int, Platform>{for (final Platform p in platforms) p.id: p};

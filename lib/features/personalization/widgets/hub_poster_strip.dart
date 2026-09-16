@@ -64,6 +64,9 @@ class HubPosterStrip extends StatelessWidget {
   }
 }
 
+/// Height of a preview until its data arrives, so the card does not jump.
+const double kHubPreviewPlaceholderHeight = 40;
+
 class HubPreviewNote extends StatelessWidget {
   const HubPreviewNote(this.text, {super.key});
 

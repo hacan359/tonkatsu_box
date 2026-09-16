@@ -74,7 +74,7 @@ lib/
 ├── features/              # collections, search, settings, splash, statistics,
 │                          # tier_lists, mood_grids, wishlist, releases,
 │                          # recommendations, genre_cloud, personalization,
-│                          # likes, home, welcome
+│                          # showcase, likes, home, welcome
 └── shared/
     ├── constants/         # media_type_theme, platform_features, *_ui extensions
     ├── extensions/  gamepad/  keyboard/  navigation/  services/  utils/
