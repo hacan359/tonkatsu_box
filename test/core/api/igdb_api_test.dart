@@ -812,8 +812,9 @@ void main() {
             await sut.searchGames(query: 'test');
 
         expect(result, isEmpty);
-        // 2 IGDB calls: initial 401 + retry; 1 Twitch refresh call.
-        expect(igdbCallCount, equals(2));
+        // 3 IGDB calls: initial 401 + retry, then the name-filter fallback
+        // for the empty page; 1 Twitch refresh call.
+        expect(igdbCallCount, equals(3));
         verify(() => mockDio.post<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),

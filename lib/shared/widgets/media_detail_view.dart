@@ -32,7 +32,9 @@ export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
 /// Which activity date an edit targets — distinct from [ItemStatus] even
 /// though the names overlap.
-enum ActivityDateField { started, completed }
+/// [both] stamps the same day as start and completion — a single-sitting
+/// watch or playthrough.
+enum ActivityDateField { started, completed, both }
 
 /// A null [date] clears the field ("unknown date") without touching the
 /// item's status.
@@ -529,6 +531,8 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     ActivityDateField field,
     DateTime? current,
   ) async {
+    final OnActivityDateChanged? onChanged = widget.onActivityDateChanged;
+    if (onChanged == null) return;
     final DateTime initialDate = current ?? DateTime.now();
     final DateTime firstDate = DateTime(1980);
     final DateTime lastDate = DateTime.now().add(const Duration(days: 365));
@@ -543,10 +547,14 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
           : S.of(context).activityDatesSelectCompletion,
       // Nothing to clear while the field is still empty.
       allowClear: current != null,
+      allowBoth: true,
     );
 
     if (picked != null && context.mounted) {
-      await widget.onActivityDateChanged!(field, picked.date);
+      await onChanged(
+        picked.appliesToBoth ? ActivityDateField.both : field,
+        picked.date,
+      );
     }
   }
 

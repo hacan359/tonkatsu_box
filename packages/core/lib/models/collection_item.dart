@@ -654,6 +654,54 @@ class CollectionItem with Exportable {
   List<String>? get genres => _resolvedMedia.genres;
   String? get formattedRating => _resolvedMedia.formattedRating;
   String? get mediaStatus => _resolvedMedia.mediaStatus;
+
+  /// Stored descriptors the "meta" search matches; titles, descriptions and
+  /// comments stay out because the title search already covers them.
+  List<String> get searchableMeta {
+    // Reads whichever sub-model is attached instead of switching on
+    // `mediaType`, so animation (Movie or TvShow) needs no special case.
+    final List<String?> values = <String?>[
+      ...?game?.genres,
+      platform?.name,
+      ...?movie?.genres,
+      ...?tvShow?.genres,
+      ...?visualNovel?.tags,
+      ...?visualNovel?.developers,
+      ...?visualNovel?.platforms,
+      ...?manga?.genres,
+      ...?manga?.tags,
+      ...?manga?.authors,
+      manga?.countryOfOrigin,
+      manga?.format,
+      ...?book?.authors,
+      ...?book?.publishers,
+      ...?book?.subjects,
+      ...?book?.awards,
+      ...?book?.languages,
+      book?.series,
+      ...?audioItem?.artists,
+      ...?audioItem?.genres,
+      ...?audioItem?.tags,
+      ...?audioItem?.secondaryTypes,
+      audioItem?.primaryType,
+      audioItem?.label,
+      audioItem?.format,
+      ...?anime?.genres,
+      ...?anime?.tags,
+      ...?anime?.studios,
+      anime?.season,
+      anime?.format,
+      anime?.sourceMaterial,
+      ...?customMedia?.genreList,
+      customMedia?.platformName,
+      customMedia?.format,
+      releaseYear?.toString(),
+    ];
+    return <String>[
+      for (final String? value in values)
+        if (value != null && value.isNotEmpty) value,
+    ];
+  }
   DataSource get dataSource => _resolvedMedia.source;
   ImageType get imageType => _resolvedMedia.imageType;
 

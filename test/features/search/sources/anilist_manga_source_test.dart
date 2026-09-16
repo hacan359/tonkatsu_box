@@ -97,11 +97,5 @@ void main() {
         expect(source.defaultSort.id, 'score');
       });
     });
-
-    group('buildDiscoverFeed', () {
-      test('returns null', () {
-        expect(source.buildDiscoverFeed, isNotNull);
-      });
-    });
   });
 }

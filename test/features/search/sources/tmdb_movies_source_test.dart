@@ -90,12 +90,5 @@ void main() {
         expect(source.defaultSort.id, 'popular');
       });
     });
-
-    group('buildDiscoverFeed', () {
-      test('returns null', () {
-        // Can't test with real context, but method should exist
-        expect(source.buildDiscoverFeed, isNotNull);
-      });
-    });
   });
 }

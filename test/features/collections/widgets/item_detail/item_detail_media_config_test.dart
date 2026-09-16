@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/item_detail/item_detail_media_config.dart';
 import 'package:tonkatsu_box/shared/constants/media_type_theme.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/shared/widgets/media_detail/media_detail_chip.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../helpers/test_helpers.dart';
 
@@ -133,6 +136,57 @@ void main() {
 
       expect(c.hasEpisodeTracker, isTrue);
       expect(c.hasAnimeProgress, isFalse);
+    });
+  });
+
+  group('ItemDetailMediaConfig.from studio chips', () {
+    testWidgets('each studio is its own chip that opens the studio search',
+        (WidgetTester t) async {
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.anime,
+        externalId: 6,
+        anime: createTestAnime(
+          id: 6,
+          studios: <String>['Kyoto Animation', 'Animation Do'],
+        ),
+      );
+      late ItemDetailMediaConfig config;
+      late BuildContext ctx;
+      await t.pumpApp(
+        Builder(
+          builder: (BuildContext context) {
+            ctx = context;
+            config = ItemDetailMediaConfig.from(item, context);
+            return const SizedBox();
+          },
+        ),
+      );
+
+      final List<MediaDetailChip> studioChips = config.infoChips
+          .where((MediaDetailChip c) => c.onTap != null)
+          .toList();
+      expect(
+        studioChips.map((MediaDetailChip c) => c.text),
+        <String>['Kyoto Animation', 'Animation Do'],
+      );
+
+      studioChips.last.onTap!();
+      final SearchTabRequest? request = ProviderScope.containerOf(ctx)
+          .read(searchTabRequestProvider);
+      expect(request?.sourceId, 'anilist_anime');
+      expect(request?.filterValues?['studio'], 'Animation Do');
+    });
+
+    testWidgets('anime without studios has no tappable chip',
+        (WidgetTester t) async {
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.anime,
+        externalId: 7,
+        anime: createTestAnime(id: 7),
+      );
+      final ItemDetailMediaConfig c = await buildConfig(t, item);
+
+      expect(c.infoChips.where((MediaDetailChip x) => x.onTap != null), isEmpty);
     });
   });
 }

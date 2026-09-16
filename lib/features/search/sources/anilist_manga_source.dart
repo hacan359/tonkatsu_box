@@ -113,7 +113,4 @@ class AniListMangaSource extends SearchSource {
       rethrow;
     }
   }
-
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

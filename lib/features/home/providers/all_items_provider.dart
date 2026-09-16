@@ -5,6 +5,7 @@ import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/tag.dart';
+import 'package:core/utils/item_search.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,8 +13,10 @@ import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/providers/global_tags_provider.dart';
+import '../../collections/providers/item_tags_provider.dart';
 import '../../collections/providers/sort_utils.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../shared/navigation/search_providers.dart';
 
 
 const String _allItemsSortModeKey = 'all_items_sort_mode';
@@ -103,14 +106,23 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     final bool isDescending = ref.watch(allItemsSortDescProvider);
 
     _loadItems(sortMode, isDescending: isDescending);
-    return const AsyncLoading<List<CollectionItem>>();
+    return _loading(stateOrNull);
   }
+
+  /// A reload after an add keeps the last list under the fetch; a bare
+  /// AsyncLoading would run every consumer through its loader for a frame.
+  static AsyncValue<List<CollectionItem>> _loading(
+    AsyncValue<List<CollectionItem>>? previous,
+  ) =>
+      previous == null
+          ? const AsyncLoading<List<CollectionItem>>()
+          : const AsyncLoading<List<CollectionItem>>()
+              .copyWithPrevious(previous);
 
   Future<void> _loadItems(
     CollectionSortMode sortMode, {
     bool isDescending = false,
   }) async {
-    state = const AsyncLoading<List<CollectionItem>>();
     state = await AsyncValue.guard(() async {
       final List<CollectionItem> items =
           await _repository.getAllItemsWithData();
@@ -133,6 +145,7 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
   Future<void> refresh() async {
     final CollectionSortMode sortMode = ref.read(allItemsSortProvider);
     final bool isDescending = ref.read(allItemsSortDescProvider);
+    state = _loading(state);
     await _loadItems(sortMode, isDescending: isDescending);
   }
 
@@ -286,4 +299,23 @@ final Provider<Map<int, Tag>> allTagsMapProvider =
   return <int, Tag>{
     for (final Tag tag in tags) tag.id: tag,
   };
+});
+
+/// The library matcher for [query] in the current search mode, shared by Home
+/// and the likes page so both find the same items.
+final AutoDisposeProviderFamily<ItemSearch, String> itemSearchProvider =
+    Provider.autoDispose.family<ItemSearch, String>((Ref ref, String query) {
+  final Map<int, Tag> tags = ref.watch(allTagsMapProvider);
+  return ItemSearch(
+    query: query,
+    mode: ref.watch(searchModeProvider),
+    itemTags: ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{},
+    tagNames: <int, String>{
+      for (final Tag tag in tags.values) tag.id: tag.name,
+    },
+    titleLanguage: ref.watch(
+      settingsNotifierProvider
+          .select((SettingsState s) => s.animeMangaTitleLanguage),
+    ),
+  );
 });

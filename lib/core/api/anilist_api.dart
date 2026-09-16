@@ -1,5 +1,6 @@
 import 'package:core/models/anilist_tag.dart';
 import 'package:core/models/anime.dart';
+import 'package:core/models/anilist_studio.dart';
 import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
 import 'package:dio/dio.dart';
@@ -75,6 +76,8 @@ class AniListApi {
     String? format,
     int? startYear,
     int? endYear,
+    String? season,
+    int? seasonYear,
     String sort = 'POPULARITY_DESC',
     int page = 1,
     int perPage = 20,
@@ -87,6 +90,27 @@ class AniListApi {
         format: format,
         startYear: startYear,
         endYear: endYear,
+        season: season,
+        seasonYear: seasonYear,
+        sort: sort,
+        page: page,
+        perPage: perPage,
+      );
+
+  Future<List<AniListStudio>> searchStudios(
+    String query, {
+    int perPage = 10,
+  }) =>
+      _media.searchStudios(query, perPage: perPage);
+
+  Future<(List<Anime>, bool hasMore, int totalPages)> browseAnimeByStudio({
+    required String studio,
+    String sort = 'POPULARITY_DESC',
+    int page = 1,
+    int perPage = 20,
+  }) =>
+      _media.browseAnimeByStudio(
+        studio: studio,
         sort: sort,
         page: page,
         perPage: perPage,

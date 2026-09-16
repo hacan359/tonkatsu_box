@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -10,14 +12,23 @@ const String _isoPattern = 'yyyy-MM-dd';
 /// Distinguishes "clear the date" from a picked date; a dismissed dialog
 /// yields no result at all (null from the show function).
 class DualDateResult {
-  const DualDateResult.picked(DateTime this.date) : cleared = false;
+  const DualDateResult.picked(DateTime this.date)
+      : cleared = false,
+        appliesToBoth = false;
+
+  /// The same day is both the start and the completion date.
+  const DualDateResult.pickedBoth(DateTime this.date)
+      : cleared = false,
+        appliesToBoth = true;
 
   const DualDateResult.cleared()
       : date = null,
-        cleared = true;
+        cleared = true,
+        appliesToBoth = false;
 
   final DateTime? date;
   final bool cleared;
+  final bool appliesToBoth;
 }
 
 Future<DateTime?> showDualDatePicker({
@@ -37,7 +48,8 @@ Future<DateTime?> showDualDatePicker({
   return result?.date;
 }
 
-/// [allowClear] adds a "No date" action so an already-set date can be erased.
+/// [allowClear] adds a "No date" action so an already-set date can be erased;
+/// [allowBoth] adds a "start and finish" action for a single-day activity.
 Future<DualDateResult?> showDualDatePickerResult({
   required BuildContext context,
   required DateTime initialDate,
@@ -45,6 +57,7 @@ Future<DualDateResult?> showDualDatePickerResult({
   required DateTime lastDate,
   String? helpText,
   bool allowClear = false,
+  bool allowBoth = false,
 }) {
   return showDialog<DualDateResult>(
     context: context,
@@ -54,6 +67,7 @@ Future<DualDateResult?> showDualDatePickerResult({
       lastDate: lastDate,
       helpText: helpText,
       allowClear: allowClear,
+      allowBoth: allowBoth,
     ),
   );
 }
@@ -65,6 +79,7 @@ class DualDatePickerDialog extends StatefulWidget {
     required this.lastDate,
     this.helpText,
     this.allowClear = false,
+    this.allowBoth = false,
     super.key,
   });
 
@@ -73,12 +88,17 @@ class DualDatePickerDialog extends StatefulWidget {
   final DateTime lastDate;
   final String? helpText;
   final bool allowClear;
+  final bool allowBoth;
 
   @override
   State<DualDatePickerDialog> createState() => _DualDatePickerDialogState();
 }
 
 class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
+  static const double _mobileHeight = 520;
+  static const double _desktopHeight = 440;
+  static const double _minHeight = 240;
+
   late DateTime _selected;
   late final TextEditingController _controller;
   final DateFormat _isoFormat = DateFormat(_isoPattern);
@@ -211,53 +231,70 @@ class _DualDatePickerDialogState extends State<DualDatePickerDialog> {
     final MediaQueryData mq = MediaQuery.of(context);
     final double maxHeight = mq.size.height - mq.viewInsets.bottom - 48;
     final double dialogWidth = isMobile ? 360 : 620;
-    final double dialogHeight =
-        (isMobile ? 520.0 : 440.0).clamp(240.0, maxHeight);
+    // A landscape phone with the keyboard up leaves less than the floor: the
+    // outer scroll view then scrolls the box (clamp would throw, bounds inverted).
+    final double dialogHeight = math.min(
+      isMobile ? _mobileHeight : _desktopHeight,
+      math.max(_minHeight, maxHeight),
+    );
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: SizedBox(
-        width: dialogWidth,
-        height: dialogHeight,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              if (widget.helpText != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Text(
-                    widget.helpText!,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-              Expanded(child: body),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: <Widget>[
-                  if (widget.allowClear)
-                    TextButton(
-                      onPressed: () => Navigator.of(context)
-                          .pop(const DualDateResult.cleared()),
-                      child: Text(l.dualDatePickerNoDate),
+      child: SingleChildScrollView(
+        child: SizedBox(
+          width: dialogWidth,
+          height: dialogHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                if (widget.helpText != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: Text(
+                      widget.helpText!,
+                      style: theme.textTheme.titleMedium,
                     ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l.cancel),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  TextButton(
-                    onPressed: _errorKey == null
-                        ? () => Navigator.of(context)
-                            .pop(DualDateResult.picked(_selected))
-                        : null,
-                    child: Text(l.confirm),
-                  ),
-                ],
-              ),
-            ],
+                Expanded(child: body),
+                const SizedBox(height: AppSpacing.sm),
+                // Wrap, not Row: three left actions plus two right ones do not
+                // fit a phone-width dialog on one line.
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.sm,
+                  children: <Widget>[
+                    if (widget.allowClear)
+                      TextButton(
+                        onPressed: () => Navigator.of(context)
+                            .pop(const DualDateResult.cleared()),
+                        child: Text(l.dualDatePickerNoDate),
+                      ),
+                    if (widget.allowBoth)
+                      TextButton(
+                        onPressed: _errorKey == null
+                            ? () => Navigator.of(context)
+                                .pop(DualDateResult.pickedBoth(_selected))
+                            : null,
+                        child: Text(l.dualDatePickerBothDates),
+                      ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(l.cancel),
+                    ),
+                    TextButton(
+                      onPressed: _errorKey == null
+                          ? () => Navigator.of(context)
+                              .pop(DualDateResult.picked(_selected))
+                          : null,
+                      child: Text(l.confirm),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

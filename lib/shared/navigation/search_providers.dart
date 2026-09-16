@@ -1,4 +1,5 @@
 import 'package:core/models/media_type.dart';
+import 'package:core/utils/meta_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -29,6 +30,49 @@ final StateProvider<String> searchTabQueryProvider =
 final StateProvider<String> settingsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
+/// Note text filter of the likes page; the page is the only hub section that
+/// searches, so it is also the only one that may claim the top-bar field.
+final StateProvider<String> likesSearchQueryProvider =
+    StateProvider<String>((Ref ref) => '');
+
+/// Raised while the likes page is on top of the hub's navigator.
+final StateProvider<bool> likesSearchActiveProvider =
+    StateProvider<bool>((Ref ref) => false);
+
+/// Shared by Home and Collections so a mode picked on one tab carries over;
+/// not persisted, every launch starts with the plain title search.
+final StateProvider<SearchMode> searchModeProvider =
+    StateProvider<SearchMode>((Ref ref) => SearchMode.title);
+
+/// Popped by the item detail screen when a metadata chip is tapped; the
+/// screen that pushed it decides where the query lands.
+class MetaSearchRequest {
+  const MetaSearchRequest(this.query);
+
+  final String query;
+}
+
+/// Turns a tapped chip value into a meta search on [queryProvider]. With
+/// [narrow], a query already in meta mode grows by one AND group instead.
+void applyMetaSearch(
+  WidgetRef ref,
+  StateProvider<String> queryProvider,
+  String term, {
+  bool narrow = true,
+}) {
+  final bool narrowing =
+      narrow && ref.read(searchModeProvider) == SearchMode.meta;
+  final String current = ref.read(queryProvider);
+  ref.read(searchModeProvider.notifier).state = SearchMode.meta;
+  ref.read(queryProvider.notifier).state =
+      narrowing ? appendMetaTerm(current, term) : metaTermFor(term);
+}
+
+/// One-shot for screens that cannot filter themselves (Search, Releases):
+/// consumed by [AppShell], which opens Home in meta mode with the query.
+final StateProvider<MetaSearchRequest?> homeMetaSearchRequestProvider =
+    StateProvider<MetaSearchRequest?>((Ref ref) => null);
+
 /// App level so [AppShell] can focus the [AppTopBar] field programmatically
 /// for type-to-search.
 final Provider<FocusNode> appTopBarFocusProvider = Provider<FocusNode>((
@@ -52,6 +96,7 @@ class SearchTabRequest {
     this.mediaType,
     this.sourceId,
     this.collectionId,
+    this.filterValues,
   });
 
   /// Query to prefill (and run). When null/empty the Search tab opens empty.
@@ -66,6 +111,10 @@ class SearchTabRequest {
   /// Collection to add results into; preselected in
   /// [searchTargetCollectionsProvider].
   final int? collectionId;
+
+  /// Own filter values to preset on [sourceId] (filter key → value); ignored
+  /// without a source, a shared value has no single owner.
+  final Map<String, Object?>? filterValues;
 }
 
 /// Pending [SearchTabRequest]; see [SearchTabRequest].
@@ -77,6 +126,7 @@ class SearchContext {
   const SearchContext({
     required this.queryProvider,
     required this.hint,
+    this.supportsMetaSearch = false,
   });
 
   /// Where the current query is read from and written to.
@@ -84,6 +134,26 @@ class SearchContext {
 
   /// Placeholder shown in the search field for this tab.
   final String hint;
+
+  /// Whether the tab filters library items and honours [searchModeProvider].
+  final bool supportsMetaSearch;
+}
+
+/// The context the shared field serves right now. With the hub open the tab
+/// underneath is hidden, so its search must not be reachable either.
+SearchContext? activeSearchContext({
+  required NavTab tab,
+  required bool personalizationOpen,
+  required bool likesSearchActive,
+  required BuildContext context,
+}) {
+  if (!personalizationOpen) return searchContextFor(tab, context);
+  if (!likesSearchActive) return null;
+  return SearchContext(
+    queryProvider: likesSearchQueryProvider,
+    hint: S.of(context).appBarSearchHint,
+    supportsMetaSearch: true,
+  );
 }
 
 /// Returns the search context for [tab], or `null` if the tab does not
@@ -95,6 +165,7 @@ SearchContext? searchContextFor(NavTab tab, BuildContext context) {
       return SearchContext(
         queryProvider: homeSearchQueryProvider,
         hint: loc.appBarSearchHint,
+        supportsMetaSearch: true,
       );
     case NavTab.wishlist:
       return SearchContext(
@@ -115,6 +186,7 @@ SearchContext? searchContextFor(NavTab tab, BuildContext context) {
       return SearchContext(
         queryProvider: collectionsSearchQueryProvider,
         hint: loc.appBarSearchHint,
+        supportsMetaSearch: true,
       );
     case NavTab.search:
       return SearchContext(

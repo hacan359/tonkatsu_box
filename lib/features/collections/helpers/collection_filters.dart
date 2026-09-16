@@ -3,6 +3,8 @@ import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
+import 'package:core/utils/item_search.dart';
+import 'package:core/utils/meta_search.dart';
 
 import '../../../shared/utils/media_format.dart';
 
@@ -16,6 +18,7 @@ class CollectionFilters {
     this.statuses = const <ItemStatus>{},
     this.favoriteOnly = false,
     this.searchQuery = '',
+    this.searchMode = SearchMode.title,
   });
 
   final Set<MediaType> mediaTypes;
@@ -37,6 +40,8 @@ class CollectionFilters {
   final bool favoriteOnly;
 
   final String searchQuery;
+
+  final SearchMode searchMode;
 
   /// [itemTags] is the item id → global tag ids map from `itemTagsProvider`.
   List<CollectionItem> apply(
@@ -87,28 +92,13 @@ class CollectionFilters {
     }
 
     if (searchQuery.isEmpty) return result;
-
-    final String query = searchQuery.toLowerCase();
-    final Map<int, String> tagNames = <int, String>{
-      for (final Tag tag in tags) tag.id: tag.name.toLowerCase(),
-    };
-    bool matchesTagName(CollectionItem item) {
-      final List<int>? ids = itemTags[item.id];
-      if (ids == null) return false;
-      return ids.any((int id) => tagNames[id]?.contains(query) ?? false);
-    }
-
-    return result
-        .where(
-          (CollectionItem item) =>
-              item
-                      .displayName(animeMangaTitleLanguage)
-                      .toLowerCase()
-                      .contains(query) ||
-              matchesTagName(item) ||
-              (item.userComment?.toLowerCase().contains(query) ?? false) ||
-              (item.authorComment?.toLowerCase().contains(query) ?? false),
-        )
-        .toList();
+    final ItemSearch search = ItemSearch(
+      query: searchQuery,
+      mode: searchMode,
+      itemTags: itemTags,
+      tagNames: <int, String>{for (final Tag tag in tags) tag.id: tag.name},
+      titleLanguage: animeMangaTitleLanguage,
+    );
+    return result.where(search.matches).toList();
   }
 }

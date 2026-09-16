@@ -4424,12 +4424,6 @@ abstract class S {
   /// **'New releases'**
   String get musicDiscoverFreshReleases;
 
-  /// No description provided for @musicDiscoverUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Discover is unavailable'**
-  String get musicDiscoverUnavailable;
-
   /// No description provided for @musicSearchArtist.
   ///
   /// In en, this message translates to:
@@ -5966,6 +5960,12 @@ abstract class S {
   /// **'No date'**
   String get dualDatePickerNoDate;
 
+  /// No description provided for @dualDatePickerBothDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Started and finished this day'**
+  String get dualDatePickerBothDates;
+
   /// No description provided for @dualDatePickerErrorEmpty.
   ///
   /// In en, this message translates to:
@@ -6206,84 +6206,6 @@ abstract class S {
   /// **'Failed to initialize WebView: {error}'**
   String vgmapsFailedInit(String error);
 
-  /// No description provided for @discoverTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Discover'**
-  String get discoverTitle;
-
-  /// No description provided for @discoverCustomize.
-  ///
-  /// In en, this message translates to:
-  /// **'Customize'**
-  String get discoverCustomize;
-
-  /// No description provided for @discoverTrending.
-  ///
-  /// In en, this message translates to:
-  /// **'Trending This Week'**
-  String get discoverTrending;
-
-  /// No description provided for @discoverTopRatedMovies.
-  ///
-  /// In en, this message translates to:
-  /// **'Top Rated Movies'**
-  String get discoverTopRatedMovies;
-
-  /// No description provided for @discoverTopRatedTvShows.
-  ///
-  /// In en, this message translates to:
-  /// **'Top Rated TV Shows'**
-  String get discoverTopRatedTvShows;
-
-  /// No description provided for @discoverPopularTvShows.
-  ///
-  /// In en, this message translates to:
-  /// **'Popular TV Shows'**
-  String get discoverPopularTvShows;
-
-  /// No description provided for @discoverUpcoming.
-  ///
-  /// In en, this message translates to:
-  /// **'Upcoming'**
-  String get discoverUpcoming;
-
-  /// No description provided for @discoverCustomizeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Customize Discover'**
-  String get discoverCustomizeTitle;
-
-  /// No description provided for @discoverCustomizeHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose which sections to show'**
-  String get discoverCustomizeHint;
-
-  /// No description provided for @discoverResetDefault.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset to default'**
-  String get discoverResetDefault;
-
-  /// No description provided for @discoverAlreadyInCollection.
-  ///
-  /// In en, this message translates to:
-  /// **'Already in collection'**
-  String get discoverAlreadyInCollection;
-
-  /// No description provided for @discoverShowWithBadge.
-  ///
-  /// In en, this message translates to:
-  /// **'Show with badge'**
-  String get discoverShowWithBadge;
-
-  /// No description provided for @discoverHideCompletely.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide completely'**
-  String get discoverHideCompletely;
-
   /// No description provided for @recommendationsTitle.
   ///
   /// In en, this message translates to:
@@ -6433,6 +6355,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Card size in collection grids'**
   String get settingsCardScaleSubtitle;
+
+  /// No description provided for @settingsTextScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsTextScale;
+
+  /// No description provided for @settingsTextScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface text size, on top of the system setting'**
+  String get settingsTextScaleSubtitle;
 
   /// No description provided for @collectionEditHeroImage.
   ///
@@ -6607,6 +6541,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No tags found'**
   String get tagPickerEmpty;
+
+  /// No description provided for @studioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio'**
+  String get studioLabel;
+
+  /// No description provided for @studioPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select studio'**
+  String get studioPickerTitle;
+
+  /// No description provided for @studioPickerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search studios'**
+  String get studioPickerSearchHint;
+
+  /// No description provided for @studioPickerTypeToSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a studio name'**
+  String get studioPickerTypeToSearch;
+
+  /// No description provided for @studioPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No studios found'**
+  String get studioPickerEmpty;
+
+  /// No description provided for @studioFilterExclusiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'While a studio is selected, other filters and the search text are ignored'**
+  String get studioFilterExclusiveHint;
+
+  /// No description provided for @filterBlockedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available while {filter} is set'**
+  String filterBlockedBy(String filter);
 
   /// No description provided for @clearAll.
   ///
@@ -7021,6 +6997,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Start typing to search'**
   String get appBarSearchHint;
+
+  /// No description provided for @appBarMetaSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre, author, studio… comma = and, / = or'**
+  String get appBarMetaSearchHint;
+
+  /// No description provided for @searchModeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Search mode'**
+  String get searchModeTooltip;
+
+  /// No description provided for @searchModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'By title'**
+  String get searchModeTitle;
+
+  /// No description provided for @searchModeMeta.
+  ///
+  /// In en, this message translates to:
+  /// **'By details'**
+  String get searchModeMeta;
 
   /// No description provided for @insertLink.
   ///
@@ -9215,8 +9215,326 @@ abstract class S {
   /// No description provided for @genreCloudTitle.
   ///
   /// In en, this message translates to:
-  /// **'Personalization'**
+  /// **'Genre cloud'**
   String get genreCloudTitle;
+
+  /// No description provided for @showcaseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase'**
+  String get showcaseTitle;
+
+  /// No description provided for @showcaseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s out now and what people are watching'**
+  String get showcaseHint;
+
+  /// No description provided for @showcaseGroupAiring.
+  ///
+  /// In en, this message translates to:
+  /// **'Out now'**
+  String get showcaseGroupAiring;
+
+  /// No description provided for @showcaseGroupPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get showcaseGroupPopular;
+
+  /// No description provided for @showcaseAnimeThisSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime this season'**
+  String get showcaseAnimeThisSeason;
+
+  /// No description provided for @showcaseAnimeNextSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime next season'**
+  String get showcaseAnimeNextSeason;
+
+  /// No description provided for @showcaseNowPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'In theaters now'**
+  String get showcaseNowPlaying;
+
+  /// No description provided for @showcaseUpcomingMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming to theaters'**
+  String get showcaseUpcomingMovies;
+
+  /// No description provided for @showcaseTvEpisodesThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'New episodes this week'**
+  String get showcaseTvEpisodesThisWeek;
+
+  /// No description provided for @showcaseUpcomingGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming game releases'**
+  String get showcaseUpcomingGames;
+
+  /// No description provided for @showcaseTrendingMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending movies'**
+  String get showcaseTrendingMovies;
+
+  /// No description provided for @showcaseTrendingTvShows.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending TV shows'**
+  String get showcaseTrendingTvShows;
+
+  /// No description provided for @showcasePopularAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular anime'**
+  String get showcasePopularAnime;
+
+  /// No description provided for @showcaseSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize showcase'**
+  String get showcaseSettingsTitle;
+
+  /// No description provided for @showcaseSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which rows to show'**
+  String get showcaseSettingsHint;
+
+  /// No description provided for @showcaseResetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get showcaseResetDefault;
+
+  /// No description provided for @showcaseAlreadyInCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in collection'**
+  String get showcaseAlreadyInCollection;
+
+  /// No description provided for @showcaseShowWithBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Show with badge'**
+  String get showcaseShowWithBadge;
+
+  /// No description provided for @showcaseHideCompletely.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide completely'**
+  String get showcaseHideCompletely;
+
+  /// No description provided for @showcaseRowError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this row'**
+  String get showcaseRowError;
+
+  /// No description provided for @showcaseRetryIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limit reached, retry in {seconds} s'**
+  String showcaseRetryIn(int seconds);
+
+  /// No description provided for @showcaseAllRowsHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'All rows are hidden. Turn some on in the showcase settings.'**
+  String get showcaseAllRowsHidden;
+
+  /// No description provided for @showcaseEpisodeShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Ep {number}'**
+  String showcaseEpisodeShort(int number);
+
+  /// No description provided for @showcaseSeasonEpisodeShort.
+  ///
+  /// In en, this message translates to:
+  /// **'S{season}E{episode}'**
+  String showcaseSeasonEpisodeShort(int season, int episode);
+
+  /// No description provided for @showcaseCountdownIn.
+  ///
+  /// In en, this message translates to:
+  /// **'in {countdown}'**
+  String showcaseCountdownIn(String countdown);
+
+  /// No description provided for @showcaseCountdownDaysHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h'**
+  String showcaseCountdownDaysHours(int days, int hours);
+
+  /// No description provided for @showcaseCountdownHoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String showcaseCountdownHoursMinutes(int hours, int minutes);
+
+  /// No description provided for @showcaseCountdownMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m'**
+  String showcaseCountdownMinutes(int minutes);
+
+  /// No description provided for @showcaseCountdownDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d'**
+  String showcaseCountdownDays(int days);
+
+  /// No description provided for @showcaseOutNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Out now'**
+  String get showcaseOutNow;
+
+  /// No description provided for @showcasePremiere.
+  ///
+  /// In en, this message translates to:
+  /// **'Premiere'**
+  String get showcasePremiere;
+
+  /// No description provided for @showcaseRelease.
+  ///
+  /// In en, this message translates to:
+  /// **'Release'**
+  String get showcaseRelease;
+
+  /// No description provided for @showcaseEpisodesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ep'**
+  String showcaseEpisodesCount(int count);
+
+  /// No description provided for @showcaseViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get showcaseViewList;
+
+  /// No description provided for @showcaseViewByDay.
+  ///
+  /// In en, this message translates to:
+  /// **'By date'**
+  String get showcaseViewByDay;
+
+  /// No description provided for @showcaseViewByWeekday.
+  ///
+  /// In en, this message translates to:
+  /// **'By weekday'**
+  String get showcaseViewByWeekday;
+
+  /// No description provided for @showcaseViewByWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'By week'**
+  String get showcaseViewByWeek;
+
+  /// No description provided for @showcaseDateTba.
+  ///
+  /// In en, this message translates to:
+  /// **'Date TBA'**
+  String get showcaseDateTba;
+
+  /// No description provided for @showcaseShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ({count})'**
+  String showcaseShowAll(int count);
+
+  /// No description provided for @personalizationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalization'**
+  String get personalizationTitle;
+
+  /// No description provided for @personalizationStatsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library in numbers'**
+  String get personalizationStatsHint;
+
+  /// No description provided for @personalizationRecommendationsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on what you finished and rated'**
+  String get personalizationRecommendationsHint;
+
+  /// No description provided for @likesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes, notes & replays'**
+  String get likesTitle;
+
+  /// No description provided for @personalizationLikesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes and chapters you marked, titles you replayed'**
+  String get personalizationLikesHint;
+
+  /// No description provided for @likesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing marked yet'**
+  String get likesEmptyTitle;
+
+  /// No description provided for @likesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Like an episode or leave a note in a title\'s tracker and it will show up here.'**
+  String get likesEmptyBody;
+
+  /// No description provided for @likesNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches the filter'**
+  String get likesNoMatches;
+
+  /// No description provided for @likesTrackWithDisc.
+  ///
+  /// In en, this message translates to:
+  /// **'Track {track} · Disc {disc}'**
+  String likesTrackWithDisc(int track, int disc);
+
+  /// No description provided for @likesMarkCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 mark} other{{count} marks}}'**
+  String likesMarkCount(int count);
+
+  /// No description provided for @likesSectionRewatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Replays'**
+  String get likesSectionRewatch;
+
+  /// No description provided for @likesSectionMarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes & notes'**
+  String get likesSectionMarks;
+
+  /// No description provided for @likesRewatchFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'With replays'**
+  String get likesRewatchFilter;
+
+  /// No description provided for @likesRewatchTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 replay} other{{count} replays}}'**
+  String likesRewatchTimes(int count);
 
   /// No description provided for @genreCloudEmpty.
   ///
@@ -9265,12 +9583,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Decades'**
   String get facetDecade;
-
-  /// No description provided for @personalizationTabCloud.
-  ///
-  /// In en, this message translates to:
-  /// **'Genre cloud'**
-  String get personalizationTabCloud;
 
   /// No description provided for @recommendationsEmpty.
   ///
@@ -10171,12 +10483,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{count} episodes'**
   String podcastEpisodesCount(int count);
-
-  /// No description provided for @podcastDiscoverTrending.
-  ///
-  /// In en, this message translates to:
-  /// **'Trending podcasts'**
-  String get podcastDiscoverTrending;
 
   /// No description provided for @credentialsPodcastIndexSection.
   ///

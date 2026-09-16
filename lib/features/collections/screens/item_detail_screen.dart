@@ -36,6 +36,7 @@ import '../../../core/database/database_service.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../releases/widgets/add_to_calendar_dialog.dart';
 import '../../../shared/widgets/media_detail_view.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
 import '../widgets/create_custom_item_dialog.dart';
@@ -884,13 +885,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         : await _pickCardLinkTarget(matches) ?? matches.first;
     if (!mounted) return;
 
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (BuildContext context) => ItemDetailScreen(
-        collectionId: target.collectionId,
-        itemId: target.id,
-        isEditable: widget.isEditable,
+    final MetaSearchRequest? request =
+        await Navigator.of(context).push<MetaSearchRequest?>(
+      MaterialPageRoute<MetaSearchRequest?>(
+        builder: (BuildContext context) => ItemDetailScreen(
+          collectionId: target.collectionId,
+          itemId: target.id,
+          isEditable: widget.isEditable,
+        ),
       ),
-    ));
+    );
+    // A chip tapped in the linked card closes both cards: the screen that
+    // opened the first one is the only place the query can be applied.
+    if (request != null && mounted) Navigator.of(context).pop(request);
   }
 
   Future<CollectionItem?> _pickCardLinkTarget(
@@ -1265,15 +1272,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     ActivityDateField field,
     DateTime? date,
   ) async {
-    final bool started = field == ActivityDateField.started;
+    final (bool touchesStart, bool touchesCompletion) = switch (field) {
+      ActivityDateField.started => (true, false),
+      ActivityDateField.completed => (false, true),
+      ActivityDateField.both => (true, true),
+    };
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateActivityDates(
           id,
-          startedAt: started ? date : null,
-          completedAt: started ? null : date,
-          clearStartedAt: started && date == null,
-          clearCompletedAt: !started && date == null,
+          startedAt: touchesStart ? date : null,
+          completedAt: touchesCompletion ? date : null,
+          clearStartedAt: touchesStart && date == null,
+          clearCompletedAt: touchesCompletion && date == null,
           lastActivityAt: DateTime.now(),
         );
   }

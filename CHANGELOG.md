@@ -7,6 +7,451 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Search the library by details**
+
+  - The search field on Home and Collections gets a mode menu in front of it:
+    "By title" or "By details".
+  - Details mode matches genres, tags, studios, authors, publishers, subjects,
+    developers, artists, label, platform, format, season and release year of
+    every media type.
+  - A comma joins conditions with AND, a slash (or `|`) inside a condition
+    gives OR: `horror / thriller, 2019`. The matcher takes a phrase whole, so
+    `kyoto animation` is one value.
+  - Genres, anime and manga tags, manga authors, an album label and a custom
+    item's platform are tappable chips on the item card. A tap closes the
+    card and runs that value as a details search on the screen underneath;
+    with a details query already showing, the tap adds the value as one more
+    AND condition. From Search and Releases the tap lands on Home.
+
+  * packages/core/lib/utils/meta_search.dart (SearchMode, parseMetaQuery,
+    matchesMetaQuery, matchesParsedMetaQuery, normalizeMetaValue, metaTermFor,
+    appendMetaTerm): New.
+  * packages/core/lib/models/collection_item.dart (CollectionItem.searchableMeta):
+    New getter listing the stored descriptors of the attached sub-model.
+  * lib/shared/navigation/search_providers.dart (searchModeProvider,
+    MetaSearchRequest, homeMetaSearchRequestProvider, applyMetaSearch,
+    SearchContext.supportsMetaSearch): New.
+  * lib/shared/navigation/app_top_bar.dart (_SearchModeMenu, _SearchField.mode,
+    _SearchField.onModeChanged): Mode menu and hint per mode.
+  * lib/shared/constants/search_mode_ui.dart (SearchModeUi.localizedLabel): New.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.searchMode, CollectionFilters.apply): Details mode
+    through ItemSearch.
+  * lib/features/home/providers/all_items_provider.dart (itemSearchProvider):
+    New; one matcher for Home and the likes page.
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState.build, _AllItemsScreenState._applyFilter,
+    _AllItemsScreenState._countByMediaType,
+    _AllItemsScreenState._matchesNonTypeFilters,
+    _AllItemsScreenState._showItemDetails): Details mode through ItemSearch;
+    applies the popped chip value.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._showItemDetails): Applies the popped chip value.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_metaSearchTap, _buildChips): Per-value chips that pop a MetaSearchRequest.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._openCardLink): Forwards the result of a nested card.
+  * lib/features/releases/screens/releases_screen.dart (_ReleasesScreenState._open),
+    lib/features/search/screens/search_screen.dart
+    (_SearchScreenState._navigateToItemDetail): Forward the result to Home.
+  * lib/shared/navigation/app_shell.dart (_AppShellState.build): Listens for
+    homeMetaSearchRequestProvider and switches to Home.
+  * lib/l10n/app_*.arb (appBarMetaSearchHint, searchModeTooltip,
+    searchModeTitle, searchModeMeta): New strings.
+
+- **Showcase section in the personalization hub**
+
+  - A fourth card on the hub landing opens a page of release boards in two
+    blocks. "Out now": anime this season, anime next season, in theaters now,
+    coming to theaters, new episodes this week, upcoming game releases, new
+    albums. "Popular": trending movies, trending TV shows, popular anime.
+  - A card carries the cover, the countdown to the next episode, premiere or
+    release ("S4E8 · in 5d", "Premiere · Today", "Release · Out now"), the
+    weekday and date, format, episode count, runtime, studio or artist,
+    genres and a description. Over a day out the countdown shows days and
+    hours, under it hours and minutes. It ticks once a minute.
+  - Boards sort by the nearest date; entries without one go last. A dated
+    board switches between a plain list and buckets by weekday, by date or by
+    week: anime this season and new episodes this week open by weekday, anime
+    next season by week. A board longer than six cards collapses behind
+    "Show all".
+  - Blocks order their boards by how many items of that media type the
+    library holds.
+  - One board's error or empty answer leaves the others alone. Each keeps its
+    own retry button, and on an AniList rate limit it counts down the wait.
+  - A sheet in the title bar lists every board with a checkbox, plus a switch
+    for titles already in a collection: badge or hide. The choices are kept
+    per profile; a board switched off in Discover stays off.
+
+  * lib/features/showcase/models/showcase_item.dart (ShowcaseItem): New;
+    flattens a movie, show, anime, game or album into one card model.
+  * lib/features/showcase/providers/showcase_rows_provider.dart
+    (animeThisSeasonProvider, animeNextSeasonProvider, popularAnimeProvider,
+    nowPlayingProvider, upcomingMoviesProvider, trendingMoviesProvider,
+    tvEpisodesThisWeekProvider, trendingTvShowsProvider, upcomingGamesProvider,
+    freshAlbumsProvider, showcaseRowProvider, showcaseRowOrderProvider,
+    showcaseLibraryCountsProvider, showcaseOwnedIdsProvider, refreshShowcase):
+    New; one hour-cached provider per board.
+  * lib/features/showcase/providers/showcase_settings_provider.dart
+    (ShowcaseRowId, ShowcaseGroup, ShowcaseSettings, ShowcaseSettingsNotifier,
+    legacyDiscoverSections): New; stores the hidden boards per profile.
+  * lib/features/showcase/providers/showcase_clock_provider.dart
+    (showcaseClockProvider, showcaseNowProvider, ShowcaseNowNotifier): New;
+    one minute tick for every countdown on screen.
+  * lib/features/showcase/screens/showcase_screen.dart (ShowcaseScreen,
+    showcaseTargetCollectionsProvider): New.
+  * lib/features/showcase/widgets/release_card.dart (ReleaseCard),
+    lib/features/showcase/widgets/release_board.dart (ReleaseBoard,
+    ReleaseGrid, ShowcaseRowTitle),
+    lib/features/showcase/widgets/showcase_row_section.dart
+    (ShowcaseRowSection),
+    lib/features/showcase/widgets/showcase_group_title.dart
+    (ShowcaseGroupTitle),
+    lib/features/showcase/widgets/showcase_settings_sheet.dart
+    (ShowcaseSettingsSheet): New.
+  * lib/features/showcase/utils/release_schedule.dart (sortByNextDate,
+    ReleaseGrouping, ReleaseGroup, groupReleases, releaseBucketKey,
+    startOfWeek, countdownTo, Countdown),
+    lib/features/showcase/utils/release_labels.dart (releaseHeadline,
+    releaseDateText, releaseGroupTitle, releaseMeta, countdownText),
+    lib/features/showcase/utils/anime_season.dart (AnimeSeason, animeSeasonFor,
+    nextAnimeSeason), lib/features/showcase/utils/tmdb_region.dart
+    (tmdbRegionFromLanguage),
+    lib/features/showcase/utils/showcase_cover.dart (showcaseCoverCache): New.
+  * lib/features/personalization/screens/personalization_hub_screen.dart
+    (PersonalizationHubScreen.build): Fourth card.
+  * lib/features/personalization/widgets/hub_showcase_preview.dart
+    (HubShowcasePreview), hub_poster_strip.dart (HubPosterStrip, HubPoster,
+    HubPreviewNote): New; the landing preview fetches one board.
+  * lib/features/personalization/widgets/hub_recommendations_preview.dart
+    (HubRecommendationsPreview): Draws through HubPosterStrip.
+  * lib/shared/utils/provider_cache.dart (cacheFor),
+    lib/shared/utils/cover_cache_slot.dart (coverCacheSlot),
+    lib/shared/widgets/genre_chip.dart (GenreChip),
+    lib/shared/widgets/in_collection_badge.dart (InCollectionBadge): New;
+    the badge is the one MediaPosterCard draws.
+  * lib/shared/widgets/media_poster_card.dart (_MediaPosterCardState.build):
+    Draws InCollectionBadge.
+  * lib/features/recommendations/utils/recommendation_cover.dart
+    (recommendationCoverCache),
+    lib/features/recommendations/widgets/recommendation_row.dart: Through
+    coverCacheSlot and GenreChip.
+  * lib/core/api/anilist/anilist_queries.dart (AniListQueries.animeSearch,
+    AniListQueries._animeMediaFields), anilist_media_api.dart
+    (AniListMediaApi.browseAnime), lib/core/api/anilist_api.dart
+    (AniListApi.browseAnime): Season and seasonYear arguments; the airing
+    timestamp of the next episode.
+  * packages/core/lib/models/anime.dart (Anime.fromJson): Reads nextAiringAt.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.getUpcomingGames),
+    lib/core/api/igdb_api.dart (IgdbApi.getUpcomingGames): New; the most
+    anticipated releases of the next ninety days.
+  * lib/core/api/igdb/igdb_http_client.dart (IgdbHttpClient.hasCredentials),
+    lib/core/api/tmdb/tmdb_http_client.dart (TmdbHttpClient.hasApiKey): New;
+    a keyless build makes no request.
+  * lib/core/api/tmdb/tmdb_movies_api.dart
+    (TmdbMoviesApi.getNowPlayingMovieReleases,
+    TmdbMoviesApi.getUpcomingMovieReleases), lib/core/api/tmdb/tmdb_tv_api.dart
+    (TmdbTvApi.getNextEpisodeToAir, TmdbTvApi.discoverTvShows),
+    lib/core/api/tmdb/tmdb_types.dart (TmdbNextEpisode),
+    lib/core/api/tmdb_api.dart: Release dates alongside the films, the next
+    episode of a show, and an air-date window for discover.
+  * lib/l10n/app_*.arb (showcaseTitle, showcaseHint, showcaseGroupAiring,
+    showcaseGroupPopular, showcaseAnimeThisSeason, showcaseAnimeNextSeason,
+    showcaseNowPlaying, showcaseUpcomingMovies, showcaseTvEpisodesThisWeek,
+    showcaseUpcomingGames, showcaseTrendingMovies, showcaseTrendingTvShows,
+    showcasePopularAnime, showcaseEpisodeShort, showcaseSeasonEpisodeShort,
+    showcaseCountdownIn, showcaseCountdownDays, showcaseCountdownDaysHours,
+    showcaseCountdownHoursMinutes, showcaseCountdownMinutes, showcaseOutNow,
+    showcasePremiere, showcaseRelease, showcaseEpisodesCount, showcaseViewList,
+    showcaseViewByDay, showcaseViewByWeekday, showcaseViewByWeek,
+    showcaseDateTba, showcaseShowAll, showcaseSettingsTitle,
+    showcaseSettingsHint, showcaseResetDefault, showcaseAlreadyInCollection,
+    showcaseShowWithBadge, showcaseHideCompletely, showcaseRowError,
+    showcaseRetryIn, showcaseAllRowsHidden): New strings.
+
+- **Text size setting**
+
+  - A "Text size" slider in Settings → Appearance, 85% to 130% in four steps,
+    with live preview.
+  - The value multiplies the system text scale.
+
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.textScale,
+    SettingsKeys.textScaleStep, SettingsKeys.cardScaleStep, SettingsState.textScale,
+    SettingsNotifier.setTextScale, SettingsNotifier.clearSettings): New setting.
+  * lib/app.dart (_TextScaleScope, _MultipliedTextScaler): Wraps the app in a
+    MediaQuery whose textScaler multiplies the system one.
+  * lib/features/settings/screens/settings_screen.dart (_ScaleSlider): Shared
+    slider for cover size and text size.
+  * lib/l10n/app_*.arb (settingsTextScale, settingsTextScaleSubtitle): New strings.
+
+- **Open a collection from the All items screen**
+
+  - Tapping a collection name above its group opens that collection.
+  - The name stays inert while a multi-select is running.
+
+  * lib/features/home/screens/all_items_screen.dart (_CollectionGroup.collectionId,
+    _CollectionGroupTitle, _AllItemsScreenState._openCollection,
+    _AllItemsScreenState._buildCollectionDivider): New tappable header title.
+
+- **Search anime by studio**
+
+  - A "Studio" filter on the AniList anime tab, picked from live suggestions.
+  - Results list that studio's works, page by page.
+  - The other filters and the search text stay off while a studio is picked,
+    with a note saying so.
+  - A studio on an anime card or in a search result sheet opens this search.
+
+  * lib/core/api/anilist/anilist_queries.dart (AniListQueries.studioSearch,
+    AniListQueries.animeByStudio, AniListQueries._animeMediaFields): New
+    queries; the anime media field list is shared with animeSearch.
+  * lib/core/api/anilist/anilist_media_parser.dart (AniListMediaParser.studios,
+    AniListMediaParser.animeStudioPage): New.
+  * lib/core/api/anilist/anilist_media_api.dart (AniListMediaApi.searchStudios,
+    AniListMediaApi.browseAnimeByStudio), lib/core/api/anilist_api.dart
+    (AniListApi.searchStudios, AniListApi.browseAnimeByStudio): New.
+  * packages/core/lib/models/anilist_studio.dart (AniListStudio): New.
+  * lib/features/search/models/search_source.dart (SearchFilter.exclusive):
+    New flag; a source answers with such a filter alone.
+  * lib/features/search/filters/anilist_studio_filter.dart (AniListStudioFilter),
+    lib/features/search/widgets/anilist_studio_picker.dart
+    (showAniListStudioPicker): New.
+  * lib/features/search/sources/anilist_anime_source.dart
+    (AniListAnimeSource.sourceId, AniListAnimeSource.filters,
+    AniListAnimeSource.fetch): Add the studio filter; fetch studio pages
+    through browseAnimeByStudio.
+  * lib/features/search/providers/browse_provider.dart
+    (BrowseState.activeExclusiveFilter, BrowseNotifier.setOwnFilters,
+    BrowseNotifier._signature): New; the text query leaves the signature
+    while an exclusive filter is set.
+  * lib/features/search/utils/filter_ui.dart (exclusiveBlockReason): New.
+  * lib/features/search/widgets/filter_control.dart (FilterChevron.disabledReason),
+    lib/features/search/widgets/filter_bar.dart (FilterBar.build),
+    lib/features/search/widgets/filter_sheet.dart (_FilterRow.disabledReason):
+    Dim the other filters while an exclusive one holds a value.
+  * lib/shared/navigation/search_providers.dart (SearchTabRequest.filterValues),
+    lib/shared/navigation/app_shell.dart (_AppShellState._openSearchTab):
+    Preset own filters when another tab opens the search.
+  * lib/features/search/helpers/studio_search.dart (studioSearchRequest): New.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet.anime,
+    ItemDetailsSheet.infoChips, ItemDetailsSheet._buildInfoChip): Info chips
+    are MediaDetailChip; each studio becomes a tappable chip via onStudioTap.
+  * lib/features/search/handlers/media_handlers.dart,
+    lib/features/collections/widgets/anime_similars_section.dart (_showAnime):
+    Pass onStudioTap.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_buildChips): One tappable chip per studio.
+  * lib/l10n/app_*.arb: studioLabel, studioPickerTitle, studioPickerSearchHint,
+    studioPickerTypeToSearch, studioPickerEmpty, studioFilterExclusiveHint,
+    filterBlockedBy in all locales.
+  * packages/core/lib/testing/builders.dart (createTestAnime): studios parameter.
+
+- **Likes, notes and replays page**
+
+  - The personalization hub gets a third section: every liked or noted
+    episode, season, chapter, volume, page, part or track in the library,
+    grouped by title, freshest title first.
+  - Titles with a replay count above zero join the list too, under their own
+    "Replays" heading ahead of the marked titles. A replayed title that also
+    carries marks shows the replay row first, then its units.
+  - Each unit shows its number and the cached episode or track name, a heart
+    when liked, and the note text cut at two lines.
+  - One row of icon toggles: a heart, a note and a replay arrow pick any
+    combination of likes, notes and replays, and a chip per media type narrows
+    further. The top-bar search field matches note text, unit names and the
+    title the same way Home does; a replay row is reached through its title.
+  - Tapping a title or a unit opens the item card. A mark set or removed in a
+    card shows up on the page at once.
+  - The hub card previews the mark and replay count and the two freshest
+    entries.
+
+  * packages/core/lib/database/dao/item_mark_dao.dart (ItemMarkDao.getAllMarks):
+    New; joins tv_episodes_cache and audio_tracks_cache for the unit name.
+  * packages/core/lib/models/marked_unit.dart (MarkedUnit): New.
+  * packages/core/lib/rpc/generated/item_mark_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/item_mark_dao.remote.rpc.dart: Regenerated.
+  * packages/core/lib/rpc/protocol.dart (kProtocolVersion): 3.
+  * lib/features/likes/providers/marked_units_provider.dart (MarkedUnitGroup,
+    markedUnitsProvider, MarkedUnitsNotifier, rewatchedItemsProvider,
+    likesEntriesProvider, LikesKind, LikesFilter, likesFilterProvider,
+    LikesFilterNotifier, filteredMarkedUnitsProvider,
+    markedMediaTypesProvider): New.
+  * lib/features/likes/screens/likes_screen.dart (LikesScreen),
+    lib/features/likes/widgets/marked_group_tile.dart (MarkedGroupTile),
+    lib/features/likes/utils/marked_unit_label.dart (markedUnitLabel): New.
+  * lib/features/personalization/widgets/hub_likes_preview.dart (HubLikesPreview):
+    New.
+  * lib/features/collections/providers/item_marks_provider.dart
+    (ItemMarksNotifier._apply): Invalidates markedUnitsProvider.
+  * lib/shared/navigation/search_providers.dart (likesSearchQueryProvider,
+    likesSearchActiveProvider, activeSearchContext): New; the top-bar field
+    serves the likes page while it is open.
+  * lib/shared/navigation/app_top_bar.dart (AppTopBar.personalizationOpen),
+    lib/shared/navigation/app_shell.dart (_AppShellState._handleTypeToSearch):
+    Resolve the field through activeSearchContext.
+  * lib/features/collections/helpers/item_editability.dart (isItemEditable):
+    New; lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState._isItemEditable) delegates to it.
+  * lib/l10n/app_*.arb (likesTitle, personalizationLikesHint, likesEmptyTitle,
+    likesEmptyBody, likesNoMatches, likesTrackWithDisc, likesMarkCount,
+    likesSectionRewatch, likesSectionMarks, likesRewatchFilter,
+    likesRewatchTimes): New strings.
+
+- **Set the start and completion date in one tap**
+
+  The date dialog behind the Started and Completed tiles on the item card
+  gets a "Started and finished this day" action. It writes the picked day
+  into both fields, and the title moves to Completed unless it is there
+  already.
+
+  * lib/shared/widgets/dual_date_picker_dialog.dart (DualDateResult.pickedBoth,
+    DualDateResult.appliesToBoth, showDualDatePickerResult.allowBoth,
+    DualDatePickerDialog.allowBoth): New; the action row wraps on a phone,
+    and the dialog height follows the space left by the keyboard.
+  * lib/shared/widgets/media_detail_view.dart (ActivityDateField.both,
+    _MediaDetailViewState._pickActivityDate): Offer the action from both
+    tiles and report the new field.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._updateActivityDate): Write both dates for the
+    new field in one update.
+  * lib/l10n/app_*.arb (dualDatePickerBothDates): New string.
+
+### Changed
+
+- **Search shows no feeds on an empty query**
+
+  Every media type gets the same empty state. The poster feeds moved to the
+  showcase.
+
+  * lib/features/search/screens/search_screen.dart
+    (_SearchScreenState._buildContent): One empty state for every media type.
+  * lib/features/search/widgets/filter_bar.dart (FilterBar),
+    lib/features/search/widgets/filter_bar_compact.dart (FilterBarCompact):
+    Drop the "Customize" button.
+  * lib/features/search/providers/discover_provider.dart,
+    lib/features/search/widgets/discover_feed.dart,
+    lib/features/search/widgets/discover_row.dart,
+    lib/features/search/widgets/audio_discover_feed.dart: Deleted.
+  * lib/features/search/widgets/discover_customize_sheet.dart: Moved to
+    lib/features/showcase/widgets/showcase_settings_sheet.dart.
+  * lib/features/search/models/search_source.dart (SearchSource): Drop
+    buildDiscoverFeed, along with its twenty-one implementations under
+    lib/features/search/sources/.
+
+- **Personalization hub opens on a landing page of section cards**
+
+  - Statistics, Recommendations, Showcase and Likes are cards with a live
+    preview: the headline numbers, a strip of recommended posters, what is
+    out now, the latest marks. A tap opens the section full screen with a
+    back arrow.
+  - The genre cloud is an icon in the statistics header, next to Share.
+  - Pressing the centre button while a section is open returns to the landing
+    page; Android back and gamepad B pop the section before closing the hub.
+
+  * lib/features/personalization/screens/personalization_screen.dart
+    (PersonalizationScreen): Hosts the hub's own Navigator.
+  * lib/features/personalization/screens/personalization_hub_screen.dart
+    (PersonalizationHubScreen),
+    lib/features/personalization/widgets/hub_section_card.dart (HubSectionCard),
+    lib/features/personalization/widgets/hub_stats_preview.dart (HubStatsPreview),
+    lib/features/personalization/widgets/hub_recommendations_preview.dart
+    (HubRecommendationsPreview),
+    lib/features/personalization/widgets/personalization_sub_screen.dart
+    (PersonalizationSubScreen, pushPersonalizationSection): New.
+  * lib/features/statistics/screens/statistics_screen.dart
+    (_StatisticsScreenState._openGenreCloud): Genre cloud button in the header.
+  * lib/features/recommendations/utils/recommendation_cover.dart
+    (recommendationCoverCache): New;
+    lib/features/recommendations/widgets/recommendation_row.dart
+    (_RecommendationRowWidgetState.build) uses it.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openPreferenceCloud,
+    _AppShellState._handleBack): Pop the hub's navigator first.
+  * lib/features/welcome/widgets/menu_tour_items.dart,
+    lib/shared/navigation/app_bottom_bar.dart,
+    lib/shared/navigation/app_sidebar.dart: Centre button labelled
+    "Personalization".
+  * lib/l10n/app_*.arb (personalizationTitle, personalizationStatsHint,
+    personalizationRecommendationsHint): New; genreCloudTitle now reads
+    "Genre cloud"; personalizationTabCloud removed.
+
+### Fixed
+
+- **Search inside a collection matches album artists and book authors**
+
+  The collection screen and the All items screen run the same title search:
+  name, tag names, comments, and the artist of an album or the author of a
+  book.
+
+  * packages/core/lib/utils/item_search.dart (ItemSearch, ItemSearch.matches,
+    ItemSearch.creatorsOf): New; one matcher for both search modes.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters.apply): Delegates the search step to ItemSearch.
+  * lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState.build,
+    _AllItemsScreenState._applyFilter, _AllItemsScreenState._countByMediaType,
+    _AllItemsScreenState._matchesNonTypeFilters): Match through
+    itemSearchProvider; _matchesTagName and _matchesCreator removed.
+
+- **Adding a title no longer flashes the library through its loader**
+
+  Home, the showcase boards and the hub previews keep what they show while
+  the list reloads; the new title and its badge appear in place.
+
+  * lib/features/home/providers/all_items_provider.dart (AllItemsNotifier.build,
+    AllItemsNotifier.refresh, AllItemsNotifier._loading): Keep the previous
+    list under a reload.
+
+- **The window survives a landscape phone with the keyboard up**
+
+  The top-bar search field, or a filter sheet with a text field such as the
+  AniList tag or studio picker, used to leave the sidebar and the screen
+  behind it a few dozen pixels tall and overflowing. They now scroll within
+  that space.
+
+  * lib/shared/widgets/min_height_body.dart (MinHeightBody, kMinBodyHeight):
+    New.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._buildScaffold):
+    Sidebar row wrapped in MinHeightBody.
+  * lib/features/search/screens/search_screen.dart (_SearchScreenState.build),
+    lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState.build): Body wrapped in MinHeightBody.
+
+- **AniList tag picker survives a small sheet**
+
+  With the on-screen keyboard up, the picker's title, search field and
+  toggles scroll together with the tag list; the action row stays put.
+
+  * lib/features/search/widgets/anilist_tag_picker.dart
+    (_AniListTagPickerState.build, _AniListTagPickerState._buildHeader,
+    _AniListTagPickerState._buildList): Header and list moved into one
+    CustomScrollView; the list is a SliverList.
+
+- **Shimmer placeholders keep quiet when a screen goes away**
+
+  Leaving a screen while its skeletons are on it logs nothing.
+
+  * lib/shared/widgets/shimmer_loading.dart (_ShimmerTimeline.release): Reset
+    the shared phase after the frame.
+
+- **Linux window keeps the GTK header bar to GNOME**
+
+  Outside GNOME the window uses the desktop's own title bar, on Wayland as
+  well as on X11.
+
+  * linux/runner/my_application.cc (desktop_wants_header_bar): New; reads
+    XDG_CURRENT_DESKTOP first, then the X11 window manager name.
+
+- **IGDB search finds titles made of common words**
+
+  - A game such as "Until Then" shows up in the results.
+  - An empty first page is retried as a name filter, keeping the platform,
+    genre, mode, rating and year filters.
+
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.searchGames,
+    IgdbGamesApi._postGames): Name-filter retry on an empty first page; the
+    shared request and parse helper also serves getGamesByIds,
+    getTopGamesByPlatform and browseGames.
+
 ## [0.43.0] - 2026-08-20
 
 ### Added

@@ -18,6 +18,7 @@ import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/bulk_action_bar.dart';
+import 'package:tonkatsu_box/features/collections/screens/collection_screen.dart';
 import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
 import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
@@ -238,6 +239,20 @@ void main() {
       expect(find.text('TV Shows (1)'), findsOneWidget);
       expect(find.text('Visual Novels (1)'), findsOneWidget);
       expect(find.text('Animation'), findsOneWidget);
+    });
+
+    testWidgets(
+        'should render on a landscape phone with the keyboard up',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(640, 300);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 270);
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets(
@@ -646,6 +661,46 @@ void main() {
       expect(find.text('2/24'), findsNothing);
     });
   });
+  group('AllItemsScreen collection headers', () {
+    testWidgets('should open the collection when its header is tapped',
+        (WidgetTester tester) async {
+      when(() => mockRepo.getById(any())).thenAnswer(
+        (Invocation inv) async => testCollections.firstWhere(
+          (Collection c) => c.id == inv.positionalArguments[0] as int,
+        ),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('My Games'));
+      // CollectionScreen keeps a shimmer running, so pumpAndSettle times out.
+      for (int i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+
+      final CollectionScreen screen =
+          tester.widget<CollectionScreen>(find.byType(CollectionScreen));
+      expect(screen.collectionId, 10);
+    });
+
+    testWidgets('should stay on the screen while a selection is active',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Steins;Gate'));
+      await tester.longPress(find.text('Steins;Gate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('My Games'));
+      for (int i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+
+      expect(find.byType(CollectionScreen), findsNothing);
+      expect(find.byType(BulkActionBar), findsOneWidget);
+    });
+  });
 }
 
 class _FakeEpisodeTrackerNotifier extends EpisodeTrackerNotifier {
@@ -671,4 +726,5 @@ class _FakeSettingsNotifier extends SettingsNotifier {
         hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
         alwaysShowSubcategories: alwaysShowSubcategories,
       );
+
 }

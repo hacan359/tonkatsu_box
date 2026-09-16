@@ -55,7 +55,7 @@ MenuTourItem _personalizationItem(S l) => MenuTourItem(
       tab: null,
       icon: Icons.auto_awesome_outlined,
       activeIcon: Icons.auto_awesome,
-      label: l.genreCloudTitle,
+      label: l.personalizationTitle,
       description: l.welcomeHowPersonalizationDesc,
     );
 

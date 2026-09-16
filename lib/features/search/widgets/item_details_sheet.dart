@@ -22,6 +22,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/media_detail/media_detail_chip.dart';
 import '../../../shared/constants/screenscraper_systemes.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/source_badge.dart';
@@ -171,10 +172,13 @@ class ItemDetailsSheet extends StatelessWidget {
           : (manga.titleEnglish != null && manga.titleEnglish != manga.title
               ? manga.titleEnglish
               : null),
-      infoChips: <(IconData, String)>[
+      infoChips: <MediaDetailChip>[
         if (manga.authorsString != null)
-          (Icons.person_outline, manga.authorsString!),
-        (Icons.menu_book, manga.progressString),
+          MediaDetailChip(
+            icon: Icons.person_outline,
+            text: manga.authorsString!,
+          ),
+        MediaDetailChip(icon: Icons.menu_book, text: manga.progressString),
       ],
       extraInfo: manga.formatLabel,
       posterUrl: manga.coverUrl,
@@ -192,10 +196,13 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
+  /// [onStudioTap] makes each studio its own tappable chip; without it the
+  /// studios stay one joined read-only chip.
   factory ItemDetailsSheet.anime(
     Anime anime, {
     required VoidCallback onAddToCollection,
     required String animeMangaTitleLanguage,
+    ValueChanged<String>? onStudioTap,
   }) {
     final String displayTitle = anime.titleByLanguage(animeMangaTitleLanguage);
     return ItemDetailsSheet(
@@ -213,12 +220,25 @@ class ItemDetailsSheet extends StatelessWidget {
           : (anime.titleEnglish != null && anime.titleEnglish != anime.title
               ? anime.titleEnglish
               : null),
-      infoChips: <(IconData, String)>[
-        if (anime.studiosString != null)
-          (Icons.business, anime.studiosString!),
-        (Icons.play_circle_outline, anime.episodesString),
+      infoChips: <MediaDetailChip>[
+        if (onStudioTap != null)
+          for (final String studio in anime.studios ?? const <String>[])
+            MediaDetailChip(
+              icon: Icons.business,
+              text: studio,
+              onTap: () => onStudioTap(studio),
+            )
+        else if (anime.studiosString != null)
+          MediaDetailChip(icon: Icons.business, text: anime.studiosString!),
+        MediaDetailChip(
+          icon: Icons.play_circle_outline,
+          text: anime.episodesString,
+        ),
         if (anime.durationString != null)
-          (Icons.timer_outlined, anime.durationString!),
+          MediaDetailChip(
+            icon: Icons.timer_outlined,
+            text: anime.durationString!,
+          ),
       ],
       extraInfo: anime.formatLabel,
       posterUrl: anime.coverUrl,
@@ -249,11 +269,11 @@ class ItemDetailsSheet extends StatelessWidget {
       genres: vn.tags,
       maxGenres: _defaultMaxChips,
       subtitle: vn.altTitle,
-      infoChips: <(IconData, String)>[
+      infoChips: <MediaDetailChip>[
         if (vn.developersString != null)
-          (Icons.business, vn.developersString!),
+          MediaDetailChip(icon: Icons.business, text: vn.developersString!),
         if (vn.platformsString != null)
-          (Icons.devices, vn.platformsString!),
+          MediaDetailChip(icon: Icons.devices, text: vn.platformsString!),
       ],
       extraInfo: vn.lengthLabel,
       extraInfoIcon: Icons.timer_outlined,
@@ -289,14 +309,24 @@ class ItemDetailsSheet extends StatelessWidget {
               book.originalTitle != book.title
           ? book.originalTitle
           : null,
-      infoChips: <(IconData, String)>[
+      infoChips: <MediaDetailChip>[
         if (book.authorsString != null)
-          (Icons.person_outline, book.authorsString!),
+          MediaDetailChip(
+            icon: Icons.person_outline,
+            text: book.authorsString!,
+          ),
         if (book.pageCount != null)
           book.isComic
-              ? (Icons.auto_stories, '${book.pageCount} issues')
-              : (Icons.menu_book, '${book.pageCount} pages'),
-        if (book.series != null) (Icons.collections_bookmark, book.series!),
+              ? MediaDetailChip(
+                  icon: Icons.auto_stories,
+                  text: '${book.pageCount} issues',
+                )
+              : MediaDetailChip(
+                  icon: Icons.menu_book,
+                  text: '${book.pageCount} pages',
+                ),
+        if (book.series != null)
+          MediaDetailChip(icon: Icons.collections_bookmark, text: book.series!),
       ],
       posterUrl: book.coverUrl,
       cacheImageType: ImageType.bookCover,
@@ -327,15 +357,20 @@ class ItemDetailsSheet extends StatelessWidget {
       genres: album.genres.isNotEmpty ? album.genres : album.tags,
       maxGenres: _defaultMaxChips,
       subtitle: album.artistsString,
-      infoChips: <(IconData, String)>[
+      infoChips: <MediaDetailChip>[
         if (album.primaryType != null)
-          (
-            Icons.album_outlined,
-            <String>[album.primaryType!, ...album.secondaryTypes].join(' · '),
+          MediaDetailChip(
+            icon: Icons.album_outlined,
+            text: <String>[album.primaryType!, ...album.secondaryTypes]
+                .join(' · '),
           ),
-        if (album.label != null) (Icons.business, album.label!),
+        if (album.label != null)
+          MediaDetailChip(icon: Icons.business, text: album.label!),
         if (album.listenCount != null)
-          (Icons.headphones, _formatListenCount(album.listenCount!)),
+          MediaDetailChip(
+            icon: Icons.headphones,
+            text: _formatListenCount(album.listenCount!),
+          ),
       ],
       posterUrl: album.coverUrl,
       cacheImageType: ImageType.audioCover,
@@ -364,10 +399,11 @@ class ItemDetailsSheet extends StatelessWidget {
       genres: podcast.genres,
       maxGenres: _defaultMaxChips,
       subtitle: podcast.artistsString,
-      infoChips: <(IconData, String)>[
+      infoChips: <MediaDetailChip>[
         if (podcast.trackCount != null)
-          (Icons.podcasts, '${podcast.trackCount}'),
-        if (podcast.language != null) (Icons.language, podcast.language!),
+          MediaDetailChip(icon: Icons.podcasts, text: '${podcast.trackCount}'),
+        if (podcast.language != null)
+          MediaDetailChip(icon: Icons.language, text: podcast.language!),
       ],
       posterUrl: podcast.coverUrl,
       cacheImageType: ImageType.audioCover,
@@ -408,7 +444,7 @@ class ItemDetailsSheet extends StatelessWidget {
   final String? extraInfo;
   final IconData? extraInfoIcon;
   final String? subtitle;
-  final List<(IconData, String)>? infoChips;
+  final List<MediaDetailChip>? infoChips;
   final String? posterUrl;
   final ImageType? cacheImageType;
   final String? cacheImageId;
@@ -602,7 +638,7 @@ class ItemDetailsSheet extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.md),
                         ],
-                        _buildInfoColumn(),
+                        _buildInfoColumn(context),
                       ],
                     );
                   }
@@ -622,7 +658,7 @@ class ItemDetailsSheet extends StatelessWidget {
                                 ? _addButtonReservedWidth
                                 : 0,
                           ),
-                          child: _buildInfoColumn(),
+                          child: _buildInfoColumn(context),
                         ),
                       ),
                     ],
@@ -678,7 +714,7 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoColumn() {
+  Widget _buildInfoColumn(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -755,10 +791,7 @@ class ItemDetailsSheet extends StatelessWidget {
         if (infoChips != null && infoChips!.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
           ...infoChips!.map(
-            ((IconData, String) chip) => _buildInfoChip(
-              chip.$1,
-              chip.$2,
-            ),
+            (MediaDetailChip chip) => _buildInfoChip(context, chip),
           ),
         ],
         if (genres != null && genres!.isNotEmpty) ...<Widget>[
@@ -787,23 +820,37 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip(IconData chipIcon, String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(chipIcon, size: 14, color: AppColors.brand),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
+  // A tappable chip leads somewhere else, so the sheet closes first.
+  Widget _buildInfoChip(BuildContext context, MediaDetailChip chip) {
+    final VoidCallback? onTap = chip.onTap;
+    final Widget row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(chip.icon, size: 14, color: AppColors.brand),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            chip.text,
+            style: AppTypography.bodySmall.copyWith(
+              color: onTap == null ? AppColors.textSecondary : AppColors.brand,
+              decoration: onTap == null ? null : TextDecoration.underline,
             ),
           ),
-        ],
+        ),
+      ],
+    );
+    if (onTap == null) {
+      return Padding(padding: const EdgeInsets.only(bottom: 2), child: row);
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        onTap: () {
+          Navigator.of(context).pop();
+          onTap();
+        },
+        child: row,
       ),
     );
   }

@@ -70,7 +70,4 @@ class PodcastIndexSource extends SearchSource {
       currentPage: page,
     );
   }
-
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

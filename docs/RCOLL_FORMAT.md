@@ -43,19 +43,40 @@ Tonkatsu Box supports two file formats for sharing collections.
       "external_id": 550
     },
     {
+      "media_type": "tv_show",
+      "external_id": 42987,
+      "source": "tvmaze"
+    },
+    {
+      "media_type": "animation",
+      "external_id": 246,
+      "platform_id": 1
+    },
+    {
       "media_type": "visual_novel",
       "external_id": 17
     },
     {
-      "media_type": "tv_show",
-      "external_id": 42987,
-      "source": "tvmaze"
+      "media_type": "manga",
+      "external_id": 30002,
+      "source": "anilist"
+    },
+    {
+      "media_type": "anime",
+      "external_id": 1535,
+      "source": "anilist"
     },
     {
       "media_type": "book",
       "external_id": 8193465,
       "source": "openLibrary",
       "native_id": "OL8193465W"
+    },
+    {
+      "media_type": "audio",
+      "external_id": 6820149371025,
+      "source": "musicBrainz",
+      "native_id": "b1392450-e666-3926-a536-22c65589de3d"
     }
   ]
 }
@@ -167,10 +188,10 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, `"animation"`, `"visual_novel"`, `"manga"`, `"anime"`, `"book"`, or `"custom"` |
-| external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or provider ID (manga / anime: AniList, MangaBaka, MangaDex, Kitsu) |
-| source | string | no | Provider discriminator for multi-source media (manga, anime, book, tv_show): identity is `(external_id, source)`. Absent/`null` for single-source media and legacy files; defaults per type: manga/anime `"anilist"`, books `"openLibrary"`, TV shows `"tmdb"`, audio `"musicBrainz"` |
-| native_id | string | no | The provider's own id, when `external_id` can't reproduce it: books (`"OL8193465W"`, `"4050-86463"`) and MangaDex manga (its UUID), whose `external_id` is a hash. A light import needs it to refetch the item; files written before it exist leave those items unresolved |
+| media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, `"animation"`, `"visual_novel"`, `"manga"`, `"anime"`, `"book"`, `"audio"`, or `"custom"` |
+| external_id | number | yes | The catalogue id, a number by contract: IGDB (games), TMDB (movies, TV, animation), VNDB (visual novels), AniList / MangaBaka / MangaDex / Kitsu (manga, anime), the five book providers (OpenLibrary, Fantlab, Google Books, ComicVine, Hardcover), MusicBrainz or Podcast Index (audio). A catalogue that keys by a string does not fit this field: OpenLibrary keeps the digits of `OL8193465W`, while Google Books, MangaDex and MusicBrainz store an fnv hash of the id. Neither reverses, so those items refetch by `native_id` |
+| source | string | no | Provider discriminator for multi-source media (manga, anime, book, tv_show, audio): identity is `(external_id, source)`. Absent/`null` for single-source media and legacy files; defaults per type: manga/anime `"anilist"`, books `"openLibrary"`, TV shows `"tmdb"`, audio `"musicBrainz"` |
+| native_id | string | no | The provider's own id, when `external_id` can't reproduce it: books (`"OL8193465W"`, `"4050-86463"`), MangaDex manga (its UUID) and MusicBrainz albums (the release-group MBID). Podcasts need none, Podcast Index keying a feed by a number. A light import needs it to refetch the item; files written before it exist leave those items unresolved |
 | platform_id | number | no | IGDB platform ID (games) or AnimationSource (animation: 0=movie, 1=tvShow) |
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
@@ -180,6 +201,14 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
 | _watched_episodes | array | no | Watched-episode marks of a TV/animation item (full + `user_data` only). Each entry: `{season, episode, watched_at}` with `watched_at` in Unix seconds or `null`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 | _listened_tracks | array | no | Listened-track marks of an audio item (full + `user_data` only). Each entry: `{disc, track, listened_at}` with `listened_at` in Unix seconds or `null`; podcast episodes store `disc = 0` and the Podcast Index episode id as `track`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
+
+The app writes `platform_id`, `source`, `comment` and `user_rating` on every
+item whether they hold anything or not, so a real file carries explicit
+`null`s. A reader has to treat a missing key and a `null` the same way.
+
+`user_data` is not the full export's privilege: a light export made with it
+carries the fields below too, and the reader restores them from either
+variant.
 
 **User data fields** (present only when top-level `user_data` is `true`):
 
@@ -196,6 +225,85 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | completed_at | number | Unix timestamp (seconds) when completed |
 | last_activity_at | number | Unix timestamp (seconds) of last activity |
 | rewatch_count | number | Rewatch counter (MAL/AniList semantics: `0` = completed once, `N` = repeats). Absent/`null` = not tracked; never overwrites a locally tracked value on re-import |
+
+### Source Values
+
+Which catalogues a `media_type` accepts in `source`. A writer outside the app
+needs the keyless column: those APIs answer an id lookup with no registration,
+so an exporter can fill the field for those types without asking its user for
+credentials.
+
+| media_type | Accepted `source` | Default | Keyless |
+|------------|-------------------|---------|---------|
+| game | `igdb` | `igdb` | no (Twitch OAuth) |
+| movie | `tmdb`, `tvdb` | `tmdb` | no |
+| tv_show | `tmdb`, `tvmaze`, `tvdb` | `tmdb` | `tvmaze` only |
+| animation | same as movie / tv_show, picked by `platform_id` | `tmdb` | `tvmaze` only |
+| visual_novel | `vndb` | `vndb` | yes |
+| manga | `anilist`, `mangabaka`, `mangadex`, `kitsu` | `anilist` | yes |
+| anime | `anilist`, `kitsu` | `anilist` | yes |
+| book | `openLibrary`, `fantlab`, `googleBooks`, `comicVine`, `hardcover` | `openLibrary` | `openLibrary`, `fantlab` |
+| audio | `musicBrainz`, `podcastIndex` | `musicBrainz` | `musicBrainz` only |
+| custom | none, light import skips these items | | |
+
+Spelling is the enum name, case included: `openLibrary`, not `openlibrary`. An
+unknown value falls back to the type's default rather than failing the import,
+so a typo silently resolves the id against the wrong catalogue.
+
+> [!IMPORTANT]
+> `anime` is Japanese anime on AniList or Kitsu. `animation` is a TMDB cartoon
+> (Pixar, Disney) and carries `platform_id` `0` for a film or `1` for a series.
+> Filing Naruto under `animation` puts a TMDB show where the anime belongs, and
+> its AniList metadata never arrives.
+
+### Numeric Ids from String Keys
+
+`external_id` is a number by contract, but half the catalogues key their
+records by a string. Three conversions cover every provider, and only the
+third one loses the original, which is what `native_id` exists for.
+
+| Source | `external_id` | `native_id` | Example |
+|--------|---------------|-------------|---------|
+| `igdb`, `tmdb`, `tvdb`, `tvmaze`, `vndb`, `anilist`, `mangabaka`, `kitsu` | the catalogue's own number | absent | IGDB `1234` |
+| `fantlab` | `work_id` as-is | the same number as a string | work `4050` → `4050` / `"4050"` |
+| `comicVine` | the volume number | prefixed with the entity type | volume `86463` → `86463` / `"4050-86463"` |
+| `podcastIndex` | the feed id | the feed's GUID, unused on import | feed `920666` → `920666` |
+| `openLibrary` | first run of digits in the OLID | the whole OLID | `/works/OL27448W` → `27448` / `"OL27448W"` |
+| `hardcover` | the book id when numeric, else `fnv1a64` | the id as a string | `42` → `42` / `"42"` |
+| `googleBooks` | `fnv1a64(volumeId)` | the volume id | `"zyTCAlFPjgYC"` → `1287593495342004525` |
+| `mangadex` | `fnv1a64(uuid)` | the UUID | `"a1b2c3d4-…"` → `58456258415466591` |
+| `musicBrainz` | `fnv1a53(mbid)` | the release-group MBID | `"b1a9c0e4-…"` → `381424520416013` |
+
+A hash does not reverse, so an item from the last three rows is unresolvable
+without `native_id`: the import declines it rather than guessing (see the
+`native_id` row above). Digits pulled out of an OLID do not reverse either,
+since the `OL…W` shape is not reconstructible from `27448`.
+
+Both hashes are FNV-1a over the id's UTF-16 code units, offset basis
+`0xcbf29ce484222325`, prime `0x100000001b3`, multiply wrapping mod 2^64:
+
+- `fnv1a64` masks the result to 63 bits (`& 0x7fffffffffffffff`) so it fits
+  SQLite's signed INTEGER.
+- `fnv1a53` xor-folds that down to 53 bits (`(h ^ (h >>> 53)) & 0x1fffffffffffff`),
+  which a JS double holds exactly. Every id source added since uses this one.
+
+Vectors to check an implementation against, including the three ids used as
+examples above:
+
+| Input | `fnv1a64` | `fnv1a53` |
+|-------|-----------|-----------|
+| `""` | `5472609002491880229` | `5239054864097658` |
+| `"OL123"` | `7112701132336913138` | `6020920346270183` |
+| `"Тонкацу"` | `5074763067217480705` | `3709886798302770` |
+| `"zyTCAlFPjgYC"` | `1287593495342004525` | `8571201168783779` |
+| `"a1b2c3d4-e5f6-7890-abcd-ef1234567890"` | `58456258415466591` | `4413062887020633` |
+| `"b1a9c0e4-1f0e-4c6b-8e2a-77e5b3b9f2f1"` | `6350456899112815052` | `381424520416013` |
+
+> [!WARNING]
+> An `fnv1a64` value exceeds 2^53, so a JSON reader that parses numbers as
+> doubles (any browser, `JSON.parse`) rounds it and the id stops matching.
+> Read those files with a 64-bit integer parser, or the Google Books and
+> MangaDex items land under an id nothing resolves.
 
 ### Item Marks
 
@@ -315,13 +423,13 @@ When `media` is absent (light export or older full exports), the app refetches e
 
 ## How Import Works
 
-### v2 Light (`.xcoll`)
+### Light (`.xcoll`)
 
 1. App reads the file and creates a collection
 2. Inserts items with their metadata (comments)
 3. Fetches full game/movie/TV/VN/manga data from IGDB/TMDB/VNDB/AniList using IDs
 
-### v2 Full (`.xcollx`)
+### Full (`.xcollx`)
 
 1. If `media` section is present — restores Game/Movie/TvShow/VisualNovel/Manga/TvSeason/TvEpisode data from embedded data (offline)
 2. If `media` section is absent — fetches data from IGDB/TMDB/VNDB/AniList APIs (online, same as light import)

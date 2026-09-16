@@ -727,6 +727,42 @@ void main() {
         expect(clearedDate, isNull);
       });
 
+      testWidgets('should report both fields when the same-day action is used',
+          (WidgetTester tester) async {
+        ActivityDateField? field;
+        DateTime? date;
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          onActivityDateChanged: (ActivityDateField f, DateTime? d) async {
+            field = f;
+            date = d;
+          },
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Started'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Started and finished this day'));
+        await tester.pumpAndSettle();
+
+        expect(field, ActivityDateField.both);
+        expect(date, isNotNull);
+      });
+
+      testWidgets('should offer the same-day action from the Completed tile',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Completed'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Started and finished this day'), findsOneWidget);
+      });
+
       testWidgets('should not offer clearing while the date is unset',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(

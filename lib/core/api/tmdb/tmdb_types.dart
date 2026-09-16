@@ -72,3 +72,6 @@ class MultiSearchResult {
   final Movie? movie;
   final TvShow? tvShow;
 }
+
+/// `next_episode_to_air` of `/tv/{id}`; `airDate` is TMDB's `yyyy-MM-dd`.
+typedef TmdbNextEpisode = ({int season, int episode, String airDate});

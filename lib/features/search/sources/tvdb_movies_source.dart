@@ -99,8 +99,6 @@ class TvdbMoviesSource extends SearchSource {
     );
   }
 
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 
   /// The filter stores the genre id, while a search hit names its genres.
   Future<List<Movie>> _narrowByGenre(

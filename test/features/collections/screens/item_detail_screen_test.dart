@@ -217,7 +217,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('RPG, Adventure'), findsOneWidget);
+      expect(find.text('RPG'), findsOneWidget);
+      expect(find.text('Adventure'), findsOneWidget);
     });
 
     testWidgets('должен отображать год релиза', (WidgetTester tester) async {
@@ -689,7 +690,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Action, Sci-Fi, Thriller'), findsOneWidget);
+        for (final String genre in <String>['Action', 'Sci-Fi', 'Thriller']) {
+          expect(find.text(genre), findsOneWidget);
+        }
       });
 
       testWidgets('должен отображать рейтинг',
@@ -950,7 +953,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Drama, Crime, Thriller'), findsOneWidget);
+        for (final String genre in <String>['Drama', 'Crime', 'Thriller']) {
+          expect(find.text(genre), findsOneWidget);
+        }
       });
 
       testWidgets('должен отображать рейтинг',
@@ -1492,7 +1497,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Sci-fi, Romance, Drama'), findsOneWidget);
+        for (final String tag in <String>['Sci-fi', 'Romance', 'Drama']) {
+          expect(find.text(tag), findsOneWidget);
+        }
       });
 
       testWidgets('должен отображать рейтинг',

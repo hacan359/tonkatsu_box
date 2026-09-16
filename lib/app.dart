@@ -86,7 +86,9 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
           return ValueListenableBuilder<StartupErrorInfo?>(
             valueListenable: startupError,
             builder: (BuildContext context, StartupErrorInfo? info, _) {
-              if (info == null) return child ?? const SizedBox.shrink();
+              if (info == null) {
+                return _TextScaleScope(child: child ?? const SizedBox.shrink());
+              }
               return StartupErrorView(info: info);
             },
           );
@@ -94,4 +96,53 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
       ),
     );
   }
+}
+
+/// Multiplies the system text scale by the user's setting so accessibility
+/// zoom still applies; a separate widget keeps slider ticks off ThemeData.
+class _TextScaleScope extends ConsumerWidget {
+  const _TextScaleScope({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final double textScale = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.textScale),
+    );
+    if (textScale == SettingsKeys.textScaleDefault) return child;
+    final MediaQueryData media = MediaQuery.of(context);
+    return MediaQuery(
+      data: media.copyWith(
+        textScaler: _MultipliedTextScaler(media.textScaler, textScale),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Keeps the system scaler's curve (Android 14 scales large text less than
+/// small) and multiplies its result, instead of sampling it at one size.
+class _MultipliedTextScaler extends TextScaler {
+  const _MultipliedTextScaler(this._system, this._factor);
+
+  final TextScaler _system;
+  final double _factor;
+
+  @override
+  double scale(double fontSize) => _system.scale(fontSize) * _factor;
+
+  // Abstract in TextScaler, so it has to be implemented despite the deprecation.
+  @override
+  // ignore: deprecated_member_use
+  double get textScaleFactor => _system.textScaleFactor * _factor;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _MultipliedTextScaler &&
+      other._system == _system &&
+      other._factor == _factor;
+
+  @override
+  int get hashCode => Object.hash(_system, _factor);
 }

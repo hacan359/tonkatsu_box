@@ -117,7 +117,7 @@ class AppSidebar extends ConsumerWidget {
                                       : null,
                                   width: kAppSidebarWidth,
                                   height: itemHeight,
-                                  tooltip: S.of(context).genreCloudTitle,
+                                  tooltip: S.of(context).personalizationTitle,
                                   onTap: onCenterTap,
                                 ),
                               NavIconButton(

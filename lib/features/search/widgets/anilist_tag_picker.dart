@@ -110,75 +110,39 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
           AppSpacing.md,
           AppSpacing.md,
         ),
+        // The sheet lives in a tab navigator whose body the keyboard squeezes,
+        // so everything but the action row scrolls instead of overflowing.
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(l.tagPickerTitle, style: AppTypography.h3),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  tooltip: l.tagPickerRefresh,
-                  onPressed: _refresh,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: l.tagPickerSearchHint,
+            Expanded(
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: _buildHeader(l)),
+                  tagsAsync.when(
+                    loading: () => const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (Object e, _) => SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          child: Text(
+                            e.toString(),
+                            textAlign: TextAlign.center,
+                            style: AppTypography.bodySmall
+                                .copyWith(color: AppColors.error),
+                          ),
+                        ),
+                      ),
+                    ),
+                    data: (List<AniListTag> all) => _buildList(all, l),
+                  ),
+                ],
               ),
-              onChanged: (String v) => setState(() => _query = v),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: Text(l.tagPickerShowSpoilers,
-                        style: AppTypography.bodySmall),
-                    value: _showSpoilers,
-                    onChanged: (bool v) => setState(() => _showSpoilers = v),
-                  ),
-                ),
-                Expanded(
-                  child: SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: Text(l.tagPickerShowAdult,
-                        style: AppTypography.bodySmall),
-                    value: _showAdult,
-                    onChanged: (bool v) => setState(() => _showAdult = v),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 1),
-            Expanded(child: tagsAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (Object e, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text(
-                    e.toString(),
-                    textAlign: TextAlign.center,
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.error),
-                  ),
-                ),
-              ),
-              data: (List<AniListTag> all) => _buildList(all, l),
-            )),
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
@@ -219,19 +183,80 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
     );
   }
 
+  Widget _buildHeader(S l) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(l.tagPickerTitle, style: AppTypography.h3),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: l.tagPickerRefresh,
+              onPressed: _refresh,
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+        TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.search),
+            hintText: l.tagPickerSearchHint,
+          ),
+          onChanged: (String v) => setState(() => _query = v),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: Text(l.tagPickerShowSpoilers,
+                    style: AppTypography.bodySmall),
+                value: _showSpoilers,
+                onChanged: (bool v) => setState(() => _showSpoilers = v),
+              ),
+            ),
+            Expanded(
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: Text(l.tagPickerShowAdult,
+                    style: AppTypography.bodySmall),
+                value: _showAdult,
+                onChanged: (bool v) => setState(() => _showAdult = v),
+              ),
+            ),
+          ],
+        ),
+        const Divider(height: 1),
+      ],
+    );
+  }
+
   Widget _buildList(List<AniListTag> all, S l) {
     final Map<String, List<AniListTag>> grouped = _groupAndFilter(all);
     if (grouped.isEmpty) {
-      return Center(
-        child: Text(
-          l.tagPickerEmpty,
-          style: AppTypography.bodySmall
-              .copyWith(color: AppColors.textSecondary),
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Text(
+            l.tagPickerEmpty,
+            style: AppTypography.bodySmall
+                .copyWith(color: AppColors.textSecondary),
+          ),
         ),
       );
     }
     final List<String> categories = grouped.keys.toList()..sort();
-    return ListView.builder(
+    return SliverList.builder(
       itemCount: categories.length,
       itemBuilder: (BuildContext ctx, int idx) {
         final String cat = categories[idx];

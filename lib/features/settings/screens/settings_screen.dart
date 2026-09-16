@@ -174,6 +174,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   List<Widget> _buildSections() {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
     final S l = S.of(context);
     final Profile currentProfile = ref.watch(currentProfileProvider);
 
@@ -523,7 +525,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsCardScale,
             subtitle: l.settingsCardScaleSubtitle,
             showChevron: false,
-            trailing: _CardScaleSlider(scale: settings.cardScale),
+            trailing: _ScaleSlider(
+              scale: settings.cardScale,
+              min: SettingsKeys.cardScaleMin,
+              max: SettingsKeys.cardScaleMax,
+              step: SettingsKeys.cardScaleStep,
+              onChanged: (double value) =>
+                  notifier.setCardScale(value, persist: false),
+              onChangeEnd: notifier.setCardScale,
+            ),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.text_fields,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsTextScale,
+            subtitle: l.settingsTextScaleSubtitle,
+            showChevron: false,
+            trailing: _ScaleSlider(
+              scale: settings.textScale,
+              min: SettingsKeys.textScaleMin,
+              max: SettingsKeys.textScaleMax,
+              step: SettingsKeys.textScaleStep,
+              onChanged: (double value) =>
+                  notifier.setTextScale(value, persist: false),
+              onChangeEnd: notifier.setTextScale,
+            ),
           ),
         ],
       ),
@@ -1244,34 +1270,38 @@ class _RestoreOptions {
 }
 
 /// Compact slider for the grid card scale; previews live, persists on release.
-class _CardScaleSlider extends ConsumerWidget {
-  const _CardScaleSlider({required this.scale});
+class _ScaleSlider extends StatelessWidget {
+  const _ScaleSlider({
+    required this.scale,
+    required this.min,
+    required this.max,
+    required this.step,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
 
   final double scale;
+  final double min;
+  final double max;
+  final double step;
+  final ValueChanged<double> onChanged;
+  final ValueChanged<double> onChangeEnd;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         SizedBox(
           width: compact ? 120 : 170,
           child: Slider(
-            value: scale.clamp(
-              SettingsKeys.cardScaleMin,
-              SettingsKeys.cardScaleMax,
-            ),
-            min: SettingsKeys.cardScaleMin,
-            max: SettingsKeys.cardScaleMax,
-            divisions:
-                ((SettingsKeys.cardScaleMax - SettingsKeys.cardScaleMin) / 0.1)
-                    .round(),
-            onChanged: (double value) =>
-                notifier.setCardScale(value, persist: false),
-            onChangeEnd: notifier.setCardScale,
+            value: scale.clamp(min, max),
+            min: min,
+            max: max,
+            divisions: ((max - min) / step).round(),
+            onChanged: onChanged,
+            onChangeEnd: onChangeEnd,
           ),
         ),
         SizedBox(

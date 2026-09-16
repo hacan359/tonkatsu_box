@@ -292,6 +292,7 @@ Anime createTestAnime({
   List<String>? tags,
   String? status,
   int? startYear,
+  List<String>? studios,
 }) {
   return Anime(
     id: id,
@@ -306,6 +307,7 @@ Anime createTestAnime({
     tags: tags,
     status: status,
     startYear: startYear,
+    studios: studios,
   );
 }
 

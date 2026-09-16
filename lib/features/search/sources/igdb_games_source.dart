@@ -145,9 +145,6 @@ class IgdbGamesSource extends SearchSource {
       return games;
     }
   }
-
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
 /// Normalizes a filter value (multi-select or single) into a [List] of int.

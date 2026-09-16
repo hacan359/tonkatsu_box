@@ -10,7 +10,6 @@ import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../models/common_filter.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
-import '../providers/discover_provider.dart';
 import '../utils/filter_ui.dart';
 import 'filter_bar_compact.dart';
 import 'filter_control.dart';
@@ -20,36 +19,20 @@ import 'filter_sheet.dart';
 /// Pinned so the row doesn't jiggle when the media-type label width changes.
 const double kMediaTypeSegmentWidth = 160;
 
-const double _kCustomizeWidth = 44;
-
 /// Media-type-first filter bar. Narrow screens get a separate layout — see
 /// [CompactFilterBar].
 class FilterBar extends ConsumerWidget {
-  const FilterBar({
-    this.onBeforeFilterChange,
-    this.onDiscoverCustomize,
-    super.key,
-  });
+  const FilterBar({this.onBeforeFilterChange, super.key});
 
   final VoidCallback? onBeforeFilterChange;
-
-  /// Opens Discover Customize (TMDB feeds, no active query). Hidden when null.
-  final VoidCallback? onDiscoverCustomize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final BrowseState state = ref.watch(browseProvider);
     final Color accent = filterAccentForType(state.mediaType);
-    final bool showCustomize = onDiscoverCustomize != null &&
-        !state.hasSearchQuery &&
-        discoverMediaTypes.contains(state.mediaType);
 
     if (isCompactScreen(context)) {
-      return CompactFilterBar(
-        state: state,
-        accent: accent,
-        onDiscoverCustomize: showCustomize ? onDiscoverCustomize : null,
-      );
+      return CompactFilterBar(state: state, accent: accent);
     }
 
     final MediaTypeFilters filters = state.filters;
@@ -58,6 +41,10 @@ class FilterBar extends ConsumerWidget {
         ? filters.own[state.sources.first.id] ?? const <SearchFilter>[]
         : filters.common;
     final bool showSheetButton = !single && filters.ownCount > 0;
+    final S l = S.of(context);
+    final SearchFilter? exclusive = single
+        ? state.activeExclusiveFilter(state.sources.first.id)
+        : null;
     // Options must come from the provider the sort applies to: `SCORE_DESC`
     // means nothing to MangaDex.
     final List<BrowseSortOption> sortOptions =
@@ -66,7 +53,6 @@ class FilterBar extends ConsumerWidget {
     int trailingCount = 0;
     if (sortOptions.isNotEmpty) trailingCount++;
     if (showSheetButton) trailingCount++;
-    if (showCustomize) trailingCount++;
 
     return ColoredBox(
       color: AppColors.surface,
@@ -94,6 +80,8 @@ class FilterBar extends ConsumerWidget {
                   value: _valueOf(state, barFilters[i]),
                   accentColor: accent,
                   isLast: trailingCount == 0 && i == barFilters.length - 1,
+                  disabledReason:
+                      exclusiveBlockReason(exclusive, barFilters[i], l),
                   onPick: (Object? value, CommonSelection? selection) {
                     onBeforeFilterChange?.call();
                     _apply(ref, state, barFilters[i], value, selection);
@@ -107,7 +95,7 @@ class FilterBar extends ConsumerWidget {
                   accent: accent,
                   count: state.ownFilterCount,
                   total: filters.ownCount,
-                  isLast: sortOptions.isEmpty && !showCustomize,
+                  isLast: sortOptions.isEmpty,
                   onTap: () => showFilterSheet(context),
                 ),
               ),
@@ -116,26 +104,11 @@ class FilterBar extends ConsumerWidget {
                 child: _SortChevron(
                   options: sortOptions,
                   current: state.effectiveSortBy,
-                  disabledReason: _sortDisabledReason(state, S.of(context)),
+                  disabledReason: _sortDisabledReason(state, l),
                   accentColor: accent,
-                  isLast: !showCustomize,
+                  isLast: true,
                   onChanged: (String sortBy) =>
                       ref.read(browseProvider.notifier).setSort(sortBy),
-                ),
-              ),
-            if (showCustomize)
-              SizedBox(
-                width: _kCustomizeWidth,
-                child: ChevronSegment(
-                  label: S.of(context).discoverCustomize,
-                  icon: Icons.tune,
-                  selected: false,
-                  accentColor: accent,
-                  isFirst: false,
-                  isLast: true,
-                  onTap: onDiscoverCustomize!,
-                  tintWhenInactive: true,
-                  compact: true,
                 ),
               ),
             if (state.hasFilters)

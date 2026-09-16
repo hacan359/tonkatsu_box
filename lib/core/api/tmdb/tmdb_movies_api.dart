@@ -169,12 +169,24 @@ class TmdbMoviesApi {
     return _fetchMovieList('/movie/top_rated', page: page);
   }
 
-  Future<List<Movie>> getUpcomingMovies({int page = 1}) {
-    return _fetchMovieList('/movie/upcoming', page: page);
+  /// Same feed with the full `release_date`, which [Movie] keeps only as a
+  /// year; null when TMDB has no date for the entry.
+  Future<List<(Movie, String? releaseDate)>> getUpcomingMovieReleases({
+    int page = 1,
+    String? region,
+  }) {
+    return _fetchMovieReleases('/movie/upcoming', page: page, region: region);
   }
 
-  Future<List<Movie>> getNowPlayingMovies({int page = 1}) {
-    return _fetchMovieList('/movie/now_playing', page: page);
+  Future<List<(Movie, String? releaseDate)>> getNowPlayingMovieReleases({
+    int page = 1,
+    String? region,
+  }) {
+    return _fetchMovieReleases(
+      '/movie/now_playing',
+      page: page,
+      region: region,
+    );
   }
 
   Future<List<Movie>> discoverMovies({
@@ -234,13 +246,30 @@ class TmdbMoviesApi {
     }
   }
 
-  Future<List<Movie>> _fetchMovieList(String path, {int page = 1}) async {
+  Future<List<Movie>> _fetchMovieList(
+    String path, {
+    int page = 1,
+    String? region,
+  }) async {
+    final List<(Movie, String?)> releases =
+        await _fetchMovieReleases(path, page: page, region: region);
+    return releases.map(((Movie, String?) r) => r.$1).toList();
+  }
+
+  Future<List<(Movie, String? releaseDate)>> _fetchMovieReleases(
+    String path, {
+    int page = 1,
+    String? region,
+  }) async {
     _client.ensureApiKey();
 
     try {
       final Response<dynamic> response = await _client.get(
         path,
-        queryParameters: <String, dynamic>{'page': page},
+        queryParameters: <String, dynamic>{
+          'page': page,
+          'region': ?region,
+        },
       );
 
       final List<Map<String, dynamic>> items =
@@ -249,10 +278,17 @@ class TmdbMoviesApi {
       _genres.resolveGenreIds(items, genreMap);
 
       return items
-          .map((Map<String, dynamic> json) => Movie.fromJson(json))
+          .map((Map<String, dynamic> json) => (
+                Movie.fromJson(json),
+                _nonEmptyDate(json['release_date'] as String?),
+              ))
           .toList();
     } on DioException catch (e) {
       throw _client.handleDioException(e, 'Failed to fetch movies');
     }
   }
+
+  // TMDB sends an empty string, not null, for an unknown date.
+  static String? _nonEmptyDate(String? date) =>
+      date == null || date.isEmpty ? null : date;
 }

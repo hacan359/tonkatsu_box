@@ -75,6 +75,34 @@ void main() {
   // Every box shares one app-wide ticker, started by the first box on screen
   // and stopped by the last — the lifecycle these tests pin down.
   group('shared shimmer timeline', () {
+
+    testWidgets('should not rebuild mid-build when TickerMode turns the boxes '
+        'off', (WidgetTester tester) async {
+      await tester.pumpWidget(wrap(const _TickerModeHost()));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      _TickerModeHostState.disable();
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ShimmerBox), findsNWidgets(2));
+    });
+
+    testWidgets('should not rebuild while the tree is locked on dispose',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrap(const Column(
+        children: <Widget>[
+          ShimmerBox(width: 100, height: 20),
+          ShimmerBox(width: 100, height: 20),
+        ],
+      )));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.pumpWidget(wrap(const SizedBox.shrink()));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
     testWidgets('should keep animating the boxes that outlive a removed one',
         (WidgetTester tester) async {
       await tester.pumpWidget(wrap(const Column(
@@ -110,4 +138,36 @@ void main() {
       expect(find.byType(ShimmerBox), findsOneWidget);
     });
   });
+}
+
+/// Mirrors a route being covered: every box loses its ticker in one frame.
+class _TickerModeHost extends StatefulWidget {
+  const _TickerModeHost();
+
+  @override
+  State<_TickerModeHost> createState() => _TickerModeHostState();
+}
+
+class _TickerModeHostState extends State<_TickerModeHost> {
+  static late VoidCallback disable;
+  bool _enabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    disable = () => setState(() => _enabled = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TickerMode(
+      enabled: _enabled,
+      child: const Column(
+        children: <Widget>[
+          ShimmerBox(width: 100, height: 20),
+          ShimmerBox(width: 100, height: 20),
+        ],
+      ),
+    );
+  }
 }

@@ -353,9 +353,6 @@ class TmdbAnimeSource extends SearchSource {
       currentPage: page,
     );
   }
-
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }
 
 /// Normalizes the `genre` filter value (multi-select or single) into IDs.

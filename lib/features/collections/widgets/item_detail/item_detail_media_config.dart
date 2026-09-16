@@ -7,10 +7,13 @@ import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/image_cache_service.dart';
+import '../../../../features/search/helpers/studio_search.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/media_type_theme.dart';
+import '../../../../shared/navigation/search_providers.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/media_detail_view.dart';
 import '../../../../shared/widgets/source_badge.dart';
@@ -139,6 +142,11 @@ String _typeLabel(CollectionItem item, BuildContext context) {
   };
 }
 
+/// Closes the card with the value so the screen underneath, which knows its
+/// own search provider, applies it as a meta search.
+VoidCallback _metaSearchTap(BuildContext context, String value) =>
+    () => Navigator.of(context).pop(MetaSearchRequest(value));
+
 List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
   final S l = S.of(context);
   final List<MediaDetailChip> chips = <MediaDetailChip>[];
@@ -182,6 +190,7 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
       chips.add(MediaDetailChip(
         icon: Icons.sports_esports,
         text: c.platformName!,
+        onTap: _metaSearchTap(context, c.platformName!),
       ));
     }
   }
@@ -211,7 +220,11 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
         ));
       }
       if (a.label != null) {
-        chips.add(MediaDetailChip(icon: Icons.business, text: a.label!));
+        chips.add(MediaDetailChip(
+          icon: Icons.business,
+          text: a.label!,
+          onTap: _metaSearchTap(context, a.label!),
+        ));
       }
       if (a.format != null) {
         chips.add(
@@ -229,10 +242,11 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
         text: m.formatLabel!,
       ));
     }
-    if (m.authorsString != null) {
+    for (final String author in m.authors ?? const <String>[]) {
       chips.add(MediaDetailChip(
         icon: Icons.person_outline,
-        text: m.authorsString!,
+        text: author,
+        onTap: _metaSearchTap(context, author),
       ));
     }
   }
@@ -254,8 +268,14 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
         text: a.durationString!,
       ));
     }
-    if (a.studiosString != null) {
-      chips.add(MediaDetailChip(icon: Icons.business, text: a.studiosString!));
+    for (final String studio in a.studios ?? const <String>[]) {
+      chips.add(MediaDetailChip(
+        icon: Icons.business,
+        text: studio,
+        onTap: () => ProviderScope.containerOf(context, listen: false)
+            .read(searchTabRequestProvider.notifier)
+            .state = studioSearchRequest(studio),
+      ));
     }
     if (a.seasonLabel != null) {
       chips.add(MediaDetailChip(icon: Icons.date_range, text: a.seasonLabel!));
@@ -270,22 +290,26 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
       text: item.mediaStatus!,
     ));
   }
-  if (item.genresString != null && item.mediaType != MediaType.manga) {
-    chips.add(MediaDetailChip(
-      icon: Icons.category_outlined,
-      text: item.genresString!,
-    ));
+  if (item.mediaType != MediaType.manga) {
+    for (final String genre in item.genres ?? const <String>[]) {
+      chips.add(MediaDetailChip(
+        icon: Icons.category_outlined,
+        text: genre,
+        onTap: _metaSearchTap(context, genre),
+      ));
+    }
   }
   const int maxDisplayedTags = 8;
-  final String? animeMangaTagsString = switch (item.mediaType) {
-    MediaType.anime => item.anime?.tags?.take(maxDisplayedTags).join(', '),
-    MediaType.manga => item.manga?.tags?.take(maxDisplayedTags).join(', '),
-    _ => null,
+  final List<String> animeMangaTags = switch (item.mediaType) {
+    MediaType.anime => item.anime?.tags ?? const <String>[],
+    MediaType.manga => item.manga?.tags ?? const <String>[],
+    _ => const <String>[],
   };
-  if (animeMangaTagsString != null && animeMangaTagsString.isNotEmpty) {
+  for (final String tag in animeMangaTags.take(maxDisplayedTags)) {
     chips.add(MediaDetailChip(
       icon: Icons.local_offer_outlined,
-      text: animeMangaTagsString,
+      text: tag,
+      onTap: _metaSearchTap(context, tag),
     ));
   }
   return chips;

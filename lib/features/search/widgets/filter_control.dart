@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
@@ -161,6 +162,7 @@ class FilterChevron extends ConsumerStatefulWidget {
     required this.accentColor,
     required this.isLast,
     required this.onPick,
+    this.disabledReason,
     super.key,
   });
 
@@ -169,6 +171,9 @@ class FilterChevron extends ConsumerStatefulWidget {
   final Color accentColor;
   final bool isLast;
   final FilterPick onPick;
+
+  /// Why the filter is off (another, exclusive one is set); null = usable.
+  final String? disabledReason;
 
   @override
   ConsumerState<FilterChevron> createState() => _FilterChevronState();
@@ -213,6 +218,22 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final String? subtitle = _isActive ? widget.filter.placeholder(l) : null;
+
+    final String? reason = widget.disabledReason;
+    if (reason != null) {
+      return Tooltip(
+        message: reason,
+        child: ChevronSegment(
+          label: widget.filter.placeholder(l),
+          icon: Icons.filter_list_off,
+          selected: false,
+          accentColor: widget.accentColor,
+          isFirst: false,
+          isLast: widget.isLast,
+          onTap: () => context.showSnack(reason, type: SnackType.info),
+        ),
+      );
+    }
 
     final Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
         customPicker = widget.filter.openCustomPicker;

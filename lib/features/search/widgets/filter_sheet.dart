@@ -200,6 +200,11 @@ class FilterSheet extends ConsumerWidget {
                             filter: f,
                             value: browseState.ownFilterValues[src.id]?[f.key],
                             accent: accent,
+                            disabledReason: exclusiveBlockReason(
+                              browseState.activeExclusiveFilter(src.id),
+                              f,
+                              l,
+                            ),
                             onPick: (Object? v, CommonSelection? _) => ref
                                 .read(browseProvider.notifier)
                                 .setOwnFilter(src.id, f.key, v),
@@ -297,6 +302,7 @@ class _FilterRow extends ConsumerStatefulWidget {
     required this.value,
     required this.accent,
     required this.onPick,
+    this.disabledReason,
     super.key,
   });
 
@@ -304,6 +310,9 @@ class _FilterRow extends ConsumerStatefulWidget {
   final Object? value;
   final Color accent;
   final FilterPick onPick;
+
+  /// Why the row is off (an exclusive filter is set); null = usable.
+  final String? disabledReason;
 
   @override
   ConsumerState<_FilterRow> createState() => _FilterRowState();
@@ -372,9 +381,14 @@ class _FilterRowState extends ConsumerState<_FilterRow>
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
+    final String? reason = widget.disabledReason;
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
+        enabled: reason == null,
+        subtitle: reason == null
+            ? null
+            : Text(reason, style: AppTypography.caption),
         title: Text(
           widget.filter.placeholder(l),
           style: AppTypography.body,
@@ -410,7 +424,7 @@ class _FilterRowState extends ConsumerState<_FilterRow>
           horizontal: AppSpacing.md,
         ),
         dense: true,
-        onTap: _openDialog,
+        onTap: reason == null ? _openDialog : null,
       ),
     );
   }

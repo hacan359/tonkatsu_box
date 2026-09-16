@@ -2516,9 +2516,6 @@ class SRu extends S {
   String get musicDiscoverFreshReleases => 'Новые релизы';
 
   @override
-  String get musicDiscoverUnavailable => 'Discover недоступен';
-
-  @override
   String get musicSearchArtist => 'Исполнитель';
 
   @override
@@ -3439,6 +3436,9 @@ class SRu extends S {
   String get dualDatePickerNoDate => 'Без даты';
 
   @override
+  String get dualDatePickerBothDates => 'Начал и закончил в этот день';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Введите дату';
 
   @override
@@ -3572,45 +3572,6 @@ class SRu extends S {
   }
 
   @override
-  String get discoverTitle => 'Подборки';
-
-  @override
-  String get discoverCustomize => 'Настроить';
-
-  @override
-  String get discoverTrending => 'Тренды недели';
-
-  @override
-  String get discoverTopRatedMovies => 'Лучшие фильмы';
-
-  @override
-  String get discoverTopRatedTvShows => 'Лучшие сериалы';
-
-  @override
-  String get discoverPopularTvShows => 'Популярные сериалы';
-
-  @override
-  String get discoverUpcoming => 'Скоро в кино';
-
-  @override
-  String get discoverCustomizeTitle => 'Настроить подборки';
-
-  @override
-  String get discoverCustomizeHint => 'Выберите какие секции показывать';
-
-  @override
-  String get discoverResetDefault => 'По умолчанию';
-
-  @override
-  String get discoverAlreadyInCollection => 'Уже в коллекции';
-
-  @override
-  String get discoverShowWithBadge => 'Показывать с отметкой';
-
-  @override
-  String get discoverHideCompletely => 'Скрывать';
-
-  @override
   String get recommendationsTitle => 'Рекомендации';
 
   @override
@@ -3695,6 +3656,13 @@ class SRu extends S {
 
   @override
   String get settingsCardScaleSubtitle => 'Размер карточек в сетках коллекций';
+
+  @override
+  String get settingsTextScale => 'Размер текста';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Размер текста интерфейса поверх системной настройки';
 
   @override
   String get collectionEditHeroImage => 'Обложка';
@@ -3787,6 +3755,30 @@ class SRu extends S {
 
   @override
   String get tagPickerEmpty => 'Тэги не найдены';
+
+  @override
+  String get studioLabel => 'Студия';
+
+  @override
+  String get studioPickerTitle => 'Выбор студии';
+
+  @override
+  String get studioPickerSearchHint => 'Поиск студий';
+
+  @override
+  String get studioPickerTypeToSearch => 'Введите название студии';
+
+  @override
+  String get studioPickerEmpty => 'Студии не найдены';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'Пока выбрана студия, остальные фильтры и текст поиска не действуют';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'Недоступно, пока задан фильтр «$filter»';
+  }
 
   @override
   String get clearAll => 'Очистить всё';
@@ -3995,6 +3987,19 @@ class SRu extends S {
 
   @override
   String get appBarSearchHint => 'Начните печатать для поиска';
+
+  @override
+  String get appBarMetaSearchHint =>
+      'Жанр, автор, студия… запятая = и, / = или';
+
+  @override
+  String get searchModeTooltip => 'Режим поиска';
+
+  @override
+  String get searchModeTitle => 'По названию';
+
+  @override
+  String get searchModeMeta => 'По описанию';
 
   @override
   String get insertLink => 'Вставить ссылку';
@@ -5289,7 +5294,212 @@ class SRu extends S {
   String get screenScraperMediaMix => 'Микс';
 
   @override
-  String get genreCloudTitle => 'Персонализация';
+  String get genreCloudTitle => 'Облако жанров';
+
+  @override
+  String get showcaseTitle => 'Витрина';
+
+  @override
+  String get showcaseHint => 'Что выходит сейчас и что смотрят';
+
+  @override
+  String get showcaseGroupAiring => 'Сейчас выходит';
+
+  @override
+  String get showcaseGroupPopular => 'Популярное';
+
+  @override
+  String get showcaseAnimeThisSeason => 'Аниме этого сезона';
+
+  @override
+  String get showcaseAnimeNextSeason => 'Аниме следующего сезона';
+
+  @override
+  String get showcaseNowPlaying => 'Сейчас в кино';
+
+  @override
+  String get showcaseUpcomingMovies => 'Скоро в кино';
+
+  @override
+  String get showcaseTvEpisodesThisWeek => 'Новые серии на неделе';
+
+  @override
+  String get showcaseUpcomingGames => 'Ближайшие релизы игр';
+
+  @override
+  String get showcaseTrendingMovies => 'Фильмы в тренде';
+
+  @override
+  String get showcaseTrendingTvShows => 'Сериалы в тренде';
+
+  @override
+  String get showcasePopularAnime => 'Популярное аниме';
+
+  @override
+  String get showcaseSettingsTitle => 'Настроить витрину';
+
+  @override
+  String get showcaseSettingsHint => 'Выберите, какие ряды показывать';
+
+  @override
+  String get showcaseResetDefault => 'По умолчанию';
+
+  @override
+  String get showcaseAlreadyInCollection => 'Уже в коллекции';
+
+  @override
+  String get showcaseShowWithBadge => 'Показывать с отметкой';
+
+  @override
+  String get showcaseHideCompletely => 'Скрывать';
+
+  @override
+  String get showcaseRowError => 'Не удалось загрузить ряд';
+
+  @override
+  String showcaseRetryIn(int seconds) {
+    return 'Лимит запросов, повтор через $seconds с';
+  }
+
+  @override
+  String get showcaseAllRowsHidden =>
+      'Все ряды скрыты. Включите нужные в настройках витрины.';
+
+  @override
+  String showcaseEpisodeShort(int number) {
+    return 'Серия $number';
+  }
+
+  @override
+  String showcaseSeasonEpisodeShort(int season, int episode) {
+    return 'S${season}E$episode';
+  }
+
+  @override
+  String showcaseCountdownIn(String countdown) {
+    return 'через $countdown';
+  }
+
+  @override
+  String showcaseCountdownDaysHours(int days, int hours) {
+    return '$daysд $hoursч';
+  }
+
+  @override
+  String showcaseCountdownHoursMinutes(int hours, int minutes) {
+    return '$hoursч $minutesм';
+  }
+
+  @override
+  String showcaseCountdownMinutes(int minutes) {
+    return '$minutesм';
+  }
+
+  @override
+  String showcaseCountdownDays(int days) {
+    return '$daysд';
+  }
+
+  @override
+  String get showcaseOutNow => 'Уже вышло';
+
+  @override
+  String get showcasePremiere => 'Премьера';
+
+  @override
+  String get showcaseRelease => 'Релиз';
+
+  @override
+  String showcaseEpisodesCount(int count) {
+    return '$count сер.';
+  }
+
+  @override
+  String get showcaseViewList => 'Список';
+
+  @override
+  String get showcaseViewByDay => 'По датам';
+
+  @override
+  String get showcaseViewByWeekday => 'По дням недели';
+
+  @override
+  String get showcaseViewByWeek => 'По неделям';
+
+  @override
+  String get showcaseDateTba => 'Дата не объявлена';
+
+  @override
+  String showcaseShowAll(int count) {
+    return 'Показать все ($count)';
+  }
+
+  @override
+  String get personalizationTitle => 'Персонализация';
+
+  @override
+  String get personalizationStatsHint => 'Ваша библиотека в цифрах';
+
+  @override
+  String get personalizationRecommendationsHint =>
+      'По тому, что вы прошли, досмотрели и оценили';
+
+  @override
+  String get likesTitle => 'Лайки, заметки, повторы';
+
+  @override
+  String get personalizationLikesHint =>
+      'Отмеченные серии и главы, пересмотренные тайтлы';
+
+  @override
+  String get likesEmptyTitle => 'Пока ничего не отмечено';
+
+  @override
+  String get likesEmptyBody =>
+      'Поставьте сердечко на серию или напишите заметку в трекере тайтла, и они появятся здесь.';
+
+  @override
+  String get likesNoMatches => 'Под фильтр ничего не попало';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return 'Трек $track · Диск $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count отметки',
+      many: '$count отметок',
+      few: '$count отметки',
+      one: '1 отметка',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Повторы';
+
+  @override
+  String get likesSectionMarks => 'Лайки и заметки';
+
+  @override
+  String get likesRewatchFilter => 'С повторами';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count повтора',
+      many: '$count повторов',
+      few: '$count повтора',
+      one: '1 повтор',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => 'Пока нет жанров';
@@ -5325,9 +5535,6 @@ class SRu extends S {
 
   @override
   String get facetDecade => 'Десятилетия';
-
-  @override
-  String get personalizationTabCloud => 'Облако жанров';
 
   @override
   String get recommendationsEmpty => 'Пока нет рекомендаций';
@@ -5832,9 +6039,6 @@ class SRu extends S {
   String podcastEpisodesCount(int count) {
     return '$count эпизодов';
   }
-
-  @override
-  String get podcastDiscoverTrending => 'Популярные подкасты';
 
   @override
   String get credentialsPodcastIndexSection => 'Podcast Index API';

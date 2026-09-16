@@ -15,21 +15,17 @@ class CompactFilterBar extends ConsumerWidget {
   const CompactFilterBar({
     required this.state,
     required this.accent,
-    this.onDiscoverCustomize,
     super.key,
   });
 
   final BrowseState state;
   final Color accent;
-  final VoidCallback? onDiscoverCustomize;
 
   static const double _kTypeWidth = 128;
-  static const double _kCustomizeWidth = 40;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    final bool showCustomize = onDiscoverCustomize != null;
     final int activeFilters = state.activeFilterCount;
     final bool multiSource = state.sources.length > 1;
 
@@ -62,26 +58,11 @@ class CompactFilterBar extends ConsumerWidget {
                 selected: activeFilters > 0,
                 accentColor: accent,
                 isFirst: false,
-                isLast: !showCustomize,
+                isLast: true,
                 onTap: () => showFilterSheet(context),
                 tintWhenInactive: true,
               ),
             ),
-            if (showCustomize)
-              SizedBox(
-                width: _kCustomizeWidth,
-                child: ChevronSegment(
-                  label: l.discoverCustomize,
-                  icon: Icons.tune,
-                  selected: false,
-                  accentColor: accent,
-                  isFirst: false,
-                  isLast: true,
-                  onTap: onDiscoverCustomize!,
-                  tintWhenInactive: true,
-                  compact: true,
-                ),
-              ),
           ],
         ),
       ),

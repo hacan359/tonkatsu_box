@@ -2471,9 +2471,6 @@ class SEn extends S {
   String get musicDiscoverFreshReleases => 'New releases';
 
   @override
-  String get musicDiscoverUnavailable => 'Discover is unavailable';
-
-  @override
   String get musicSearchArtist => 'Artist';
 
   @override
@@ -3374,6 +3371,9 @@ class SEn extends S {
   String get dualDatePickerNoDate => 'No date';
 
   @override
+  String get dualDatePickerBothDates => 'Started and finished this day';
+
+  @override
   String get dualDatePickerErrorEmpty => 'Enter a date';
 
   @override
@@ -3507,45 +3507,6 @@ class SEn extends S {
   }
 
   @override
-  String get discoverTitle => 'Discover';
-
-  @override
-  String get discoverCustomize => 'Customize';
-
-  @override
-  String get discoverTrending => 'Trending This Week';
-
-  @override
-  String get discoverTopRatedMovies => 'Top Rated Movies';
-
-  @override
-  String get discoverTopRatedTvShows => 'Top Rated TV Shows';
-
-  @override
-  String get discoverPopularTvShows => 'Popular TV Shows';
-
-  @override
-  String get discoverUpcoming => 'Upcoming';
-
-  @override
-  String get discoverCustomizeTitle => 'Customize Discover';
-
-  @override
-  String get discoverCustomizeHint => 'Choose which sections to show';
-
-  @override
-  String get discoverResetDefault => 'Reset to default';
-
-  @override
-  String get discoverAlreadyInCollection => 'Already in collection';
-
-  @override
-  String get discoverShowWithBadge => 'Show with badge';
-
-  @override
-  String get discoverHideCompletely => 'Hide completely';
-
-  @override
   String get recommendationsTitle => 'Recommendations';
 
   @override
@@ -3629,6 +3590,13 @@ class SEn extends S {
 
   @override
   String get settingsCardScaleSubtitle => 'Card size in collection grids';
+
+  @override
+  String get settingsTextScale => 'Text size';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Interface text size, on top of the system setting';
 
   @override
   String get collectionEditHeroImage => 'Cover image';
@@ -3722,6 +3690,30 @@ class SEn extends S {
 
   @override
   String get tagPickerEmpty => 'No tags found';
+
+  @override
+  String get studioLabel => 'Studio';
+
+  @override
+  String get studioPickerTitle => 'Select studio';
+
+  @override
+  String get studioPickerSearchHint => 'Search studios';
+
+  @override
+  String get studioPickerTypeToSearch => 'Type a studio name';
+
+  @override
+  String get studioPickerEmpty => 'No studios found';
+
+  @override
+  String get studioFilterExclusiveHint =>
+      'While a studio is selected, other filters and the search text are ignored';
+
+  @override
+  String filterBlockedBy(String filter) {
+    return 'Not available while $filter is set';
+  }
 
   @override
   String get clearAll => 'Clear all';
@@ -3929,6 +3921,19 @@ class SEn extends S {
 
   @override
   String get appBarSearchHint => 'Start typing to search';
+
+  @override
+  String get appBarMetaSearchHint =>
+      'Genre, author, studio… comma = and, / = or';
+
+  @override
+  String get searchModeTooltip => 'Search mode';
+
+  @override
+  String get searchModeTitle => 'By title';
+
+  @override
+  String get searchModeMeta => 'By details';
 
   @override
   String get insertLink => 'Insert link';
@@ -5199,7 +5204,208 @@ class SEn extends S {
   String get screenScraperMediaMix => 'Mix';
 
   @override
-  String get genreCloudTitle => 'Personalization';
+  String get genreCloudTitle => 'Genre cloud';
+
+  @override
+  String get showcaseTitle => 'Showcase';
+
+  @override
+  String get showcaseHint => 'What\'s out now and what people are watching';
+
+  @override
+  String get showcaseGroupAiring => 'Out now';
+
+  @override
+  String get showcaseGroupPopular => 'Popular';
+
+  @override
+  String get showcaseAnimeThisSeason => 'Anime this season';
+
+  @override
+  String get showcaseAnimeNextSeason => 'Anime next season';
+
+  @override
+  String get showcaseNowPlaying => 'In theaters now';
+
+  @override
+  String get showcaseUpcomingMovies => 'Coming to theaters';
+
+  @override
+  String get showcaseTvEpisodesThisWeek => 'New episodes this week';
+
+  @override
+  String get showcaseUpcomingGames => 'Upcoming game releases';
+
+  @override
+  String get showcaseTrendingMovies => 'Trending movies';
+
+  @override
+  String get showcaseTrendingTvShows => 'Trending TV shows';
+
+  @override
+  String get showcasePopularAnime => 'Popular anime';
+
+  @override
+  String get showcaseSettingsTitle => 'Customize showcase';
+
+  @override
+  String get showcaseSettingsHint => 'Choose which rows to show';
+
+  @override
+  String get showcaseResetDefault => 'Reset to default';
+
+  @override
+  String get showcaseAlreadyInCollection => 'Already in collection';
+
+  @override
+  String get showcaseShowWithBadge => 'Show with badge';
+
+  @override
+  String get showcaseHideCompletely => 'Hide completely';
+
+  @override
+  String get showcaseRowError => 'Couldn\'t load this row';
+
+  @override
+  String showcaseRetryIn(int seconds) {
+    return 'Rate limit reached, retry in $seconds s';
+  }
+
+  @override
+  String get showcaseAllRowsHidden =>
+      'All rows are hidden. Turn some on in the showcase settings.';
+
+  @override
+  String showcaseEpisodeShort(int number) {
+    return 'Ep $number';
+  }
+
+  @override
+  String showcaseSeasonEpisodeShort(int season, int episode) {
+    return 'S${season}E$episode';
+  }
+
+  @override
+  String showcaseCountdownIn(String countdown) {
+    return 'in $countdown';
+  }
+
+  @override
+  String showcaseCountdownDaysHours(int days, int hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String showcaseCountdownHoursMinutes(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String showcaseCountdownMinutes(int minutes) {
+    return '${minutes}m';
+  }
+
+  @override
+  String showcaseCountdownDays(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get showcaseOutNow => 'Out now';
+
+  @override
+  String get showcasePremiere => 'Premiere';
+
+  @override
+  String get showcaseRelease => 'Release';
+
+  @override
+  String showcaseEpisodesCount(int count) {
+    return '$count ep';
+  }
+
+  @override
+  String get showcaseViewList => 'List';
+
+  @override
+  String get showcaseViewByDay => 'By date';
+
+  @override
+  String get showcaseViewByWeekday => 'By weekday';
+
+  @override
+  String get showcaseViewByWeek => 'By week';
+
+  @override
+  String get showcaseDateTba => 'Date TBA';
+
+  @override
+  String showcaseShowAll(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
+  String get personalizationTitle => 'Personalization';
+
+  @override
+  String get personalizationStatsHint => 'Your library in numbers';
+
+  @override
+  String get personalizationRecommendationsHint =>
+      'Based on what you finished and rated';
+
+  @override
+  String get likesTitle => 'Likes, notes & replays';
+
+  @override
+  String get personalizationLikesHint =>
+      'Episodes and chapters you marked, titles you replayed';
+
+  @override
+  String get likesEmptyTitle => 'Nothing marked yet';
+
+  @override
+  String get likesEmptyBody =>
+      'Like an episode or leave a note in a title\'s tracker and it will show up here.';
+
+  @override
+  String get likesNoMatches => 'Nothing matches the filter';
+
+  @override
+  String likesTrackWithDisc(int track, int disc) {
+    return 'Track $track · Disc $disc';
+  }
+
+  @override
+  String likesMarkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marks',
+      one: '1 mark',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get likesSectionRewatch => 'Replays';
+
+  @override
+  String get likesSectionMarks => 'Likes & notes';
+
+  @override
+  String get likesRewatchFilter => 'With replays';
+
+  @override
+  String likesRewatchTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count replays',
+      one: '1 replay',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get genreCloudEmpty => 'No genres yet';
@@ -5232,9 +5438,6 @@ class SEn extends S {
 
   @override
   String get facetDecade => 'Decades';
-
-  @override
-  String get personalizationTabCloud => 'Genre cloud';
 
   @override
   String get recommendationsEmpty => 'No recommendations yet';
@@ -5736,9 +5939,6 @@ class SEn extends S {
   String podcastEpisodesCount(int count) {
     return '$count episodes';
   }
-
-  @override
-  String get podcastDiscoverTrending => 'Trending podcasts';
 
   @override
   String get credentialsPodcastIndexSection => 'Podcast Index API';

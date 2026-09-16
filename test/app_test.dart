@@ -233,5 +233,34 @@ void main() {
 
       expect(app.debugShowCheckedModeBanner, isFalse);
     });
+
+    testWidgets('should multiply the text scaler by the stored text scale',
+        (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        SettingsKeys.textScale: 1.3,
+      });
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: <Override>[
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
+            updateCheckProvider.overrideWith((Ref ref) async => null),
+          ],
+          child: const TonkatsuBoxApp(),
+        ),
+      );
+
+      final BuildContext context = tester.element(find.byType(SplashScreen));
+      final double system =
+          MediaQuery.textScalerOf(tester.element(find.byType(MaterialApp)))
+              .scale(10);
+      expect(
+        MediaQuery.textScalerOf(context).scale(10),
+        closeTo(system * 1.3, 0.001),
+      );
+    });
   });
 }

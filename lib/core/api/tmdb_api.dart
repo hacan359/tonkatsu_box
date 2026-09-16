@@ -56,6 +56,8 @@ class TmdbApi {
     _client.setLanguage(language);
   }
 
+  bool get hasApiKey => _client.hasApiKey;
+
   void setApiKey(String apiKey) => _client.setApiKey(apiKey);
 
   void clearApiKey() {
@@ -109,11 +111,17 @@ class TmdbApi {
   Future<List<Movie>> getTopRatedMovies({int page = 1}) =>
       _movies.getTopRatedMovies(page: page);
 
-  Future<List<Movie>> getUpcomingMovies({int page = 1}) =>
-      _movies.getUpcomingMovies(page: page);
+  Future<List<(Movie, String? releaseDate)>> getUpcomingMovieReleases({
+    int page = 1,
+    String? region,
+  }) =>
+      _movies.getUpcomingMovieReleases(page: page, region: region);
 
-  Future<List<Movie>> getNowPlayingMovies({int page = 1}) =>
-      _movies.getNowPlayingMovies(page: page);
+  Future<List<(Movie, String? releaseDate)>> getNowPlayingMovieReleases({
+    int page = 1,
+    String? region,
+  }) =>
+      _movies.getNowPlayingMovieReleases(page: page, region: region);
 
   Future<List<Movie>> discoverMovies({
     int? genreId,
@@ -160,6 +168,9 @@ class TmdbApi {
 
   Future<TvShow?> getTvShow(int tmdbId) => _tv.getTvShow(tmdbId);
 
+  Future<TmdbNextEpisode?> getNextEpisodeToAir(int tmdbId) =>
+      _tv.getNextEpisodeToAir(tmdbId);
+
   Future<(TvShow, List<TvSeason>)?> getTvShowWithSeasons(int tmdbId) =>
       _tv.getTvShowWithSeasons(tmdbId);
 
@@ -171,9 +182,6 @@ class TmdbApi {
     int seasonNumber,
   ) =>
       _tv.getSeasonEpisodes(tmdbShowId, seasonNumber);
-
-  Future<List<TvShow>> getPopularTvShows({int page = 1}) =>
-      _tv.getPopularTvShows(page: page);
 
   Future<List<TvShow>> getTvRecommendations(int tmdbId, {int page = 1}) =>
       _tv.getTvRecommendations(tmdbId, page: page);
@@ -190,15 +198,14 @@ class TmdbApi {
   Future<List<TvShow>> getTopRatedTvShows({int page = 1}) =>
       _tv.getTopRatedTvShows(page: page);
 
-  Future<List<TvShow>> getOnTheAirTvShows({int page = 1}) =>
-      _tv.getOnTheAirTvShows(page: page);
-
   Future<List<TvShow>> discoverTvShows({
     int? genreId,
     String? genreIds,
     int? year,
     String? firstAirDateGte,
     String? firstAirDateLte,
+    String? airDateGte,
+    String? airDateLte,
     int? voteCountGte,
     double? voteAverageGte,
     String? originalLanguage,
@@ -212,6 +219,8 @@ class TmdbApi {
         year: year,
         firstAirDateGte: firstAirDateGte,
         firstAirDateLte: firstAirDateLte,
+        airDateGte: airDateGte,
+        airDateLte: airDateLte,
         voteCountGte: voteCountGte,
         voteAverageGte: voteAverageGte,
         originalLanguage: originalLanguage,

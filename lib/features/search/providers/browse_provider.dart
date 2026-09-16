@@ -118,6 +118,18 @@ class BrowseState {
             if (!selection.targets.containsKey(source.id)) source.id,
       };
 
+  /// The exclusive own filter currently set on [sourceId]; the UI dims the
+  /// rest of that source's filters while it is.
+  SearchFilter? activeExclusiveFilter(String sourceId) {
+    final Map<String, Object?>? values = ownFilterValues[sourceId];
+    if (values == null) return null;
+    for (final SearchFilter f
+        in filters.own[sourceId] ?? const <SearchFilter>[]) {
+      if (f.exclusive && _isSet(values[f.key])) return f;
+    }
+    return null;
+  }
+
   /// Filter values handed to [SearchSource.fetch] for one source: its own plus
   /// every shared pick translated into that provider's key and value.
   Map<String, Object?> filterValuesFor(String sourceId) {
@@ -355,14 +367,23 @@ class BrowseNotifier extends Notifier<BrowseState> {
     String sourceId,
     String key,
     Object? value,
+  ) =>
+      setOwnFilters(sourceId, <String, Object?>{key: value});
+
+  /// Several own filters in one state update and one fetch - a per-key
+  /// [setOwnFilter] loop would start a request per key and discard all but one.
+  Future<void> setOwnFilters(
+    String sourceId,
+    Map<String, Object?> values,
   ) async {
+    if (values.isEmpty) return;
     final Map<String, Map<String, Object?>> updated =
         <String, Map<String, Object?>>{
       for (final MapEntry<String, Map<String, Object?>> entry
           in state.ownFilterValues.entries)
         entry.key: Map<String, Object?>.from(entry.value),
     };
-    (updated[sourceId] ??= <String, Object?>{})[key] = value;
+    (updated[sourceId] ??= <String, Object?>{}).addAll(values);
 
     state = state.copyWith(ownFilterValues: updated);
     await _fetch();
@@ -459,8 +480,12 @@ class BrowseNotifier extends Notifier<BrowseState> {
   String _signature(SearchSource source) {
     final Map<String, Object?> values = state.filterValuesFor(source.id);
     final List<String> keys = values.keys.toList()..sort();
+    // An exclusive filter makes the source ignore the text, so typing must
+    // not refetch the same page.
+    final bool textCounts =
+        state.hasSearchQuery && state.activeExclusiveFilter(source.id) == null;
     return <String>[
-      state.hasSearchQuery ? state.searchQuery : '',
+      textCounts ? state.searchQuery : '',
       state.sortByFor(source),
       for (final String key in keys) '$key=${values[key]}',
     ].join('|');

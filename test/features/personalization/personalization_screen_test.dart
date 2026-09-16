@@ -3,15 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/genre_cloud/providers/genre_cloud_provider.dart';
+import 'package:tonkatsu_box/features/home/providers/all_items_provider.dart';
 import 'package:tonkatsu_box/features/genre_cloud/screens/genre_cloud_screen.dart';
+import 'package:tonkatsu_box/features/likes/providers/marked_units_provider.dart';
+import 'package:tonkatsu_box/features/likes/screens/likes_screen.dart';
+import 'package:tonkatsu_box/features/personalization/screens/personalization_hub_screen.dart';
 import 'package:tonkatsu_box/features/personalization/screens/personalization_screen.dart';
+import 'package:tonkatsu_box/features/personalization/widgets/hub_section_card.dart';
 import 'package:tonkatsu_box/features/recommendations/providers/recommendations_provider.dart';
 import 'package:tonkatsu_box/features/recommendations/screens/recommendations_screen.dart';
+import 'package:tonkatsu_box/features/showcase/models/showcase_item.dart';
+import 'package:tonkatsu_box/features/showcase/providers/showcase_rows_provider.dart';
+import 'package:tonkatsu_box/features/showcase/providers/showcase_settings_provider.dart';
+import 'package:tonkatsu_box/features/showcase/screens/showcase_screen.dart';
 import 'package:tonkatsu_box/features/statistics/providers/statistics_provider.dart';
 import 'package:tonkatsu_box/features/statistics/screens/statistics_screen.dart';
-import 'package:tonkatsu_box/shared/widgets/flat_tab_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/sub_screen_title_bar.dart';
 
 import '../../helpers/test_helpers.dart';
+
+class _EmptyMarkedUnits extends MarkedUnitsNotifier {
+  @override
+  Future<List<MarkedUnitGroup>> build() async => const <MarkedUnitGroup>[];
+}
 
 void main() {
   group('PersonalizationScreen', () {
@@ -29,16 +43,20 @@ void main() {
           ),
           collectedRecommendationIdsProvider
               .overrideWith((Ref ref) async => <String>{}),
+          markedUnitsProvider.overrideWith(_EmptyMarkedUnits.new),
+          visibleAllItemsProvider.overrideWith(
+            (Ref ref) =>
+                const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]),
+          ),
+          // The showcase preview fetches its first row; keep it offline.
+          for (final ShowcaseRowId id in ShowcaseRowId.values)
+            showcaseRowProvider(id)
+                .overrideWith((Ref ref) async => const <ShowcaseItem>[]),
         ];
 
-    // Scoped to the first bar in tree order — the hub tabs, not any bar the
-    // tab below them may render.
-    Finder segments() => find.descendant(
-          of: find.byWidgetPredicate((Widget w) => w is FlatTabBar).first,
-          matching: find.byType(InkWell),
-        );
+    Finder cards() => find.byType(HubSectionCard);
 
-    testWidgets('shows statistics first, without exceptions', (
+    testWidgets('opens on the hub landing with one card per section', (
       WidgetTester tester,
     ) async {
       await tester.pumpApp(
@@ -47,13 +65,42 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
-      expect(find.byType(StatisticsScreen), findsOneWidget);
-      // Hidden views must not be built at all (lazy tabs).
+      expect(find.byType(PersonalizationHubScreen), findsOneWidget);
+      expect(cards(), findsNWidgets(4));
+      // Sections are routes, not tabs: none is built until opened.
+      expect(find.byType(StatisticsScreen), findsNothing);
       expect(find.byType(GenreCloudScreen), findsNothing);
       expect(find.byType(RecommendationsScreen), findsNothing);
+      expect(find.byType(ShowcaseScreen), findsNothing);
     });
 
-    testWidgets('switches between all three views via the pill', (
+    testWidgets('pushes statistics over the hub and pops back', (
+      WidgetTester tester,
+    ) async {
+      final GlobalKey<NavigatorState> key = GlobalKey<NavigatorState>();
+      await tester.pumpApp(
+        PersonalizationScreen(navigatorKey: key),
+        overrides: overrides(),
+      );
+
+      await tester.tap(cards().at(0));
+      await tester.pumpAndSettle();
+      expect(find.byType(StatisticsScreen), findsOneWidget);
+      expect(find.byType(SubScreenTitleBar), findsOneWidget);
+      expect(key.currentState?.canPop(), isTrue);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(SubScreenTitleBar),
+          matching: find.byType(IconButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(StatisticsScreen), findsNothing);
+      expect(find.byType(PersonalizationHubScreen), findsOneWidget);
+    });
+
+    testWidgets('pushes the showcase from the third card', (
       WidgetTester tester,
     ) async {
       await tester.pumpApp(
@@ -61,73 +108,76 @@ void main() {
         overrides: overrides(),
       );
 
-      await tester.tap(segments().at(1));
+      await tester.tap(cards().at(2));
       await tester.pumpAndSettle();
-      expect(find.byType(GenreCloudScreen), findsOneWidget);
+      expect(find.byType(ShowcaseScreen), findsOneWidget);
       expect(find.byType(StatisticsScreen), findsNothing);
-
-      await tester.tap(segments().at(2));
-      await tester.pumpAndSettle();
-      expect(find.byType(RecommendationsScreen), findsOneWidget);
-      expect(find.byType(GenreCloudScreen), findsNothing);
-
-      await tester.tap(segments().at(0));
-      await tester.pumpAndSettle();
-      expect(find.byType(StatisticsScreen), findsOneWidget);
-      expect(find.byType(RecommendationsScreen), findsNothing);
     });
 
-    group('tab width', () {
-      // Widths of the three tabs, in order.
-      List<double> tabWidths(WidgetTester tester) => tester
-          .widgetList<InkWell>(segments())
-          .map((InkWell w) => tester.getSize(find.byWidget(w)).width)
-          .toList();
+    testWidgets('pushes the likes page from the fourth card', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        const PersonalizationScreen(),
+        overrides: overrides(),
+      );
 
-      testWidgets('should split the header into equal tabs when wide', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpApp(
-          const PersonalizationScreen(),
-          overrides: overrides(),
-        );
+      await tester.tap(cards().at(3));
+      await tester.pumpAndSettle();
+      expect(find.byType(LikesScreen), findsOneWidget);
+      expect(find.byType(StatisticsScreen), findsNothing);
+    });
 
-        final List<double> widths = tabWidths(tester);
-        expect(widths, hasLength(3));
-        expect(widths[1], moreOrLessEquals(widths[0], epsilon: 0.5));
-        expect(widths[2], moreOrLessEquals(widths[0], epsilon: 0.5));
-        // Together they span the header, not a fragment of it.
-        final double logicalWidth =
-            tester.view.physicalSize.width / tester.view.devicePixelRatio;
-        expect(
-          widths.reduce((double a, double b) => a + b),
-          greaterThan(logicalWidth * 0.9),
-        );
-      });
+    testWidgets('pushes recommendations from the second card', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        const PersonalizationScreen(),
+        overrides: overrides(),
+      );
 
-      testWidgets('should still split the header on a phone', (
-        WidgetTester tester,
-      ) async {
-        // Full width holds at every size — the hub tabs never fall back to
-        // sizing to content, which is what made them read as a fragment.
-        tester.view.physicalSize = const Size(360, 640);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+      await tester.tap(cards().at(1));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecommendationsScreen), findsOneWidget);
+      expect(find.byType(StatisticsScreen), findsNothing);
+    });
 
-        await tester.pumpApp(
-          const PersonalizationScreen(),
-          overrides: overrides(),
-        );
+    testWidgets('reaches the genre cloud from the statistics screen', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        const PersonalizationScreen(),
+        overrides: overrides(),
+      );
 
-        expect(tester.takeException(), isNull);
-        final List<double> widths = tabWidths(tester);
-        expect(widths, hasLength(3));
-        expect(widths[1], moreOrLessEquals(widths[0], epsilon: 0.5));
-        expect(
-          widths.reduce((double a, double b) => a + b),
-          moreOrLessEquals(360, epsilon: 1),
-        );
-      });
+      await tester.tap(cards().at(0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.bubble_chart_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GenreCloudScreen), findsOneWidget);
+      expect(find.byType(StatisticsScreen), findsNothing);
+    });
+
+    testWidgets('lays out on a phone without exceptions', (
+      WidgetTester tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpApp(
+        const PersonalizationScreen(),
+        overrides: overrides(),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(cards(), findsNWidgets(4));
+
+      await tester.tap(cards().at(0));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(StatisticsScreen), findsOneWidget);
     });
   });
 }

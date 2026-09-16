@@ -33,6 +33,8 @@ import '../widgets/hardcover_book_sheet.dart';
 import '../widgets/podcast_index_sheet.dart';
 import '../widgets/musicbrainz_album_sheet.dart';
 import '../widgets/google_books_more_by_author_section.dart';
+import '../../../shared/navigation/search_providers.dart';
+import '../helpers/studio_search.dart';
 import '../widgets/item_details_sheet.dart';
 import 'game_handler.dart';
 import 'media_action_handler.dart';
@@ -133,6 +135,9 @@ class MediaHandlers {
         onAddToCollection: onAdd,
         animeMangaTitleLanguage:
             ref.read(settingsNotifierProvider).animeMangaTitleLanguage,
+        onStudioTap: (String studio) => ref
+            .read(searchTabRequestProvider.notifier)
+            .state = studioSearchRequest(studio),
       ),
     );
     // Edition picked in the editions strip, tagged with its work id so it

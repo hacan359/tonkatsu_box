@@ -1,3 +1,4 @@
+import 'package:core/models/anilist_studio.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/manga.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -185,6 +186,111 @@ void main() {
         <int>[30002],
       );
       expect(r[30002]!.map((Manga m) => m.id), <int>[30642, 30656]);
+    });
+  });
+
+  group('AniListMediaParser.studios', () {
+    test('null or missing Page yields empty list', () {
+      expect(AniListMediaParser.studios(null), isEmpty);
+      expect(AniListMediaParser.studios(<String, dynamic>{}), isEmpty);
+    });
+
+    test('parses id, name and the animation flag', () {
+      final List<AniListStudio> r = AniListMediaParser.studios(
+        <String, dynamic>{
+          'Page': <String, dynamic>{
+            'studios': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 2,
+                'name': 'Kyoto Animation',
+                'isAnimationStudio': true,
+              },
+              <String, dynamic>{
+                'id': 6454,
+                'name': 'Madman Entertainment',
+                'isAnimationStudio': false,
+              },
+            ],
+          },
+        },
+      );
+      expect(r.map((AniListStudio s) => s.id), <int>[2, 6454]);
+      expect(r.first.name, 'Kyoto Animation');
+      expect(r.first.isAnimationStudio, isTrue);
+      expect(r.last.isAnimationStudio, isFalse);
+    });
+  });
+
+  group('AniListMediaParser.animeStudioPage', () {
+    Map<String, dynamic> studioPage({
+      List<Map<String, dynamic>>? nodes,
+      bool hasNextPage = false,
+      int lastPage = 1,
+      bool withMedia = true,
+    }) =>
+        <String, dynamic>{
+          'Page': <String, dynamic>{
+            'studios': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 2,
+                'name': 'Kyoto Animation',
+                if (withMedia)
+                  'media': <String, dynamic>{
+                    'pageInfo': <String, dynamic>{
+                      'hasNextPage': hasNextPage,
+                      'lastPage': lastPage,
+                    },
+                    'nodes': nodes ?? <Map<String, dynamic>>[],
+                  },
+              },
+            ],
+          },
+        };
+
+    test('null data yields empty result', () {
+      final (List<Anime>, bool, int) r =
+          AniListMediaParser.animeStudioPage(null);
+      expect(r.$1, isEmpty);
+      expect(r.$2, isFalse);
+      expect(r.$3, 0);
+    });
+
+    test('no studio matched yields empty result', () {
+      final (List<Anime>, bool, int) r = AniListMediaParser.animeStudioPage(
+        <String, dynamic>{
+          'Page': <String, dynamic>{'studios': <Map<String, dynamic>>[]},
+        },
+      );
+      expect(r.$1, isEmpty);
+      expect(r.$3, 0);
+    });
+
+    test('studio without a media connection yields empty result', () {
+      final (List<Anime>, bool, int) r =
+          AniListMediaParser.animeStudioPage(studioPage(withMedia: false));
+      expect(r.$1, isEmpty);
+    });
+
+    test('reads nodes and pageInfo of the first studio', () {
+      final (List<Anime>, bool, int) r = AniListMediaParser.animeStudioPage(
+        studioPage(
+          hasNextPage: true,
+          lastPage: 166,
+          nodes: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 21827,
+              'title': <String, dynamic>{'romaji': 'Violet Evergarden'},
+            },
+            <String, dynamic>{
+              'id': 20954,
+              'title': <String, dynamic>{'romaji': 'Koe no Katachi'},
+            },
+          ],
+        ),
+      );
+      expect(r.$1.map((Anime a) => a.id), <int>[21827, 20954]);
+      expect(r.$2, isTrue);
+      expect(r.$3, 166);
     });
   });
 }

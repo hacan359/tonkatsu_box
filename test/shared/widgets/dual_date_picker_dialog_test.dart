@@ -166,6 +166,140 @@ void main() {
         expect(r, isNull);
       });
     });
+
+    group('allowBoth', () {
+      const String bothLabel = 'Started and finished this day';
+
+      Future<DualDateResult?> openResultAndGet(
+        WidgetTester tester, {
+        required bool allowBoth,
+        required Future<void> Function(WidgetTester tester) interact,
+      }) async {
+        DualDateResult? result;
+        bool done = false;
+        await tester.pumpApp(
+          Builder(
+            builder: (BuildContext context) => ElevatedButton(
+              onPressed: () async {
+                result = await showDualDatePickerResult(
+                  context: context,
+                  initialDate: initial,
+                  firstDate: first,
+                  lastDate: last,
+                  allowBoth: allowBoth,
+                );
+                done = true;
+              },
+              child: const Text('open'),
+            ),
+          ),
+          wrapInScaffold: true,
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+        await interact(tester);
+        await tester.pumpAndSettle();
+        expect(done, isTrue, reason: 'dialog should have been dismissed');
+        return result;
+      }
+
+      testWidgets('hides the both action by default', (WidgetTester t) async {
+        await _open(t, initial, first, last);
+        expect(find.text(bothLabel), findsNothing);
+      });
+
+      testWidgets('both action returns the picked date flagged for both fields',
+          (WidgetTester t) async {
+        final DualDateResult? r = await openResultAndGet(
+          t,
+          allowBoth: true,
+          interact: (WidgetTester t) async => t.tap(find.text(bothLabel)),
+        );
+        expect(r, isNotNull);
+        expect(r!.appliesToBoth, isTrue);
+        expect(r.cleared, isFalse);
+        expect(r.date, DateTime(2024, 3, 15));
+      });
+
+      testWidgets('both action follows the typed date', (WidgetTester t) async {
+        final DualDateResult? r = await openResultAndGet(
+          t,
+          allowBoth: true,
+          interact: (WidgetTester t) async {
+            await t.enterText(find.byType(TextField), '2024-03-20');
+            await t.pump();
+            await t.tap(find.text(bothLabel));
+          },
+        );
+        expect(r?.appliesToBoth, isTrue);
+        expect(r?.date, DateTime(2024, 3, 20));
+      });
+
+      testWidgets('both action is disabled while the typed date is invalid',
+          (WidgetTester t) async {
+        await t.pumpApp(
+          Builder(
+            builder: (BuildContext context) => ElevatedButton(
+              onPressed: () => showDualDatePickerResult(
+                context: context,
+                initialDate: initial,
+                firstDate: first,
+                lastDate: last,
+                allowBoth: true,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+          wrapInScaffold: true,
+        );
+        await t.tap(find.text('open'));
+        await t.pumpAndSettle();
+        await t.enterText(find.byType(TextField), 'nope');
+        await t.pump();
+
+        final TextButton button = t.widget<TextButton>(
+          find.widgetWithText(TextButton, bothLabel),
+        );
+        expect(button.onPressed, isNull);
+      });
+
+      testWidgets('confirm keeps a single-field result', (WidgetTester t) async {
+        final DualDateResult? r = await openResultAndGet(
+          t,
+          allowBoth: true,
+          interact: (WidgetTester t) async => t.tap(find.text('OK')),
+        );
+        expect(r?.appliesToBoth, isFalse);
+        expect(r?.date, DateTime(2024, 3, 15));
+      });
+
+      testWidgets('renders at phone size without overflow',
+          (WidgetTester t) async {
+        t.view.physicalSize = const Size(360, 640);
+        t.view.devicePixelRatio = 1;
+        addTearDown(t.view.reset);
+        await openResultAndGet(
+          t,
+          allowBoth: true,
+          interact: (WidgetTester t) async => t.tap(find.text('Cancel')),
+        );
+        expect(t.takeException(), isNull);
+      });
+
+      testWidgets('should render on a landscape phone with the keyboard up',
+          (WidgetTester t) async {
+        t.view.physicalSize = const Size(640, 300);
+        t.view.devicePixelRatio = 1;
+        t.view.viewInsets = const FakeViewPadding(bottom: 150);
+        addTearDown(t.view.reset);
+        await openResultAndGet(
+          t,
+          allowBoth: true,
+          interact: (WidgetTester t) async => t.tap(find.text('Cancel')),
+        );
+        expect(t.takeException(), isNull);
+      });
+    });
   });
 }
 

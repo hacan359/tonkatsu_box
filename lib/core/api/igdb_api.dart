@@ -46,6 +46,8 @@ class IgdbApi {
     _client.onTokenRefreshed = cb;
   }
 
+  bool get hasCredentials => _client.hasCredentials;
+
   void setCredentials({
     required String clientId,
     required String accessToken,
@@ -156,6 +158,9 @@ class IgdbApi {
         offset: offset,
         minRatingCount: minRatingCount,
       );
+
+  Future<List<Game>> getUpcomingGames({int days = 90, int limit = 20}) =>
+      _games.getUpcomingGames(days: days, limit: limit);
 
   Future<List<Map<String, dynamic>>> fetchGenres() => _genres.fetchGenres();
 

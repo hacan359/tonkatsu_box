@@ -26,6 +26,7 @@ import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../keyboard/keyboard_shortcuts.dart';
 import '../keyboard/keyboard_shortcuts_dialog.dart';
+import '../widgets/min_height_body.dart';
 import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
 import 'app_sidebar.dart';
@@ -102,6 +103,18 @@ class _AppShellState extends ConsumerState<AppShell> {
         if (request == null) return;
         _openSearchTab(request);
         ref.read(searchTabRequestProvider.notifier).state = null;
+      },
+    );
+    ref.listen<MetaSearchRequest?>(
+      homeMetaSearchRequestProvider,
+      (MetaSearchRequest? previous, MetaSearchRequest? request) {
+        if (request == null) return;
+        // The Home query is off-screen while another tab is up, so a stale
+        // meta query is replaced rather than narrowed.
+        applyMetaSearch(ref, homeSearchQueryProvider, request.query,
+            narrow: false);
+        _onDestinationSelected(NavTab.home.index);
+        ref.read(homeMetaSearchRequestProvider.notifier).state = null;
       },
     );
     // Release notes after an app update, once per version. The version is
@@ -195,7 +208,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       ),
       child: AppTopBar(
         activeTab: activeTab,
-        suppressSearch: _personalizationOpen,
+        personalizationOpen: _personalizationOpen,
         onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
       ),
     );
@@ -216,16 +229,20 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
     return Scaffold(
       appBar: topBar,
-      body: Row(
-        children: <Widget>[
-          AppSidebar(
-            selectedTab: activeTab,
-            onDestinationSelected: onTabSelected,
-            onCenterTap: _openPreferenceCloud,
-            centerActive: _personalizationOpen,
-          ),
-          Expanded(child: _buildContent()),
-        ],
+      // A landscape phone with the keyboard up leaves the body a few dozen
+      // pixels; the sidebar's rail of buttons cannot shrink that far.
+      body: MinHeightBody(
+        child: Row(
+          children: <Widget>[
+            AppSidebar(
+              selectedTab: activeTab,
+              onDestinationSelected: onTabSelected,
+              onCenterTap: _openPreferenceCloud,
+              centerActive: _personalizationOpen,
+            ),
+            Expanded(child: _buildContent()),
+          ],
+        ),
       ),
     );
   }
@@ -234,10 +251,18 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// area and highlighting the centre nav button like a selected tab).
   bool _personalizationOpen = false;
 
+  final GlobalKey<NavigatorState> _personalizationNavKey =
+      GlobalKey<NavigatorState>();
+
   /// A sibling of the tab navigators rather than a route on one, so switching
   /// tabs hides the cloud instead of leaving it on that tab's stack.
   void _openPreferenceCloud() {
-    if (_personalizationOpen) return;
+    if (_personalizationOpen) {
+      // Same gesture as a tab: pressing again returns to the hub's landing.
+      _personalizationNavKey.currentState
+          ?.popUntil((Route<dynamic> route) => route.isFirst);
+      return;
+    }
     // Drop any focus the top-bar search field holds so the mobile keyboard
     // doesn't stay up over a view that has no search of its own.
     FocusManager.instance.primaryFocus?.unfocus();
@@ -248,15 +273,15 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// focus is not already inside a text field.
   KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
-    // Personalization has no search field; don't hijack typing for it.
-    if (_personalizationOpen) return KeyEventResult.ignored;
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
 
-    final SearchContext? ctx = searchContextFor(
-      NavTab.values[_selectedIndex],
-      context,
+    final SearchContext? ctx = activeSearchContext(
+      tab: NavTab.values[_selectedIndex],
+      personalizationOpen: _personalizationOpen,
+      likesSearchActive: ref.read(likesSearchActiveProvider),
+      context: context,
     );
     if (ctx == null) return KeyEventResult.ignored;
 
@@ -307,7 +332,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         // An extra IndexedStack child, not a tab route — switching tabs hides
         // it. Not kept alive: the subtree is heavy, providers carry the state.
         if (_personalizationOpen)
-          const PersonalizationScreen()
+          PersonalizationScreen(navigatorKey: _personalizationNavKey)
         else
           const SizedBox.shrink(),
       ],
@@ -398,8 +423,12 @@ class _AppShellState extends ConsumerState<AppShell> {
         collectionId,
       };
     }
-    if (request.sourceId != null) {
-      ref.read(browseProvider.notifier).setSource(request.sourceId!);
+    final String? sourceId = request.sourceId;
+    if (sourceId != null) {
+      final BrowseNotifier browse = ref.read(browseProvider.notifier);
+      browse.setSource(sourceId);
+      final Map<String, Object?>? filters = request.filterValues;
+      if (filters != null) unawaited(browse.setOwnFilters(sourceId, filters));
     } else if (request.mediaType != null) {
       ref.read(browseProvider.notifier).setMediaType(request.mediaType!);
     }
@@ -410,11 +439,14 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
-  /// Handles the back button (Android back, Gamepad B).
-  ///
-  /// Returns `true` if navigation was handled; `false` if the app should exit.
+  /// Android back / gamepad B; `false` means the app should exit.
   bool _handleBack() {
     if (_personalizationOpen) {
+      final NavigatorState? hubNav = _personalizationNavKey.currentState;
+      if (hubNav != null && hubNav.canPop()) {
+        hubNav.pop();
+        return true;
+      }
       setState(() => _personalizationOpen = false);
       return true;
     }

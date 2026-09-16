@@ -84,7 +84,4 @@ class KitsuAnimeSource extends SearchSource {
       currentPage: page,
     );
   }
-
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

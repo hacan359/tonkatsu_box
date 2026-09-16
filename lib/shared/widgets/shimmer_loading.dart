@@ -37,8 +37,12 @@ class _ShimmerTimeline {
     _ticker?.dispose();
     _ticker = null;
     // The next batch starts a fresh Ticker from zero elapsed, so leaving the
-    // old phase behind would make its first frame jump mid-sweep.
-    phase.value = 0;
+    // old phase behind would make its first frame jump mid-sweep. Deferred:
+    // release runs from didChangeDependencies / dispose, and notifying the
+    // boxes still listening would rebuild them mid-build.
+    SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+      if (_clients == 0) phase.value = 0;
+    });
   }
 
   void _onTick(Duration elapsed) {

@@ -1,5 +1,6 @@
 import 'package:core/models/anilist_tag.dart';
 import 'package:core/models/anime.dart';
+import 'package:core/models/anilist_studio.dart';
 import 'package:core/models/manga.dart';
 
 import 'anilist_graphql_client.dart';
@@ -67,6 +68,8 @@ class AniListMediaApi {
     String? format,
     int? startYear,
     int? endYear,
+    String? season,
+    int? seasonYear,
     String sort = 'POPULARITY_DESC',
     int page = 1,
     int perPage = 20,
@@ -84,6 +87,8 @@ class AniListMediaApi {
     }
     if (status != null) variables['status'] = status;
     if (format != null) variables['format'] = format;
+    if (season != null) variables['season'] = season;
+    if (seasonYear != null) variables['seasonYear'] = seasonYear;
     _addFuzzyDateRange(variables, startYear, endYear);
 
     final Map<String, dynamic> body = await _client.post(
@@ -92,6 +97,37 @@ class AniListMediaApi {
       errorContext: 'Failed to search anime',
     );
     return AniListMediaParser.animePage(_client.unwrapData(body));
+  }
+
+  Future<List<AniListStudio>> searchStudios(
+    String query, {
+    int perPage = 10,
+  }) async {
+    final String trimmed = query.trim();
+    if (trimmed.isEmpty) return const <AniListStudio>[];
+    final Map<String, dynamic> body = await _client.post(
+      query: AniListQueries.studioSearch,
+      variables: <String, dynamic>{'search': trimmed, 'perPage': perPage},
+      errorContext: 'Failed to search studios',
+    );
+    return AniListMediaParser.studios(_client.unwrapData(body));
+  }
+
+  Future<(List<Anime>, bool hasMore, int totalPages)> browseAnimeByStudio({
+    required String studio,
+    String sort = 'POPULARITY_DESC',
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final Map<String, dynamic> variables =
+        _browseVariables(page: page, perPage: perPage, sort: sort);
+    variables['studio'] = studio;
+    final Map<String, dynamic> body = await _client.post(
+      query: AniListQueries.animeByStudio,
+      variables: variables,
+      errorContext: 'Failed to fetch studio anime',
+    );
+    return AniListMediaParser.animeStudioPage(_client.unwrapData(body));
   }
 
   Future<Manga?> getMangaById(int id) async {

@@ -1,5 +1,3 @@
-import 'package:core/models/media_type.dart';
-import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/services/image_cache_service.dart';
@@ -11,7 +9,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/widgets/genre_chip.dart';
 import '../providers/recommendations_provider.dart';
+import '../utils/recommendation_cover.dart';
 
 /// Section card for one "because you liked …" group: reason header, the
 /// cluster's genre chips and a horizontal carousel of recommended titles.
@@ -116,7 +116,7 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                     runSpacing: AppSpacing.xs,
                     children: <Widget>[
                       for (final String genre in widget.genres)
-                        _GenreChip(genre),
+                        GenreChip(genre),
                     ],
                   ),
                 ],
@@ -147,39 +147,7 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
                     final RecommendedItem item = widget.items[index];
                     final bool isOwned = widget.ownedIds.contains(item.tasteId);
                     final ({ImageType type, String id}) cache =
-                        switch (item.mediaType) {
-                          MediaType.movie => (
-                            type: ImageType.moviePoster,
-                            id: coverImageId(
-                              mediaType: MediaType.movie,
-                              externalId: item.externalId,
-                              source: item.source,
-                            ),
-                          ),
-                          MediaType.anime => (
-                            type: ImageType.animeCover,
-                            id: coverImageId(
-                              mediaType: MediaType.anime,
-                              externalId: item.externalId,
-                              source: item.source,
-                            ),
-                          ),
-                          MediaType.manga => (
-                            type: ImageType.mangaCover,
-                            id: coverImageId(
-                              mediaType: MediaType.manga,
-                              externalId: item.externalId,
-                              source: item.source,
-                            ),
-                          ),
-                          _ => (
-                            type: ImageType.tvShowPoster,
-                            id: coverImageId(
-                              mediaType: MediaType.tvShow,
-                              externalId: item.externalId,
-                            ),
-                          ),
-                        };
+                        recommendationCoverCache(item);
                     // Constant wrapper shape: toggling Opacity/IgnorePointer
                     // structurally would re-parent and reload the poster.
                     return SizedBox(
@@ -227,31 +195,6 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
             height: AppSpacing.md - AppSpacing.posterRowVerticalPadding,
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// A pill chip for one of a row's rationale genres.
-class _GenreChip extends StatelessWidget {
-  const _GenreChip(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: 3,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
       ),
     );
   }

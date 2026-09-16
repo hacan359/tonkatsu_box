@@ -86,7 +86,4 @@ class OpenLibrarySource extends SearchSource {
       currentPage: page,
     );
   }
-
-  @override
-  Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
 }

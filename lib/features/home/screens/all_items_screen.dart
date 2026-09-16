@@ -1,9 +1,9 @@
-import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/tag.dart';
+import 'package:core/utils/item_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,12 +25,15 @@ import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../../shared/widgets/min_height_body.dart';
 import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
+import '../../collections/helpers/item_editability.dart';
 import '../../collections/helpers/tracker_card_progress.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
+import '../../collections/screens/collection_screen.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../../collections/widgets/bulk_action_bar.dart';
 import '../../collections/widgets/selectable_poster_card.dart';
@@ -77,35 +80,36 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Set<ItemStatus> filterStatuses =
         ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
-    final String searchQuery = ref.watch(homeSearchQueryProvider);
+    final ItemSearch search =
+        ref.watch(itemSearchProvider(ref.watch(homeSearchQueryProvider)));
 
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
     final List<CollectionItem> visibleItems =
-        _applyFilter(
-            allItems, filterStatuses, favoriteOnly, tagsMap, searchQuery);
+        _applyFilter(allItems, filterStatuses, favoriteOnly, search);
 
-    return Column(
-      children: <Widget>[
-        _buildMediaTypeBar(
-            itemsAsync, filterStatuses, favoriteOnly, tagsMap, searchQuery),
-        SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-        _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
-        Expanded(
-          child: itemsAsync.when(
-            data: (List<CollectionItem> items) {
-              if (visibleItems.isEmpty) {
-                return _buildEmptyState(items.isEmpty);
-              }
-              return _buildGridView(
-                  visibleItems, collectionNames, tagsMap, itemTags);
-            },
-            loading: () => const Center(child: LogoLoader()),
-            error: (Object error, StackTrace stack) =>
-                _buildErrorState(error),
+    return MinHeightBody(
+      child: Column(
+        children: <Widget>[
+          _buildMediaTypeBar(itemsAsync, filterStatuses, favoriteOnly, search),
+          SubfilterBar(groups: _subfilterGroups(itemsAsync)),
+          _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
+          Expanded(
+            child: itemsAsync.when(
+              data: (List<CollectionItem> items) {
+                if (visibleItems.isEmpty) {
+                  return _buildEmptyState(items.isEmpty);
+                }
+                return _buildGridView(
+                    visibleItems, collectionNames, tagsMap, itemTags);
+              },
+              loading: () => const Center(child: LogoLoader()),
+              error: (Object error, StackTrace stack) =>
+                  _buildErrorState(error),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -113,18 +117,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     List<CollectionItem> items,
     Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
-    Map<int, Tag> tagsMap,
-    String searchQuery,
+    ItemSearch search,
   ) {
-    final String query = searchQuery.toLowerCase();
-    final String lang =
-        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     return items
         .where((CollectionItem item) =>
             (_selectedTypes.isEmpty ||
                 item.matchesTypeFilter(_selectedTypes)) &&
-            _matchesNonTypeFilters(
-                item, filterStatuses, favoriteOnly, tagsMap, query, lang))
+            _matchesNonTypeFilters(item, filterStatuses, favoriteOnly, search))
         .toList();
   }
 
@@ -132,9 +131,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     CollectionItem item,
     Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
-    Map<int, Tag> tagsMap,
-    String lowerQuery,
-    String animeMangaTitleLanguage,
+    ItemSearch search,
   ) {
     if (favoriteOnly && !item.isFavorite) return false;
     if (filterStatuses.isNotEmpty && !filterStatuses.contains(item.status)) {
@@ -148,30 +145,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     )) {
       return false;
     }
-    if (lowerQuery.isNotEmpty) {
-      final bool match = item
-              .displayName(animeMangaTitleLanguage)
-              .toLowerCase()
-              .contains(lowerQuery) ||
-          _matchesTagName(item, tagsMap, lowerQuery) ||
-          (item.userComment?.toLowerCase().contains(lowerQuery) ?? false) ||
-          (item.authorComment?.toLowerCase().contains(lowerQuery) ?? false) ||
-          _matchesCreator(item, lowerQuery);
-      if (!match) return false;
-    }
-    return true;
-  }
-
-  /// Albums also match by artist, books by author — "pink floyd" should find
-  /// the album even though the query is not in its title.
-  static bool _matchesCreator(CollectionItem item, String lowerQuery) {
-    final List<String> creators = switch (item.mediaType) {
-      MediaType.audio => item.audioItem?.artists ?? const <String>[],
-      MediaType.book => item.book?.authors ?? const <String>[],
-      _ => const <String>[],
-    };
-    return creators
-        .any((String name) => name.toLowerCase().contains(lowerQuery));
+    return search.matches(item);
   }
 
   /// Chevron bar: media types (multi-select) plus the status dropdown as
@@ -180,12 +154,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     AsyncValue<List<CollectionItem>> itemsAsync,
     Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
-    Map<int, Tag> tagsMap,
-    String searchQuery,
+    ItemSearch search,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
-    final Map<MediaType, int> counts = _countByMediaType(
-        items, filterStatuses, favoriteOnly, tagsMap, searchQuery);
+    final Map<MediaType, int> counts =
+        _countByMediaType(items, filterStatuses, favoriteOnly, search);
     final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
@@ -407,35 +380,18 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return totals;
   }
 
-  /// True when any of the item's tags matches the search query.
-  bool _matchesTagName(
-    CollectionItem item,
-    Map<int, Tag> tagsMap,
-    String lowerQuery,
-  ) {
-    final List<int>? ids = ref.read(itemTagsProvider).valueOrNull?[item.id];
-    if (ids == null) return false;
-    return ids.any((int id) =>
-        tagsMap[id]?.name.toLowerCase().contains(lowerQuery) ?? false);
-  }
-
   /// Applies every active filter except the media-type one, so each chevron
   /// shows how many items would be visible if the user picked it.
   Map<MediaType, int> _countByMediaType(
     List<CollectionItem>? items,
     Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
-    Map<int, Tag> tagsMap,
-    String searchQuery,
+    ItemSearch search,
   ) {
     if (items == null) return <MediaType, int>{};
-    final String lower = searchQuery.toLowerCase();
-    final String lang =
-        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
     final Map<MediaType, int> counts = <MediaType, int>{};
     for (final CollectionItem item in items) {
-      if (!_matchesNonTypeFilters(
-          item, filterStatuses, favoriteOnly, tagsMap, lower, lang)) {
+      if (!_matchesNonTypeFilters(item, filterStatuses, favoriteOnly, search)) {
         continue;
       }
       for (final MediaType bucket in item.filterTypeBuckets) {
@@ -464,6 +420,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     final List<_CollectionGroup> groups =
         _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
+    final bool selectionActive = ref.watch(
+      allItemsSelectionProvider.select((Set<int> s) => s.isNotEmpty),
+    );
 
     return RefreshIndicator(
       onRefresh: () =>
@@ -475,6 +434,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               child: _buildCollectionDivider(
                 groups[i],
                 isFirst: i == 0,
+                selectionActive: selectionActive,
               ),
             ),
             if (groups[i].isUncategorized)
@@ -541,6 +501,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             ? (collectionNames[colId] ?? 'Unknown')
             : uncategorizedLabel;
         final _CollectionGroup group = _CollectionGroup(
+          collectionId: colId,
           name: name,
           items: <CollectionItem>[item],
           isUncategorized: colId == null,
@@ -560,6 +521,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildCollectionDivider(
     _CollectionGroup group, {
     required bool isFirst,
+    required bool selectionActive,
   }) {
     final Color accent =
         group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
@@ -586,19 +548,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Flexible(
-                child: Container(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  decoration: BoxDecoration(
-                    border:
-                        Border(bottom: BorderSide(color: accent, width: 3)),
-                  ),
-                  child: Text(
-                    group.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
-                  ),
+                child: _CollectionGroupTitle(
+                  name: group.name,
+                  accent: accent,
+                  // Leaving the screen mid-selection would drop the picks.
+                  onTap: selectionActive
+                      ? null
+                      : () => _openCollection(group.collectionId),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -731,17 +687,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  bool _isItemEditable(CollectionItem item) {
-    if (item.isUncategorized) return true;
-    final List<Collection>? collections =
-        ref.read(collectionsProvider).valueOrNull;
-    final Collection? collection =
-        collections?.cast<Collection?>().firstWhere(
-      (Collection? c) => c?.id == item.collectionId,
-      orElse: () => null,
-    );
-    return collection?.isEditable ?? false;
-  }
+  bool _isItemEditable(CollectionItem item) =>
+      isItemEditable(item, ref.read(collectionsProvider).valueOrNull);
 
   Future<void> _showItemContextMenu(Offset position, CollectionItem item) async {
     if (!_isItemEditable(item)) return;
@@ -827,14 +774,24 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
   }
 
-  void _showItemDetails(
-    CollectionItem item,
-    Map<int, String> collectionNames,
-  ) {
-    final bool isEditable = _isItemEditable(item);
-
+  void _openCollection(int? collectionId) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            CollectionScreen(collectionId: collectionId),
+      ),
+    );
+  }
+
+  Future<void> _showItemDetails(
+    CollectionItem item,
+    Map<int, String> collectionNames,
+  ) async {
+    final bool isEditable = _isItemEditable(item);
+
+    final MetaSearchRequest? request =
+        await Navigator.of(context).push<MetaSearchRequest?>(
+      MaterialPageRoute<MetaSearchRequest?>(
         builder: (BuildContext context) => ItemDetailScreen(
           collectionId: item.collectionId,
           itemId: item.id,
@@ -842,6 +799,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ),
       ),
     );
+    if (request == null || !mounted) return;
+    applyMetaSearch(ref, homeSearchQueryProvider, request.query);
   }
 
   static int? _yearFor(CollectionItem item) {
@@ -915,12 +874,54 @@ class _MediaTypeEntry {
   String get displayLabel => count > 0 ? '$label ($count)' : label;
 }
 
+/// Underlined group name; tappable when it leads to a collection screen.
+class _CollectionGroupTitle extends StatelessWidget {
+  const _CollectionGroupTitle({
+    required this.name,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final String name;
+  final Color accent;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget label = Container(
+      padding: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: accent, width: 3)),
+      ),
+      child: Text(
+        name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTypography.h2.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+    if (onTap == null) return label;
+    return Tooltip(
+      message: S.of(context).openCollection,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        onTap: onTap,
+        child: label,
+      ),
+    );
+  }
+}
+
 class _CollectionGroup {
   _CollectionGroup({
+    required this.collectionId,
     required this.name,
     required this.items,
     this.isUncategorized = false,
   });
+
+  /// Null for the uncategorized group, which CollectionScreen also takes.
+  final int? collectionId;
   final String name;
   final List<CollectionItem> items;
   final bool isUncategorized;

@@ -1,19 +1,19 @@
-# 0.43.0
+# 0.44.0
 
-**Audio joins the library.** Music albums from MusicBrainz and podcasts from Podcast Index live in one new tab, with
-cover art, new releases and trending rows, and listened marks per track and per episode — albums get the edition
-picker and its track list, podcasts a dated episode checklist.
+**だってばよ 0.44**
 
-The rest of the release, in short:
+**The personalization hub got a rebuild.** It opens on cards for Statistics, Recommendations, Showcase and Likes,
+each with a live preview. Showcase is new: release boards for anime, films, episodes, games and albums.
 
-- A new "Ignored" status for titles you keep but deliberately park.
-- Five collection banner styles — Classic, Comic, Sticker album, Brutalist and Strips — each showing the collection's
-  status breakdown and carrying its title.
-- The status filter takes several statuses at once.
-- Tag dialogs unified: search, quick-create, in-place editing and a remembered sort order.
-- On wide screens tags moved to a chip bar above the grid, with per-collection counts.
-- Faster sorting on large collections, instant covers from the cache, less animation work on phones.
-- Self-hosted web build: ScreenScraper works, and collection background images can be picked in the browser.
+- Search the library by details: genre, studio, author, tag, label or year. Chips on an item card run that search.
+- Likes, notes and replays: everything you hearted, noted or went through twice, grouped by title.
+- "Started and finished this day" on the item card fills both dates and marks the title Completed.
+- Anime search by studio on the AniList tab.
+- Text size slider in Settings.
+- A collection name on the All items screen opens that collection.
+- Search opens empty; poster feeds moved to the showcase.
+- Search inside a collection matches album artists and book authors.
+- IGDB search finds titles made of common words, such as "Until Then".
 
 A friendly reminder: our cozy [Discord](https://discord.gg/JZVNPF7cS2) server is where you can directly influence
 which features get built. And if you use the app but have not starred it on
