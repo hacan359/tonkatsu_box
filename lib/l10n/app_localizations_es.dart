@@ -6180,6 +6180,29 @@ class SEs extends S {
   String get markAllListened => 'Marcar todo como escuchado';
 
   @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Enruta el tráfico de la app por un proxy local para alcanzar fuentes bloqueadas';
+
+  @override
+  String get settingsProxyHint =>
+      'Apunta al puerto local que expone tu VPN (el puerto mixto de Clash suele ser 7890 para HTTP, 7891 para SOCKS5). Desactivado = conexión directa, como antes.';
+
+  @override
+  String get settingsProxyEnabled => 'Habilitar proxy';
+
+  @override
+  String get settingsProxyType => 'Tipo';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Puerto';
+
+  @override
   String get importStageReading => 'Leyendo archivo...';
 
   @override

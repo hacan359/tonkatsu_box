@@ -6160,6 +6160,29 @@ class SPt extends S {
   String get markAllListened => 'Marcar tudo como ouvido';
 
   @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Encaminha o tráfego do app por um proxy local para alcançar fontes bloqueadas';
+
+  @override
+  String get settingsProxyHint =>
+      'Aponte para a porta local exposta pelo seu VPN (a porta mista do Clash costuma ser 7890 para HTTP, 7891 para SOCKS5). Desativado = conexão direta, como antes.';
+
+  @override
+  String get settingsProxyEnabled => 'Ativar proxy';
+
+  @override
+  String get settingsProxyType => 'Tipo';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Porta';
+
+  @override
   String get importStageReading => 'Lendo arquivo...';
 
   @override
