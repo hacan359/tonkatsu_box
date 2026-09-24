@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/utils/duration_formatter.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -103,8 +104,7 @@ class StatsShareCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    l.statsHoursShort(
-                        numberFormat.format(stats.hours.totalHours)),
+                    formatMinutes(stats.hours.totalMinutes, l),
                     style: AppTypography.h1
                         .copyWith(fontSize: 52, height: 1, letterSpacing: -2),
                   ),

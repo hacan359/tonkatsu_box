@@ -74,4 +74,35 @@ void main() {
       verify(() => s.activityDatesCompletionTime('2 weeks')).called(1);
     });
   });
+
+  group('formatMinutes', () {
+    late MockS s;
+
+    setUp(() {
+      s = MockS();
+      when(() => s.runtimeMinutes(any())).thenReturn('MIN');
+      when(() => s.runtimeHours(any())).thenReturn('HOURS');
+      when(() => s.runtimeHoursMinutes(any(), any())).thenReturn('H_MIN');
+    });
+
+    test('should keep minutes under an hour instead of dropping them', () {
+      expect(formatMinutes(22, s), 'MIN');
+      verify(() => s.runtimeMinutes(22)).called(1);
+    });
+
+    test('should show zero as minutes', () {
+      expect(formatMinutes(0, s), 'MIN');
+      verify(() => s.runtimeMinutes(0)).called(1);
+    });
+
+    test('should drop the minute part on whole hours', () {
+      expect(formatMinutes(120, s), 'HOURS');
+      verify(() => s.runtimeHours(2)).called(1);
+    });
+
+    test('should split hours and the remainder', () {
+      expect(formatMinutes(88, s), 'H_MIN');
+      verify(() => s.runtimeHoursMinutes(1, 28)).called(1);
+    });
+  });
 }

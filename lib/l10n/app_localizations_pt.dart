@@ -251,6 +251,12 @@ class SPt extends S {
   String get sortCompletionDateShort => 'Concluído';
 
   @override
+  String get sortReleaseDateDisplay => 'Data de lançamento';
+
+  @override
+  String get sortReleaseDateShort => 'Lançamento';
+
+  @override
   String get sortDateOldest => 'Mais antigos primeiro';
 
   @override
@@ -2255,6 +2261,24 @@ class SPt extends S {
 
   @override
   String get noEpisodesFound => 'Nenhum episódio encontrado';
+
+  @override
+  String get undo => 'Desfazer';
+
+  @override
+  String get episodeUnmarkedSnack => 'Episódio desmarcado';
+
+  @override
+  String get seasonUnmarkedSnack => 'Temporada desmarcada';
+
+  @override
+  String get episodesClearedSnack => 'Marcações de episódios removidas';
+
+  @override
+  String get episodeWatchedDateEdit => 'Data em que assistiu';
+
+  @override
+  String get episodeWatchedDateSelect => 'Quando você assistiu?';
 
   @override
   String episodeWatchedDate(String date) {
@@ -5754,13 +5778,8 @@ class SPt extends S {
   String get statsMetricLikedUnits => 'episódios curtidos';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'horas: manual $manual h · trackers $tracker h · estimado $estimated h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'horas: manual $manual · trackers $tracker · estimado $estimated';
   }
 
   @override
@@ -5794,7 +5813,7 @@ class SPt extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours h · $games jogos';
+    return '$hours · $games jogos';
   }
 
   @override

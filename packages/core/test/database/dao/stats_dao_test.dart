@@ -520,6 +520,124 @@ void main() {
 
         expect(await dao.getEstimatedMinutes(), 0);
       });
+
+      test('should count a completed animated film by its runtime', () async {
+        await insertItem(
+          id: 1,
+          mediaType: 'animation',
+          externalId: 700,
+          status: 'completed',
+          platformId: 0,
+        );
+        await db.insert('movies_cache', <String, Object?>{
+          'tmdb_id': 700,
+          'title': 'Film',
+          'runtime': 90,
+          'cached_at': 1700000000,
+        });
+
+        expect(await dao.getEstimatedMinutes(), 90);
+      });
+
+      group('counter anime', () {
+        Future<void> cacheAnime({
+          int id = 900,
+          int? episodes = 12,
+          int? duration = 24,
+          String source = 'anilist',
+        }) =>
+            db.insert('anime_cache', <String, Object?>{
+              'id': id,
+              'source': source,
+              'title': 'Anime',
+              'episodes': episodes,
+              'duration': duration,
+              'updated_at': 1700000000,
+            });
+
+        test('should multiply watched episodes by the episode length',
+            () async {
+          await insertItem(
+            id: 1,
+            mediaType: 'anime',
+            externalId: 900,
+            status: 'in_progress',
+            currentEpisode: 10,
+          );
+          await cacheAnime();
+
+          expect(await dao.getEstimatedMinutes(), 240);
+        });
+
+        test('should count a completed title in full with a lagging counter',
+            () async {
+          await insertItem(
+            id: 1,
+            mediaType: 'anime',
+            externalId: 900,
+            status: 'completed',
+            currentEpisode: 0,
+          );
+          await cacheAnime(episodes: 1, duration: 105);
+
+          expect(await dao.getEstimatedMinutes(), 105);
+        });
+
+        test('should add a full run per replay', () async {
+          await insertItem(
+            id: 1,
+            mediaType: 'anime',
+            externalId: 900,
+            status: 'completed',
+            currentEpisode: 12,
+            rewatchCount: 1,
+          );
+          await cacheAnime();
+
+          expect(await dao.getEstimatedMinutes(), 576);
+        });
+
+        test('should skip anime that carries manual minutes', () async {
+          await insertItem(
+            id: 1,
+            mediaType: 'anime',
+            externalId: 900,
+            status: 'completed',
+            timeSpentMinutes: 60,
+          );
+          await cacheAnime();
+
+          expect(await dao.getEstimatedMinutes(), 0);
+          expect(await dao.getManualMinutes(), 60);
+        });
+
+        test('should leave Kitsu anime to the episode tracker', () async {
+          await insertItem(
+            id: 1,
+            mediaType: 'anime',
+            externalId: 900,
+            status: 'completed',
+            source: 'kitsu',
+            currentEpisode: 12,
+          );
+          await cacheAnime(source: 'kitsu');
+
+          expect(await dao.getEstimatedMinutes(), 0);
+        });
+
+        test('should give 0 when the source has no episode length', () async {
+          await insertItem(
+            id: 1,
+            mediaType: 'anime',
+            externalId: 900,
+            status: 'completed',
+            currentEpisode: 12,
+          );
+          await cacheAnime(duration: null);
+
+          expect(await dao.getEstimatedMinutes(), 0);
+        });
+      });
     });
 
     group('getAddedByMonth', () {
@@ -843,17 +961,59 @@ void main() {
         expect(await dao.getManualMinutes(), 75);
       });
 
-      test('should exclude movies, whose time comes from the runtime',
+      test('should exclude completed films the runtime already counts',
           () async {
         await insertItem(id: 1, timeSpentMinutes: 30);
         await insertItem(
           id: 2,
           externalId: 101,
           mediaType: 'movie',
+          status: 'completed',
           timeSpentMinutes: 120,
         );
+        await insertItem(
+          id: 3,
+          externalId: 102,
+          mediaType: 'animation',
+          status: 'completed',
+          platformId: 0,
+          timeSpentMinutes: 80,
+        );
+        for (final int id in <int>[101, 102]) {
+          await db.insert('movies_cache', <String, Object?>{
+            'tmdb_id': id,
+            'title': 'Film',
+            'runtime': 100,
+            'cached_at': 1700000000,
+          });
+        }
 
         expect(await dao.getManualMinutes(), 30);
+      });
+
+      test('should keep manual minutes of a film the estimate cannot count',
+          () async {
+        await insertItem(
+          id: 1,
+          mediaType: 'movie',
+          status: 'completed',
+          timeSpentMinutes: 120,
+        );
+        await insertItem(
+          id: 2,
+          externalId: 101,
+          mediaType: 'movie',
+          status: 'in_progress',
+          timeSpentMinutes: 40,
+        );
+        await db.insert('movies_cache', <String, Object?>{
+          'tmdb_id': 101,
+          'title': 'Film',
+          'runtime': 100,
+          'cached_at': 1700000000,
+        });
+
+        expect(await dao.getManualMinutes(), 160);
       });
 
       test('should only sum items added within the year window', () async {

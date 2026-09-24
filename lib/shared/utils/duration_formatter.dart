@@ -33,3 +33,14 @@ String formatCompletionTime(Duration duration, S localizations) {
   final String formattedDuration = formatDuration(duration, localizations);
   return localizations.activityDatesCompletionTime(formattedDuration);
 }
+
+/// Exact to the minute: `22m`, `1h`, `1h 28m`.
+String formatMinutes(int minutes, S localizations) {
+  final int hours = minutes ~/ 60;
+  final int rest = minutes % 60;
+  if (hours > 0 && rest > 0) {
+    return localizations.runtimeHoursMinutes(hours, rest);
+  }
+  if (hours > 0) return localizations.runtimeHours(hours);
+  return localizations.runtimeMinutes(rest);
+}

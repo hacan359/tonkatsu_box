@@ -579,6 +579,18 @@ abstract class S {
   /// **'Finished'**
   String get sortCompletionDateShort;
 
+  /// No description provided for @sortReleaseDateDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Release Date'**
+  String get sortReleaseDateDisplay;
+
+  /// No description provided for @sortReleaseDateShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Released'**
+  String get sortReleaseDateShort;
+
   /// No description provided for @sortDateOldest.
   ///
   /// In en, this message translates to:
@@ -3955,6 +3967,42 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No episodes found'**
   String get noEpisodesFound;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @episodeUnmarkedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Episode unmarked'**
+  String get episodeUnmarkedSnack;
+
+  /// No description provided for @seasonUnmarkedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Season unmarked'**
+  String get seasonUnmarkedSnack;
+
+  /// No description provided for @episodesClearedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Episode marks cleared'**
+  String get episodesClearedSnack;
+
+  /// No description provided for @episodeWatchedDateEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched date'**
+  String get episodeWatchedDateEdit;
+
+  /// No description provided for @episodeWatchedDateSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'When did you watch it?'**
+  String get episodeWatchedDateSelect;
 
   /// No description provided for @episodeWatchedDate.
   ///
@@ -10070,17 +10118,11 @@ abstract class S {
   /// **'liked episodes'**
   String get statsMetricLikedUnits;
 
-  /// No description provided for @statsHoursShort.
-  ///
-  /// In en, this message translates to:
-  /// **'{hours}h'**
-  String statsHoursShort(String hours);
-
   /// No description provided for @statsHoursBreakdown.
   ///
   /// In en, this message translates to:
-  /// **'hours: manual {manual}h · trackers {tracker}h · estimated {estimated}h'**
-  String statsHoursBreakdown(int manual, int tracker, int estimated);
+  /// **'hours: manual {manual} · trackers {tracker} · estimated {estimated}'**
+  String statsHoursBreakdown(String manual, String tracker, String estimated);
 
   /// No description provided for @statsMonthsTitle.
   ///
@@ -10139,7 +10181,7 @@ abstract class S {
   /// No description provided for @statsPlatformsSummary.
   ///
   /// In en, this message translates to:
-  /// **'{hours}h · {games} games'**
+  /// **'{hours} · {games} games'**
   String statsPlatformsSummary(String hours, int games);
 
   /// No description provided for @statsPlatformNone.

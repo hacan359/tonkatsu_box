@@ -75,6 +75,8 @@ import '../widgets/status_chip_row.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/constants/collection_item_ui.dart';
+import '../helpers/episode_undo.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 /// Unified detail screen for any collection item, dispatched off
 /// [CollectionItem.mediaType].
@@ -608,7 +610,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final ItemDetailMediaConfig config =
         ItemDetailMediaConfig.from(item, context);
 
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(item),
       child: Scaffold(
         appBar: ItemDetailAppBar(
@@ -1260,9 +1262,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     ItemStatus status,
     MediaType mediaType,
   ) async {
-    await ref
-        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateStatus(id, status, mediaType);
+    final CollectionItemsNotifier notifier =
+        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
+    final ClearedEpisodeMarks? cleared =
+        await notifier.updateStatus(id, status, mediaType);
+    if (!mounted) return;
+    offerStatusEpisodesUndo(context, notifier, cleared);
   }
 
   /// A null [date] clears the field ("unknown date"); the status is left

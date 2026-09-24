@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/utils/duration_formatter.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -50,7 +51,7 @@ List<StatsHeroMetric> statsHeroMetrics(
         label: l.statsMetricBookPages,
       ),
     StatsHeroMetric(
-      value: l.statsHoursShort(numberFormat.format(stats.hours.totalHours)),
+      value: formatMinutes(stats.hours.totalMinutes, l),
       label: l.statsMetricHours,
     ),
     if (totals.averageRating != null)
@@ -209,9 +210,9 @@ class StatsHoursBreakdown extends StatelessWidget {
     final S l = S.of(context);
     return Text(
       l.statsHoursBreakdown(
-        hours.manualMinutes ~/ 60,
-        hours.trackerMinutes ~/ 60,
-        hours.estimatedMinutes ~/ 60,
+        formatMinutes(hours.manualMinutes, l),
+        formatMinutes(hours.trackerMinutes, l),
+        formatMinutes(hours.estimatedMinutes, l),
       ),
       style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
     );

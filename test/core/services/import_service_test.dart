@@ -2685,6 +2685,82 @@ void main() {
         verify(() => mockDb.setItemOverrideName(42, 'FF7R')).called(1);
       });
 
+      group('time spent', () {
+        XcollFile fileWith(int minutes) => XcollFile(
+              version: 2,
+              format: ExportFormat.light,
+              name: 'Import',
+              author: 'Author',
+              created: testDate,
+              includesUserData: true,
+              items: <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'media_type': 'game',
+                  'external_id': 100,
+                  'time_spent_minutes': minutes,
+                },
+              ],
+            );
+
+        void stubImport({required int? addedId}) {
+          when(() => mockApi.getGamesByIds(any())).thenAnswer(
+              (_) async => const <Game>[Game(id: 100, name: 'G')]);
+          when(() => mockGameDao.upsertGame(any())).thenAnswer((_) async {});
+          when(() => mockRepo.getById(5))
+              .thenAnswer((_) async => createTestCollection(id: 5));
+          when(() => mockRepo.addItem(
+                collectionId: any(named: 'collectionId'),
+                mediaType: any(named: 'mediaType'),
+                externalId: any(named: 'externalId'),
+                platformId: any(named: 'platformId'),
+                authorComment: any(named: 'authorComment'),
+                status: any(named: 'status'),
+                addedAt: any(named: 'addedAt'),
+              )).thenAnswer((_) async => addedId);
+          when(() => mockDb.updateItemTimeSpent(any(), any()))
+              .thenAnswer((_) async {});
+        }
+
+        test('an item whose only user data is hours gets them back',
+            () async {
+          stubImport(addedId: 42);
+
+          final ImportResult result =
+              await sutV2.importFromXcoll(fileWith(754), collectionId: 5);
+
+          expect(result.success, isTrue);
+          verify(() => mockDb.updateItemTimeSpent(42, 754)).called(1);
+        });
+
+        test('zero hours are not written', () async {
+          stubImport(addedId: 42);
+
+          await sutV2.importFromXcoll(fileWith(0), collectionId: 5);
+
+          verifyNever(() => mockDb.updateItemTimeSpent(any(), any()));
+        });
+
+        test('the file value overwrites a different local one on merge',
+            () async {
+          stubImport(addedId: null);
+          when(() => mockRepo.findItem(
+                collectionId: any(named: 'collectionId'),
+                mediaType: any(named: 'mediaType'),
+                externalId: any(named: 'externalId'),
+              )).thenAnswer((_) async => createTestCollectionItem(
+                id: 7,
+                externalId: 100,
+                timeSpentMinutes: 30,
+              ));
+
+          final ImportResult result =
+              await sutV2.importFromXcoll(fileWith(754), collectionId: 5);
+
+          expect(result.itemsUpdated, 1);
+          verify(() => mockDb.updateItemTimeSpent(7, 754)).called(1);
+        });
+      });
+
       test(
           'should clear the dates the status write stamped when the export '
           'has a completed item without them', () async {

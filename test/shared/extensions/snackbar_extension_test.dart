@@ -209,6 +209,38 @@ void main() {
           tester.widget<SnackBar>(find.byType(SnackBar));
       expect(snackBar.duration, const Duration(milliseconds: 500));
     });
+
+    testWidgets('should close a snack with an action once its duration ends',
+        (WidgetTester tester) async {
+      late BuildContext ctx;
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        home: Scaffold(
+          body: Builder(builder: (BuildContext context) {
+            ctx = context;
+            return const SizedBox();
+          }),
+        ),
+      ));
+      ctx.showSnack(
+        'Undo me',
+        duration: const Duration(seconds: 5),
+        countdown: true,
+        action: SnackBarAction(label: 'Undo', onPressed: () {}),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Undo me'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('2'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(find.text('Undo me'), findsNothing);
+    });
   });
 
   group('hideSnack', () {

@@ -21,6 +21,8 @@ class AppPalette {
     required this.textTertiary,
     required this.brand,
     required this.onBrand,
+    required this.brandContainer,
+    required this.onBrandContainer,
     required this.gameAccent,
     required this.movieAccent,
     required this.tvShowAccent,
@@ -73,6 +75,11 @@ class AppPalette {
 
   /// Text/icons drawn on top of [brand]-filled controls.
   final Color onBrand;
+
+  /// Must stay distinct from [brand]: M3 paints hovered switch thumbs, chips
+  /// and badges with it, and an equal color merges them into the track.
+  final Color brandContainer;
+  final Color onBrandContainer;
 
   final Color gameAccent;
   final Color movieAccent;

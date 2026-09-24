@@ -250,6 +250,12 @@ class SZh extends S {
   String get sortCompletionDateShort => '完成';
 
   @override
+  String get sortReleaseDateDisplay => '发行日期';
+
+  @override
+  String get sortReleaseDateShort => '发行';
+
+  @override
   String get sortDateOldest => '最早优先';
 
   @override
@@ -2099,6 +2105,24 @@ class SZh extends S {
 
   @override
   String get noEpisodesFound => '未找到剧集';
+
+  @override
+  String get undo => '撤销';
+
+  @override
+  String get episodeUnmarkedSnack => '已取消标记该集';
+
+  @override
+  String get seasonUnmarkedSnack => '已取消标记该季';
+
+  @override
+  String get episodesClearedSnack => '已清除剧集标记';
+
+  @override
+  String get episodeWatchedDateEdit => '观看日期';
+
+  @override
+  String get episodeWatchedDateSelect => '何时观看？';
 
   @override
   String episodeWatchedDate(String date) {
@@ -5411,13 +5435,8 @@ class SZh extends S {
   String get statsMetricLikedUnits => '点赞的剧集';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours 小时';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return '时长：手动 $manual 小时 · 追踪器 $tracker 小时 · 估算 $estimated 小时';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return '时长：手动 $manual · 追踪器 $tracker · 估算 $estimated';
   }
 
   @override
@@ -5451,7 +5470,7 @@ class SZh extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours 小时 · $games 款游戏';
+    return '$hours · $games 款游戏';
   }
 
   @override

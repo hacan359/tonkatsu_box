@@ -647,6 +647,45 @@ class CollectionItem with Exportable {
   String? get itemDescription => _resolvedMedia.description;
   String? get thumbnailUrl => _resolvedMedia.thumbUrl;
   int? get releaseYear => _resolvedMedia.releaseYear;
+
+  /// Null when the source knows only the year (TMDB, books, custom): the
+  /// release-date sort then orders by [releaseYear] alone.
+  DateTime? get releaseDate {
+    final int? year = releaseYear;
+    if (year == null) return null;
+    final DateTime? date = switch (mediaType) {
+      MediaType.game => game?.releaseDate,
+      MediaType.anime => _dateFromParts(
+          anime?.startYear, anime?.startMonth, anime?.startDay),
+      MediaType.manga => _dateFromParts(
+          manga?.startYear, manga?.startMonth, manga?.startDay),
+      MediaType.visualNovel => _parseIsoDate(visualNovel?.released),
+      MediaType.audio => _parseIsoDate(audioItem?.firstReleaseDate),
+      _ => null,
+    };
+    // AniList season year can differ from the start date; the year wins.
+    return date != null && date.year == year ? date : null;
+  }
+
+  static DateTime? _dateFromParts(int? year, int? month, int? day) {
+    if (year == null || month == null || month < 1 || month > 12) return null;
+    // DateTime silently rolls an out-of-range day into the next month.
+    final int daysInMonth = DateTime(year, month + 1, 0).day;
+    return DateTime(
+        year, month, day != null && day >= 1 && day <= daysInMonth ? day : 1);
+  }
+
+  /// Accepts `YYYY-MM-DD` and `YYYY-MM`; a bare year or `TBA` is null.
+  static DateTime? _parseIsoDate(String? raw) {
+    if (raw == null || raw.length < 7) return null;
+    final List<String> parts = raw.split('-');
+    if (parts.length < 2) return null;
+    final int? year = int.tryParse(parts[0]);
+    final int? month = int.tryParse(parts[1]);
+    final int? day = parts.length > 2 ? int.tryParse(parts[2]) : null;
+    return _dateFromParts(year, month, day);
+  }
+
   int? get runtime => _resolvedMedia.runtime;
   int? get totalSeasons => _resolvedMedia.totalSeasons;
   int? get totalEpisodes => _resolvedMedia.totalEpisodes;

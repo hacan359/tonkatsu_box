@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../constants/platform_features.dart';
 
-/// Returns [child] untouched on mobile, where there is no keyboard.
+/// Returns [child] untouched on mobile, where there is no keyboard. The
+/// Focus exists so a freshly pushed route has focus under its own shortcuts.
 Widget wrapWithScreenShortcuts({
   required Map<ShortcutActivator, VoidCallback> bindings,
   required Widget child,
@@ -14,6 +15,8 @@ Widget wrapWithScreenShortcuts({
     bindings: bindings,
     child: Focus(
       autofocus: autofocus,
+      // A whole-screen node is invisible; Tab and D-pad must skip it.
+      skipTraversal: true,
       child: child,
     ),
   );

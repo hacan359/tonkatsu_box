@@ -31,6 +31,7 @@ import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
 import 'app_sidebar.dart';
 import 'app_top_bar.dart';
+import 'nav_destinations.dart';
 import 'nav_tab.dart';
 import 'search_providers.dart';
 
@@ -148,13 +149,11 @@ class _AppShellState extends ConsumerState<AppShell> {
       },
       child: CallbackShortcuts(
         bindings: buildGlobalShortcuts(
-          onSwitchTab: _onDestinationSelected,
-          onNextTab: () => _onDestinationSelected(
-            (_selectedIndex + 1) % _tabCount,
-          ),
-          onPreviousTab: () => _onDestinationSelected(
-            (_selectedIndex - 1 + _tabCount) % _tabCount,
-          ),
+          onSwitchSlot: (int slot) => _openSlot(kNavSlotOrder[slot]),
+          onOpenSettings: () =>
+              _onDestinationSelected(NavTab.settings.index),
+          onNextTab: () => _stepSlot(forward: true),
+          onPreviousTab: () => _stepSlot(forward: false),
           onBack: () => _handleBack(),
           onSearch: () => _onDestinationSelected(NavTab.search.index),
           onRefresh: _onRefresh,
@@ -274,6 +273,14 @@ class _AppShellState extends ConsumerState<AppShell> {
   KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
     if (kIsMobile) return KeyEventResult.ignored;
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    // This Focus sits under the global shortcuts, so a chord carrying a
+    // character (Ctrl+4) would be typed instead of firing. AltGr is Ctrl+Alt.
+    final HardwareKeyboard keyboard = HardwareKeyboard.instance;
+    final bool ctrl = keyboard.isControlPressed;
+    final bool alt = keyboard.isAltPressed;
+    if (keyboard.isMetaPressed || (ctrl != alt)) {
       return KeyEventResult.ignored;
     }
 
@@ -465,6 +472,17 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   /// Shortcut groups for the current tab (for the F1 dialog).
   List<ShortcutGroup> _currentScreenShortcutGroups(S l) {
+    // The hub covers the tab beneath it; that tab's keys do not apply.
+    if (_personalizationOpen) {
+      return <ShortcutGroup>[
+        ShortcutGroup(
+          title: l.personalizationTitle,
+          entries: <ShortcutEntry>[
+            ShortcutEntry(keys: 'Escape', description: l.back),
+          ],
+        ),
+      ];
+    }
     return switch (NavTab.values[_selectedIndex]) {
       NavTab.home => const <ShortcutGroup>[],
       NavTab.releases => const <ShortcutGroup>[],
@@ -491,11 +509,23 @@ class _AppShellState extends ConsumerState<AppShell> {
     tabNav.popUntil((Route<dynamic> route) => route.isFirst);
   }
 
-  void _onGamepadTabSwitch(GamepadAction action) {
-    final int newIndex = action == GamepadAction.nextTab
-        ? (_selectedIndex + 1) % _tabCount
-        : (_selectedIndex - 1 + _tabCount) % _tabCount;
-    _onDestinationSelected(newIndex);
+  void _onGamepadTabSwitch(GamepadAction action) =>
+      _stepSlot(forward: action == GamepadAction.nextTab);
+
+  void _stepSlot({required bool forward}) => _openSlot(navStepSlot(
+        current: NavTab.values[_selectedIndex],
+        centerActive: _personalizationOpen,
+        forward: forward,
+      ));
+
+  /// `null` is Personalization; it goes through [_openPreferenceCloud] so a
+  /// repeat press returns to the hub root, like a tab does.
+  void _openSlot(NavTab? tab) {
+    if (tab == null) {
+      _openPreferenceCloud();
+    } else {
+      _onDestinationSelected(tab.index);
+    }
   }
 
   /// D-pad → move focus via DirectionalFocusIntent.

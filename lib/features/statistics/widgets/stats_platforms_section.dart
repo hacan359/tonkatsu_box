@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/utils/duration_formatter.dart';
 import '../../../shared/constants/media_type_ui.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -50,7 +51,7 @@ class _StatsPlatformsSectionState extends State<StatsPlatformsSection> {
         StatsSectionHeader(
           title: MediaType.game.localizedPluralLabel(l),
           hint: l.statsPlatformsSummary(
-            numberFormat.format(totalMinutes ~/ 60),
+            formatMinutes(totalMinutes, l),
             totalGames,
           ),
         ),
@@ -159,7 +160,7 @@ class _PlatformCard extends StatelessWidget {
           Text(
             <String>[
               platform.minutes > 0
-                  ? l.statsHoursShort(numberFormat.format(platform.hours))
+                  ? formatMinutes(platform.minutes, l)
                   : '—',
               l.statsCompletedPercent(platform.statusCounts.completedPercent),
             ].join(' · '),

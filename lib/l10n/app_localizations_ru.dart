@@ -251,6 +251,12 @@ class SRu extends S {
   String get sortCompletionDateShort => 'Завершено';
 
   @override
+  String get sortReleaseDateDisplay => 'Дата выхода';
+
+  @override
+  String get sortReleaseDateShort => 'Выход';
+
+  @override
   String get sortDateOldest => 'Сначала старые';
 
   @override
@@ -2269,6 +2275,24 @@ class SRu extends S {
 
   @override
   String get noEpisodesFound => 'Эпизоды не найдены';
+
+  @override
+  String get undo => 'Отменить';
+
+  @override
+  String get episodeUnmarkedSnack => 'Отметка серии снята';
+
+  @override
+  String get seasonUnmarkedSnack => 'Отметки сезона сняты';
+
+  @override
+  String get episodesClearedSnack => 'Отметки серий сняты';
+
+  @override
+  String get episodeWatchedDateEdit => 'Дата просмотра';
+
+  @override
+  String get episodeWatchedDateSelect => 'Когда посмотрели?';
 
   @override
   String episodeWatchedDate(String date) {
@@ -5799,13 +5823,8 @@ class SRu extends S {
   String get statsMetricLikedUnits => 'лайкнутых эпизодов';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours ч';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'часы: вручную $manual ч · трекеры $tracker ч · оценка $estimated ч';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'часы: вручную $manual · трекеры $tracker · оценка $estimated';
   }
 
   @override
@@ -5839,7 +5858,7 @@ class SRu extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours ч · $games игр';
+    return '$hours · $games игр';
   }
 
   @override

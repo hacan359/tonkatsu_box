@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/statistics/models/library_stats.dart';
 import 'package:tonkatsu_box/features/statistics/widgets/stats_period_picker.dart';
@@ -60,6 +61,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(chosen, const StatsPeriod.year(2023));
+    });
+
+    testWidgets('should take keyboard focus and open from Enter', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(_pinned(StatsPeriodPicker(data: data())));
+
+      // Tab reaches the picker: it is focusable, not a painted box.
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+
+      expect(find.text('2023'), findsOneWidget);
     });
 
     testWidgets('should keep its size as periods are added', (

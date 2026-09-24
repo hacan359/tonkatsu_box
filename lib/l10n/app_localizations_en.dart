@@ -251,6 +251,12 @@ class SEn extends S {
   String get sortCompletionDateShort => 'Finished';
 
   @override
+  String get sortReleaseDateDisplay => 'Release Date';
+
+  @override
+  String get sortReleaseDateShort => 'Released';
+
+  @override
   String get sortDateOldest => 'Oldest first';
 
   @override
@@ -2224,6 +2230,24 @@ class SEn extends S {
 
   @override
   String get noEpisodesFound => 'No episodes found';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get episodeUnmarkedSnack => 'Episode unmarked';
+
+  @override
+  String get seasonUnmarkedSnack => 'Season unmarked';
+
+  @override
+  String get episodesClearedSnack => 'Episode marks cleared';
+
+  @override
+  String get episodeWatchedDateEdit => 'Watched date';
+
+  @override
+  String get episodeWatchedDateSelect => 'When did you watch it?';
 
   @override
   String episodeWatchedDate(String date) {
@@ -5700,13 +5724,8 @@ class SEn extends S {
   String get statsMetricLikedUnits => 'liked episodes';
 
   @override
-  String statsHoursShort(String hours) {
-    return '${hours}h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'hours: manual ${manual}h · trackers ${tracker}h · estimated ${estimated}h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'hours: manual $manual · trackers $tracker · estimated $estimated';
   }
 
   @override
@@ -5740,7 +5759,7 @@ class SEn extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '${hours}h · $games games';
+    return '$hours · $games games';
   }
 
   @override

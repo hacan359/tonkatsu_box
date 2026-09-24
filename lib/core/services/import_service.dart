@@ -561,7 +561,8 @@ class ImportService {
         parsed.currentEpisode > 0 ||
         parsed.overrideName != null ||
         parsed.isFavorite ||
-        parsed.rewatchCount != null;
+        parsed.rewatchCount != null ||
+        parsed.timeSpentMinutes > 0;
   }
 
   Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {
@@ -588,6 +589,10 @@ class ImportService {
     }
     if (parsed.isFavorite) {
       await _database.setItemFavorite(itemId, isFavorite: true);
+    }
+    // A restore returns the saved state, so the file overwrites local hours.
+    if (parsed.timeSpentMinutes > 0) {
+      await _database.updateItemTimeSpent(itemId, parsed.timeSpentMinutes);
     }
     // The status write above stamps started/completed with "now"; the file's
     // values must win over that bump — including explicit nulls.

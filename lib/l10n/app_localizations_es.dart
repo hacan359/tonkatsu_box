@@ -251,6 +251,12 @@ class SEs extends S {
   String get sortCompletionDateShort => 'Terminado';
 
   @override
+  String get sortReleaseDateDisplay => 'Fecha de lanzamiento';
+
+  @override
+  String get sortReleaseDateShort => 'Lanzamiento';
+
+  @override
   String get sortDateOldest => 'Más antiguos primero';
 
   @override
@@ -2266,6 +2272,24 @@ class SEs extends S {
 
   @override
   String get noEpisodesFound => 'No se encontraron episodios';
+
+  @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get episodeUnmarkedSnack => 'Episodio desmarcado';
+
+  @override
+  String get seasonUnmarkedSnack => 'Temporada desmarcada';
+
+  @override
+  String get episodesClearedSnack => 'Marcas de episodios borradas';
+
+  @override
+  String get episodeWatchedDateEdit => 'Fecha de visionado';
+
+  @override
+  String get episodeWatchedDateSelect => '¿Cuándo lo viste?';
 
   @override
   String episodeWatchedDate(String date) {
@@ -5771,13 +5795,8 @@ class SEs extends S {
   String get statsMetricLikedUnits => 'episodios con me gusta';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'horas: manual $manual h · trackers $tracker h · estimado $estimated h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'horas: manual $manual · trackers $tracker · estimado $estimated';
   }
 
   @override
@@ -5811,7 +5830,7 @@ class SEs extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours h · $games juegos';
+    return '$hours · $games juegos';
   }
 
   @override

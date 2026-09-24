@@ -20,6 +20,7 @@ import '../../mood_grids/widgets/create_mood_grid_dialog.dart';
 import '../providers/tier_lists_provider.dart';
 import '../widgets/create_tier_list_dialog.dart';
 import 'tier_list_detail_screen.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 /// When [collectionId] is set, shows only that collection's tier lists;
 /// when null, shows all tier lists (the global navigation tab).
@@ -59,7 +60,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
 
     final String searchQuery = ref.watch(tierListsSearchQueryProvider);
 
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: kIsMobile
           ? const <ShortcutActivator, VoidCallback>{}
           : <ShortcutActivator, VoidCallback>{

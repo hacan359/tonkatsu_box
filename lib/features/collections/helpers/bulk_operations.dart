@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/database/dao/tier_list_dao.dart';
 import 'package:core/models/collection_item.dart';
@@ -158,6 +160,7 @@ class BulkOperations {
         status,
         mediaType: item.mediaType,
       );
+      unawaited(syncEpisodesToStatus(ref.read, item, status));
       changedIds.add(item.id);
       affectedCollections.add(item.collectionId);
     }

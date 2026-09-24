@@ -34,6 +34,7 @@ import '../widgets/import_progress_dialog.dart';
 import '../widgets/tag_management_dialog.dart';
 import 'collection_screen.dart';
 import '../../../shared/constants/collection_list_sort_mode_ui.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -70,7 +71,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final String searchQuery = ref.watch(collectionsSearchQueryProvider);
 
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(ref),
       child: Stack(
         children: <Widget>[

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/database/dao/tier_list_dao.dart';
@@ -426,6 +428,43 @@ final NotifierProviderFamily<CollectionItemsNotifier,
   CollectionItemsNotifier.new,
 );
 
+/// What leaving `completed` erased: the item as it was and its marks.
+typedef ClearedEpisodeMarks = ({CollectionItem before, WatchedMarks marks});
+
+/// Reverse of the tracker's auto-status. Marking runs in the background (it
+/// may hit the API); the future completes with what an unmark erased.
+Future<WatchedMarks> syncEpisodesToStatus(
+  T Function<T>(ProviderListenable<T> provider) read,
+  CollectionItem before,
+  ItemStatus newStatus, {
+  DateTime? completedAt,
+}) async {
+  const WatchedMarks none = <(int, int), DateTime?>{};
+  final bool entering = newStatus == ItemStatus.completed;
+  final bool leaving = before.status == ItemStatus.completed;
+  // Building a tracker costs DB reads; only a completed edge needs one.
+  if (before.status == newStatus ||
+      !before.usesEpisodeTracker ||
+      (!entering && !leaving)) {
+    return none;
+  }
+  final EpisodeTrackerNotifier tracker = read(
+    episodeTrackerNotifierProvider((
+      collectionId: before.collectionId,
+      showId: before.externalId,
+      source: before.dataSource,
+    )).notifier,
+  );
+  if (entering) {
+    unawaited(tracker.markAllWatched(at: completedAt));
+    return none;
+  }
+  return tracker.unmarkAllWatched();
+}
+
+CollectionItem? _findLoaded(AsyncValue<List<CollectionItem>> items, int id) =>
+    items.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+
 class CollectionItemsNotifier
     extends FamilyNotifier<AsyncValue<List<CollectionItem>>, int?> {
   late CollectionRepository _repository;
@@ -829,9 +868,18 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Date logic lives in [computeDatesForStatus] — shared with external sync
-  /// (e.g. Kodi) that passes a custom `now`.
-  Future<void> updateStatus(int id, ItemStatus status, MediaType mediaType) async {
+  /// Non-null when leaving `completed` erased episode marks, for an undo. The
+  /// tracker passes `syncEpisodes: false`: its own marks caused the change.
+  Future<ClearedEpisodeMarks?> updateStatus(
+    int id,
+    ItemStatus status,
+    MediaType mediaType, {
+    bool syncEpisodes = true,
+  }) async {
+    // All Items calls in before this collection has loaded; its own list
+    // still knows the old status.
+    final CollectionItem? before = _findLoaded(state, id) ??
+        _findLoaded(ref.read(allItemsNotifierProvider), id);
     await _repository.updateItemStatus(id, status, mediaType: mediaType);
 
     final DateTime now = DateTime.now();
@@ -848,6 +896,57 @@ class CollectionItemsNotifier
     ref
         .read(allItemsNotifierProvider.notifier)
         .updateStatusLocally(id, status);
+
+    if (!syncEpisodes || before == null) return null;
+    final WatchedMarks cleared =
+        await syncEpisodesToStatus(ref.read, before, status, completedAt: now);
+    return cleared.isEmpty ? null : (before: before, marks: cleared);
+  }
+
+  /// Undo for [updateStatus] leaving `completed`: status, dates, replay count
+  /// and every mark come back as they were, with no auto-status in between.
+  Future<void> restoreCompleted(ClearedEpisodeMarks cleared) async {
+    final CollectionItem before = cleared.before;
+    await updateStatus(
+      before.id,
+      before.status,
+      before.mediaType,
+      syncEpisodes: false,
+    );
+    // The completed transition just stamped "now" and may have bumped the
+    // replay counter; the snapshot wins.
+    await _repository.updateItemActivityDates(
+      before.id,
+      startedAt: before.startedAt,
+      completedAt: before.completedAt,
+      lastActivityAt: before.lastActivityAt,
+      clearStartedAt: before.startedAt == null,
+      clearCompletedAt: before.completedAt == null,
+    );
+    await _repository.updateItemRewatchCount(before.id, before.rewatchCount);
+    _patchItem(
+      before.id,
+      (CollectionItem i) => i.copyWith(
+        startedAt: before.startedAt,
+        completedAt: before.completedAt,
+        lastActivityAt: before.lastActivityAt,
+        clearStartedAt: before.startedAt == null,
+        clearCompletedAt: before.completedAt == null,
+        rewatchCount: before.rewatchCount,
+      ),
+      affects: const <CollectionSortMode>{
+        CollectionSortMode.startDate,
+        CollectionSortMode.completionDate,
+        CollectionSortMode.lastActivity,
+      },
+    );
+    await ref
+        .read(episodeTrackerNotifierProvider((
+          collectionId: before.collectionId,
+          showId: before.externalId,
+          source: before.dataSource,
+        )).notifier)
+        .restoreWatched(cleared.marks, syncStatus: false);
   }
 
   /// Flips the favorite flag based on the current (loaded) state.
@@ -964,6 +1063,12 @@ class CollectionItemsNotifier
 
     if (newStatus != null && mediaType != null) {
       await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
+      final CollectionItem? before =
+          items?.where((CollectionItem i) => i.id == id).firstOrNull;
+      if (before != null) {
+        unawaited(syncEpisodesToStatus(ref.read, before, newStatus,
+            completedAt: completedAt));
+      }
     }
 
     // Strictly after the status write: the completed transition stamps

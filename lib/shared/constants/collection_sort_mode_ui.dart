@@ -26,6 +26,8 @@ extension CollectionSortModeUi on CollectionSortMode {
         return l.sortStartDateDisplay;
       case CollectionSortMode.completionDate:
         return l.sortCompletionDateDisplay;
+      case CollectionSortMode.releaseDate:
+        return l.sortReleaseDateDisplay;
     }
   }
 
@@ -51,6 +53,8 @@ extension CollectionSortModeUi on CollectionSortMode {
         return l.sortStartDateShort;
       case CollectionSortMode.completionDate:
         return l.sortCompletionDateShort;
+      case CollectionSortMode.releaseDate:
+        return l.sortReleaseDateShort;
     }
   }
 
@@ -77,6 +81,7 @@ extension CollectionSortModeUi on CollectionSortMode {
         return l.sortDateOldest;
       case CollectionSortMode.startDate:
       case CollectionSortMode.completionDate:
+      case CollectionSortMode.releaseDate:
         return l.sortDateOldest;
     }
   }
@@ -102,6 +107,8 @@ extension CollectionSortModeUi on CollectionSortMode {
       case CollectionSortMode.startDate:
       case CollectionSortMode.completionDate:
         return l.sortLastActivityDesc;
+      case CollectionSortMode.releaseDate:
+        return l.sortDateDesc;
     }
   }
 }

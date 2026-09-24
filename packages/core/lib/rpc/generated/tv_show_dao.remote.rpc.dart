@@ -402,6 +402,41 @@ class RemoteTvShowDao implements TvShowDao {
   }
 
   @override
+  Future<void> unmarkShowWatched(
+    int collectionId,
+    DataSource source,
+    int showId,
+  ) async {
+    await _transport.call('TvShowDao', 'unmarkShowWatched', <String, Object?>{
+      'collectionId': encodeInt(collectionId),
+      'source': encodeEnum(source),
+      'showId': encodeInt(showId),
+    });
+    return;
+  }
+
+  @override
+  Future<bool> updateEpisodeWatchedAt(
+    int collectionId,
+    DataSource source,
+    int showId,
+    int seasonNumber,
+    int episodeNumber,
+    int? watchedAtMs,
+  ) async {
+    final Object? result = await _transport
+        .call('TvShowDao', 'updateEpisodeWatchedAt', <String, Object?>{
+          'collectionId': encodeInt(collectionId),
+          'source': encodeEnum(source),
+          'showId': encodeInt(showId),
+          'seasonNumber': encodeInt(seasonNumber),
+          'episodeNumber': encodeInt(episodeNumber),
+          'watchedAtMs': encodeIntOrNull(watchedAtMs),
+        });
+    return result as bool;
+  }
+
+  @override
   Future<void> upsertEpisodes(List<TvEpisode> episodes) async {
     await _transport.call('TvShowDao', 'upsertEpisodes', <String, Object?>{
       'episodes': episodes

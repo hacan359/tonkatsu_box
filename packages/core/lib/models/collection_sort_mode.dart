@@ -27,7 +27,11 @@ enum CollectionSortMode {
   startDate('start_date'),
 
   /// By completion date (completedAt DESC, recent first, undated last).
-  completionDate('completion_date');
+  completionDate('completion_date'),
+
+  /// By release (newest first); items without a release year stay last in
+  /// both directions.
+  releaseDate('release_date');
 
   const CollectionSortMode(this.value);
 

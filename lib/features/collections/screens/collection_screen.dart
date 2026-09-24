@@ -52,6 +52,7 @@ import '../widgets/tag_management_dialog.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({
@@ -201,7 +202,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     // The rich banner carries the back arrow and title itself; the plain
     // title bar would duplicate both and waste a row.
     final bool heroCarriesTitle = _isRich(ref) && !_isCanvasMode;
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(l),
       child: Stack(
         children: <Widget>[

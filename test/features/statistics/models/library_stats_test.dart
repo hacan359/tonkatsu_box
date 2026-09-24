@@ -107,28 +107,6 @@ void main() {
       });
     });
 
-    group('totalHours', () {
-      test('should truncate partial hours when dividing minutes', () {
-        const StatsHours hours = StatsHours(
-          manualMinutes: 61,
-          trackerMinutes: 0,
-          estimatedMinutes: 58,
-        );
-
-        expect(hours.totalHours, 1);
-      });
-
-      test('should return whole hours when the total divides evenly', () {
-        const StatsHours hours = StatsHours(
-          manualMinutes: 60,
-          trackerMinutes: 60,
-          estimatedMinutes: 60,
-        );
-
-        expect(hours.totalHours, 3);
-      });
-    });
-
     group('empty', () {
       test('should carry zero minutes in every bucket when empty', () {
         const StatsHours hours = StatsHours.empty();
@@ -137,7 +115,6 @@ void main() {
         expect(hours.trackerMinutes, 0);
         expect(hours.estimatedMinutes, 0);
         expect(hours.totalMinutes, 0);
-        expect(hours.totalHours, 0);
       });
     });
   });

@@ -251,6 +251,12 @@ class SFr extends S {
   String get sortCompletionDateShort => 'Terminé';
 
   @override
+  String get sortReleaseDateDisplay => 'Date de sortie';
+
+  @override
+  String get sortReleaseDateShort => 'Sortie';
+
+  @override
   String get sortDateOldest => 'Date d\'ajout (↑)';
 
   @override
@@ -2261,6 +2267,24 @@ class SFr extends S {
 
   @override
   String get noEpisodesFound => 'Aucun épisode trouvé';
+
+  @override
+  String get undo => 'Annuler';
+
+  @override
+  String get episodeUnmarkedSnack => 'Épisode décoché';
+
+  @override
+  String get seasonUnmarkedSnack => 'Saison décochée';
+
+  @override
+  String get episodesClearedSnack => 'Épisodes décochés';
+
+  @override
+  String get episodeWatchedDateEdit => 'Date de visionnage';
+
+  @override
+  String get episodeWatchedDateSelect => 'Quand l\'avez-vous vu ?';
 
   @override
   String episodeWatchedDate(String date) {
@@ -5789,13 +5813,8 @@ class SFr extends S {
   String get statsMetricLikedUnits => 'épisodes aimés';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'heures : manuel $manual h · trackers $tracker h · estimé $estimated h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'heures : manuel $manual · trackers $tracker · estimé $estimated';
   }
 
   @override
@@ -5829,7 +5848,7 @@ class SFr extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours h · $games jeux';
+    return '$hours · $games jeux';
   }
 
   @override

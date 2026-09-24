@@ -42,6 +42,7 @@ import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
 import '../../../shared/constants/platform_ui.dart';
+import '../../collections/helpers/episode_undo.dart';
 
 /// Grid of all items across all collections (Home tab). The platforms
 /// filter row appears only while Games is selected.
@@ -739,9 +740,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
     if (newStatus != null) {
       if (newStatus != item.status) {
-        await ref
-            .read(collectionItemsNotifierProvider(item.collectionId).notifier)
-            .updateStatus(item.id, newStatus, item.mediaType);
+        final CollectionItemsNotifier notifier = ref
+            .read(collectionItemsNotifierProvider(item.collectionId).notifier);
+        final ClearedEpisodeMarks? cleared =
+            await notifier.updateStatus(item.id, newStatus, item.mediaType);
+        if (!mounted) return;
+        offerStatusEpisodesUndo(context, notifier, cleared);
       }
       return;
     }

@@ -7,6 +7,179 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Sort by release date**
+
+  Newest first by default, both directions. Items without a release year stay
+  at the end. IGDB, AniList, Kitsu, VNDB and MusicBrainz give an exact date;
+  other sources give a year.
+
+  * packages/core/lib/models/collection_sort_mode.dart (CollectionSortMode.releaseDate): New.
+  * packages/core/lib/models/collection_item.dart (CollectionItem.releaseDate): New getter.
+  * lib/features/collections/providers/sort_utils.dart (applySortMode, _sortByRelease, _compareRelease): New branch.
+  * lib/shared/constants/collection_sort_mode_ui.dart (CollectionSortModeUi): Labels.
+  * lib/l10n/app_*.arb (sortReleaseDateDisplay, sortReleaseDateShort): New strings.
+
+- **Edit the watched date of an episode**
+
+  A calendar button on a watched episode opens a date picker. "No date"
+  clears the date and keeps the mark.
+
+  * packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao.updateEpisodeWatchedAt): New.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier.setEpisodeWatchedDate): New.
+  * lib/features/collections/widgets/episode_tracker_section.dart (_WatchedDateButton): New.
+  * packages/core/lib/rpc/generated/tv_show_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/tv_show_dao.remote.rpc.dart: Regenerated.
+  * lib/l10n/app_*.arb (episodeWatchedDateEdit, episodeWatchedDateSelect): New strings.
+
+- **Undo for unmarked episodes**
+
+  Unmarking an episode or a whole season shows a snackbar with Undo and a
+  five-second countdown. Undo brings the marks back with their old dates.
+
+  * lib/features/collections/helpers/episode_undo.dart (showUndoSnack,
+    offerWatchedUndo, offerStatusEpisodesUndo): New.
+  * lib/shared/extensions/snackbar_extension.dart (SnackBarExtension.showSnack,
+    _SnackCountdown): `countdown` parameter.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (WatchedMarks, EpisodeTrackerNotifier.toggleEpisode,
+    EpisodeTrackerNotifier.toggleSeason, EpisodeTrackerNotifier.restoreWatched):
+    Toggles return the removed marks.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonExpansionTileState._toggleSeason): Offers the undo.
+  * lib/l10n/app_*.arb (undo, episodeUnmarkedSnack, seasonUnmarkedSnack): New strings.
+
+- **"Completed" status marks every episode**
+
+  Setting a series to Completed marks every regular episode and fetches the
+  seasons that are not cached yet. Leaving Completed clears the marks and
+  offers Undo, which restores the status, dates, replay count and marks.
+  Bulk status changes sync the marks without a snackbar.
+
+  * packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao.unmarkShowWatched): New.
+  * lib/features/collections/providers/collections_provider.dart
+    (syncEpisodesToStatus, ClearedEpisodeMarks,
+    CollectionItemsNotifier.updateStatus, CollectionItemsNotifier.restoreCompleted,
+    CollectionItemsNotifier.updateActivityDates): Status drives the marks.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier.markAllWatched, EpisodeTrackerNotifier.unmarkAllWatched,
+    EpisodeTrackerNotifier._updateAutoStatus): New; auto-status passes
+    `syncEpisodes: false`.
+  * lib/features/collections/helpers/bulk_operations.dart (BulkOperations.updateItemsStatus),
+    lib/features/collections/widgets/collection_items_view.dart (CollectionItemsView),
+    lib/features/collections/screens/item_detail_screen.dart (_ItemDetailScreenState),
+    lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState): Call the sync.
+  * lib/l10n/app_*.arb (episodesClearedSnack): New string.
+
+- **Ctrl+7 and Ctrl+, shortcuts**
+
+  Ctrl+1..7 follow the buttons of the navigation bar, Ctrl+4 opens
+  Personalization. Ctrl+, opens Settings.
+
+  * lib/shared/keyboard/keyboard_shortcuts.dart (buildGlobalShortcuts,
+    globalShortcutGroup): `onSwitchSlot`, `onOpenSettings`.
+  * lib/shared/navigation/nav_destinations.dart (kNavSlotOrder, navStepSlot): New.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openSlot,
+    _AppShellState._stepSlot): New.
+
+### Changed
+
+- **Create custom item button next to "+"**
+
+  The collection screen shows the button left of "+". The ⋮ menu no longer
+  lists it.
+
+  * lib/shared/widgets/draggable_fab.dart (DraggableFab.sideActions): New.
+  * lib/features/collections/widgets/collection_screen/collection_screen_fab.dart
+    (CollectionScreenFab._sideActions): New.
+
+### Fixed
+
+- **Ctrl+Tab and LB/RB skipped Personalization**
+
+  Both now step through the navigation bar in its visual order.
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._onGamepadTabSwitch): Uses navStepSlot.
+
+- **F1 in Personalization listed the keys of the tab underneath**
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._currentScreenShortcutGroups): Hub group.
+
+- **Type-to-search swallowed Ctrl+digit**
+
+  AltGr characters still reach the search field.
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._handleTypeToSearch): Skips Ctrl, Alt and Meta chords.
+
+- **Screen hotkeys fired every other time**
+
+  Affected Collection, Collections, item card, Tier lists, tier list and
+  Wishlist. Tab and D-pad skip the screen-wide focus node.
+
+  * lib/shared/keyboard/shortcut_helper.dart (wrapWithScreenShortcuts): `skipTraversal`.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/screens/item_detail_screen.dart,
+    lib/features/tier_lists/screens/tier_lists_screen.dart,
+    lib/features/tier_lists/screens/tier_list_detail_screen.dart,
+    lib/features/wishlist/screens/wishlist_screen.dart: Use wrapWithScreenShortcuts.
+
+- **Switches merged with the track on hover and focus**
+
+  The canvas resize handle icon shows again. Floating buttons stay in the
+  brand color.
+
+  * lib/shared/theme/app_palette.dart (AppPalette.brandContainer,
+    AppPalette.onBrandContainer), lib/shared/theme/palettes/dark_palette.dart,
+    lib/shared/theme/palettes/sakura_palette.dart: New colors.
+  * lib/shared/theme/app_theme.dart (AppTheme._switchTheme): New;
+    `primaryContainer`, `hoverColor`, `focusColor`, `floatingActionButtonTheme`.
+
+- **Statistics period picker showed no hover or focus**
+
+  * lib/shared/widgets/focusable_surface.dart (FocusableSurface): New.
+  * lib/features/statistics/widgets/stats_period_picker.dart (StatsPeriodPicker): Uses it.
+
+- **Snackbars with a button stayed on screen until tapped**
+
+  They close after their duration again, including the error snackbar with
+  Details.
+
+  * lib/shared/extensions/snackbar_extension.dart (SnackBarExtension.showSnack):
+    `persist: false`.
+
+- **Backup restore lost time spent**
+
+  Restore writes back hours typed by hand and Steam playtime.
+
+  * lib/core/services/import_service.dart (ImportService._hasUserData,
+    ImportService._restoreUserData): Restore `timeSpentMinutes`.
+
+- **Statistics hours left out anime and animated films**
+
+  The estimate counts anime without the episode tracker as watched episodes
+  times the episode length from AniList or Kitsu. A completed title counts
+  in full, each replay adds one more run. Completed animated films count by
+  runtime. Anime with hours typed by hand keeps only those hours. A film's
+  hand-typed hours count unless the estimate already counts that film.
+  Statistics show time to the minute: `22m`, `1h 28m`.
+
+  * packages/core/lib/database/dao/stats_dao.dart (StatsDao.getEstimatedMinutes,
+    StatsDao.getManualMinutes, StatsDao._filmItem, StatsDao._filmRuntime,
+    StatsDao._estimatedFilm, StatsDao._counterAnime): Anime and animated films.
+  * lib/shared/utils/duration_formatter.dart (formatMinutes): New.
+  * lib/features/statistics/widgets/stats_hero_common.dart (StatsHoursBreakdown),
+    lib/features/statistics/widgets/stats_platforms_section.dart,
+    lib/features/statistics/widgets/stats_share_card.dart: Use formatMinutes.
+  * lib/features/statistics/models/library_stats.dart (StatsHours.totalHours,
+    PlatformStats.hours): Removed.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_formatRuntime): Replaced by formatMinutes.
+  * lib/l10n/app_*.arb (statsHoursBreakdown, statsPlatformsSummary): Units moved
+    into the values; statsHoursShort removed.
+
 ## [0.44.0] - 2026-09-16
 
 ### Added

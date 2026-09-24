@@ -190,14 +190,36 @@ class StatsDao {
     return result;
   }
 
-  /// Manually entered minutes over items added in [year]. Movies are excluded
-  /// — their time comes from the cached runtime, or manual entry would double.
+  // Same split as CollectionDao's movies_cache join: animation that is not a
+  // series reads the movie cache.
+  static const String _filmItem = "(ci.media_type = 'movie' "
+      "OR (ci.media_type = 'animation' "
+      'AND ci.platform_id != ${AnimationSource.tvShow}))';
+
+  // Source-qualified: two providers can cache the same numeric id, and an
+  // unqualified match would count that film's runtime twice.
+  static const String _filmRuntime = 'mc.tmdb_id = ci.external_id '
+      "AND mc.source = COALESCE(ci.source, 'tmdb') AND mc.runtime > 0";
+
+  // Films with a known runtime count through the estimate once completed;
+  // their manual minutes would count the same viewing twice.
+  static const String _estimatedFilm = "$_filmItem AND ci.status = 'completed' "
+      'AND EXISTS (SELECT 1 FROM movies_cache mc WHERE $_filmRuntime)';
+
+  // Anime without the episode tracker: the progress counter is the only
+  // record of what was watched.
+  static const String _counterAnime = "ci.media_type = 'anime' "
+      "AND COALESCE(ci.source, 'anilist') != 'kitsu' "
+      'AND COALESCE(ci.time_spent_minutes, 0) = 0';
+
+  /// Manually entered minutes over items added in [year], minus films the
+  /// estimate already counts by runtime.
   Future<int> getManualMinutes({int? year}) async {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
     final List<Map<String, dynamic>> rows = await db.rawQuery(
-      'SELECT SUM(time_spent_minutes) AS s FROM collection_items '
-      "${w.where('added_at', seconds: true, extra: "media_type != 'movie'")}",
+      'SELECT SUM(ci.time_spent_minutes) AS s FROM collection_items ci '
+      "${w.where('ci.added_at', seconds: true, extra: 'NOT ($_estimatedFilm)')}",
       w.args,
     );
     return (rows.first['s'] as int?) ?? 0;
@@ -217,8 +239,8 @@ class StatsDao {
     return (rows.first['s'] as int?) ?? 0;
   }
 
-  /// Fixed data only — watched episodes with a known runtime plus completed
-  /// movies. No averaging: an episode without a cached runtime counts as 0.
+  /// Fixed data only: watched episodes, completed films and counter anime by
+  /// the source's episode length. Nothing averaged, unknown length is 0.
   Future<int> getEstimatedMinutes({int? year}) async {
     final Database db = await _getDatabase();
     final _Window w = _Window.year(year);
@@ -238,15 +260,28 @@ class StatsDao {
     final List<Map<String, dynamic>> mv = await db.rawQuery(
       'SELECT SUM(mc.runtime * (1 + COALESCE(ci.rewatch_count, 0))) AS s '
       'FROM collection_items ci '
-      // Source-qualified: two providers can cache the same numeric id, and an
-      // unqualified join would count that film's runtime twice.
-      'JOIN movies_cache mc ON mc.tmdb_id = ci.external_id '
-      "AND mc.source = COALESCE(ci.source, 'tmdb') "
-      "${w.where('ci.added_at', seconds: true, extra: "ci.media_type = 'movie' AND ci.status = 'completed'")}",
+      'JOIN movies_cache mc ON $_filmRuntime '
+      "${w.where('ci.added_at', seconds: true, extra: "$_filmItem AND ci.status = 'completed'")}",
       w.args,
     );
     final int movieMinutes = (mv.first['s'] as int?) ?? 0;
-    return episodeMinutes + movieMinutes;
+
+    // A completed title counts in full even when the counter lagged behind
+    // (Completed does not move it); each replay adds one more full run.
+    final List<Map<String, dynamic>> an = await db.rawQuery(
+      'SELECT SUM(ac.duration * ('
+      "CASE WHEN ci.status = 'completed' "
+      'THEN MAX(COALESCE(ci.current_episode, 0), COALESCE(ac.episodes, 0)) '
+      'ELSE COALESCE(ci.current_episode, 0) END '
+      '+ COALESCE(ci.rewatch_count, 0) * COALESCE(ac.episodes, 0))) AS s '
+      'FROM collection_items ci '
+      'JOIN anime_cache ac ON ac.id = ci.external_id '
+      "AND ac.source = COALESCE(ci.source, 'anilist') AND ac.duration > 0 "
+      "${w.where('ci.added_at', seconds: true, extra: _counterAnime)}",
+      w.args,
+    );
+    final int animeMinutes = (an.first['s'] as int?) ?? 0;
+    return episodeMinutes + movieMinutes + animeMinutes;
   }
 
   /// Items added per `year-month` bucket ("YYYY-MM" keys).
