@@ -4296,6 +4296,9 @@ class SFr extends S {
   String get collectionCopyToCollection => 'Copier vers la collection';
 
   @override
+  String get duplicateAsCustom => 'Dupliquer en titre personnalisé';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copier vers $collection';
   }

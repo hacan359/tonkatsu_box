@@ -634,21 +634,8 @@ class ExportService {
       }
     }
 
-    if (games.isEmpty &&
-        movies.isEmpty &&
-        tvShows.isEmpty &&
-        vns.isEmpty &&
-        mangas.isEmpty &&
-        books.isEmpty &&
-        albums.isEmpty &&
-        allTracks.isEmpty &&
-        animes.isEmpty &&
-        allSeasons.isEmpty &&
-        allEpisodes.isEmpty &&
-        allPlatforms.isEmpty) {
-      return const <String, dynamic>{};
-    }
-
+    // Every entry is conditional, so an empty map needs no early return — a
+    // hand-kept list of "all empty" checks once forgot custom cards.
     return <String, dynamic>{
       if (games.isNotEmpty) 'games': games.values.toList(),
       if (movies.isNotEmpty) 'movies': movies.values.toList(),

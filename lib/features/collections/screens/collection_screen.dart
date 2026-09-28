@@ -1,6 +1,5 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
-import 'package:core/models/custom_media.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/steamgriddb_image.dart';
@@ -652,29 +651,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CustomItemData? data = await CreateCustomItemDialog.show(context);
     if (data == null || !mounted) return;
 
-    // For local files coverUrl stays null; the file is copied into the cache
-    // via addCustomItem.
-    final CustomMedia customMedia = CustomMedia(
-      id: 0,
-      title: data.title,
-      displayType: data.mediaType != MediaType.custom ? data.mediaType : null,
-      altTitle: data.altTitle,
-      description: data.description,
-      coverUrl: data.coverUrl,
-      year: data.year,
-      genres: data.genres,
-      platformName: data.platform,
-      platformId: data.platformId,
-      format: data.format,
-      unitTotal: data.unitTotal,
-      unitGroupTotal: data.unitGroupTotal,
-      externalUrl: data.externalUrl,
-    );
-
     final bool success = await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addCustomItem(
-          customMedia,
+          data.toNewCustomMedia(),
           coverBytes: data.coverBytes,
           userComment: data.comment,
           tags: data.tags,

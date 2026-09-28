@@ -84,6 +84,27 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/shared/navigation/app_shell.dart (_AppShellState._openSlot,
     _AppShellState._stepSlot): New.
 
+- **Duplicate an item as a custom item**
+
+  The item menu offers "Duplicate as custom item" on every non-custom card. It
+  opens the custom item form filled with the card's metadata, cover and tags,
+  and saves a new custom card in the same collection. Status, rating, note and
+  episode marks start empty.
+
+  * lib/features/collections/helpers/custom_duplicate.dart (customDraftFromItem): New.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (CreateCustomItemDialog.duplicate, CreateCustomItemDialog.prefill,
+    CreateCustomItemDialog.prefillCoverBytes, CreateCustomItemDialog.prefillTags): New.
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.toNewCustomMedia): New.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._handleCreateCustomItem): Uses toNewCustomMedia.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailMenuAction.duplicateAsCustom): New.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._duplicateAsCustom, _ItemDetailScreenState._cachedCoverOf): New.
+  * lib/l10n/app_*.arb (duplicateAsCustom): New string.
+
 ### Changed
 
 - **Create custom item button next to "+"**
@@ -149,6 +170,49 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/shared/extensions/snackbar_extension.dart (SnackBarExtension.showSnack):
     `persist: false`.
+
+- **Export and backup dropped the cards of a collection holding only custom items**
+
+  A full `.xcollx` export and a backup carry the custom cards of every
+  collection.
+
+  * lib/core/services/export_service.dart (ExportService._collectMediaData):
+    Removed the empty-media early return.
+
+- **Import overwrote custom cards sharing an id with the file**
+
+  A custom card keeps its id from the file when the id is free in the
+  database and gets a new one otherwise. Items, board cards, covers and mood
+  grid cells follow the new id. A backup restore keeps a card shared by two
+  collections as one card. Custom items without card data in the file are not
+  created.
+
+  * packages/core/lib/database/dao/custom_media_dao.dart (CustomMediaDao.importAll,
+    CustomMediaDao._isIdFree): New; CustomMediaDao.upsertAll removed.
+  * lib/core/services/import_service.dart (ImportService.importFromXcoll,
+    ImportService._importV2, ImportService._restoreEmbeddedMedia,
+    ImportService._restoreImages, ImportService._importCanvas,
+    ImportService._importPerItemCanvas, ImportService._withLocalCustomId,
+    ImportService._withLocalCustomRef, ImportService._localCustomCoverId):
+    `customIds` map.
+  * lib/core/services/backup_service.dart (BackupService.restoreFromBackup,
+    BackupService._restoreMoodGrids): One map for the whole archive.
+  * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/custom_media_dao.remote.rpc.dart: Regenerated.
+
+- **Removed items left their custom cards in the database**
+
+  Removing an item, deleting a collection or clearing it deletes custom cards
+  that no item, board card or mood grid cell points at. Migration v65 deletes
+  the ones left from earlier versions.
+
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.removeItemFromCollection, CollectionDao.deleteCollection,
+    CollectionDao.clearCollectionItems, CollectionDao._customCardIds,
+    CollectionDao._pruneCustomCards): Prune in the same transaction.
+  * packages/core/lib/database/migrations/migration_v65.dart (MigrationV65): New.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers v65.
 
 - **Backup restore lost time spent**
 

@@ -227,33 +227,86 @@ void main() {
       });
     });
 
-    group('upsertAll', () {
-      test('is a no-op for an empty list', () async {
-        await dao.upsertAll(const <CustomMedia>[]);
+    group('importAll', () {
+      Future<int> addCollection() => db.insert('collections', <String, Object?>{
+            'name': 'C',
+            'author': 'me',
+            'created_at': 0,
+          });
 
-        expect(await dao.getByIds(<int>[1, 2, 3]), isEmpty);
+      test('is a no-op for an empty list', () async {
+        expect(await dao.importAll(const <CustomMedia>[]), isEmpty);
       });
 
-      test('keeps the caller-supplied ids', () async {
-        await dao.upsertAll(<CustomMedia>[
+      test('keeps the file id when nothing uses it', () async {
+        final List<int> ids = await dao.importAll(<CustomMedia>[
           _item(id: 10, title: 'Ten'),
           _item(id: 20, title: 'Twenty'),
         ]);
 
+        expect(ids, <int>[10, 20]);
         expect((await dao.getById(10))?.title, 'Ten');
-        expect((await dao.getById(20))?.title, 'Twenty');
       });
 
-      test('replaces rows that already exist', () async {
-        await dao.upsert(_item(id: 10, title: 'Old'));
+      test('gives a fresh id instead of replacing an existing card', () async {
+        await dao.upsert(_item(id: 10, title: 'Mine'));
 
-        await dao.upsertAll(<CustomMedia>[
-          _item(id: 10, title: 'New'),
-          _item(id: 11, title: 'Fresh'),
-        ]);
+        final List<int> ids =
+            await dao.importAll(<CustomMedia>[_item(id: 10, title: 'Theirs')]);
 
-        expect((await dao.getById(10))?.title, 'New');
-        expect((await dao.getById(11))?.title, 'Fresh');
+        expect(ids.single, isNot(10));
+        expect((await dao.getById(10))?.title, 'Mine');
+        expect((await dao.getById(ids.single))?.title, 'Theirs');
+      });
+
+      test('does not reuse an id a dangling collection item holds', () async {
+        final int collectionId = await addCollection();
+        await db.insert('collection_items', <String, Object?>{
+          'collection_id': collectionId,
+          'media_type': 'custom',
+          'external_id': 7,
+          'added_at': 0,
+        });
+
+        final List<int> ids = await dao.importAll(<CustomMedia>[_item(id: 7)]);
+
+        expect(ids.single, isNot(7));
+        expect(await dao.getById(7), isNull);
+      });
+
+      test('does not reuse an id a board card holds', () async {
+        final int collectionId = await addCollection();
+        await db.insert('canvas_items', <String, Object?>{
+          'collection_id': collectionId,
+          'item_type': 'custom',
+          'item_ref_id': 7,
+          'created_at': 0,
+        });
+
+        final List<int> ids = await dao.importAll(<CustomMedia>[_item(id: 7)]);
+
+        expect(ids.single, isNot(7));
+      });
+
+      test('does not reuse an id a mood grid cell holds', () async {
+        final int gridId =
+            await db.insert('mood_grids', <String, Object?>{'name': 'G'});
+        await db.insert('mood_grid_cells', <String, Object?>{
+          'grid_id': gridId,
+          'position': 0,
+          'media_type': 'custom',
+          'external_id': 7,
+        });
+
+        final List<int> ids = await dao.importAll(<CustomMedia>[_item(id: 7)]);
+
+        expect(ids.single, isNot(7));
+      });
+
+      test('gives a fresh id to a card without a usable one', () async {
+        final List<int> ids = await dao.importAll(<CustomMedia>[_item()]);
+
+        expect(ids.single, greaterThan(0));
       });
     });
 

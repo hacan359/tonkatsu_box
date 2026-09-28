@@ -2114,6 +2114,7 @@
   "collectionListViewTable": "Visualização em tabela",
   "collectionTableExternalRating": "Externa",
   "collectionCopyToCollection": "Copiar para coleção",
+  "duplicateAsCustom": "Duplicar como item personalizado",
   "collectionItemCopiedTo": "{name} copiado para {collection}",
   "collectionItemAlreadyInTarget": "{name} já está em {collection}",
   "openInCollection": "Abrir na coleção",

@@ -35,9 +35,21 @@ export 'custom_item/custom_item_data.dart' show CustomItemData;
 
 /// Full-screen create / edit form for a custom collection item.
 class CreateCustomItemDialog extends ConsumerStatefulWidget {
-  const CreateCustomItemDialog({this.existing, super.key});
+  const CreateCustomItemDialog({
+    this.existing,
+    this.prefill,
+    this.prefillCoverBytes,
+    this.prefillTags = const <String>[],
+    super.key,
+  });
 
   final CustomMedia? existing;
+
+  /// Seeds a new card (a duplicate) without editing [existing]: the form stays
+  /// in create mode, with note and tags, and saves a separate card.
+  final CustomMedia? prefill;
+  final Uint8List? prefillCoverBytes;
+  final List<String> prefillTags;
 
   static Future<CustomItemData?> show(BuildContext context) {
     return Navigator.of(context).push<CustomItemData>(
@@ -55,6 +67,23 @@ class CreateCustomItemDialog extends ConsumerStatefulWidget {
       MaterialPageRoute<CustomItemData>(
         builder: (BuildContext context) =>
             CreateCustomItemDialog(existing: existing),
+      ),
+    );
+  }
+
+  static Future<CustomItemData?> duplicate(
+    BuildContext context,
+    CustomMedia draft, {
+    Uint8List? coverBytes,
+    List<String> tags = const <String>[],
+  }) {
+    return Navigator.of(context).push<CustomItemData>(
+      MaterialPageRoute<CustomItemData>(
+        builder: (BuildContext context) => CreateCustomItemDialog(
+          prefill: draft,
+          prefillCoverBytes: coverBytes,
+          prefillTags: tags,
+        ),
       ),
     );
   }
@@ -97,7 +126,8 @@ class _CreateCustomItemDialogState
   @override
   void initState() {
     super.initState();
-    final CustomMedia? e = widget.existing;
+    final CustomMedia? e = widget.existing ?? widget.prefill;
+    _coverBytes = widget.prefillCoverBytes;
     _selectedType = e?.displayType ?? MediaType.custom;
     _titleController = TextEditingController(text: e?.title ?? '');
     _altTitleController = TextEditingController(text: e?.altTitle ?? '');
@@ -113,7 +143,8 @@ class _CreateCustomItemDialogState
     _externalUrlController =
         TextEditingController(text: e?.externalUrl ?? '');
     _commentController = TextEditingController();
-    _tagsController = TextEditingController();
+    _tagsController =
+        TextEditingController(text: widget.prefillTags.join(', '));
     _selectedYear = e?.year;
     _selectedPlatformId = e?.platformId;
     _selectedFormat = e?.format;

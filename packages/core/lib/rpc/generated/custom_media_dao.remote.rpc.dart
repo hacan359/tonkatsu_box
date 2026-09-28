@@ -147,6 +147,38 @@ class RemoteCustomMediaDao implements CustomMediaDao {
   }
 
   @override
+  Future<List<int>> importAll(List<CustomMedia> items) async {
+    final Object? result = await _transport.call(
+      'CustomMediaDao',
+      'importAll',
+      <String, Object?>{
+        'items': items
+            .map(
+              (CustomMedia e) => <String, Object?>{
+                'id': encodeInt(e.id),
+                'title': e.title,
+                'displayType': e.displayType?.name,
+                'altTitle': e.altTitle,
+                'description': e.description,
+                'coverUrl': e.coverUrl,
+                'year': encodeIntOrNull(e.year),
+                'genres': e.genres,
+                'platformName': e.platformName,
+                'platformId': encodeIntOrNull(e.platformId),
+                'format': e.format,
+                'unitTotal': encodeIntOrNull(e.unitTotal),
+                'unitGroupTotal': encodeIntOrNull(e.unitGroupTotal),
+                'externalUrl': e.externalUrl,
+                'cachedAt': encodeIntOrNull(e.cachedAt),
+              },
+            )
+            .toList(),
+      },
+    );
+    return asList(result).map((Object? e) => decodeInt(e)).toList();
+  }
+
+  @override
   Future<void> update(CustomMedia item) async {
     await _transport.call('CustomMediaDao', 'update', <String, Object?>{
       'item': <String, Object?>{
@@ -190,34 +222,6 @@ class RemoteCustomMediaDao implements CustomMediaDao {
         'externalUrl': item.externalUrl,
         'cachedAt': encodeIntOrNull(item.cachedAt),
       },
-    });
-    return;
-  }
-
-  @override
-  Future<void> upsertAll(List<CustomMedia> items) async {
-    await _transport.call('CustomMediaDao', 'upsertAll', <String, Object?>{
-      'items': items
-          .map(
-            (CustomMedia e) => <String, Object?>{
-              'id': encodeInt(e.id),
-              'title': e.title,
-              'displayType': e.displayType?.name,
-              'altTitle': e.altTitle,
-              'description': e.description,
-              'coverUrl': e.coverUrl,
-              'year': encodeIntOrNull(e.year),
-              'genres': e.genres,
-              'platformName': e.platformName,
-              'platformId': encodeIntOrNull(e.platformId),
-              'format': e.format,
-              'unitTotal': encodeIntOrNull(e.unitTotal),
-              'unitGroupTotal': encodeIntOrNull(e.unitGroupTotal),
-              'externalUrl': e.externalUrl,
-              'cachedAt': encodeIntOrNull(e.cachedAt),
-            },
-          )
-          .toList(),
     });
     return;
   }

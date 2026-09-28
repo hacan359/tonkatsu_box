@@ -8,6 +8,7 @@ import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/item_mark.dart';
@@ -3876,6 +3877,214 @@ void main() {
 
         expect(result.success, isTrue);
         verify(() => mockTvShowDao.upsertTvShows(any())).called(1);
+      });
+    });
+
+    group('custom card ids', () {
+      late MockCustomMediaDao mockCustomDao;
+      late MockImageCacheService mockImageCache;
+      late ImportService sutCustom;
+      final List<int> addedExternalIds = <int>[];
+
+      setUpAll(() => registerFallbackValue(<CustomMedia>[]));
+
+      setUp(() {
+        mockCustomDao = MockCustomMediaDao();
+        mockImageCache = MockImageCacheService();
+        when(() => mockDb.customMediaDao).thenReturn(mockCustomDao);
+        sutCustom = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+          imageCacheService: mockImageCache,
+        );
+        addedExternalIds.clear();
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+              createdAt: any(named: 'createdAt'),
+            )).thenAnswer((_) async => Collection(
+              id: 70,
+              name: 'Custom',
+              author: 'Author',
+              type: CollectionType.own,
+              createdAt: testDate,
+            ));
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              source: any(named: 'source'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+              addedAt: any(named: 'addedAt'),
+            )).thenAnswer((Invocation inv) async {
+          addedExternalIds.add(inv.namedArguments[#externalId] as int);
+          return 500 + addedExternalIds.length;
+        });
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+        when(() => mockCanvas.createItem(any())).thenAnswer(
+          (Invocation inv) async =>
+              (inv.positionalArguments[0] as CanvasItem).copyWith(id: 900),
+        );
+      });
+
+      Map<String, dynamic> card(int id, String title) => <String, dynamic>{
+            'id': id,
+            'title': title,
+          };
+
+      Map<String, dynamic> customItem(int externalId) => <String, dynamic>{
+            'media_type': 'custom',
+            'external_id': externalId,
+          };
+
+      XcollFile xcoll({
+        required List<Map<String, dynamic>> items,
+        List<Map<String, dynamic>> cards = const <Map<String, dynamic>>[],
+        Map<String, String> images = const <String, String>{},
+        ExportCanvas? canvas,
+      }) =>
+          XcollFile(
+            version: 2,
+            format: ExportFormat.full,
+            name: 'Custom',
+            author: 'Author',
+            created: testDate,
+            items: items,
+            media: cards.isEmpty
+                ? const <String, dynamic>{}
+                : <String, dynamic>{'custom_items': cards},
+            images: images,
+            canvas: canvas,
+          );
+
+      test('points items at the local id the card got', () async {
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[42]);
+
+        final ImportResult result = await sutCustom.importFromXcoll(xcoll(
+          items: <Map<String, dynamic>>[customItem(7)],
+          cards: <Map<String, dynamic>>[card(7, 'Seven')],
+        ));
+
+        expect(result.success, isTrue);
+        expect(addedExternalIds, <int>[42]);
+      });
+
+      test('skips a custom item whose card the file does not carry', () async {
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[42]);
+
+        final ImportResult result = await sutCustom.importFromXcoll(xcoll(
+          items: <Map<String, dynamic>>[customItem(7), customItem(8)],
+          cards: <Map<String, dynamic>>[card(7, 'Seven')],
+        ));
+
+        expect(result.itemsImported, 1);
+        expect(addedExternalIds, <int>[42]);
+      });
+
+      test('writes a card already imported in this session only once',
+          () async {
+        final Map<int, int> customIds = <int, int>{7: 42};
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[]);
+
+        await sutCustom.importFromXcoll(
+          xcoll(
+            items: <Map<String, dynamic>>[customItem(7)],
+            cards: <Map<String, dynamic>>[card(7, 'Seven')],
+          ),
+          customIds: customIds,
+        );
+
+        final List<CustomMedia> written = verify(
+          () => mockCustomDao.importAll(captureAny()),
+        ).captured.single as List<CustomMedia>;
+        expect(written, isEmpty);
+        expect(addedExternalIds, <int>[42]);
+      });
+
+      test('keeps each file card id apart when one repeats in the file',
+          () async {
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[42]);
+
+        await sutCustom.importFromXcoll(xcoll(
+          items: <Map<String, dynamic>>[customItem(7)],
+          cards: <Map<String, dynamic>>[card(7, 'Seven'), card(7, 'Seven')],
+        ));
+
+        final List<CustomMedia> written = verify(
+          () => mockCustomDao.importAll(captureAny()),
+        ).captured.single as List<CustomMedia>;
+        expect(written, hasLength(1));
+      });
+
+      test('moves a cover to the local card id and drops foreign ones',
+          () async {
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[42]);
+        final String bytes = base64Encode(<int>[1, 2, 3]);
+
+        await sutCustom.importFromXcoll(xcoll(
+          items: <Map<String, dynamic>>[customItem(7)],
+          cards: <Map<String, dynamic>>[card(7, 'Seven')],
+          images: <String, String>{
+            'custom_covers/7_1790000000000': bytes,
+            'custom_covers/8': bytes,
+          },
+        ));
+
+        final List<dynamic> saved = verify(
+          () => mockImageCache.saveImageBytes(captureAny(), captureAny(), any()),
+        ).captured;
+        expect(saved, <Object>[ImageType.customCover, '42_1790000000000']);
+      });
+
+      test('points a board card at the local id, drops an unknown one',
+          () async {
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[42]);
+        final int ts = DateTime(2024).millisecondsSinceEpoch ~/ 1000;
+
+        await sutCustom.importFromXcoll(xcoll(
+          items: <Map<String, dynamic>>[customItem(7)],
+          cards: <Map<String, dynamic>>[card(7, 'Seven')],
+          canvas: ExportCanvas(
+            items: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 1,
+                'type': 'custom',
+                'refId': 7,
+                'x': 0.0,
+                'y': 0.0,
+                'created_at': ts,
+              },
+              <String, dynamic>{
+                'id': 2,
+                'type': 'custom',
+                'refId': 8,
+                'x': 0.0,
+                'y': 0.0,
+                'created_at': ts,
+              },
+            ],
+            connections: const <Map<String, dynamic>>[],
+          ),
+        ));
+
+        final List<dynamic> created =
+            verify(() => mockCanvas.createItem(captureAny())).captured;
+        expect(
+          created.map((dynamic c) => (c as CanvasItem).itemRefId),
+          <int>[42],
+        );
       });
     });
   });

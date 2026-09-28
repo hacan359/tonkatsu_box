@@ -1810,6 +1810,7 @@
   "collectionListViewTable": "Affichage tableur",
   "collectionTableExternalRating": "Externe",
   "collectionCopyToCollection": "Copier vers la collection",
+  "duplicateAsCustom": "Dupliquer en titre personnalisé",
   "collectionItemCopiedTo": "{name} copier vers {collection}",
   "collectionItemAlreadyInTarget": "{name} est déjà dans {collection}",
   "openInCollection": "Ouvrir dans la collection",

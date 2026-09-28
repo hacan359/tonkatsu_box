@@ -4275,6 +4275,9 @@ class SPt extends S {
   String get collectionCopyToCollection => 'Copiar para coleção';
 
   @override
+  String get duplicateAsCustom => 'Duplicar como item personalizado';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copiado para $collection';
   }

@@ -1523,6 +1523,7 @@
   "collectionListViewTable": "Таблица",
   "collectionTableExternalRating": "Внешний",
   "collectionCopyToCollection": "Копировать в коллекцию",
+  "duplicateAsCustom": "Дублировать как свой тайтл",
   "collectionItemCopiedTo": "{name} скопирован в {collection}",
   "collectionItemAlreadyInTarget": "{name} уже есть в {collection}",
   "openInCollection": "Открыть в коллекции",

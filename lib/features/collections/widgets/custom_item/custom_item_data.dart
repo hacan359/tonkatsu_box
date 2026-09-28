@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
 
 /// Result of the create / edit custom item form.
@@ -59,4 +60,23 @@ class CustomItemData {
   /// Global tag names to attach to the created item; missing tags are
   /// created automatically. Only produced by the create flow.
   final List<String> tags;
+
+  /// An unsaved card: `id` 0, and a local cover stays out of `coverUrl` —
+  /// `addCustomItem` stores [coverBytes] and writes the marker itself.
+  CustomMedia toNewCustomMedia() => CustomMedia(
+        id: 0,
+        title: title,
+        displayType: mediaType != MediaType.custom ? mediaType : null,
+        altTitle: altTitle,
+        description: description,
+        coverUrl: coverUrl,
+        year: year,
+        genres: genres,
+        platformName: platform,
+        platformId: platformId,
+        format: format,
+        unitTotal: unitTotal,
+        unitGroupTotal: unitGroupTotal,
+        externalUrl: externalUrl,
+      );
 }

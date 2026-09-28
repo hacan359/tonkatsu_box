@@ -1831,6 +1831,7 @@
   "collectionListViewTable": "Table view",
   "collectionTableExternalRating": "External",
   "collectionCopyToCollection": "Copy to collection",
+  "duplicateAsCustom": "Duplicate as custom item",
   "collectionItemCopiedTo": "{name} copied to {collection}",
   "collectionItemAlreadyInTarget": "{name} is already in {collection}",
   "openInCollection": "Open in collection",

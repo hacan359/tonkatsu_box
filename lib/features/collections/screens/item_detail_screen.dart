@@ -11,6 +11,7 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/tag.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
@@ -21,6 +22,7 @@ import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -39,8 +41,11 @@ import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/custom_duplicate.dart';
 import '../widgets/create_custom_item_dialog.dart';
 import '../providers/collections_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../extensions/item_display_name.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -109,6 +114,8 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
+  static final Logger _log = Logger('ItemDetailScreen');
+
   bool _showCanvas = false;
   bool _isViewModeLocked = false;
   DiscordRpcService? _discordRpc;
@@ -199,6 +206,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         _moveToCollection(item);
       case ItemDetailMenuAction.clone:
         _cloneToCollection(item);
+      case ItemDetailMenuAction.duplicateAsCustom:
+        _duplicateAsCustom(item);
       case ItemDetailMenuAction.copyLink:
         CollectionActions.copyItemLink(context, item);
       case ItemDetailMenuAction.remove:
@@ -443,6 +452,56 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       collectionId: widget.collectionId,
       item: item,
     );
+  }
+
+  Future<void> _duplicateAsCustom(CollectionItem item) async {
+    final (
+      Uint8List? coverBytes,
+      List<Tag> allTags,
+      Map<int, List<int>> itemTags,
+    ) = await (
+      _cachedCoverOf(item),
+      ref.read(globalTagsProvider.future),
+      ref.read(itemTagsProvider.future),
+    ).wait;
+    if (!mounted) return;
+
+    final CustomItemData? data = await CreateCustomItemDialog.duplicate(
+      context,
+      customDraftFromItem(item, title: ref.currentDisplayNameOf(item)),
+      coverBytes: coverBytes,
+      tags: <String>[
+        for (final Tag tag in allTags.orderedFor(itemTags[item.id])) tag.name,
+      ],
+    );
+    if (data == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addCustomItem(
+          data.toNewCustomMedia(),
+          coverBytes: data.coverBytes,
+          userComment: data.comment,
+          tags: data.tags,
+        );
+    if (!mounted || !success) return;
+    context.showSnack(
+      '${S.of(context).customItemCreated}: ${data.title}',
+      type: SnackType.success,
+    );
+  }
+
+  /// The cached file is what the card shows now; without it (cache off, not
+  /// downloaded, web) addCustomItem fetches the draft's coverUrl itself.
+  Future<Uint8List?> _cachedCoverOf(CollectionItem item) async {
+    try {
+      return await ref
+          .read(imageCacheServiceProvider)
+          .readImageBytes(item.imageType, item.coverImageId);
+    } on Exception catch (e) {
+      _log.warning('Duplicate: cached cover unreadable, using its URL', e);
+      return null;
+    }
   }
 
   Future<void> _removeFromCollection(CollectionItem item) async {

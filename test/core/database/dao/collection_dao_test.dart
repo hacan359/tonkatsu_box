@@ -245,21 +245,40 @@ void main() {
 
     group('deleteCollection', () {
       test('deletes by id', () async {
+        mockDb.stubTransaction(mockTxn);
         when(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collections',
             where: 'id = ?',
             whereArgs: <Object?>[1],
           ),
         ).thenAnswer((_) async => 1);
+        when(() => mockTxn.query(
+              'collection_items',
+              distinct: true,
+              columns: any(named: 'columns'),
+              where: any(named: 'where'),
+              whereArgs: any(named: 'whereArgs'),
+            )).thenAnswer((_) async => <Map<String, Object?>>[
+              <String, Object?>{'external_id': 7},
+            ]);
+        when(() => mockTxn.rawDelete(any(), any())).thenAnswer((_) async => 1);
 
         await dao.deleteCollection(1);
 
         verify(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collections',
             where: 'id = ?',
             whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+        // Only the cards the removed rows held are re-checked, in the same
+        // transaction.
+        verify(
+          () => mockTxn.rawDelete(
+            any(that: contains('DELETE FROM custom_items')),
+            <Object?>[7],
           ),
         ).called(1);
       });
@@ -901,21 +920,40 @@ void main() {
 
     group('removeItemFromCollection', () {
       test('deletes by id', () async {
+        mockDb.stubTransaction(mockTxn);
         when(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collection_items',
             where: 'id = ?',
             whereArgs: <Object?>[1],
           ),
         ).thenAnswer((_) async => 1);
+        when(() => mockTxn.query(
+              'collection_items',
+              distinct: true,
+              columns: any(named: 'columns'),
+              where: any(named: 'where'),
+              whereArgs: any(named: 'whereArgs'),
+            )).thenAnswer((_) async => <Map<String, Object?>>[
+              <String, Object?>{'external_id': 7},
+            ]);
+        when(() => mockTxn.rawDelete(any(), any())).thenAnswer((_) async => 1);
 
         await dao.removeItemFromCollection(1);
 
         verify(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collection_items',
             where: 'id = ?',
             whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+        // Only the cards the removed rows held are re-checked, in the same
+        // transaction.
+        verify(
+          () => mockTxn.rawDelete(
+            any(that: contains('DELETE FROM custom_items')),
+            <Object?>[7],
           ),
         ).called(1);
       });
@@ -1626,39 +1664,77 @@ void main() {
 
     group('clearCollectionItems', () {
       test('clears by collectionId', () async {
+        mockDb.stubTransaction(mockTxn);
         when(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collection_items',
             where: 'collection_id = ?',
             whereArgs: <Object?>[1],
           ),
         ).thenAnswer((_) async => 5);
+        when(() => mockTxn.query(
+              'collection_items',
+              distinct: true,
+              columns: any(named: 'columns'),
+              where: any(named: 'where'),
+              whereArgs: any(named: 'whereArgs'),
+            )).thenAnswer((_) async => <Map<String, Object?>>[
+              <String, Object?>{'external_id': 7},
+            ]);
+        when(() => mockTxn.rawDelete(any(), any())).thenAnswer((_) async => 1);
 
         await dao.clearCollectionItems(1);
 
         verify(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collection_items',
             where: 'collection_id = ?',
             whereArgs: <Object?>[1],
           ),
         ).called(1);
+        // Only the cards the removed rows held are re-checked, in the same
+        // transaction.
+        verify(
+          () => mockTxn.rawDelete(
+            any(that: contains('DELETE FROM custom_items')),
+            <Object?>[7],
+          ),
+        ).called(1);
       });
 
       test('clears uncategorized when null', () async {
+        mockDb.stubTransaction(mockTxn);
         when(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collection_items',
             where: 'collection_id IS NULL',
           ),
         ).thenAnswer((_) async => 2);
+        when(() => mockTxn.query(
+              'collection_items',
+              distinct: true,
+              columns: any(named: 'columns'),
+              where: any(named: 'where'),
+              whereArgs: any(named: 'whereArgs'),
+            )).thenAnswer((_) async => <Map<String, Object?>>[
+              <String, Object?>{'external_id': 7},
+            ]);
+        when(() => mockTxn.rawDelete(any(), any())).thenAnswer((_) async => 1);
 
         await dao.clearCollectionItems(null);
 
         verify(
-          () => mockDb.delete(
+          () => mockTxn.delete(
             'collection_items',
             where: 'collection_id IS NULL',
+          ),
+        ).called(1);
+        // Only the cards the removed rows held are re-checked, in the same
+        // transaction.
+        verify(
+          () => mockTxn.rawDelete(
+            any(that: contains('DELETE FROM custom_items')),
+            <Object?>[7],
           ),
         ).called(1);
       });

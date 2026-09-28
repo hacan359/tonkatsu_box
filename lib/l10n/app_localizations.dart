@@ -7544,6 +7544,12 @@ abstract class S {
   /// **'Copy to collection'**
   String get collectionCopyToCollection;
 
+  /// No description provided for @duplicateAsCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate as custom item'**
+  String get duplicateAsCustom;
+
   /// No description provided for @collectionItemCopiedTo.
   ///
   /// In en, this message translates to:

@@ -6,6 +6,7 @@ import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/item_mark.dart';
@@ -1124,6 +1125,36 @@ void main() {
         expect(gameData['name'], equals('Test Game'));
         expect(gameData['genres'], equals('Action|RPG'));
         expect(gameData.containsKey('cached_at'), isFalse);
+      });
+
+      test('keeps the cards of a collection holding only custom items',
+          () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+        );
+        final List<CollectionItem> items = <CollectionItem>[
+          for (final int id in <int>[55, 56])
+            createTestCollectionItem(
+              id: id,
+              mediaType: MediaType.custom,
+              externalId: id,
+              customMedia: CustomMedia(id: id, title: 'Card $id'),
+            ),
+        ];
+
+        final XcollFile xcoll = await sutMedia.createFullExport(
+          createTestCollection(),
+          items,
+          1,
+        );
+
+        final List<dynamic> cards =
+            xcoll.media['custom_items'] as List<dynamic>;
+        expect(
+          cards.map((dynamic c) => (c as Map<String, dynamic>)['id']),
+          <int>[55, 56],
+        );
       });
 
       test('должен включить movie данные через toDb()', () async {

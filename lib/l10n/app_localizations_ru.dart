@@ -4297,6 +4297,9 @@ class SRu extends S {
   String get collectionCopyToCollection => 'Копировать в коллекцию';
 
   @override
+  String get duplicateAsCustom => 'Дублировать как свой тайтл';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name скопирован в $collection';
   }

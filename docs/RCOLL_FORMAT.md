@@ -365,6 +365,7 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 | tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
 | audio_items | array | AudioItem objects (id, source, kind, native_id, title, artists, description, language, primary_type, release_year, genres, rating, release_mbid, track_count, disc_count, cover_url, external_url, ...); albums hash the release-group MBID into `id` (fnv1a53 — 53 bits, so a JS double holds it exactly), podcasts store the Podcast Index feed id as-is — both stable across devices |
 | audio_tracks | array | AudioTrack objects (source, audio_id, disc_number, position, title, native_id, length_ms, artists, date_published); album tracks of the picked release or podcast episodes — lets an offline import restore the list without a provider round-trip |
+| custom_items | array | CustomMedia objects (id, title, display_type, alt_title, description, cover_url, year, genres, platform_name, platform_id, format, unit_total, unit_group_total, external_url); `id` is local to the exporting database, items of type `custom` point at it through `external_id` |
 
 All arrays are optional — only non-empty categories are included.
 
@@ -442,3 +443,9 @@ When `media` is absent (light export or older full exports), the app refetches e
 7. Restores tier lists — creates tier list, saves definitions, resolves entries via `itemIdMapping` (`media_type:external_id` → new item ID)
 8. Restores tracker data (RA progress) if present — upserts into `tracker_game_data`
 9. Restores per-item marks (embedded in `_marks` field of each item, when `user_data` is present) — re-anchored to the new item ID; idempotent on re-import
+
+Custom cards (`media.custom_items`) keep their `id` when nothing in the target
+database uses it — no card, no `custom` item, board card or mood grid cell.
+A taken id gets a new one, and items, board cards and `custom_covers/<id>…`
+images follow it. A `custom` item whose card is missing from the file is not
+imported; a light `.xcoll` carries no cards, so it imports none of them.

@@ -4230,6 +4230,9 @@ class SEn extends S {
   String get collectionCopyToCollection => 'Copy to collection';
 
   @override
+  String get duplicateAsCustom => 'Duplicate as custom item';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copied to $collection';
   }

@@ -8,7 +8,15 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/screen_app_bar.dart';
 
-enum ItemDetailMenuAction { refresh, rename, move, clone, copyLink, remove }
+enum ItemDetailMenuAction {
+  refresh,
+  rename,
+  move,
+  clone,
+  duplicateAsCustom,
+  copyLink,
+  remove,
+}
 
 class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ItemDetailAppBar({
@@ -151,6 +159,12 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Icons.copy_outlined,
                 l.collectionCopyToCollection,
               ),
+              if (item.mediaType != MediaType.custom)
+                _menuItem(
+                  ItemDetailMenuAction.duplicateAsCustom,
+                  Icons.control_point_duplicate,
+                  l.duplicateAsCustom,
+                ),
               _menuItem(
                 ItemDetailMenuAction.copyLink,
                 Icons.link,

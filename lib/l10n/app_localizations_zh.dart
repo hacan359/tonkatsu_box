@@ -4000,6 +4000,9 @@ class SZh extends S {
   String get collectionCopyToCollection => '复制到收藏';
 
   @override
+  String get duplicateAsCustom => '复制为自定义项目';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name 已复制到 $collection';
   }

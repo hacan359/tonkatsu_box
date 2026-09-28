@@ -4289,6 +4289,9 @@ class SEs extends S {
   String get collectionCopyToCollection => 'Copiar a colección';
 
   @override
+  String get duplicateAsCustom => 'Duplicar como elemento personalizado';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copiado a $collection';
   }

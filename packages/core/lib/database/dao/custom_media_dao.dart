@@ -79,19 +79,42 @@ class CustomMediaDao {
     );
   }
 
-  /// Upsert keeping the original IDs — used by import.
-  Future<void> upsertAll(List<CustomMedia> items) async {
-    if (items.isEmpty) return;
+  /// Import keeps a card's own id while nothing here uses it, so a restore
+  /// into an empty profile is lossless; a taken id gets a fresh one.
+  Future<List<int>> importAll(List<CustomMedia> items) async {
+    if (items.isEmpty) return const <int>[];
     final Database db = await _getDatabase();
-    final Batch batch = db.batch();
-    for (final CustomMedia item in items) {
-      batch.insert(
-        'custom_items',
-        item.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
+    return db.transaction((Transaction txn) async {
+      final List<int> ids = <int>[];
+      for (final CustomMedia item in items) {
+        final Map<String, dynamic> data = item.toDb();
+        if (!await _isIdFree(txn, item.id)) data.remove('id');
+        ids.add(await txn.insert('custom_items', data));
+      }
+      return ids;
+    });
+  }
+
+  // Anything still holding the id - item, board card, grid cell - would
+  // adopt the new card.
+  static Future<bool> _isIdFree(DatabaseExecutor db, int id) async {
+    if (id <= 0) return false;
+    final List<Map<String, Object?>> rows = await db.rawQuery(
+      '''
+      SELECT 1 FROM custom_items WHERE id = ?
+      UNION ALL
+      SELECT 1 FROM collection_items
+      WHERE media_type = 'custom' AND external_id = ?
+      UNION ALL
+      SELECT 1 FROM canvas_items WHERE item_type = 'custom' AND item_ref_id = ?
+      UNION ALL
+      SELECT 1 FROM mood_grid_cells
+      WHERE media_type = 'custom' AND external_id = ?
+      LIMIT 1
+      ''',
+      <Object?>[id, id, id, id],
+    );
+    return rows.isEmpty;
   }
 
   Future<void> delete(int id) async {
