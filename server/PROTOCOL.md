@@ -45,11 +45,14 @@ also points `/proxy` (below) at that server.
 ```
 
 ```json
-{ "ok": false, "error": { "kind": "database", "message": "UNIQUE constraint failed" } }
+{ "ok": false, "error": { "kind": "database", "message": "SQLite error 2067" } }
 ```
 
 - `kind` is a stable machine-readable tag (`database`, `notFound`,
   `badRequest`, `protocol`, `internal`); `message` is for logs, never parsed.
+- `message` never carries the failing statement, its bound values or a stack
+  trace: a `database` error names the SQLite result code only, an `internal`
+  one is a fixed phrase. The full text goes to the server log.
 - The client rethrows the error as the same exception type the local DAO would
   have thrown, so callers above the DAO layer see no difference.
 - HTTP status stays `200` for a DAO-level error — the call reached the DAO and

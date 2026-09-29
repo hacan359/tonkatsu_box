@@ -553,8 +553,12 @@ class EpisodeTrackerNotifier
         await loadSeason(seasonNumber);
       }
 
-      final Map<(int, int), DateTime?> updated =
-          Map<(int, int), DateTime?>.of(state.watchedEpisodes);
+      // State may still be loading on a freshly built tracker; the DB knows
+      // which marks already exist and must keep their dates.
+      final Map<(int, int), DateTime?> updated = <(int, int), DateTime?>{
+        ...await _db.tvShowDao.getWatchedEpisodes(collId, _source, _showId),
+        ...state.watchedEpisodes,
+      };
       final List<(int, int, int?)> rows = <(int, int, int?)>[];
       for (final int seasonNumber in seasonNumbers) {
         final List<TvEpisode> episodes =

@@ -123,6 +123,37 @@ void main() {
       expect(asObject(body['error'])['kind'], 'database');
     });
 
+    test('should keep the statement out of a database error', () async {
+      final List<String> log = <String>[];
+      final Handler rpc =
+          buildRpcHandler(DaoRegistry(bootstrap.db), log: log.add);
+      final Response response = await rpc(Request(
+        'POST',
+        Uri.parse('http://localhost/rpc'),
+        body: jsonEncode(envelope(
+          'addItemToCollection',
+          <String, Object?>{
+            'collectionId': '999',
+            'mediaType': 'movie',
+            'externalId': '1',
+            'platformId': null,
+            'source': null,
+            'authorComment': null,
+            'status': 'planned',
+            'addedAt': null,
+          },
+        )),
+      ));
+      final Map<String, Object?> body =
+          asObject(jsonDecode(await response.readAsString()));
+
+      final Object? message = asObject(body['error'])['message'];
+      expect(message, matches(RegExp(r'^SQLite error \d+$')));
+      expect(log, hasLength(1));
+      expect(log.single, contains('CollectionDao.addItemToCollection'));
+      expect(log.single, contains('collection_items'));
+    });
+
     test('should answer 400 on a malformed body', () async {
       final Response response = await handler(Request(
         'POST',
