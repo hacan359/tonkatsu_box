@@ -34,7 +34,11 @@ enum ImageType {
 
   /// Detail-screen backdrops, keyed by a hash of the source URL — the only
   /// identity a raw provider URL has.
-  backdrop('backdrops');
+  backdrop('backdrops'),
+
+  /// A user's replacement cover for a collection item. Own folder, so the
+  /// orphan sweep can tell it from the provider covers it keeps beside it.
+  coverOverride('cover_overrides');
 
   const ImageType(this.folder);
 

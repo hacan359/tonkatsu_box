@@ -371,41 +371,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 ),
               ),
 
-            // Scrim: ~25% at idle, fades to transparent on hover.
-            AnimatedBuilder(
-              animation: _hoverController!,
-              builder: (BuildContext context, Widget? child) {
-                final int alpha =
-                    (0x40 * (1.0 - _hoverController!.value)).round();
-                return Positioned.fill(
-                  child: ColoredBox(
-                    color: Color.fromARGB(alpha, 0, 0, 0),
-                  ),
-                );
-              },
-            ),
-
-            AnimatedBuilder(
-              animation: _hoverController!,
-              builder: (BuildContext context, Widget? child) {
-                if (_hoverController!.value == 0) {
-                  return const SizedBox.shrink();
-                }
-                return Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.textPrimary.withAlpha(
-                          (40 * _hoverController!.value).round(),
-                        ),
-                      ),
-                      borderRadius: BorderRadius.circular(borderRadius),
-                    ),
-                  ),
-                );
-              },
-            ),
-
             // The personal badge is split-mode only — otherwise both ratings
             // render in the subtitle line under the poster.
             if ((widget.splitRatings && widget.userRating != null) ||

@@ -5,8 +5,8 @@ class CanvasDao {
 
   final Future<Database> Function() _getDatabase;
 
-  /// Joined `override_name` is the rename on the matching `collection_items`
-  /// row; it is per-collection, so any per-platform row will do.
+  /// Joined `override_name` / `override_cover_url` come from the matching
+  /// `collection_items` row; they are per-collection, so any platform row does.
   Future<List<Map<String, dynamic>>> getCanvasItems(int collectionId) async {
     final Database db = await _getDatabase();
     return db.rawQuery(
@@ -18,7 +18,14 @@ class CanvasDao {
           AND col.media_type = ci.item_type
           AND col.external_id = ci.item_ref_id
         LIMIT 1
-      ) AS override_name
+      ) AS override_name, (
+        SELECT col.override_cover_url
+        FROM collection_items col
+        WHERE col.collection_id = ci.collection_id
+          AND col.media_type = ci.item_type
+          AND col.external_id = ci.item_ref_id
+        LIMIT 1
+      ) AS override_cover_url
       FROM canvas_items ci
       WHERE ci.collection_id = ? AND ci.collection_item_id IS NULL
       ORDER BY ci.z_index ASC
@@ -222,7 +229,14 @@ class CanvasDao {
           AND col.media_type = ci.item_type
           AND col.external_id = ci.item_ref_id
         LIMIT 1
-      ) AS override_name
+      ) AS override_name, (
+        SELECT col.override_cover_url
+        FROM collection_items col
+        WHERE col.collection_id = ci.collection_id
+          AND col.media_type = ci.item_type
+          AND col.external_id = ci.item_ref_id
+        LIMIT 1
+      ) AS override_cover_url
       FROM canvas_items ci
       WHERE ci.collection_item_id = ?
       ''',

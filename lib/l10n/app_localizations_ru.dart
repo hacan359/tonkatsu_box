@@ -4300,6 +4300,27 @@ class SRu extends S {
   String get duplicateAsCustom => 'Дублировать как свой тайтл';
 
   @override
+  String get coverOverrideChange => 'Сменить обложку';
+
+  @override
+  String get coverOverrideReset => 'Вернуть оригинальную обложку';
+
+  @override
+  String get coverOverrideSaveFailed => 'Не удалось сохранить обложку';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Сделать обложкой';
+
+  @override
+  String get coverPickerLoadFailed => 'Не удалось загрузить обложки';
+
+  @override
+  String get coverPickerEmpty => 'Обложек не нашлось';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name скопирован в $collection';
   }

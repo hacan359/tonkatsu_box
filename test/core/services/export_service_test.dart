@@ -237,6 +237,39 @@ void main() {
         expect(xcoll.canvas, isNull);
       });
 
+      test('should carry a cover override that .xcoll leaves out', () async {
+        when(() => mockCanvasRepo.getViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        when(() => mockCanvasRepo.getGameCanvasItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getGameCanvasViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getGameCanvasConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestCollectionItem(
+            id: 10,
+            externalId: 100,
+            overrideCoverUrl: 'https://example.com/mine.png',
+          ),
+        ];
+
+        final XcollFile full =
+            await sutFull.createFullExport(collection, items, 1);
+        final XcollFile light = sutFull.createLightExport(collection, items);
+
+        expect(
+          full.items.single['override_cover_url'],
+          'https://example.com/mine.png',
+        );
+        expect(light.items.single.containsKey('override_cover_url'), isFalse);
+      });
+
       test('должен включить collection canvas', () async {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[];

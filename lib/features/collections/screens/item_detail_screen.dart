@@ -43,6 +43,9 @@ import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
 import '../helpers/custom_duplicate.dart';
 import '../widgets/create_custom_item_dialog.dart';
+import '../widgets/cover_override/igdb_cover_picker.dart';
+import '../widgets/cover_override/steamgriddb_cover_picker.dart';
+import '../widgets/custom_item/cover_image_picker.dart';
 import '../providers/collections_provider.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
@@ -202,6 +205,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         _refreshFromApi(item);
       case ItemDetailMenuAction.rename:
         _renameItem(item);
+      case ItemDetailMenuAction.changeCover:
+        _changeCover(item);
+      case ItemDetailMenuAction.resetCover:
+        _setCoverOverride(item);
       case ItemDetailMenuAction.move:
         _moveToCollection(item);
       case ItemDetailMenuAction.clone:
@@ -377,6 +384,78 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           collectionItemsNotifierProvider(widget.collectionId).notifier,
         )
         .setOverrideName(item.id, newName);
+  }
+
+  Future<void> _changeCover(CollectionItem item) async {
+    final S l = S.of(context);
+    final String? current = item.overrideCoverUrl;
+    final bool isGame = item.mediaType == MediaType.game;
+    final bool offerSteamGridDb =
+        isGame && ref.read(settingsNotifierProvider).hasSteamGridDbKey;
+    final CoverPickResult? picked = await pickCustomCoverImage(
+      context,
+      currentUrl:
+          current == null || CustomMedia.isLocalCover(current) ? '' : current,
+      extraSources: <CoverPickSource>[
+        if (isGame)
+          CoverPickSource(
+            icon: Icons.sports_esports_outlined,
+            label: l.coverSourceIgdb,
+            pick: (BuildContext ctx) async {
+              final String? url =
+                  await pickIgdbCover(ctx, igdbGameId: item.externalId);
+              return url == null ? null : CoverPickResult.url(url);
+            },
+          ),
+        if (offerSteamGridDb)
+          CoverPickSource(
+            icon: Icons.grid_view,
+            label: l.steamGridDbPanelTitle,
+            pick: (BuildContext ctx) async {
+              final String? url = await pickSteamGridDbCover(
+                ctx,
+                gameName: item.cachedName ?? item.itemName,
+              );
+              return url == null ? null : CoverPickResult.url(url);
+            },
+          ),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    await _setCoverOverride(item, bytes: picked.bytes, url: picked.url);
+  }
+
+  /// ScreenScraper media URLs carry the account's credentials, so the picture
+  /// is stored as an uploaded file rather than by its link.
+  Future<void> _setCoverFromGallery(CollectionItem item, String url) async {
+    final Uint8List? bytes =
+        await ref.read(imageCacheServiceProvider).fetchImageBytes(url);
+    if (!mounted) return;
+    if (bytes == null) {
+      context.showSnack(
+        S.of(context).coverOverrideSaveFailed,
+        type: SnackType.error,
+      );
+      return;
+    }
+    await _setCoverOverride(item, bytes: bytes);
+  }
+
+  /// Neither [bytes] nor [url] resets the card to its API cover.
+  Future<void> _setCoverOverride(
+    CollectionItem item, {
+    Uint8List? bytes,
+    String? url,
+  }) async {
+    final bool ok = await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .setCoverOverride(item.id, bytes: bytes, url: url);
+    if (!ok && mounted) {
+      context.showSnack(
+        S.of(context).coverOverrideSaveFailed,
+        type: SnackType.error,
+      );
+    }
   }
 
   Future<void> _moveToCollection(CollectionItem item) async {
@@ -788,6 +867,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       mediaGallery: ScreenScraperGallerySection(
         gameName: item.itemName,
         igdbPlatformId: item.platformId,
+        onSetAsCover: widget.isEditable && item.mediaType == MediaType.game
+            ? (String url) => _setCoverFromGallery(item, url)
+            : null,
       ),
       extraSections: <Widget>[
         if (widget.collectionId == null)

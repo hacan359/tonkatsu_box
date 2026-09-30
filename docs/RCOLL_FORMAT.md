@@ -196,6 +196,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
 | _canvas | object | no | Per-item canvas data (full only) |
+| override_cover_url | string | no | The user's replacement cover (full only): a link as is, or `local://cover/<token>` for an uploaded picture that travels as `cover_overrides/<token>` in `images`. Restored on import with or without `user_data`; a light `.xcoll` never writes it and its reader ignores it |
 | tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
@@ -341,6 +342,10 @@ Key format: `{ImageType.folder}/{imageId}`
 - `vn_covers/17` — visual novel cover for VNDB numeric ID 17
 - `manga_covers/anilist_123` — manga cover, namespaced by provider (`anilist_` / `mangabaka_`). Pre-v44 files use a bare `manga_covers/123` and are remapped to `anilist_` on import
 - `anime_covers/anilist_123` — anime cover, namespaced by provider (`anilist_` / `kitsu_`). Pre-v60 files use a bare `anime_covers/123` and are remapped to `anilist_` on import
+
+**Cover overrides** — an item with `override_cover_url` ships that picture instead of its API cover:
+- `cover_overrides/1700000000000` — an uploaded picture, keyed by the token of its `local://cover/<token>` marker
+- `cover_overrides/u3k9x2m1q` — a linked picture, keyed by `u` + base-36 FNV-1a 53-bit hash of the link
 
 **Canvas images** — `imageId` is FNV-1a 32-bit hash of the image URL:
 - `canvas_images/a1b2c3d4` — image added to the canvas board

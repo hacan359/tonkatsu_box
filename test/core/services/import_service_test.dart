@@ -1748,6 +1748,58 @@ void main() {
             .thenAnswer((_) async => <CanvasItem>[]);
       }
 
+      group('cover override', () {
+        const String marker = 'local://cover/1700000000000';
+
+        XcollFile xcollWithOverride(ExportFormat format) => XcollFile(
+              version: 2,
+              format: format,
+              name: 'Images Test',
+              author: 'Author',
+              created: testDate,
+              items: const <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'media_type': 'game',
+                  'external_id': 100,
+                  'platform_id': 18,
+                  'override_cover_url': marker,
+                },
+              ],
+              images: const <String, String>{
+                'cover_overrides/1700000000000': 'iVBORw0KGgo=',
+              },
+            );
+
+        setUp(() {
+          setupDefaultMocks();
+          when(() => mockDb.setItemOverrideCoverUrl(any(), any()))
+              .thenAnswer((_) async {});
+          when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+              .thenAnswer((_) async => true);
+        });
+
+        test('should restore the override and its file from .xcollx',
+            () async {
+          final ImportResult result = await sutImages
+              .importFromXcoll(xcollWithOverride(ExportFormat.full));
+
+          expect(result.success, isTrue);
+          verify(() => mockDb.setItemOverrideCoverUrl(10, marker)).called(1);
+          verify(() => mockImageCache.saveImageBytes(
+                ImageType.coverOverride,
+                '1700000000000',
+                any(),
+              )).called(1);
+        });
+
+        test('should ignore an override carried by a light .xcoll', () async {
+          await sutImages
+              .importFromXcoll(xcollWithOverride(ExportFormat.light));
+
+          verifyNever(() => mockDb.setItemOverrideCoverUrl(any(), any()));
+        });
+      });
+
       test('должен восстановить game_covers изображение в кэш', () async {
         setupDefaultMocks();
         final Uint8List testBytes =

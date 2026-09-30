@@ -288,11 +288,11 @@ class _FanPoster extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          if (cover.thumbnailUrl != null)
+          if (cover.displayUrl case final String url)
             CachedImage(
               imageType: cover.imageType,
               imageId: cover.coverImageId,
-              remoteUrl: cover.thumbnailUrl!,
+              remoteUrl: url,
               fit: BoxFit.cover,
               memCacheWidth: 200,
               placeholder: const SizedBox.shrink(),

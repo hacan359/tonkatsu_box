@@ -50,12 +50,16 @@ class ScreenScraperGallerySection extends ConsumerWidget {
     required this.gameName,
     required this.igdbPlatformId,
     this.mode = ScreenScraperGalleryMode.full,
+    this.onSetAsCover,
     super.key,
   });
 
   final String gameName;
   final int? igdbPlatformId;
   final ScreenScraperGalleryMode mode;
+
+  /// Gets the tile's image URL; `null` hides the "make it the cover" menu.
+  final ValueChanged<String>? onSetAsCover;
 
   bool get _isSupportedPlatform =>
       igdbPlatformId != null &&
@@ -219,6 +223,9 @@ class ScreenScraperGallerySection extends ConsumerWidget {
                 return _Thumbnail(
                   entry: e,
                   onTap: () => _openViewer(context, i, entries),
+                  onSetAsCover: onSetAsCover == null
+                      ? null
+                      : () => onSetAsCover!(e.imageUrl),
                 );
               },
             ),
@@ -257,16 +264,55 @@ class _GalleryEntry {
 }
 
 class _Thumbnail extends StatelessWidget {
-  const _Thumbnail({required this.entry, required this.onTap});
+  const _Thumbnail({
+    required this.entry,
+    required this.onTap,
+    this.onSetAsCover,
+  });
 
   final _GalleryEntry entry;
   final VoidCallback onTap;
+  final VoidCallback? onSetAsCover;
+
+  // Right click on Windows, long press on Android — the platform's own
+  // gesture for a context menu.
+  Future<void> _showMenu(BuildContext context, Offset position) async {
+    final VoidCallback? setAsCover = onSetAsCover;
+    if (setAsCover == null) return;
+    final bool? picked = await showMenu<bool>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: <PopupMenuEntry<bool>>[
+        PopupMenuItem<bool>(
+          value: true,
+          child: ListTile(
+            leading: const Icon(Icons.image_outlined),
+            title: Text(S.of(context).coverOverrideSetFromGallery),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    );
+    if (picked ?? false) setAsCover();
+  }
 
   @override
   Widget build(BuildContext context) {
     final double width = 120 * entry.aspect.clamp(0.5, 1.5);
+    final bool hasMenu = onSetAsCover != null;
     return GestureDetector(
       onTap: onTap,
+      onSecondaryTapUp: hasMenu
+          ? (TapUpDetails d) => _showMenu(context, d.globalPosition)
+          : null,
+      onLongPressStart: hasMenu
+          ? (LongPressStartDetails d) => _showMenu(context, d.globalPosition)
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

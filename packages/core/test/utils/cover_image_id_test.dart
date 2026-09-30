@@ -210,4 +210,37 @@ void main() {
       }
     });
   });
+
+  group('overrideCoverImageId', () {
+    test('should use the token of an uploaded file', () {
+      expect(
+        overrideCoverImageId(CustomMedia.localCoverMarkerFor(123)),
+        '123',
+      );
+    });
+
+    test('should hash a link to a stable file-safe id', () {
+      final String id = overrideCoverImageId('https://example.com/a.png');
+
+      expect(id, overrideCoverImageId('https://example.com/a.png'));
+      expect(id, matches(RegExp(r'^u[0-9a-z]+$')));
+    });
+
+    test('should give different links and uploads different ids', () {
+      expect(
+        overrideCoverImageId('https://example.com/a.png'),
+        isNot(overrideCoverImageId('https://example.com/b.png')),
+      );
+      expect(
+        overrideCoverImageId(CustomMedia.localCoverMarkerFor(1)),
+        isNot(overrideCoverImageId(CustomMedia.localCoverMarkerFor(2))),
+      );
+    });
+
+    test('should hash a marker whose token is not file-safe', () {
+      final String id = overrideCoverImageId('local://cover/../../x');
+
+      expect(id, matches(RegExp(r'^u[0-9a-z]+$')));
+    });
+  });
 }

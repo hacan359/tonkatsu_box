@@ -4299,6 +4299,27 @@ class SFr extends S {
   String get duplicateAsCustom => 'Dupliquer en titre personnalisé';
 
   @override
+  String get coverOverrideChange => 'Changer l\'image';
+
+  @override
+  String get coverOverrideReset => 'Rétablir l\'image d\'origine';
+
+  @override
+  String get coverOverrideSaveFailed => 'Impossible d\'enregistrer l\'image';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Utiliser comme image';
+
+  @override
+  String get coverPickerLoadFailed => 'Impossible de charger les images';
+
+  @override
+  String get coverPickerEmpty => 'Aucune image trouvée';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copier vers $collection';
   }

@@ -29,6 +29,7 @@ class CacheCleanupService {
     ImageType.mangaCover,
     ImageType.bookCover,
     ImageType.audioCover,
+    ImageType.coverOverride,
   };
 
   Future<CacheCleanupResult> removeOrphans() async {
@@ -36,12 +37,14 @@ class CacheCleanupService {
       for (final ImageType type in _cleanableTypes) type: <String>{},
     };
 
-    // Same getters the display/download sides use, so kept ids line up with
-    // the files on disk; items outside the cleanable set (custom) are ignored.
+    // A live item keeps both files: its override and the API cover under it,
+    // so restoring the original needs no download. Custom items are ignored.
     final List<CollectionItem> items = await _collections.getAllItemsWithData();
     for (final CollectionItem item in items) {
-      final Set<String>? bucket = keep[item.imageType];
-      if (bucket != null) bucket.add(item.coverImageId);
+      keep[item.cachedImageType]?.add(item.cachedCoverImageId);
+      if (item.overrideCoverUrl != null) {
+        keep[ImageType.coverOverride]?.add(item.coverImageId);
+      }
     }
 
     return _cache.removeOrphans(keep);

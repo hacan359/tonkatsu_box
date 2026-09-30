@@ -11,6 +11,8 @@ import '../../../../shared/widgets/screen_app_bar.dart';
 enum ItemDetailMenuAction {
   refresh,
   rename,
+  changeCover,
+  resetCover,
   move,
   clone,
   duplicateAsCustom,
@@ -148,6 +150,19 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ItemDetailMenuAction.rename,
                   Icons.drive_file_rename_outline,
                   l.rename,
+                ),
+              if (item.mediaType != MediaType.custom)
+                _menuItem(
+                  ItemDetailMenuAction.changeCover,
+                  Icons.image_outlined,
+                  l.coverOverrideChange,
+                ),
+              if (item.mediaType != MediaType.custom &&
+                  item.overrideCoverUrl != null)
+                _menuItem(
+                  ItemDetailMenuAction.resetCover,
+                  Icons.settings_backup_restore,
+                  l.coverOverrideReset,
                 ),
               _menuItem(
                 ItemDetailMenuAction.move,

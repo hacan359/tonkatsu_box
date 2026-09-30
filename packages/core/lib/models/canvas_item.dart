@@ -115,6 +115,7 @@ class CanvasItem with Exportable {
     this.audioItem,
     this.customMedia,
     this.overrideName,
+    this.overrideCoverUrl,
   });
 
   factory CanvasItem.fromDb(Map<String, dynamic> row) {
@@ -141,6 +142,7 @@ class CanvasItem with Exportable {
         (row['created_at'] as int) * 1000,
       ),
       overrideName: row['override_name'] as String?,
+      overrideCoverUrl: row['override_cover_url'] as String?,
     );
   }
 
@@ -225,6 +227,9 @@ class CanvasItem with Exportable {
   /// the same collection — transient, never written back to `canvas_items`.
   final String? overrideName;
 
+  /// Joined `collection_items.override_cover_url`, transient like [overrideName].
+  final String? overrideCoverUrl;
+
   String? get mediaTitle {
     if (overrideName != null) return overrideName;
     return switch (itemType) {
@@ -243,6 +248,7 @@ class CanvasItem with Exportable {
   }
 
   String? get mediaThumbnailUrl {
+    if (overrideCoverUrl != null) return overrideCoverUrl;
     return switch (itemType) {
       CanvasItemType.game => game?.coverUrl,
       CanvasItemType.movie => movie?.posterThumbUrl,
@@ -261,6 +267,7 @@ class CanvasItem with Exportable {
   }
 
   ImageType get mediaImageType {
+    if (overrideCoverUrl != null) return ImageType.coverOverride;
     return switch (itemType) {
       CanvasItemType.game => ImageType.gameCover,
       CanvasItemType.movie => ImageType.moviePoster,
@@ -279,6 +286,8 @@ class CanvasItem with Exportable {
   }
 
   String get mediaCacheId {
+    final String? override = overrideCoverUrl;
+    if (override != null) return cover_id.overrideCoverImageId(override);
     return switch (itemType) {
       CanvasItemType.game => (game?.id ?? 0).toString(),
       CanvasItemType.movie => cover_id.coverImageId(
@@ -408,6 +417,8 @@ class CanvasItem with Exportable {
     CustomMedia? customMedia,
     String? overrideName,
     bool clearOverrideName = false,
+    String? overrideCoverUrl,
+    bool clearOverrideCoverUrl = false,
   }) {
     return CanvasItem(
       id: id ?? this.id,
@@ -433,6 +444,9 @@ class CanvasItem with Exportable {
       customMedia: customMedia ?? this.customMedia,
       overrideName:
           clearOverrideName ? null : (overrideName ?? this.overrideName),
+      overrideCoverUrl: clearOverrideCoverUrl
+          ? null
+          : (overrideCoverUrl ?? this.overrideCoverUrl),
     );
   }
 

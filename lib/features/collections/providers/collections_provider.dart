@@ -1299,6 +1299,75 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
   }
 
+  /// Uploaded [bytes] or a [url] become the item's cover; neither restores the
+  /// API one. False when the uploaded file could not be stored.
+  Future<bool> setCoverOverride(
+    int id, {
+    Uint8List? bytes,
+    String? url,
+  }) async {
+    final CollectionItem? item =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    final String? previous = item?.overrideCoverUrl;
+    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+
+    String? next;
+    if (bytes != null) {
+      final String marker = CustomMedia.localCoverMarkerFor(
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      final bool saved = await cache.saveImageBytes(
+        ImageType.coverOverride,
+        overrideCoverImageId(marker),
+        bytes,
+      );
+      if (!saved) return false;
+      next = marker;
+    } else if (url != null && url.trim().isNotEmpty) {
+      next = url.trim();
+    }
+    if (next == previous) return true;
+
+    if (next != null && !CustomMedia.isLocalCover(next)) {
+      // Best effort: a miss here is downloaded later by CachedImage itself.
+      await cache.downloadImage(
+        type: ImageType.coverOverride,
+        imageId: overrideCoverImageId(next),
+        remoteUrl: next,
+      );
+    }
+
+    final DateTime now = DateTime.now();
+    await _repository.setItemOverrideCoverUrl(id, next);
+    await _stampActivity(id, now);
+    if (previous != null) await _releaseOverrideCover(cache, previous);
+
+    _patchItem(
+      id,
+      (CollectionItem i) => next == null
+          ? i.copyWith(clearOverrideCoverUrl: true, lastActivityAt: now)
+          : i.copyWith(overrideCoverUrl: next, lastActivityAt: now),
+      affects: const <CollectionSortMode>{CollectionSortMode.lastActivity},
+    );
+    ref.invalidate(collectionCoversProvider(_collectionId));
+    ref.invalidate(allItemsNotifierProvider);
+    return true;
+  }
+
+  /// Dropped right away rather than left to the orphan sweep, but only once no
+  /// other item still shows the file.
+  Future<void> _releaseOverrideCover(
+    ImageCacheService cache,
+    String overrideCoverUrl,
+  ) async {
+    if (await _repository.countItemsWithOverrideCover(overrideCoverUrl) > 0) {
+      return;
+    }
+    final String imageId = overrideCoverImageId(overrideCoverUrl);
+    await cache.deleteImage(ImageType.coverOverride, imageId);
+    await cache.evictDecodedImage(ImageType.coverOverride, imageId);
+  }
+
   /// [rating] is 1.0-10.0 (step 0.1), or null to clear.
   Future<void> updateUserRating(int id, double? rating) async {
     assert(

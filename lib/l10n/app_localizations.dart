@@ -7550,6 +7550,48 @@ abstract class S {
   /// **'Duplicate as custom item'**
   String get duplicateAsCustom;
 
+  /// No description provided for @coverOverrideChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change cover'**
+  String get coverOverrideChange;
+
+  /// No description provided for @coverOverrideReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore original cover'**
+  String get coverOverrideReset;
+
+  /// No description provided for @coverOverrideSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the cover'**
+  String get coverOverrideSaveFailed;
+
+  /// No description provided for @coverOverrideSetFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it the cover'**
+  String get coverOverrideSetFromGallery;
+
+  /// No description provided for @coverPickerLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load covers'**
+  String get coverPickerLoadFailed;
+
+  /// No description provided for @coverPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No covers found'**
+  String get coverPickerEmpty;
+
+  /// No description provided for @coverSourceIgdb.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB'**
+  String get coverSourceIgdb;
+
   /// No description provided for @collectionItemCopiedTo.
   ///
   /// In en, this message translates to:

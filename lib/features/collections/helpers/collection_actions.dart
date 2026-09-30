@@ -614,10 +614,12 @@ class CollectionActions {
     final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
     try {
-      await cache.deleteImage(item.imageType, item.coverImageId);
+      // The cached getters: a user's override file must survive the refetch.
+      await cache.deleteImage(item.cachedImageType, item.cachedCoverImageId);
       // The refetched cover lands on the same path, which also keys Flutter's
       // decoded-image cache — without this the old art renders until restart.
-      await cache.evictDecodedImage(item.imageType, item.coverImageId);
+      await cache.evictDecodedImage(
+          item.cachedImageType, item.cachedCoverImageId);
 
       switch (item.mediaType) {
         case MediaType.game:

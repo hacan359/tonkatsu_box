@@ -130,8 +130,10 @@ class ExportService {
     bool includeUserData = false,
   }) async {
     final List<Map<String, dynamic>> exportItems = items
-        .map((CollectionItem i) =>
-            i.toExport(includeUserData: includeUserData))
+        .map((CollectionItem i) => i.toExport(
+              includeUserData: includeUserData,
+              includeCoverOverride: true,
+            ))
         .toList();
 
     ExportCanvas? canvas;

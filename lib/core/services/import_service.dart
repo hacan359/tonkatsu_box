@@ -407,6 +407,7 @@ class ImportService {
           if (xcoll.includesUserData && _hasUserData(parsed)) {
             await _restoreUserData(itemId, parsed);
           }
+          if (xcoll.isFull) await _restoreCoverOverride(itemId, parsed);
 
           final Map<String, dynamic>? perItemCanvas =
               itemData['_canvas'] as Map<String, dynamic>?;
@@ -440,6 +441,7 @@ class ImportService {
           );
           if (existing != null) {
             _registerItemMapping(itemIdMapping, fileItem, existing.id);
+            if (xcoll.isFull) await _restoreCoverOverride(existing.id, parsed);
 
             // Marks are idempotent (insertMarks replaces on the unique key),
             // so re-importing onto an existing item merges, not duplicates.
@@ -593,6 +595,14 @@ class ImportService {
         parsed.isFavorite ||
         parsed.rewatchCount != null ||
         parsed.timeSpentMinutes > 0;
+  }
+
+  /// Only `.xcollx` carries the override, since only it ships the file; an
+  /// item without one keeps whatever cover it already has.
+  Future<void> _restoreCoverOverride(int itemId, CollectionItem parsed) async {
+    final String? url = parsed.overrideCoverUrl;
+    if (url == null || url.isEmpty) return;
+    await _database.setItemOverrideCoverUrl(itemId, url);
   }
 
   Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {

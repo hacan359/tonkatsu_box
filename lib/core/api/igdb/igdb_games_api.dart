@@ -278,6 +278,36 @@ class IgdbGamesApi {
     }
   }
 
+  /// The main cover plus regional ones (a JP box, a re-release) — a handful
+  /// per game, so one page always holds them all.
+  Future<List<String>> getCoverImageIds(int gameId) async {
+    _client.ensureCredentials();
+
+    try {
+      final Response<dynamic> response = await _client.post(
+        '/covers',
+        data: 'fields image_id; where game = $gameId; limit $_coverLimit;',
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to fetch covers',
+          statusCode: response.statusCode,
+        );
+      }
+
+      return <String>[
+        for (final dynamic row in response.data as List<dynamic>)
+          if ((row as Map<String, dynamic>)['image_id'] case final String id)
+            id,
+      ];
+    } on DioException catch (e) {
+      throw _client.handleDioException(e, 'Failed to fetch covers');
+    }
+  }
+
+  static const int _coverLimit = 50;
+
   Future<List<Game>> getGamesByIds(List<int> gameIds) async {
     _client.ensureCredentials();
 

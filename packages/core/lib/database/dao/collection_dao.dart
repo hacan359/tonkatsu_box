@@ -1005,6 +1005,28 @@ class CollectionDao {
     );
   }
 
+  /// `null` drops the override, so the item shows its API cover again.
+  Future<void> setItemOverrideCoverUrl(int id, String? url) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'override_cover_url': url},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// One override file can back several items (an import into two
+  /// collections), so it is deleted only once no row points at it.
+  Future<int> countItemsWithOverrideCover(String url) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM collection_items WHERE override_cover_url = ?',
+      <Object?>[url],
+    );
+    return (rows.first['c'] as int?) ?? 0;
+  }
+
   Future<void> setItemFavorite(int id, {required bool isFavorite}) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -1284,10 +1306,11 @@ class CollectionDao {
     ];
 
     final List<Map<String, Object?>> rows = await db.rawQuery('''
-      SELECT external_id, media_type, platform_id, source, thumbnail_url
+      SELECT external_id, media_type, platform_id, source, thumbnail_url,
+        override_cover_url
       FROM (
         SELECT ci.external_id, ci.media_type, ci.platform_id, ci.source,
-          ci.status, ci.sort_order,
+          ci.status, ci.sort_order, ci.override_cover_url,
           CASE ci.media_type
             WHEN 'game' THEN g.cover_url
             WHEN 'movie' THEN m.poster_url
@@ -1338,7 +1361,7 @@ class CollectionDao {
           ON ci.media_type = 'custom' AND ci.external_id = cm.id
         WHERE $whereClause
       )
-      WHERE thumbnail_url IS NOT NULL
+      WHERE COALESCE(override_cover_url, thumbnail_url) IS NOT NULL
       ORDER BY
         CASE status
           WHEN 'completed' THEN 0

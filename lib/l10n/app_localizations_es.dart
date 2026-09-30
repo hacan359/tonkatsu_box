@@ -4292,6 +4292,27 @@ class SEs extends S {
   String get duplicateAsCustom => 'Duplicar como elemento personalizado';
 
   @override
+  String get coverOverrideChange => 'Cambiar portada';
+
+  @override
+  String get coverOverrideReset => 'Restaurar la portada original';
+
+  @override
+  String get coverOverrideSaveFailed => 'No se pudo guardar la portada';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Usar como portada';
+
+  @override
+  String get coverPickerLoadFailed => 'No se pudieron cargar las portadas';
+
+  @override
+  String get coverPickerEmpty => 'No se encontraron portadas';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copiado a $collection';
   }

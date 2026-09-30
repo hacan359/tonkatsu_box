@@ -105,7 +105,93 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (_ItemDetailScreenState._duplicateAsCustom, _ItemDetailScreenState._cachedCoverOf): New.
   * lib/l10n/app_*.arb (duplicateAsCustom): New string.
 
+- **Replace the cover of any item**
+
+  "Change cover" in the item menu takes a file, a link, and for games a cover
+  from IGDB, a SteamGridDB grid or a ScreenScraper gallery tile (right-click
+  on Windows, long press on Android). "Restore original cover" brings back
+  the provider's one. The cover is per collection item and shows everywhere
+  the item does: grids, the item screen, Home, boards and the collection
+  mosaic. Refreshing from the provider keeps it. A game-type custom card can
+  take a SteamGridDB grid too.
+
+  * packages/core/lib/database/migrations/migration_v66.dart (MigrationV66): New,
+    `collection_items.override_cover_url`.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers v66.
+  * packages/core/lib/models/collection_item.dart (CollectionItem.overrideCoverUrl,
+    CollectionItem.coverUrl, CollectionItem.thumbnailUrl, CollectionItem.imageType,
+    CollectionItem.coverImageId, CollectionItem.cachedCoverUrl,
+    CollectionItem.cachedImageType, CollectionItem.cachedCoverImageId,
+    CollectionItem.toExport, CollectionItem.copyWith): Override field and getters.
+  * packages/core/lib/models/image_type.dart (ImageType.coverOverride): New
+    `cover_overrides` cache folder.
+  * packages/core/lib/utils/cover_image_id.dart (overrideCoverImageId): New.
+  * packages/core/lib/models/canvas_item.dart (CanvasItem.overrideCoverUrl,
+    CanvasItem.mediaThumbnailUrl, CanvasItem.mediaImageType,
+    CanvasItem.mediaCacheId): Board cards show the override.
+  * packages/core/lib/models/cover_info.dart (CoverInfo.overrideCoverUrl,
+    CoverInfo.displayUrl): Collection mosaic shows the override.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.setItemOverrideCoverUrl, CollectionDao.countItemsWithOverrideCover):
+    New; (CollectionDao.getCollectionCovers): Selects the override.
+  * packages/core/lib/database/dao/canvas_dao.dart (CanvasDao.getCanvasItems,
+    CanvasDao.getGameCanvasItems): Join `override_cover_url`.
+  * packages/core/lib/rpc/generated/collection_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/collection_dao.remote.rpc.dart: Regenerated.
+  * lib/core/database/database_service.dart,
+    lib/data/repositories/collection_repository.dart (setItemOverrideCoverUrl,
+    countItemsWithOverrideCover): New.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.setCoverOverride, CollectionItemsNotifier._releaseOverrideCover):
+    New.
+  * lib/features/collections/providers/canvas_provider.dart
+    (CanvasNotifier._syncOverrides): Patches the cover along with the name.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailMenuAction.changeCover, ItemDetailMenuAction.resetCover): New.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._changeCover, _ItemDetailScreenState._setCoverOverride,
+    _ItemDetailScreenState._setCoverFromGallery): New.
+  * lib/features/collections/widgets/custom_item/cover_image_picker.dart
+    (CoverPickSource, pickCustomCoverImage): Extra sources.
+  * lib/features/collections/widgets/cover_override/cover_candidate_grid.dart
+    (CoverCandidate, CoverCandidateDialog): New.
+  * lib/features/collections/widgets/cover_override/igdb_cover_picker.dart
+    (pickIgdbCover, IgdbCoverPicker): New.
+  * lib/features/collections/widgets/cover_override/steamgriddb_cover_picker.dart
+    (pickSteamGridDbCover, SteamGridDbCoverPicker): New.
+  * lib/features/collections/widgets/screenscraper_gallery_section.dart
+    (ScreenScraperGallerySection.onSetAsCover): New context menu.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._pickCover): SteamGridDB for game-type cards.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.getCoverImageIds),
+    lib/core/api/igdb_api.dart (IgdbApi.getCoverImageIds, IgdbApi.imageUrl): New.
+  * lib/core/services/image_cache_service.dart (ImageCacheService.fetchImageBytes): New.
+  * lib/core/services/cache_cleanup_service.dart (CacheCleanupService.removeOrphans):
+    Keeps both the override and the provider cover of a live item.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions._refreshItemWork): Clears only the provider cover.
+  * lib/core/services/export_service.dart (ExportService.createFullExport),
+    lib/core/services/import_service.dart (ImportService._restoreCoverOverride):
+    `.xcollx` carries and restores the override.
+  * lib/features/home/screens/all_items_screen.dart: Takes the image folder from
+    the item.
+  * lib/features/collections/widgets/deck/deck_collection_card.dart: Uses
+    CoverInfo.displayUrl.
+  * lib/l10n/app_*.arb (coverOverrideChange, coverOverrideReset,
+    coverOverrideSaveFailed, coverOverrideSetFromGallery, coverPickerLoadFailed,
+    coverPickerEmpty, coverSourceIgdb): New strings.
+  * docs/RCOLL_FORMAT.md: `override_cover_url` and `cover_overrides/` images.
+
 ### Changed
+
+- **Posters without the dark overlay**
+
+  Grid posters show the picture as is: no dimming at rest and no outline on
+  hover.
+
+  * lib/shared/widgets/media_poster_card.dart (_MediaPosterCardState._buildGridPoster):
+    Scrim and hover border removed.
 
 - **Create custom item button next to "+"**
 
@@ -117,6 +203,21 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (CollectionScreenFab._sideActions): New.
 
 ### Fixed
+
+- **Link dialog of the cover picker crashed on Android**
+
+  Confirming the link dialog, even with an empty link, no longer throws.
+
+  * lib/features/collections/widgets/custom_item/cover_image_picker.dart
+    (_CoverUrlDialog): New, owns its text controller.
+
+- **Some PNG and JPEG covers did not show**
+
+  Pictures with extra bytes after the end-of-image marker now load from the
+  cache.
+
+  * lib/core/services/image_cache_service.dart (ImageCacheService._tailContains,
+    ImageCacheService._isValidImageFile): Looks for the end marker in the file tail.
 
 - **Ctrl+Tab and LB/RB skipped Personalization**
 

@@ -4233,6 +4233,27 @@ class SEn extends S {
   String get duplicateAsCustom => 'Duplicate as custom item';
 
   @override
+  String get coverOverrideChange => 'Change cover';
+
+  @override
+  String get coverOverrideReset => 'Restore original cover';
+
+  @override
+  String get coverOverrideSaveFailed => 'Couldn\'t save the cover';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Make it the cover';
+
+  @override
+  String get coverPickerLoadFailed => 'Couldn\'t load covers';
+
+  @override
+  String get coverPickerEmpty => 'No covers found';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copied to $collection';
   }

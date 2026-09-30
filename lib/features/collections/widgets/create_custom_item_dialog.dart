@@ -26,6 +26,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/custom_cards_parse_error_l10n.dart';
 import '../../../shared/utils/custom_progress_units.dart';
 import '../../../shared/utils/media_format.dart';
+import '../../settings/providers/settings_provider.dart';
+import 'cover_override/steamgriddb_cover_picker.dart';
 import 'custom_item/cover_image_picker.dart';
 import 'custom_item/custom_item_data.dart';
 import 'custom_item/multi_select_genre_dialog.dart';
@@ -555,9 +557,26 @@ class _CreateCustomItemDialogState
   }
 
   Future<void> _pickCover() async {
+    final String title = _titleController.text.trim();
+    // A card posing as a game has no IGDB id, so only the name search fits.
+    final bool offerSteamGridDb = _selectedType == MediaType.game &&
+        title.isNotEmpty &&
+        ref.read(settingsNotifierProvider).hasSteamGridDbKey;
     final CoverPickResult? result = await pickCustomCoverImage(
       context,
       currentUrl: _coverUrlController.text,
+      extraSources: <CoverPickSource>[
+        if (offerSteamGridDb)
+          CoverPickSource(
+            icon: Icons.grid_view,
+            label: S.of(context).steamGridDbPanelTitle,
+            pick: (BuildContext ctx) async {
+              final String? url =
+                  await pickSteamGridDbCover(ctx, gameName: title);
+              return url == null ? null : CoverPickResult.url(url);
+            },
+          ),
+      ],
     );
     if (result == null || !mounted) return;
     setState(() {

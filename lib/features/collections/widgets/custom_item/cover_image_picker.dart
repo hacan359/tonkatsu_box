@@ -21,14 +21,31 @@ class CoverPickResult {
   final String? url;
 }
 
-/// Asks the user to pick a cover source (local file or URL) and returns
-/// the result, or `null` when the user cancelled.
+/// An extra entry of [pickCustomCoverImage] next to "file" and "link", for a
+/// provider that only some card types have.
+class CoverPickSource {
+  const CoverPickSource({
+    required this.icon,
+    required this.label,
+    required this.pick,
+  });
+
+  final IconData icon;
+  final String label;
+
+  /// Opens the source's own chooser; `null` when the user backed out.
+  final Future<CoverPickResult?> Function(BuildContext context) pick;
+}
+
+/// Asks the user to pick a cover source (local file, URL or one of
+/// [extraSources]) and returns the result, or `null` when cancelled.
 Future<CoverPickResult?> pickCustomCoverImage(
   BuildContext context, {
   required String currentUrl,
+  List<CoverPickSource> extraSources = const <CoverPickSource>[],
 }) async {
   final S l = S.of(context);
-  final String? choice = await showDialog<String>(
+  final Object? choice = await showDialog<Object>(
     context: context,
     builder: (BuildContext ctx) => SimpleDialog(
       title: Text(l.customItemCoverSource),
@@ -59,9 +76,23 @@ Future<CoverPickResult?> pickCustomCoverImage(
             contentPadding: EdgeInsets.zero,
           ),
         ),
+        for (final CoverPickSource source in extraSources)
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(ctx).pop(source),
+            child: ListTile(
+              leading: Icon(source.icon),
+              title: Text(source.label),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
       ],
     ),
   );
+
+  if (choice is CoverPickSource) {
+    if (!context.mounted) return null;
+    return choice.pick(context);
+  }
 
   if (choice == 'file') {
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -77,39 +108,63 @@ Future<CoverPickResult?> pickCustomCoverImage(
 
   if (choice == 'url') {
     if (!context.mounted) return null;
-    final TextEditingController urlCtrl =
-        TextEditingController(text: currentUrl);
-    try {
-      final String? url = await showDialog<String>(
-        context: context,
-        builder: (BuildContext ctx) => AlertDialog(
-          title: Text(l.customItemCoverUrl),
-          content: TextField(
-            controller: urlCtrl,
-            decoration: const InputDecoration(hintText: 'https://...'),
-            keyboardType: TextInputType.url,
-            autofocus: true,
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(urlCtrl.text.trim()),
-              child: Text(l.confirm),
-            ),
-          ],
-        ),
-      );
-      if (url == null || url.isEmpty) return null;
-      return CoverPickResult.url(url);
-    } finally {
-      urlCtrl.dispose();
-    }
+    final String? url = await showDialog<String>(
+      context: context,
+      builder: (BuildContext ctx) => _CoverUrlDialog(initialUrl: currentUrl),
+    );
+    if (url == null || url.isEmpty) return null;
+    return CoverPickResult.url(url);
   }
 
   return null;
+}
+
+/// Owns its controller: disposing it once `showDialog` returns would pull it
+/// out from under the closing animation, which still rebuilds the field.
+class _CoverUrlDialog extends StatefulWidget {
+  const _CoverUrlDialog({required this.initialUrl});
+
+  final String initialUrl;
+
+  @override
+  State<_CoverUrlDialog> createState() => _CoverUrlDialogState();
+}
+
+class _CoverUrlDialogState extends State<_CoverUrlDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialUrl);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    return AlertDialog(
+      title: Text(l.customItemCoverUrl),
+      content: SingleChildScrollView(
+        child: TextField(
+          controller: _controller,
+          decoration: const InputDecoration(hintText: 'https://...'),
+          keyboardType: TextInputType.url,
+          autofocus: true,
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+          child: Text(l.confirm),
+        ),
+      ],
+    );
+  }
 }
 
 /// Visual preview that picks the best available cover source in order:

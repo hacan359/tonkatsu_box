@@ -1,3 +1,4 @@
+import 'package:core/utils/cover_image_id.dart';
 import 'dart:convert';
 
 import 'package:core/models/anime.dart';
@@ -1083,6 +1084,42 @@ void main() {
           expect(item.mediaCacheId, '88');
         });
       });
+    });
+  });
+
+  group('CanvasItem override cover', () {
+    CanvasItem card({String? overrideCoverUrl}) => CanvasItem(
+          id: 1,
+          collectionId: 1,
+          itemType: CanvasItemType.movie,
+          itemRefId: 7,
+          x: 0,
+          y: 0,
+          createdAt: DateTime(2026),
+          movie: const Movie(tmdbId: 7, title: 'M', posterUrl: 'https://p/w500/a.jpg'),
+          overrideCoverUrl: overrideCoverUrl,
+        );
+
+    test('should draw the override from its own cache slot', () {
+      final CanvasItem item = card(overrideCoverUrl: 'https://x/mine.png');
+
+      expect(item.mediaThumbnailUrl, 'https://x/mine.png');
+      expect(item.mediaImageType, ImageType.coverOverride);
+      expect(item.mediaCacheId, overrideCoverImageId('https://x/mine.png'));
+    });
+
+    test('should keep the media cover without an override', () {
+      final CanvasItem item = card();
+
+      expect(item.mediaImageType, ImageType.moviePoster);
+      expect(item.mediaThumbnailUrl, isNot('https://x/mine.png'));
+    });
+
+    test('should set and clear the override through copyWith', () {
+      final CanvasItem item = card().copyWith(overrideCoverUrl: 'https://x/a');
+
+      expect(item.overrideCoverUrl, 'https://x/a');
+      expect(item.copyWith(clearOverrideCoverUrl: true).overrideCoverUrl, isNull);
     });
   });
 }

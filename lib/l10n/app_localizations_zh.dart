@@ -4003,6 +4003,27 @@ class SZh extends S {
   String get duplicateAsCustom => '复制为自定义项目';
 
   @override
+  String get coverOverrideChange => '更换封面';
+
+  @override
+  String get coverOverrideReset => '恢复原始封面';
+
+  @override
+  String get coverOverrideSaveFailed => '无法保存封面';
+
+  @override
+  String get coverOverrideSetFromGallery => '设为封面';
+
+  @override
+  String get coverPickerLoadFailed => '无法加载封面';
+
+  @override
+  String get coverPickerEmpty => '未找到封面';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name 已复制到 $collection';
   }

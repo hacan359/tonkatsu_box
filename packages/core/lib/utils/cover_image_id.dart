@@ -1,6 +1,7 @@
 import '../models/custom_media.dart';
 import '../models/data_source.dart';
 import '../models/media_type.dart';
+import 'stable_id.dart';
 
 /// Multi-provider types namespace covers by source (`anilist_1995`) so one does
 /// not overwrite another. Must be used by both the write and the read side.
@@ -36,5 +37,12 @@ String customCoverImageId({required int id, String? coverUrl}) => coverImageId(
       externalId: id,
       coverUrl: coverUrl,
     );
+
+/// Cache id of a user's cover override: an uploaded file keys by its token, a
+/// link by its hash, so a replacement lands beside the old file.
+String overrideCoverImageId(String overrideCoverUrl) {
+  final String? token = CustomMedia.localCoverToken(overrideCoverUrl);
+  return token ?? 'u${fnv1a53(overrideCoverUrl).toRadixString(36)}';
+}
 
 final RegExp _fantlabEditionId = RegExp(r'/images/editions/\w+/(\d+)');

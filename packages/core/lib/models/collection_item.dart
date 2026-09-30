@@ -43,6 +43,7 @@ class CollectionItem with Exportable {
     this.userComment,
     this.userRating,
     this.overrideName,
+    this.overrideCoverUrl,
     this.isFavorite = false,
     this.game,
     this.movie,
@@ -95,6 +96,7 @@ class CollectionItem with Exportable {
       userComment: row['user_comment'] as String?,
       userRating: (row['user_rating'] as num?)?.toDouble(),
       overrideName: row['override_name'] as String?,
+      overrideCoverUrl: row['override_cover_url'] as String?,
       isFavorite: (row['is_favorite'] as int?) == 1,
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
@@ -153,6 +155,7 @@ class CollectionItem with Exportable {
       userComment: json['user_comment'] as String?,
       userRating: (json['user_rating'] as num?)?.toDouble(),
       overrideName: json['override_name'] as String?,
+      overrideCoverUrl: json['override_cover_url'] as String?,
       isFavorite: (json['is_favorite'] as int?) == 1,
       sortOrder: (json['sort_order'] as int?) ?? 0,
       addedAt: json['added_at'] != null
@@ -231,6 +234,10 @@ class CollectionItem with Exportable {
   /// User-set display name that overrides the cached API title. `null` means
   /// "no override" — UI falls back to the joined media's name.
   final String? overrideName;
+
+  /// User cover replacing the API one: a link as is, or an uploaded file as a
+  /// `local://cover/<token>` marker. `null` shows the joined media's cover.
+  final String? overrideCoverUrl;
 
   /// User-set favorite flag. Per-item and per-collection: the same title in
   /// two collections has independent flags.
@@ -639,13 +646,16 @@ class CollectionItem with Exportable {
 
   bool get isCompleted => status == ItemStatus.completed;
 
-  String? get coverUrl => _resolvedMedia.coverUrl;
+  String? get coverUrl => overrideCoverUrl ?? _resolvedMedia.coverUrl;
+
+  /// Cached API cover, without applying [overrideCoverUrl].
+  String? get cachedCoverUrl => _resolvedMedia.coverUrl;
 
   /// Provider rating normalised to a 0–10 scale (IGDB stores 0–100).
   double? get apiRating => _resolvedMedia.rating;
 
   String? get itemDescription => _resolvedMedia.description;
-  String? get thumbnailUrl => _resolvedMedia.thumbUrl;
+  String? get thumbnailUrl => overrideCoverUrl ?? _resolvedMedia.thumbUrl;
   int? get releaseYear => _resolvedMedia.releaseYear;
 
   /// Null when the source knows only the year (TMDB, books, custom): the
@@ -742,15 +752,27 @@ class CollectionItem with Exportable {
     ];
   }
   DataSource get dataSource => _resolvedMedia.source;
-  ImageType get imageType => _resolvedMedia.imageType;
+  ImageType get imageType => overrideCoverUrl != null
+      ? ImageType.coverOverride
+      : _resolvedMedia.imageType;
 
   /// Source-aware image-cache id (anime / manga are namespaced by provider).
   /// Use this everywhere a cover is read from / written to the image cache.
-  String get coverImageId => cover_id.coverImageId(
+  String get coverImageId {
+    final String? override = overrideCoverUrl;
+    if (override != null) return cover_id.overrideCoverImageId(override);
+    return cachedCoverImageId;
+  }
+
+  /// Folder and id of the API cover, bypassing the override — for code that
+  /// manages the provider's file: the refresh, the orphan sweep.
+  ImageType get cachedImageType => _resolvedMedia.imageType;
+
+  String get cachedCoverImageId => cover_id.coverImageId(
         mediaType: mediaType,
         externalId: externalId,
         source: source,
-        coverUrl: thumbnailUrl,
+        coverUrl: _resolvedMedia.thumbUrl,
       );
 
   @override
@@ -761,7 +783,7 @@ class CollectionItem with Exportable {
         'started_at', 'completed_at', 'last_activity_at',
         'status', 'current_season', 'current_episode',
         'tag_id', 'time_spent_minutes', 'override_name',
-        'is_favorite', 'rewatch_count',
+        'override_cover_url', 'is_favorite', 'rewatch_count',
       };
 
   @override
@@ -787,6 +809,7 @@ class CollectionItem with Exportable {
       'time_spent_minutes': timeSpentMinutes,
       'rewatch_count': rewatchCount,
       'override_name': overrideName,
+      'override_cover_url': overrideCoverUrl,
       'is_favorite': isFavorite ? 1 : 0,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
       'sort_order': sortOrder,
@@ -811,8 +834,13 @@ class CollectionItem with Exportable {
     return null;
   }
 
+  /// [includeCoverOverride] is for `.xcollx`, which ships the override file;
+  /// a `.xcoll` without images would point at a picture that never arrives.
   @override
-  Map<String, dynamic> toExport({bool includeUserData = false}) {
+  Map<String, dynamic> toExport({
+    bool includeUserData = false,
+    bool includeCoverOverride = false,
+  }) {
     final Map<String, dynamic> data = <String, dynamic>{
       'media_type': mediaType.value,
       'external_id': externalId,
@@ -821,6 +849,7 @@ class CollectionItem with Exportable {
       'source': source?.name,
       'comment': authorComment,
       'user_rating': userRating,
+      if (includeCoverOverride) 'override_cover_url': ?overrideCoverUrl,
     };
     if (includeUserData) {
       if (overrideName != null) {
@@ -873,6 +902,8 @@ class CollectionItem with Exportable {
     bool clearUserRating = false,
     String? overrideName,
     bool clearOverrideName = false,
+    String? overrideCoverUrl,
+    bool clearOverrideCoverUrl = false,
     bool? isFavorite,
     DateTime? addedAt,
     DateTime? startedAt,
@@ -914,6 +945,9 @@ class CollectionItem with Exportable {
       userRating: clearUserRating ? null : (userRating ?? this.userRating),
       overrideName:
           clearOverrideName ? null : (overrideName ?? this.overrideName),
+      overrideCoverUrl: clearOverrideCoverUrl
+          ? null
+          : (overrideCoverUrl ?? this.overrideCoverUrl),
       isFavorite: isFavorite ?? this.isFavorite,
       addedAt: addedAt ?? this.addedAt,
       startedAt: clearStartedAt ? null : (startedAt ?? this.startedAt),

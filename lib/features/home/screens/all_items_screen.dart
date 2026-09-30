@@ -7,7 +7,6 @@ import 'package:core/utils/item_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -834,34 +833,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.customMedia?.year;
     }
   }
-
-  static ImageType _imageTypeFor(MediaType mediaType, int? platformId) {
-    switch (mediaType) {
-      case MediaType.game:
-        return ImageType.gameCover;
-      case MediaType.movie:
-        return ImageType.moviePoster;
-      case MediaType.tvShow:
-        return ImageType.tvShowPoster;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return ImageType.tvShowPoster;
-        }
-        return ImageType.moviePoster;
-      case MediaType.visualNovel:
-        return ImageType.vnCover;
-      case MediaType.manga:
-        return ImageType.mangaCover;
-      case MediaType.anime:
-        return ImageType.animeCover;
-      case MediaType.book:
-        return ImageType.bookCover;
-      case MediaType.audio:
-        return ImageType.audioCover;
-      case MediaType.custom:
-        return ImageType.customCover;
-    }
-  }
 }
 
 class _MediaTypeEntry {
@@ -1011,10 +982,7 @@ class _AllItemsCard extends ConsumerWidget {
           variant: variant,
           title: item.cardTitle(ref.displayNameOf(item)),
           imageUrl: item.thumbnailUrl ?? '',
-          cacheImageType: _AllItemsScreenState._imageTypeFor(
-            item.mediaType,
-            item.platformId,
-          ),
+          cacheImageType: item.imageType,
           cacheImageId: item.coverImageId,
           userRating: item.userRating,
           apiRating: item.apiRating,

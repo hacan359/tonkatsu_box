@@ -21,7 +21,13 @@ CustomMedia customDraftFromItem(CollectionItem item, {required String title}) {
         ? original
         : null,
     description: item.itemDescription,
-    coverUrl: coverUrl != null && coverUrl.isNotEmpty ? coverUrl : null,
+    // A local marker names another card's file; the duplicate gets the bytes
+    // instead, or no cover where none were read (web).
+    coverUrl: coverUrl != null &&
+            coverUrl.isNotEmpty &&
+            !CustomMedia.isLocalCover(coverUrl)
+        ? coverUrl
+        : null,
     year: item.releaseYear,
     genres: item.genresString,
     platformName: type == MediaType.game ? item.platform?.displayName : null,

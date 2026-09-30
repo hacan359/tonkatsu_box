@@ -78,9 +78,9 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
           AsyncValue<List<CollectionItem>> next) {
         final List<CollectionItem>? items = next.valueOrNull;
         if (items != null) {
-          // Eager override_name patch covers the rename-while-loading window
-          // where _syncAndReload below skips because state.isLoading is true.
-          _syncOverrideNames(items);
+          // Eager override patch covers the edit-while-loading window where
+          // _syncAndReload below skips because state.isLoading is true.
+          _syncOverrides(items);
         }
         if (state.isInitialized && !state.isLoading && next.hasValue) {
           _syncAndReload();
@@ -309,29 +309,38 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
 
   /// Matches by `(itemType, itemRefId)` — collection-canvas rows have NULL
   /// collection_item_id; first override wins, mirroring the SQL `LIMIT 1`.
-  void _syncOverrideNames(List<CollectionItem> collectionItems) {
+  void _syncOverrides(List<CollectionItem> collectionItems) {
     if (state.items.isEmpty) return;
-    final Map<(String, int), String?> overridesByRef =
-        <(String, int), String?>{};
+    final Map<(String, int), (String?, String?)> overridesByRef =
+        <(String, int), (String?, String?)>{};
     for (final CollectionItem ci in collectionItems) {
       final (String, int) key = (
         CanvasItemType.fromMediaType(ci.mediaType).value,
         ci.externalId,
       );
-      overridesByRef.putIfAbsent(key, () => ci.overrideName);
+      overridesByRef.putIfAbsent(
+        key,
+        () => (ci.overrideName, ci.overrideCoverUrl),
+      );
     }
 
     bool changed = false;
     final List<CanvasItem> updated = state.items.map((CanvasItem item) {
       if (item.itemRefId == null || !item.itemType.isMediaItem) return item;
       final (String, int) key = (item.itemType.value, item.itemRefId!);
-      if (!overridesByRef.containsKey(key)) return item;
-      final String? fresh = overridesByRef[key];
-      if (item.overrideName == fresh) return item;
+      final (String?, String?)? fresh = overridesByRef[key];
+      if (fresh == null) return item;
+      final (String? name, String? cover) = fresh;
+      if (item.overrideName == name && item.overrideCoverUrl == cover) {
+        return item;
+      }
       changed = true;
-      return fresh == null
-          ? item.copyWith(clearOverrideName: true)
-          : item.copyWith(overrideName: fresh);
+      return item.copyWith(
+        overrideName: name,
+        clearOverrideName: name == null,
+        overrideCoverUrl: cover,
+        clearOverrideCoverUrl: cover == null,
+      );
     }).toList();
 
     if (changed) {

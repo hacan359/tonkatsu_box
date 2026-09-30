@@ -4278,6 +4278,27 @@ class SPt extends S {
   String get duplicateAsCustom => 'Duplicar como item personalizado';
 
   @override
+  String get coverOverrideChange => 'Alterar capa';
+
+  @override
+  String get coverOverrideReset => 'Restaurar a capa original';
+
+  @override
+  String get coverOverrideSaveFailed => 'Não foi possível salvar a capa';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Usar como capa';
+
+  @override
+  String get coverPickerLoadFailed => 'Não foi possível carregar as capas';
+
+  @override
+  String get coverPickerEmpty => 'Nenhuma capa encontrada';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
+
+  @override
   String collectionItemCopiedTo(Object collection, Object name) {
     return '$name copiado para $collection';
   }
