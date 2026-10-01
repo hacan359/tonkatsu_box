@@ -62,7 +62,9 @@ void main() {
   File cached(String name) =>
       File(p.join(dataDir.path, 'images', ImageType.animeCover.folder, name));
 
-  const String src = '?src=https%3A%2F%2Fcdn.example%2Fa.jpg';
+  // A registered cover host: `/img` only fetches a `?src=` URL whose host is
+  // on the allowlist, so a placeholder domain would answer 403 instead.
+  const String src = '?src=https%3A%2F%2Fcdn.myanimelist.net%2Fa.jpg';
 
   group('GET /img/<folder>/<id>', () {
     test('should fetch and store an image the cache does not have', () async {
@@ -71,7 +73,7 @@ void main() {
       expect(response.statusCode, HttpStatus.ok);
       expect(await response.read().expand((List<int> c) => c).toList(),
           <int>[1, 2, 3]);
-      expect(upstream.sent.single.host, 'cdn.example');
+      expect(upstream.sent.single.host, 'cdn.myanimelist.net');
       expect(cached('anilist_1').readAsBytesSync(), <int>[1, 2, 3]);
     });
 
@@ -115,6 +117,38 @@ void main() {
 
       expect(response.statusCode, HttpStatus.badRequest);
       expect(upstream.sent, isEmpty);
+    });
+
+    test('should refuse a source host that is not a cover provider', () async {
+      final Response response = await get(
+        '/img/anime_covers/anilist_1?src=https%3A%2F%2Fevil.test%2Fa.jpg',
+      );
+
+      expect(response.statusCode, HttpStatus.forbidden);
+      // Refused before the request goes anywhere: that is the whole point of
+      // the gate, so a 403 that still fetched would be worthless.
+      expect(upstream.sent, isEmpty);
+    });
+
+    test('should not let a lookalike host ride the suffix rule', () async {
+      // `evilbgm.tv` ends with a registered name but not with `.bgm.tv`, which
+      // is what the suffix match insists on.
+      final Response response = await get(
+        '/img/manga_covers/bangumi_1?src=https%3A%2F%2Fevilbgm.tv%2Fa.jpg',
+      );
+
+      expect(response.statusCode, HttpStatus.forbidden);
+      expect(upstream.sent, isEmpty);
+    });
+
+    test('should accept a shard of a registered provider', () async {
+      // Douban serves covers off `img1`...`img9`, so the entry is the root.
+      final Response response = await get(
+        '/img/book_covers/douban_1?src=https%3A%2F%2Fimg3.doubanio.com%2Fa.jpg',
+      );
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(upstream.sent.single.host, 'img3.doubanio.com');
     });
 
     test('should 404 a miss with no source to fetch from', () async {
