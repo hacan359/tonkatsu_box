@@ -9,6 +9,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
+import 'auth_token.dart';
 import 'image_handler.dart';
 import 'proxy_handler.dart';
 import 'request_log.dart';
@@ -19,6 +20,10 @@ const String _kRpcPath = '/rpc';
 
 /// Builds the request pipeline: `/health`, then the web client if one is built.
 /// A missing or unbuilt [webRoot] is not fatal — the API answers regardless.
+///
+/// When [authToken] carries a non-empty token, every data-bearing endpoint
+/// (`/rpc`, `/proxy/*`) demands `Authorization: Bearer <token>`. Static assets,
+/// `/health` and `/img` stay open — see [_isDataPath] for why covers are exempt.
 Handler buildAppHandler({
   required int schemaVersion,
   DaoRegistry? daos,
@@ -26,6 +31,7 @@ Handler buildAppHandler({
   ImageCache? images,
   String? webRoot,
   Middleware? logger,
+  AuthToken? authToken,
 }) {
   final Router api = Router()
     ..get(_kHealthPath, (Request request) {
@@ -83,9 +89,52 @@ Handler buildAppHandler({
   final Handler? web = _webHandler(webRoot);
   final Handler handler = web == null ? api.call : _withWebFallback(api, web);
 
+  final Handler authorized =
+      _requireAuth(authToken, handler);
+
   return const Pipeline()
       .addMiddleware(logger ?? sanitizedLogRequests())
-      .addHandler(handler);
+      .addHandler(authorized);
+}
+
+/// Wraps the API so data endpoints answer 401 unless the request carries the
+/// bearer token. The browser loads anonymous static assets first, then needs
+/// the token for every byte of data — which is exactly what a token is for.
+Handler _requireAuth(AuthToken? authToken, Handler handler) {
+  // Loopback installs (authToken.raw empty) skip auth entirely — see the
+  // comment on [AuthToken].
+  final String token = authToken?.raw ?? '';
+  if (token.isEmpty) return handler;
+
+  return (Request request) async {
+    if (!_isDataPath(request.url.path)) return handler(request);
+    if (authToken?.matches(AuthToken.bearerOf(request)) ?? false) {
+      return handler(request);
+    }
+    return Response.unauthorized(
+      jsonEncode(<String, Object?>{
+        'ok': false,
+        'error': <String, String>{'kind': 'auth', 'message': 'Missing token'},
+      }),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+  };
+}
+
+/// The paths that carry data and demand a token. Anything else — static
+/// assets, the SPA fallback, `/health` — stays public so a fresh browser can
+/// load the shell that asks for the token in the first place.
+///
+/// `/img` is deliberately public: covers are immutable public resources, and
+/// `Image.network` in the browser cannot carry an Authorization header anyway.
+/// Its attack surface is capped by the host allowlist and the body limit.
+bool _isDataPath(String path) {
+  if (path == _kHealthPath) return false;
+  return path == _kRpcPath ||
+      path.startsWith('$kProxyPathPrefix/') ||
+      path == _kRpcPath + '/';
 }
 
 /// A plain `Cascade` would answer "unknown upstream" with index.html and a 200,

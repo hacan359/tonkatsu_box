@@ -21,6 +21,27 @@ const Map<String, Duration> _hostMinGap = <String, Duration>{
   'coverartarchive.org': Duration(milliseconds: 300),
 };
 
+/// The only hosts `/img?src=` may reach. The server is a convenience cache,
+/// not an open relay — a stranger must not be able to turn the selfhost box
+/// into a two-hop SSRF into the user's LAN. It mirrors the cover providers the
+/// app actually embeds; add a host here when a new provider starts serving
+/// remote cover URLs.
+const Set<String> _allowedImageHosts = <String>{
+  'coverartarchive.org',
+  'image.tmdb.org',
+  'media.tenor.com',
+  'media.tenor.co',
+  'i.imgur.com',
+  'images.unsplash.com',
+  'static.wikia.nocookie.net',
+  'screenscraper.fr',
+  'cdn.myanimelist.net',
+  'uploads.mangadex.org',
+  'm.media-amazon.com',
+  'images-na.ssl-images-amazon.com',
+  'res.cloudinary.com',
+};
+
 final Map<String, UpstreamThrottle> _hostThrottles =
     <String, UpstreamThrottle>{};
 
@@ -67,6 +88,15 @@ class ImageCache {
         final Uri? sourceUri = Uri.tryParse(source);
         if (sourceUri == null || !sourceUri.isScheme('https')) {
           return _error(HttpStatus.badRequest, 'Source must be an https URL');
+        }
+        // The host gate makes `/img` a cache, not a relay: a random `src` must
+        // not reach the user's LAN. Subdomains of a provider (e.g. a regional
+        // CDN) are allowed by suffix match.
+        if (!_isAllowedImageHost(sourceUri.host)) {
+          return _error(
+            HttpStatus.forbidden,
+            'Source host ${sourceUri.host} is not an allowed cover host',
+          );
         }
 
         final UpstreamResponse response;
@@ -222,6 +252,17 @@ Response _image(List<int> bytes, String contentType) => Response.ok(
         HttpHeaders.cacheControlHeader: _kImmutable,
       },
     );
+
+/// Host gate for `?src=`: exact match, or a suffix of an allowed host so a
+/// provider's subdomains (regional CDNs, tenant buckets) still work. The
+/// separator matters — `evil-coverartarchive.org` must not pass.
+bool _isAllowedImageHost(String host) {
+  final String lower = host.toLowerCase();
+  for (final String allowed in _allowedImageHosts) {
+    if (lower == allowed || lower.endsWith('.$allowed')) return true;
+  }
+  return false;
+}
 
 Response _error(int status, String message) => Response(
       status,

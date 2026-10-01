@@ -4,6 +4,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tonkatsu_server/src/api_credentials.dart';
 import 'package:tonkatsu_server/src/app_handler.dart';
+import 'package:tonkatsu_server/src/auth_token.dart';
 import 'package:tonkatsu_server/src/database_bootstrap.dart';
 import 'package:tonkatsu_server/src/image_handler.dart';
 import 'package:tonkatsu_server/src/proxy_handler.dart';
@@ -58,18 +59,33 @@ Future<void> main(List<String> args) async {
         : 'API credentials: ${configured.join(', ')}',
   );
 
+  // Beyond loopback every data endpoint demands this token; loopback installs
+  // stay tokenless so the existing one-line setup keeps working.
+  final AuthToken token = AuthToken.load(
+    dataDir: config.dataDir,
+    generate: config.requiresAuth,
+  );
+  if (config.requiresAuth) {
+    stdout.writeln('Auth token: ${token.raw}');
+    stdout.writeln(
+      'Paste it into the web client\'s Settings → Credentials → "Keys stored '
+      'on the server" section; the browser remembers it from then on.',
+    );
+  }
+
   final HttpServer server = await shelf_io.serve(
     buildAppHandler(
       schemaVersion: bootstrap.schemaVersion,
       daos: DaoRegistry(bootstrap.db),
       proxy: ApiProxy(credentials: credentials, dataDir: config.dataDir),
-      // A short deadline frees the browser's six connection slots fast, so a
+      // A short deadline frees a browser's six connection slots fast, so a
       // sick CDN costs broken thumbnails instead of a frozen app.
       images: ImageCache(
         dataDir: config.dataDir,
         upstream: HttpUpstreamClient(deadline: const Duration(seconds: 8)),
       ),
       webRoot: config.webRoot,
+      authToken: config.requiresAuth ? token : null,
     ),
     config.address,
     config.port,

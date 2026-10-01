@@ -17,7 +17,7 @@ dart run server/bin/server.dart --data-dir ./data --web-root ./build/web
 
 | Option | Env | Default |
 |--------|-----|---------|
-| `--address` | `TONKATSU_ADDRESS` | `0.0.0.0` |
+| `--address` | `TONKATSU_ADDRESS` | `127.0.0.1` |
 | `--port` | `TONKATSU_PORT` | `8080` |
 | `--data-dir` | `TONKATSU_DATA_DIR` | `data` |
 | `--web-root` | `TONKATSU_WEB_ROOT` | `web` |
@@ -25,10 +25,27 @@ dart run server/bin/server.dart --data-dir ./data --web-root ./build/web
 Command line wins over the environment. A missing or unbuilt `--web-root` is not
 fatal — the server then answers `/health` only.
 
+## Auth token
+
+The default address is loopback, and a loopback install is **tokenless**: anyone
+who can reach a 127.0.0.1 socket already owns the machine the database lives on,
+and the browser is loaded from that same server.
+
+Listening **beyond loopback** (`--address 0.0.0.0`, or a LAN IP) makes the server
+demand `Authorization: Bearer <token>` on every data endpoint — `/rpc` and
+`/proxy/*` answer **401** without it. `/health`, the static bundle and `/img`
+stay public: a browser's native `Image` request cannot carry a header, so covers
+must be fetchable anonymously.
+
+The token is generated on first boot (32 random bytes, base64url), printed as
+`Auth token: …`, and persisted at `<data-dir>/auth_token` so a restart does not
+invalidate every browser. Paste it into the web client's **Settings → Credentials
+→ "Keys stored on the server"**; it is kept in the browser's storage.
+
 ## Docker
 
 ```bash
-cp .env.example .env   # optional — edit the data folder, port, PUID/PGID
+cp .env.example .env   # optional — data folder, bind address, port, PUID/PGID
 docker compose up --build
 ```
 

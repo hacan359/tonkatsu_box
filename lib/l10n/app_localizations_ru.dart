@@ -597,6 +597,16 @@ class SRu extends S {
   String get settingsApiKeys => 'API ключи';
 
   @override
+  String get credentialsServerTokenLabel => 'Токен доступа к серверу';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Вставьте токен, который сервер напечатал при запуске. Требуется только если сервер слушает не только локальную машину.';
+
+  @override
+  String get credentialsServerTokenSave => 'Сохранить токен';
+
+  @override
   String get credentialsServerManagedTitle => 'Ключи хранятся на сервере';
 
   @override

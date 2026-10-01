@@ -103,7 +103,15 @@ class ApiProxy {
               e.key: e.value,
           HttpHeaders.userAgentHeader: kProxyUserAgent,
         };
-        List<int> body = await _collect(request);
+        List<int> body;
+        try {
+          body = await _collect(request);
+        } on ProxyRequestBodyTooLarge {
+          return _error(
+            HttpStatus.requestEntityTooLarge,
+            'Request body too large',
+          );
+        }
 
         try {
           body = await _authorize(
@@ -327,9 +335,30 @@ class ProxyCredentialException implements Exception {
   String toString() => 'ProxyCredentialException: $message';
 }
 
-Future<List<int>> _collect(Request request) async => <int>[
-      await for (final List<int> chunk in request.read()) ...chunk,
-    ];
+Future<List<int>> _collect(Request request) async {
+  final BytesBuilder builder = BytesBuilder(copy: false);
+  await for (final List<int> chunk in request.read()) {
+    builder.add(chunk);
+    if (builder.length > kMaxRequestBodyBytes) {
+      throw const ProxyRequestBodyTooLarge();
+    }
+  }
+  return builder.takeBytes();
+}
+
+/// Upstreams occasionally need a few MB (a cover, an export), but a request
+/// body is never an upload target here — anything past this is an abuser, not
+/// a caller.
+const int kMaxRequestBodyBytes = 20 * 1024 * 1024;
+
+/// See [kMaxRequestBodyBytes]. Callers turn this into a 413.
+class ProxyRequestBodyTooLarge implements Exception {
+  const ProxyRequestBodyTooLarge();
+
+  @override
+  String toString() =>
+      'Request body exceeded $kMaxRequestBodyBytes bytes';
+}
 
 Response _error(int status, String message) => Response(
       status,

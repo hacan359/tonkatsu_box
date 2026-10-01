@@ -12,6 +12,11 @@ class UpstreamResponse {
   final List<int> body;
 }
 
+/// Bodies bigger than this are refused (411/413) rather than buffered whole —
+/// a rogue upstream must not be able to OOM the selfhost box through the
+/// proxy or the image cache. Covers are hundreds of KB, API payloads single MB.
+const int kUpstreamMaxBodyBytes = 20 * 1024 * 1024;
+
 /// The proxy's one outbound seam, so tests can answer without a socket.
 abstract class UpstreamClient {
   Future<UpstreamResponse> send({
@@ -61,9 +66,14 @@ class HttpUpstreamClient implements UpstreamClient {
     }
 
     final HttpClientResponse response = await request.close();
-    final List<int> bytes = <int>[
-      await for (final List<int> chunk in response) ...chunk,
-    ];
+    final BytesBuilder builder = BytesBuilder(copy: false);
+    await for (final List<int> chunk in response) {
+      builder.add(chunk);
+      if (builder.length > kUpstreamMaxBodyBytes) {
+        throw const UpstreamBodyTooLarge();
+      }
+    }
+    final List<int> bytes = builder.takeBytes();
 
     return UpstreamResponse(
       status: response.statusCode,
@@ -71,4 +81,15 @@ class HttpUpstreamClient implements UpstreamClient {
       body: bytes,
     );
   }
+}
+
+/// A response body the server refuses to buffer whole — see
+/// [kUpstreamMaxBodyBytes]. The request has already gone upstream, so the
+/// proxy answers 502 like any other failed hop.
+class UpstreamBodyTooLarge implements Exception {
+  const UpstreamBodyTooLarge();
+
+  @override
+  String toString() =>
+      'Upstream response exceeded $kUpstreamMaxBodyBytes bytes';
 }

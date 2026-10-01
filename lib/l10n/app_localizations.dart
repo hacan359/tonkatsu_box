@@ -1107,6 +1107,24 @@ abstract class S {
   /// **'API Keys'**
   String get settingsApiKeys;
 
+  /// No description provided for @credentialsServerTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Server access token'**
+  String get credentialsServerTokenLabel;
+
+  /// No description provided for @credentialsServerTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the token the server printed at startup. Only needed when the server listens beyond this machine.'**
+  String get credentialsServerTokenHint;
+
+  /// No description provided for @credentialsServerTokenSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save token'**
+  String get credentialsServerTokenSave;
+
   /// No description provided for @credentialsServerManagedTitle.
   ///
   /// In en, this message translates to:

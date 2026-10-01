@@ -12,6 +12,7 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/api/screenscraper_api.dart';
+import '../../../core/selfhost/server_auth_token.dart';
 import '../../../core/selfhost/server_credentials.dart';
 import '../../../main.dart' show AppRestartScope;
 import '../../../shared/constants/api_defaults.dart';
@@ -861,6 +862,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                     AppTypography.body.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.md),
+              _buildServerTokenField(l),
+              const SizedBox(height: AppSpacing.md),
               OutlinedButton.icon(
                 onPressed: _uploading ? null : _uploadKeysFromConfig,
                 icon: const Icon(Icons.upload_file, size: 18),
@@ -874,6 +877,53 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   }
 
   bool _uploading = false;
+  final TextEditingController _serverTokenController = TextEditingController();
+  bool _serverTokenLoaded = false;
+
+  /// The token entry for public-facing selfhost servers (server listens beyond
+  /// loopback). Loopback installs stay tokenless and this row reads empty.
+  Widget _buildServerTokenField(S l) {
+    if (!_serverTokenLoaded) {
+      _serverTokenLoaded = true;
+      _serverTokenController.text = ServerAuthToken.current ?? '';
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        InlineTextField(
+          value: _serverTokenController.text,
+          onChanged: (String value) =>
+              _serverTokenController.text = value,
+          label: l.credentialsServerTokenLabel,
+          placeholder: l.credentialsServerTokenHint,
+          obscureText: true,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextButton.icon(
+          onPressed: _savingToken ? null : _saveServerToken,
+          icon: const Icon(Icons.lock, size: 16),
+          label: Text(l.credentialsServerTokenSave),
+        ),
+      ],
+    );
+  }
+
+  bool _savingToken = false;
+
+  Future<void> _saveServerToken() async {
+    setState(() => _savingToken = true);
+    try {
+      await ServerAuthToken.write(_serverTokenController.text.trim());
+      if (mounted) context.showSnack(S.of(context).credentialsServerTokenSave);
+      // The token guards /proxy and /rpc; a freshly saved one only matters
+      // from the next request on, which the restart makes immediate.
+      await AppRestartScope.restart(context);
+    } on Object catch (e) {
+      if (mounted) context.showSnack('$e', type: SnackType.error);
+    } finally {
+      if (mounted) setState(() => _savingToken = false);
+    }
+  }
 
   /// Reads the exported config in the tab and hands only its credentials to
   /// the server — nothing is written to this browser.
@@ -1347,5 +1397,11 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _ssQuotaLoading = false;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _serverTokenController.dispose();
+    super.dispose();
   }
 }

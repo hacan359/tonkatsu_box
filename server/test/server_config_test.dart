@@ -7,10 +7,28 @@ void main() {
       test('should fall back to defaults when nothing is provided', () {
         final ServerConfig config = ServerConfig.parse(const <String>[]);
 
-        expect(config.address, '0.0.0.0');
+        expect(config.address, '127.0.0.1');
         expect(config.port, 8080);
         expect(config.dataDir, 'data');
         expect(config.webRoot, 'web');
+        expect(config.requiresAuth, isFalse);
+      });
+
+      test('should require a token when listening beyond loopback', () {
+        final ServerConfig config = ServerConfig.parse(
+          const <String>['--address', '0.0.0.0'],
+        );
+
+        expect(config.address, '0.0.0.0');
+        expect(config.requiresAuth, isTrue);
+      });
+
+      test('should not require a token on loopback', () {
+        final ServerConfig config = ServerConfig.parse(
+          const <String>['--address', '::1'],
+        );
+
+        expect(config.requiresAuth, isFalse);
       });
 
       test('should read the environment when no arguments are given', () {

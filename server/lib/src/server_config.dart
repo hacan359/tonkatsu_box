@@ -18,12 +18,22 @@ class ServerConfig {
     final ArgResults parsed = buildParser().parse(args);
 
     return ServerConfig(
-      address: _pick(parsed, 'address', env['TONKATSU_ADDRESS'], '0.0.0.0'),
+      // Loopback by default: a selfhost server on 0.0.0.0 is one firewall mis-
+      // step from handing the whole database to the LAN. Anyone who genuinely
+      // needs LAN/Internet access passes --address 0.0.0.0 explicitly, which
+      // then also flips on the bearer-token gate.
+      address: _pick(parsed, 'address', env['TONKATSU_ADDRESS'], '127.0.0.1'),
       port: int.parse(_pick(parsed, 'port', env['TONKATSU_PORT'], '8080')),
       dataDir: _pick(parsed, 'data-dir', env['TONKATSU_DATA_DIR'], 'data'),
       webRoot: _pick(parsed, 'web-root', env['TONKATSU_WEB_ROOT'], 'web'),
     );
   }
+
+  /// Loopback addresses never need the token; anything else does.
+  bool get requiresAuth => _isLoopback(address) == false;
+
+  static bool _isLoopback(String address) =>
+      address == '127.0.0.1' || address == 'localhost' || address == '::1';
 
   /// The parser is public so `--help` can be rendered without a config.
   static ArgParser buildParser() {
