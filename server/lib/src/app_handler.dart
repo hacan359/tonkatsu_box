@@ -130,11 +130,18 @@ Handler _requireAuth(AuthToken? authToken, Handler handler) {
 /// `/img` is deliberately public: covers are immutable public resources, and
 /// `Image.network` in the browser cannot carry an Authorization header anyway.
 /// Its attack surface is capped by the host allowlist and the body limit.
+///
+/// [path] arrives from `Request.url.path`, which shelf strips the leading
+/// slash from (`rpc`, not `/rpc`). Normalising here rather than at the call
+/// site keeps the comparisons reading like the routes do: comparing the raw
+/// value against `/rpc` matched nothing, so the gate never fired no matter how
+/// the token was set.
 bool _isDataPath(String path) {
-  if (path == _kHealthPath) return false;
-  return path == _kRpcPath ||
-      path.startsWith('$kProxyPathPrefix/') ||
-      path == _kRpcPath + '/';
+  final String route = path.startsWith('/') ? path : '/$path';
+  if (route == _kHealthPath) return false;
+  return route == _kRpcPath ||
+      route == '$_kRpcPath/' ||
+      route.startsWith('$kProxyPathPrefix/');
 }
 
 /// A plain `Cascade` would answer "unknown upstream" with index.html and a 200,
