@@ -1,3 +1,4 @@
+import 'package:core/models/media_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_card_entry.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_cards_parser.dart';
@@ -36,6 +37,16 @@ void main() {
       final String json = CustomCardsTemplate.json();
       for (final String field in CustomCardFields.ordered) {
         expect(json.contains('"$field"'), isTrue, reason: field);
+      }
+    });
+
+    test('JSON template type hint lists every allowed type', () {
+      final String json = CustomCardsTemplate.json();
+      final String hint = json
+          .split('\n')
+          .firstWhere((String line) => line.contains('"_type"'));
+      for (final MediaType type in CustomCardFields.allowedTypes) {
+        expect(hint.contains(type.value), isTrue, reason: type.value);
       }
     });
   });

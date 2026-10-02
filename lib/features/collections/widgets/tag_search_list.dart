@@ -61,7 +61,8 @@ class _TagSearchListState extends ConsumerState<TagSearchList> {
 
   void _clearSearch() {
     setState(_searchController.clear);
-    _searchFocus.requestFocus();
+    // Mobile: refocusing would pop the keyboard back after every create.
+    if (!kIsMobile) _searchFocus.requestFocus();
   }
 
   Future<void> _create() async {
@@ -113,6 +114,10 @@ class _TagSearchListState extends ConsumerState<TagSearchList> {
                 focusNode: _searchFocus,
                 // Mobile: no autofocus so the keyboard waits for a tap.
                 autofocus: !kIsMobile,
+                // Touch keeps focus on an outside tap, so a closing sub-dialog
+                // would hand it back and reopen the keyboard.
+                onTapOutside:
+                    kIsMobile ? (_) => _searchFocus.unfocus() : null,
                 decoration: InputDecoration(
                   hintText: l.tagPickerSearchHint,
                   prefixIcon: const Icon(Icons.search, size: 20),

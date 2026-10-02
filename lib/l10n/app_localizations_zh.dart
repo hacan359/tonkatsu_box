@@ -3359,6 +3359,12 @@ class SZh extends S {
       '无需先选择媒体类型即可显示子分类筛选（游戏平台、动漫/漫画类型）';
 
   @override
+  String get settingsShowAllCardTags => '在卡片上显示所有标签';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle => '在海报上列出全部标签，而不是只显示第一个标签和 +N 计数';
+
+  @override
   String get settingsShowPlatformOverlay => '游戏平台封面';
 
   @override
@@ -4698,7 +4704,7 @@ class SZh extends S {
 
   @override
   String get customImportDescription =>
-      '加载由您自己的脚本或解析器生成的 JSON 或 CSV 文件——每行将成为一张自定义卡片。下载模板以查看所有支持的字段和值。';
+      '加载由你自己的脚本或解析器生成的 JSON 或 CSV 文件。每一行会成为一张自定义卡片；开启来源查找后则成为真实卡片。下载模板以查看所有支持的字段和取值。';
 
   @override
   String get customImportSelectFile => '选择 JSON/CSV 文件';
@@ -5722,4 +5728,75 @@ class SZh extends S {
 
   @override
   String get markAllListened => '全部标记为已收听';
+
+  @override
+  String get importStageReading => '正在读取文件...';
+
+  @override
+  String get importStageFetchingGames => '正在获取游戏数据...';
+
+  @override
+  String get importStageFetchingMovies => '正在获取电影数据...';
+
+  @override
+  String get importStageFetchingTvShows => '正在获取剧集数据...';
+
+  @override
+  String get importStageFetchingVisualNovels => '正在获取视觉小说数据...';
+
+  @override
+  String get importStageFetchingManga => '正在获取漫画数据...';
+
+  @override
+  String get importStageFetchingAnime => '正在获取动画数据...';
+
+  @override
+  String get importStageFetchingBooks => '正在获取图书数据...';
+
+  @override
+  String get importStageCachingMedia => '正在缓存媒体...';
+
+  @override
+  String get importStageCreatingCollection => '正在创建收藏...';
+
+  @override
+  String get importStageResolvingTitles => '正在搜索来源...';
+
+  @override
+  String get importStageAddingItems => '正在添加条目...';
+
+  @override
+  String get importStageImportingCanvas => '正在导入画板...';
+
+  @override
+  String get importStageRestoringMedia => '正在恢复媒体数据...';
+
+  @override
+  String get importStageImportingImages => '正在恢复图片...';
+
+  @override
+  String get importStageCompleted => '导入完成';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return '已找到 $found · 自定义卡片 $custom · 不明确 $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => '在来源中查找卡片';
+
+  @override
+  String get customImportResolveHint =>
+      '按标题在同类型来源（TMDB、IGDB、Kitsu 等）中搜索每一行。恰好一个匹配时创建真实卡片，否则创建自定义卡片。custom 和 audio 行不会被搜索。';
+
+  @override
+  String get importResultUnresolved => '匹配到多条记录，已保留为自定义卡片';
+
+  @override
+  String get importResultUnresolvedCopied => '已复制标题';
 }

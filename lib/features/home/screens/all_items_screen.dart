@@ -407,8 +407,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     Map<int, Tag> tagsMap,
     Map<int, List<int>> itemTags,
   ) {
-    // getAll() returns display order, and the map preserves insertion order.
-    final List<Tag> orderedTags = tagsMap.values.toList();
     final bool isLandscape = isLandscapeMobile(context);
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
@@ -461,8 +459,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                               isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
-                      tag: orderedTags.primaryFor(tagIds),
-                      tagCount: tagIds?.length ?? 0,
+                      tags: tagsMap.orderedFor(tagIds),
                       onShowDetails: () =>
                           _showItemDetails(item, collectionNames),
                       onShowContextMenu: (Offset pos) =>
@@ -939,8 +936,7 @@ class _AllItemsCard extends ConsumerWidget {
   const _AllItemsCard({
     required this.item,
     required this.variant,
-    required this.tag,
-    required this.tagCount,
+    required this.tags,
     required this.onShowDetails,
     required this.onShowContextMenu,
     super.key,
@@ -948,8 +944,7 @@ class _AllItemsCard extends ConsumerWidget {
 
   final CollectionItem item;
   final CardVariant variant;
-  final Tag? tag;
-  final int tagCount;
+  final List<Tag> tags;
   final VoidCallback onShowDetails;
   final void Function(Offset position) onShowContextMenu;
 
@@ -968,6 +963,9 @@ class _AllItemsCard extends ConsumerWidget {
           mediaTypeOverlay: item.mediaType.overlayAsset,
         ),
       ),
+    );
+    final bool showAllTags = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.showAllCardTags),
     );
     final ItemCardProgress? progress =
         itemCardProgress(item) ?? trackerCardProgress(ref, item);
@@ -1003,10 +1001,8 @@ class _AllItemsCard extends ConsumerWidget {
               : () => ref
                   .read(allItemsNotifierProvider.notifier)
                   .toggleFavorite(item.id),
-          tagName: tag?.name,
-          tagColor: tag?.color,
-          tagTextColor: tag?.textColor,
-          tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+          tags: tags,
+          showAllTags: showAllTags,
           source: item.dataSource,
           onSourceTap: openUrlCallback(item.externalUrl),
           onTap: selectionActive ? toggle : onShowDetails,

@@ -61,6 +61,13 @@ void main() {
       expect(limiterForHost('api.listenbrainz.org'), isNull);
     });
 
+    test('paces the published per-second limits of IGDB and AniList', () {
+      expect(limiterForHost('api.igdb.com'), isNotNull);
+      expect(limiterForHost('graphql.anilist.co'), isNotNull);
+      // TMDB has no published gap; its 429s are retried instead.
+      expect(limiterForHost('api.themoviedb.org'), isNull);
+    });
+
     test('returns the same shared instance per host', () {
       expect(
         identical(

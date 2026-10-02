@@ -3567,6 +3567,13 @@ class SEn extends S {
       'Show subcategory filters (game platforms, anime/manga types) without selecting their media type first';
 
   @override
+  String get settingsShowAllCardTags => 'Show all tags on cards';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'List every tag on the poster instead of the first one and a +N counter';
+
+  @override
   String get settingsShowPlatformOverlay => 'Game platform covers';
 
   @override
@@ -4954,7 +4961,7 @@ class SEn extends S {
 
   @override
   String get customImportDescription =>
-      'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.';
+      'Load a JSON or CSV file produced by your own script or parser. Each row becomes a custom card, or a real one when the source lookup is on. Download a template to see all supported fields and values.';
 
   @override
   String get customImportSelectFile => 'Select JSON/CSV file';
@@ -6022,4 +6029,76 @@ class SEn extends S {
 
   @override
   String get markAllListened => 'Mark all listened';
+
+  @override
+  String get importStageReading => 'Reading file...';
+
+  @override
+  String get importStageFetchingGames => 'Fetching game data...';
+
+  @override
+  String get importStageFetchingMovies => 'Fetching movie data...';
+
+  @override
+  String get importStageFetchingTvShows => 'Fetching TV show data...';
+
+  @override
+  String get importStageFetchingVisualNovels => 'Fetching visual novel data...';
+
+  @override
+  String get importStageFetchingManga => 'Fetching manga data...';
+
+  @override
+  String get importStageFetchingAnime => 'Fetching anime data...';
+
+  @override
+  String get importStageFetchingBooks => 'Fetching book data...';
+
+  @override
+  String get importStageCachingMedia => 'Caching media...';
+
+  @override
+  String get importStageCreatingCollection => 'Creating collection...';
+
+  @override
+  String get importStageResolvingTitles => 'Looking up sources...';
+
+  @override
+  String get importStageAddingItems => 'Adding items...';
+
+  @override
+  String get importStageImportingCanvas => 'Importing board...';
+
+  @override
+  String get importStageRestoringMedia => 'Restoring media data...';
+
+  @override
+  String get importStageImportingImages => 'Restoring images...';
+
+  @override
+  String get importStageCompleted => 'Import completed';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Found $found · Custom cards $custom · Ambiguous $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => 'Look up cards in sources';
+
+  @override
+  String get customImportResolveHint =>
+      'Searches each row by title in the sources of its type (TMDB, IGDB, Kitsu and others). Exactly one match becomes a real card, otherwise a custom card is created. Custom and audio rows are never looked up.';
+
+  @override
+  String get importResultUnresolved =>
+      'Several records matched, kept as custom cards';
+
+  @override
+  String get importResultUnresolvedCopied => 'Titles copied';
 }

@@ -84,9 +84,25 @@ class ImportResultScreen extends StatelessWidget {
                     color: AppColors.textTertiary,
                     text: l.importResultSkipped(result.skipped),
                   ),
+                if (result.unresolvedTitles.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: AppSpacing.md),
+                  _LinesCard(
+                    lines: result.unresolvedTitles,
+                    title: l.importResultUnresolved,
+                    copiedMessage: l.importResultUnresolvedCopied,
+                    icon: Icons.call_split,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
                 if (result.errors.isNotEmpty) ...<Widget>[
                   const SizedBox(height: AppSpacing.md),
-                  _ErrorsCard(errors: result.errors),
+                  _LinesCard(
+                    lines: result.errors,
+                    title: l.importResultErrors(result.errors.length),
+                    copiedMessage: l.importResultErrorsCopied,
+                    icon: Icons.error_outline,
+                    color: AppColors.error,
+                  ),
                 ],
                 const SizedBox(height: AppSpacing.xl),
                 _buildActions(context, l),
@@ -264,16 +280,27 @@ class _ResultCard extends StatelessWidget {
 }
 
 /// Per-item import errors: expandable list with a copy-all button.
-class _ErrorsCard extends StatefulWidget {
-  const _ErrorsCard({required this.errors});
+/// A collapsible, copyable list: per-item errors or titles left unresolved.
+class _LinesCard extends StatefulWidget {
+  const _LinesCard({
+    required this.lines,
+    required this.title,
+    required this.copiedMessage,
+    required this.icon,
+    required this.color,
+  });
 
-  final List<String> errors;
+  final List<String> lines;
+  final String title;
+  final String copiedMessage;
+  final IconData icon;
+  final Color color;
 
   @override
-  State<_ErrorsCard> createState() => _ErrorsCardState();
+  State<_LinesCard> createState() => _LinesCardState();
 }
 
-class _ErrorsCardState extends State<_ErrorsCard> {
+class _LinesCardState extends State<_LinesCard> {
   static const int _collapsedCount = 5;
 
   bool _expanded = false;
@@ -282,26 +309,26 @@ class _ErrorsCardState extends State<_ErrorsCard> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final List<String> visible = _expanded
-        ? widget.errors
-        : widget.errors.take(_collapsedCount).toList();
+        ? widget.lines
+        : widget.lines.take(_collapsedCount).toList();
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.error.withAlpha(128)),
+        border: Border.all(color: widget.color.withAlpha(128)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Row(
             children: <Widget>[
-              Icon(Icons.error_outline, size: 20, color: AppColors.error),
+              Icon(widget.icon, size: 20, color: widget.color),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  l.importResultErrors(widget.errors.length),
+                  widget.title,
                   style: AppTypography.body.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -310,10 +337,10 @@ class _ErrorsCardState extends State<_ErrorsCard> {
               IconButton(
                 onPressed: () {
                   Clipboard.setData(
-                    ClipboardData(text: widget.errors.join('\n')),
+                    ClipboardData(text: widget.lines.join('\n')),
                   );
                   context.showSnack(
-                    l.importResultErrorsCopied,
+                    widget.copiedMessage,
                     type: SnackType.info,
                   );
                 },
@@ -325,17 +352,17 @@ class _ErrorsCardState extends State<_ErrorsCard> {
           const SizedBox(height: AppSpacing.sm),
           const Divider(height: 1),
           const SizedBox(height: AppSpacing.sm),
-          for (final String error in visible)
+          for (final String line in visible)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: SelectableText(
-                error,
+                line,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
             ),
-          if (widget.errors.length > _collapsedCount)
+          if (widget.lines.length > _collapsedCount)
             TextButton(
               onPressed: () => setState(() => _expanded = !_expanded),
               style: TextButton.styleFrom(

@@ -576,6 +576,11 @@ class ExportService {
           if (item.anime != null && !animes.containsKey(animeKey)) {
             animes[animeKey] = item.anime!.toExport();
           }
+          // Kitsu anime keep per-episode runtimes in the TV cache; without
+          // them restored watch marks count zero minutes in the stats.
+          if (item.usesEpisodeTracker) {
+            tvShowKeys.add((item.dataSource, item.externalId));
+          }
         case MediaType.custom:
           if (item.customMedia != null &&
               !customItems.containsKey(item.externalId)) {

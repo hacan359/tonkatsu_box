@@ -3633,6 +3633,13 @@ class SRu extends S {
       'Показывать фильтры подкатегорий (платформы игр, типы аниме и манги) без предварительного выбора типа медиа';
 
   @override
+  String get settingsShowAllCardTags => 'Все теги на карточке';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'Показывать на постере все теги, а не первый и счётчик +N';
+
+  @override
   String get settingsShowPlatformOverlay => 'Обложки платформ';
 
   @override
@@ -5046,7 +5053,7 @@ class SRu extends S {
 
   @override
   String get customImportDescription =>
-      'Загрузите JSON или CSV файл, собранный вашим скриптом или парсером — каждая строка станет кастомной карточкой. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.';
+      'Загрузите JSON или CSV, подготовленный вашим скриптом или парсером. Каждая строка становится своей карточкой, а при включённом поиске в источниках - настоящей. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.';
 
   @override
   String get customImportSelectFile => 'Выбрать JSON/CSV файл';
@@ -6123,4 +6130,77 @@ class SRu extends S {
 
   @override
   String get markAllListened => 'Отметить всё прослушанным';
+
+  @override
+  String get importStageReading => 'Чтение файла...';
+
+  @override
+  String get importStageFetchingGames => 'Загрузка данных игр...';
+
+  @override
+  String get importStageFetchingMovies => 'Загрузка данных фильмов...';
+
+  @override
+  String get importStageFetchingTvShows => 'Загрузка данных сериалов...';
+
+  @override
+  String get importStageFetchingVisualNovels =>
+      'Загрузка данных визуальных новелл...';
+
+  @override
+  String get importStageFetchingManga => 'Загрузка данных манги...';
+
+  @override
+  String get importStageFetchingAnime => 'Загрузка данных аниме...';
+
+  @override
+  String get importStageFetchingBooks => 'Загрузка данных книг...';
+
+  @override
+  String get importStageCachingMedia => 'Кэширование медиа...';
+
+  @override
+  String get importStageCreatingCollection => 'Создание коллекции...';
+
+  @override
+  String get importStageResolvingTitles => 'Поиск в источниках...';
+
+  @override
+  String get importStageAddingItems => 'Добавление элементов...';
+
+  @override
+  String get importStageImportingCanvas => 'Импорт доски...';
+
+  @override
+  String get importStageRestoringMedia => 'Восстановление данных медиа...';
+
+  @override
+  String get importStageImportingImages => 'Восстановление изображений...';
+
+  @override
+  String get importStageCompleted => 'Импорт завершён';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Найдено $found · Своих карточек $custom · Неоднозначно $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => 'Искать карточки в источниках';
+
+  @override
+  String get customImportResolveHint =>
+      'Каждая строка ищется по названию в источниках своего типа (TMDB, IGDB, Kitsu и другие). Ровно одно совпадение становится настоящей карточкой, иначе создаётся своя. Строки custom и audio не ищутся.';
+
+  @override
+  String get importResultUnresolved =>
+      'Нашлось несколько записей, оставлены своими карточками';
+
+  @override
+  String get importResultUnresolvedCopied => 'Названия скопированы';
 }

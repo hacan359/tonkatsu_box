@@ -466,6 +466,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SettingsTile(
+            leadingIcon: Icons.label_outline,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsShowAllCardTags,
+            subtitle: l.settingsShowAllCardTagsSubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.showAllCardTags,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setShowAllCardTags(enabled: value);
+              },
+            ),
+          ),
+          SettingsTile(
             leadingIcon: Icons.videogame_asset_outlined,
             leadingColor: _kAppearanceColor,
             title: l.settingsShowPlatformOverlay,

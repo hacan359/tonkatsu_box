@@ -1,6 +1,7 @@
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -612,6 +613,149 @@ void main() {
       });
     });
 
+    group('tags', () {
+      const List<Tag> threeTags = <Tag>[
+        Tag(id: 1, name: 'Weekend', color: 0xFF4CAF50, createdAt: 0),
+        Tag(id: 2, name: 'Classics', createdAt: 0),
+        Tag(id: 3, name: 'Couch co-op', createdAt: 0),
+      ];
+
+      Future<void> pumpCard(
+        WidgetTester tester, {
+        required List<Tag> tags,
+        bool showAllTags = false,
+        CardVariant variant = CardVariant.grid,
+        double width = 150,
+        void Function(Offset globalPosition)? onTagTap,
+      }) async {
+        await tester.pumpWidget(MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: width,
+                height: 300,
+                child: MediaPosterCard(
+                  variant: variant,
+                  title: 'Test Show',
+                  imageUrl: '',
+                  cacheImageType: ImageType.tvShowPoster,
+                  cacheImageId: '1',
+                  status: ItemStatus.inProgress,
+                  progress:
+                      const ItemCardProgress(label: '12/22', fraction: 0.5),
+                  tags: tags,
+                  showAllTags: showAllTags,
+                  onTagTap: onTagTap,
+                ),
+              ),
+            ),
+          ),
+        ));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('should show the primary tag and a separate +N count',
+          (WidgetTester tester) async {
+        await pumpCard(tester, tags: threeTags);
+
+        expect(find.text('Weekend'), findsOneWidget);
+        expect(find.text('+2'), findsOneWidget);
+        expect(find.text('Classics'), findsNothing);
+      });
+
+      testWidgets('should omit the count when the item has one tag',
+          (WidgetTester tester) async {
+        await pumpCard(tester, tags: threeTags.take(1).toList());
+
+        expect(find.text('Weekend'), findsOneWidget);
+        expect(find.textContaining('+'), findsNothing);
+      });
+
+      testWidgets('should not overflow with a tag count on a 60px card',
+          (WidgetTester tester) async {
+        await pumpCard(
+          tester,
+          tags: const <Tag>[
+            Tag(id: 1, name: 'A really long tag name', createdAt: 0),
+            Tag(id: 2, name: 'Second', createdAt: 0),
+          ],
+          variant: CardVariant.compact,
+          width: 60,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('+1'), findsOneWidget);
+      });
+
+      testWidgets('should list every tag when showAllTags is on',
+          (WidgetTester tester) async {
+        await pumpCard(tester, tags: threeTags, showAllTags: true);
+
+        for (final Tag tag in threeTags) {
+          expect(find.text(tag.name), findsOneWidget);
+        }
+        expect(find.textContaining('+'), findsNothing);
+      });
+
+      testWidgets('should wrap many tags on a narrow card without overflow',
+          (WidgetTester tester) async {
+        await pumpCard(
+          tester,
+          tags: <Tag>[
+            for (int i = 0; i < 8; i++)
+              Tag(id: i, name: 'Tag number $i', createdAt: 0),
+          ],
+          showAllTags: true,
+          variant: CardVariant.compact,
+          width: 60,
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Tag number 7'), findsOneWidget);
+      });
+
+      testWidgets('should fire onTagTap from the expanded tag list',
+          (WidgetTester tester) async {
+        int taps = 0;
+        await pumpCard(
+          tester,
+          tags: threeTags,
+          showAllTags: true,
+          onTagTap: (Offset _) => taps++,
+        );
+
+        await tester.tap(find.text('Classics'));
+        expect(taps, 1);
+      });
+
+      testWidgets('should fire onTagTap from the +N badge',
+          (WidgetTester tester) async {
+        int taps = 0;
+        await pumpCard(tester, tags: threeTags, onTagTap: (Offset _) => taps++);
+
+        await tester.tap(find.text('+2'));
+        expect(taps, 1);
+      });
+
+      testWidgets('should keep an add-tag target when untagged in either mode',
+          (WidgetTester tester) async {
+        for (final bool showAll in <bool>[false, true]) {
+          int taps = 0;
+          await pumpCard(
+            tester,
+            tags: const <Tag>[],
+            showAllTags: showAll,
+            onTagTap: (Offset _) => taps++,
+          );
+
+          await tester.tap(find.byIcon(Icons.label_outline));
+          expect(taps, 1, reason: 'showAllTags: $showAll');
+        }
+      });
+    });
+
     group('narrow compact layout', () {
       testWidgets(
           'should not overflow with status, progress and tag at 60px width',
@@ -631,8 +775,14 @@ void main() {
                 cacheImageId: '1',
                 status: ItemStatus.inProgress,
                 progress: ItemCardProgress(label: '12/22', fraction: 0.5),
-                tagName: 'Very Long Tag Name',
-                tagColor: 0xFF4CAF50,
+                tags: <Tag>[
+                  Tag(
+                    id: 1,
+                    name: 'Very Long Tag Name',
+                    color: 0xFF4CAF50,
+                    createdAt: 0,
+                  ),
+                ],
               ),
             ),
           ),
@@ -686,8 +836,9 @@ void main() {
                 cacheImageType: ImageType.tvShowPoster,
                 cacheImageId: '1',
                 progress: ItemCardProgress(label: '12/22', fraction: 0.5),
-                tagName: 'Tag',
-                tagColor: 0xFF4CAF50,
+                tags: <Tag>[
+                  Tag(id: 1, name: 'Tag', color: 0xFF4CAF50, createdAt: 0),
+                ],
               ),
             ),
           ),

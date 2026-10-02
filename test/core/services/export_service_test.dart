@@ -1925,6 +1925,84 @@ void main() {
         verify(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, 1399)).called(1);
         expect(xcoll.media.containsKey('tv_episodes'), isTrue);
       });
+
+      test('should include seasons and episodes for kitsu anime', () async {
+        when(() => mockTvShowDao.getTvSeasonsByShowId(DataSource.kitsu, 244))
+            .thenAnswer(
+          (_) async => const <TvSeason>[
+            TvSeason(
+              tmdbShowId: 244,
+              seasonNumber: 1,
+              source: DataSource.kitsu,
+            ),
+          ],
+        );
+        when(() => mockTvShowDao.getEpisodesByShowId(DataSource.kitsu, 244))
+            .thenAnswer(
+          (_) async => const <TvEpisode>[
+            TvEpisode(
+              tmdbShowId: 244,
+              seasonNumber: 1,
+              episodeNumber: 1,
+              name: 'Pilot',
+              runtime: 24,
+              source: DataSource.kitsu,
+            ),
+          ],
+        );
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        final XcollFile xcoll = await sut.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 244,
+              source: DataSource.kitsu,
+              anime: createTestAnime(id: 244, source: DataSource.kitsu),
+            ),
+          ],
+          1,
+        );
+
+        final List<dynamic> episodes =
+            xcoll.media['tv_episodes'] as List<dynamic>;
+        final Map<String, dynamic> episode =
+            episodes.single as Map<String, dynamic>;
+        expect(episode['source'], DataSource.kitsu.name);
+        expect(episode['runtime'], 24);
+        final List<dynamic> seasons = xcoll.media['tv_seasons'] as List<dynamic>;
+        expect(seasons, hasLength(1));
+      });
+
+      test('should not query the episode cache for anilist anime', () async {
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        await sut.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 21,
+              source: DataSource.anilist,
+              anime: createTestAnime(id: 21),
+            ),
+          ],
+          1,
+        );
+
+        verifyNever(() => mockTvShowDao.getEpisodesByShowId(any(), any()));
+      });
     });
 
     group('platforms в full export', () {

@@ -27,7 +27,6 @@ import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../home/providers/all_items_provider.dart';
-import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
 import '../helpers/collection_filters.dart';
 import '../providers/collection_covers_provider.dart';
@@ -52,6 +51,7 @@ import '../../tier_lists/screens/tier_list_detail_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({
@@ -775,7 +775,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => ImportProgressDialog(
+      builder: (BuildContext dialogContext) =>
+          ImportProgressDialog<ImportResult>(
+        title: S.of(context).collectionsImporting,
         progressNotifier: progressNotifier,
         importFuture: importFuture,
       ),

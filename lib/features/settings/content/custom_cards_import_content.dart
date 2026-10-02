@@ -38,6 +38,7 @@ class _CustomCardsImportContentState
   String? _fileName;
   List<CustomCardRow>? _rows;
   bool _useNewCollection = true;
+  bool _resolveFromSources = false;
   int? _selectedCollectionId;
 
   @override
@@ -151,6 +152,13 @@ class _CustomCardsImportContentState
               ),
             ],
           ),
+        ),
+        SwitchListTile(
+          value: _resolveFromSources,
+          onChanged: (bool value) =>
+              setState(() => _resolveFromSources = value),
+          title: Text(l.customImportResolveTitle),
+          subtitle: Text(l.customImportResolveHint),
         ),
       ],
     );
@@ -332,6 +340,7 @@ class _CustomCardsImportContentState
           duplicateIndexes: duplicates,
           collectionId: collectionId,
           author: author,
+          resolveFromSources: _resolveFromSources,
         ),
       ),
     );

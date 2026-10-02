@@ -15,6 +15,7 @@ class UniversalImportResult {
     this.untypedUpdated = 0,
     this.skipped = 0,
     this.errors = const <String>[],
+    this.unresolvedTitles = const <String>[],
     this.fatalError,
     this.fatalDetail,
   });
@@ -33,6 +34,7 @@ class UniversalImportResult {
         untypedUpdated = 0,
         skipped = 0,
         errors = const <String>[],
+        unresolvedTitles = const <String>[],
         fatalError = error,
         fatalDetail = detail;
 
@@ -62,6 +64,9 @@ class UniversalImportResult {
 
   /// Per-item errors.
   final List<String> errors;
+
+  /// Titles several source records matched, so they were kept as custom cards.
+  final List<String> unresolvedTitles;
 
   final String? fatalError;
 

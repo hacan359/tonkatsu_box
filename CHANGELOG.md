@@ -9,6 +9,80 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Custom cards import looks rows up in the sources**
+
+  A switch on the custom cards import screen. With it on, each row is
+  searched by title in the sources of its type: TMDB and TheTVDB for movies,
+  TMDB, TVmaze and TheTVDB for series, IGDB for games, Kitsu and AniList for
+  anime, AniList, MangaDex, MangaBaka and Kitsu for manga, VNDB for visual
+  novels, OpenLibrary, Google Books and Hardcover for books, Fantlab first
+  for Cyrillic book titles. Exactly one match with the same title, year and
+  platform becomes a real card with the source's description and cover; the
+  row's status, rating, note, dates, replays, time, favorite, progress and
+  tags go onto it. No match or several matches gives a custom card, and the
+  result screen lists the titles that matched several records. Games take a
+  platform from the file or a single-platform game only. Files may now
+  declare `custom` and `audio` rows; both always become custom cards.
+
+  * packages/core/lib/utils/title_match.dart (normalizeTitle,
+    classifyTitleMatches, TitleMatch, TitleMatchKind): New.
+  * lib/core/import/title_lookup/lookup_candidate.dart (TitleQuery,
+    LookupCandidate, LookupSource): New.
+  * lib/core/import/title_lookup/lookup_chains.dart (LookupChains.chainFor,
+    LookupKeys): New.
+  * lib/core/import/title_lookup/title_resolver.dart (TitleResolver.resolve,
+    ResolvedMatch, ResolvedAmbiguous, ResolvedNotFound): New.
+  * lib/core/import/media_cache_writer.dart (MediaCacheWriter.upsertAll): New.
+  * lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService.importSelected, _resolveAll, _candidate,
+    _personalFields, _applyTags): `resolveFromSources`; resolved rows go
+    through `ImportWriter`.
+  * lib/core/import/sources/custom_file/custom_card_entry.dart
+    (CustomCardFields.allowedTypes): `custom` and `audio`.
+  * lib/core/import/sources/custom_file/custom_cards_template.dart
+    (CustomCardsTemplate.json): Type hint built from `allowedTypes`.
+  * lib/core/import/import_progress.dart (ImportStage.resolvingTitles,
+    ImportProgress.source, ImportProgress.customCards,
+    ImportProgress.ambiguous): New.
+  * packages/core/lib/models/universal_import_result.dart
+    (UniversalImportResult.unresolvedTitles): New.
+  * lib/core/api/host_rate_limiter.dart (kHostMinRequestGap): IGDB and
+    AniList gaps.
+  * lib/features/settings/content/custom_cards_import_content.dart
+    (_CustomCardsImportContentState._resolveFromSources): The switch.
+  * lib/features/settings/screens/custom_cards_preview_screen.dart
+    (CustomCardsPreviewScreen.resolveFromSources): New.
+  * lib/features/settings/screens/import_result_screen.dart (_LinesCard):
+    Unresolved titles section; replaces `_ErrorsCard`.
+  * lib/l10n/app_*.arb (customImportResolveTitle, customImportResolveHint,
+    customImportDescription, importResultUnresolved,
+    importResultUnresolvedCopied): New strings.
+  * docs/CUSTOM_CARDS_IMPORT.md: New, the file format and the lookup rules.
+  * README.md: Link to it from the import table and the documentation list.
+
+- **Show every tag on grid cards**
+
+  A switch in Settings → Appearance. With it on, grid and compact cards list
+  all of an item's tags as colored chips over the poster, wrapping onto as
+  many lines as needed; tapping them opens the tag picker.
+
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.tags,
+    MediaPosterCard.showAllTags, _TagTapTarget, _InlineTags, _TagChip,
+    _MoreTagsBadge, _EmptyTagBadge, _TagPill): `tags` and `showAllTags`
+    replace `tagName`, `tagColor`, `tagTextColor` and `tagMoreCount`.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.showAllCardTags, SettingsState.showAllCardTags,
+    SettingsNotifier.setShowAllCardTags): New.
+  * lib/features/settings/screens/settings_screen.dart: The switch.
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys,
+    ConfigService._boolKeys): Exported with the config.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._buildGridCard),
+    lib/features/home/screens/all_items_screen.dart (_AllItemsCard): Pass the
+    item's tags and the setting.
+  * lib/l10n/app_*.arb (settingsShowAllCardTags,
+    settingsShowAllCardTagsSubtitle): New strings.
+
 - **Sort by release date**
 
   Newest first by default, both directions. Items without a release year stay
@@ -185,6 +259,27 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **One progress dialog for every import**
+
+  Collection file, Kinorium, IGDB list, Trakt and custom cards imports share
+  one dialog. It shows the stage in the app language, the row and the
+  source being asked, running counts of found, custom and ambiguous rows, a
+  spinner while the import runs, and it stays open until the import ends.
+
+  * lib/shared/widgets/import_progress_dialog.dart (ImportProgressDialog,
+    _ProgressBody): Moved from `lib/features/collections/widgets/`; `title`
+    parameter, generic result type, `PopScope`.
+  * lib/shared/constants/import_stage_ui.dart (ImportStageUi.label): New.
+  * lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/screens/collection_screen.dart,
+    lib/features/settings/content/kinorium_import_content.dart,
+    lib/features/settings/content/igdb_list_import_content.dart,
+    lib/features/settings/content/trakt_import_content.dart,
+    lib/features/settings/screens/custom_cards_preview_screen.dart: Use the
+    shared dialog; private copies removed.
+  * lib/l10n/app_*.arb (importStage*, importBreadcrumb, importTallies): New
+    strings.
+
 - **Posters without the dark overlay**
 
   Grid posters show the picture as is: no dimming at rest and no outline on
@@ -203,6 +298,43 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (CollectionScreenFab._sideActions): New.
 
 ### Fixed
+
+- **Kitsu anime lost their watch time after a backup restore**
+
+  Backups and `.xcollx` exports carry the seasons and episodes of Kitsu
+  anime, so the statistics count their watched episodes right after a
+  restore or import.
+
+  * lib/core/services/export_service.dart (ExportService._collectMediaData):
+    Anime with the episode tracker join the TV seasons and episodes export.
+  * docs/RCOLL_FORMAT.md: `tv_seasons` and `tv_episodes` list Kitsu anime.
+
+- **Tag on a grid card was cut to a few letters**
+
+  The primary tag takes all the free width of the poster's bottom strip, and
+  the "+N" count of the other tags is a separate badge that stays visible
+  however long the tag name is.
+
+  * lib/shared/widgets/media_poster_card.dart (_InlineTags, _MoreTagsBadge):
+    No fixed width cap; the count is laid out apart from the name.
+
+- **Keyboard kept popping up in the tag dialogs on Android**
+
+  In the tag manager and the tag picker the keyboard opens only on a tap in
+  the search field: creating a tag, clearing the field or closing a color,
+  rename or delete dialog leaves it closed.
+
+  * lib/features/collections/widgets/tag_search_list.dart
+    (_TagSearchListState._clearSearch, _TagSearchListState.build): No refocus
+    on mobile; a tap outside the field unfocuses it.
+
+- **RetroAchievements import matched Cyrillic game titles to the wrong game**
+
+  Title comparison keeps letters of any alphabet, so two different Russian
+  titles no longer count as the same game.
+
+  * lib/core/services/ra_to_igdb_mapper.dart (RaToIgdbMapper.normalize):
+    Uses `normalizeTitle`.
 
 - **Link dialog of the cover picker crashed on Android**
 

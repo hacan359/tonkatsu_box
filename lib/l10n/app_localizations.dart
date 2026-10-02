@@ -6314,6 +6314,18 @@ abstract class S {
   /// **'Show subcategory filters (game platforms, anime/manga types) without selecting their media type first'**
   String get settingsAlwaysShowSubcategoriesSubtitle;
 
+  /// No description provided for @settingsShowAllCardTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all tags on cards'**
+  String get settingsShowAllCardTags;
+
+  /// No description provided for @settingsShowAllCardTagsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'List every tag on the poster instead of the first one and a +N counter'**
+  String get settingsShowAllCardTagsSubtitle;
+
   /// No description provided for @settingsShowPlatformOverlay.
   ///
   /// In en, this message translates to:
@@ -8783,7 +8795,7 @@ abstract class S {
   /// No description provided for @customImportDescription.
   ///
   /// In en, this message translates to:
-  /// **'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.'**
+  /// **'Load a JSON or CSV file produced by your own script or parser. Each row becomes a custom card, or a real one when the source lookup is on. Download a template to see all supported fields and values.'**
   String get customImportDescription;
 
   /// No description provided for @customImportSelectFile.
@@ -10639,6 +10651,138 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mark all listened'**
   String get markAllListened;
+
+  /// No description provided for @importStageReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading file...'**
+  String get importStageReading;
+
+  /// No description provided for @importStageFetchingGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching game data...'**
+  String get importStageFetchingGames;
+
+  /// No description provided for @importStageFetchingMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching movie data...'**
+  String get importStageFetchingMovies;
+
+  /// No description provided for @importStageFetchingTvShows.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching TV show data...'**
+  String get importStageFetchingTvShows;
+
+  /// No description provided for @importStageFetchingVisualNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching visual novel data...'**
+  String get importStageFetchingVisualNovels;
+
+  /// No description provided for @importStageFetchingManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching manga data...'**
+  String get importStageFetchingManga;
+
+  /// No description provided for @importStageFetchingAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching anime data...'**
+  String get importStageFetchingAnime;
+
+  /// No description provided for @importStageFetchingBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching book data...'**
+  String get importStageFetchingBooks;
+
+  /// No description provided for @importStageCachingMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Caching media...'**
+  String get importStageCachingMedia;
+
+  /// No description provided for @importStageCreatingCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating collection...'**
+  String get importStageCreatingCollection;
+
+  /// No description provided for @importStageResolvingTitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up sources...'**
+  String get importStageResolvingTitles;
+
+  /// No description provided for @importStageAddingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding items...'**
+  String get importStageAddingItems;
+
+  /// No description provided for @importStageImportingCanvas.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing board...'**
+  String get importStageImportingCanvas;
+
+  /// No description provided for @importStageRestoringMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring media data...'**
+  String get importStageRestoringMedia;
+
+  /// No description provided for @importStageImportingImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring images...'**
+  String get importStageImportingImages;
+
+  /// No description provided for @importStageCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Import completed'**
+  String get importStageCompleted;
+
+  /// No description provided for @importBreadcrumb.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} → {source}'**
+  String importBreadcrumb(String title, String source);
+
+  /// No description provided for @importTallies.
+  ///
+  /// In en, this message translates to:
+  /// **'Found {found} · Custom cards {custom} · Ambiguous {ambiguous}'**
+  String importTallies(int found, int custom, int ambiguous);
+
+  /// No description provided for @customImportResolveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up cards in sources'**
+  String get customImportResolveTitle;
+
+  /// No description provided for @customImportResolveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Searches each row by title in the sources of its type (TMDB, IGDB, Kitsu and others). Exactly one match becomes a real card, otherwise a custom card is created. Custom and audio rows are never looked up.'**
+  String get customImportResolveHint;
+
+  /// No description provided for @importResultUnresolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Several records matched, kept as custom cards'**
+  String get importResultUnresolved;
+
+  /// No description provided for @importResultUnresolvedCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles copied'**
+  String get importResultUnresolvedCopied;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

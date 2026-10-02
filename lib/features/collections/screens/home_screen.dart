@@ -30,11 +30,11 @@ import '../widgets/collection_card.dart';
 import '../widgets/collection_list_tile.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
-import '../widgets/import_progress_dialog.dart';
 import '../widgets/tag_management_dialog.dart';
 import 'collection_screen.dart';
 import '../../../shared/constants/collection_list_sort_mode_ui.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -695,7 +695,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool? dialogResult = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => ImportProgressDialog(
+      builder: (BuildContext dialogContext) =>
+          ImportProgressDialog<ImportResult>(
+        title: S.of(context).collectionsImporting,
         progressNotifier: progressNotifier,
         importFuture: importFuture,
       ),

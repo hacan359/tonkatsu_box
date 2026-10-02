@@ -296,5 +296,15 @@ void main() {
             )).called(1);
       });
     });
+
+    group('bestMatch', () {
+      test('two different Cyrillic titles do not count as an exact match',
+          () {
+        final Game wrong = createTestGame(id: 1, name: 'Солярис');
+        final Game right = createTestGame(id: 2, name: 'Дюна');
+
+        expect(RaToIgdbMapper.bestMatch('Дюна', <Game>[wrong, right])?.id, 2);
+      });
+    });
   });
 }

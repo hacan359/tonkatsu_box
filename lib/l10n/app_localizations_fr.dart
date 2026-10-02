@@ -3627,6 +3627,14 @@ class SFr extends S {
       'Montre les filtres de sous-catégories (plateformes de jeux, genres de mangas/animes) sans sélectionner leur type en premier lieu.';
 
   @override
+  String get settingsShowAllCardTags =>
+      'Afficher toutes les étiquettes sur les cartes';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'Affiche toutes les étiquettes sur l\'affiche au lieu de la première et d\'un compteur +N';
+
+  @override
   String get settingsShowPlatformOverlay =>
       'Jacquettes des plateformes de jeux';
 
@@ -5039,7 +5047,7 @@ class SFr extends S {
 
   @override
   String get customImportDescription =>
-      'Chargez un fichier JSON ou CSV généré par votre propre script ou parser — chaque rangée devient une carte personnalisée. Téléchargez un modèle pour voir tous les champs et les valeurs supportés.';
+      'Chargez un fichier JSON ou CSV produit par votre propre script ou analyseur. Chaque ligne devient une carte personnalisée, ou une vraie carte si la recherche dans les sources est activée. Téléchargez un modèle pour voir tous les champs et valeurs pris en charge.';
 
   @override
   String get customImportSelectFile => 'Sélectionner un fichier JSON/CSV';
@@ -6115,4 +6123,82 @@ class SFr extends S {
 
   @override
   String get markAllListened => 'Tout marquer comme écouté';
+
+  @override
+  String get importStageReading => 'Lecture du fichier...';
+
+  @override
+  String get importStageFetchingGames => 'Récupération des données de jeux...';
+
+  @override
+  String get importStageFetchingMovies =>
+      'Récupération des données de films...';
+
+  @override
+  String get importStageFetchingTvShows =>
+      'Récupération des données de séries...';
+
+  @override
+  String get importStageFetchingVisualNovels =>
+      'Récupération des données de visual novels...';
+
+  @override
+  String get importStageFetchingManga =>
+      'Récupération des données de mangas...';
+
+  @override
+  String get importStageFetchingAnime => 'Récupération des données d\'anime...';
+
+  @override
+  String get importStageFetchingBooks =>
+      'Récupération des données de livres...';
+
+  @override
+  String get importStageCachingMedia => 'Mise en cache des médias...';
+
+  @override
+  String get importStageCreatingCollection => 'Création de la collection...';
+
+  @override
+  String get importStageResolvingTitles => 'Recherche dans les sources...';
+
+  @override
+  String get importStageAddingItems => 'Ajout des éléments...';
+
+  @override
+  String get importStageImportingCanvas => 'Import du tableau...';
+
+  @override
+  String get importStageRestoringMedia => 'Restauration des données médias...';
+
+  @override
+  String get importStageImportingImages => 'Restauration des images...';
+
+  @override
+  String get importStageCompleted => 'Import terminé';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Trouvés $found · Cartes personnalisées $custom · Ambigus $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle =>
+      'Rechercher les cartes dans les sources';
+
+  @override
+  String get customImportResolveHint =>
+      'Chaque ligne est recherchée par titre dans les sources de son type (TMDB, IGDB, Kitsu et autres). Une seule correspondance devient une vraie carte, sinon une carte personnalisée est créée. Les lignes custom et audio ne sont pas recherchées.';
+
+  @override
+  String get importResultUnresolved =>
+      'Plusieurs correspondances, conservées en cartes personnalisées';
+
+  @override
+  String get importResultUnresolvedCopied => 'Titres copiés';
 }
