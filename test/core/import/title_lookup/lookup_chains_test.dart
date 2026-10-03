@@ -246,6 +246,24 @@ void main() {
         expect(hits[1].platformId, AnimationSource.tvShow);
       });
 
+      test('should surface an animation 429 as a rate limit', () async {
+        when(() => tmdb.searchMovies('Akira', year: null))
+            .thenThrow(const TmdbApiException('x', statusCode: 429));
+        when(() => tmdb.searchTvShows('Akira', firstAirDateYear: null))
+            .thenAnswer((_) async => <TvShow>[]);
+        final LookupSource source =
+            chains().chainFor(MediaType.animation, 'Akira').single;
+
+        bool rateLimited = false;
+        try {
+          await source.search(const TitleQuery(title: 'Akira'));
+        } on Object catch (e) {
+          rateLimited = source.isRateLimit(e);
+        }
+
+        expect(rateLimited, isTrue);
+      });
+
       test('429 counts as a rate limit, 500 does not', () {
         final LookupSource source =
             chains().chainFor(MediaType.movie, 'Dune').first;

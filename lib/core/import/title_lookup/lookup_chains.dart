@@ -183,11 +183,13 @@ class LookupChains {
   LookupSource get _tmdbAnimation => LookupSource(
         source: DataSource.tmdb,
         isRateLimit: _tmdb429,
+        // Sequential: `.wait` wraps a 429 in ParallelWaitError, which the
+        // retry would not recognise as a rate limit.
         search: (TitleQuery q) async {
-          final (List<Movie> movies, List<TvShow> shows) = await (
-            _tmdb.searchMovies(q.title, year: q.year),
-            _tmdb.searchTvShows(q.title, firstAirDateYear: q.year),
-          ).wait;
+          final List<Movie> movies =
+              await _tmdb.searchMovies(q.title, year: q.year);
+          final List<TvShow> shows =
+              await _tmdb.searchTvShows(q.title, firstAirDateYear: q.year);
           return <LookupCandidate>[
             for (final Movie m in movies)
               if (TmdbMatcher.isAnimationByGenres(m.genres))

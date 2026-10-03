@@ -128,8 +128,9 @@ Your own fields always come from the file: `status`, `rating`, `comment`,
 `favorite`, `current_episode`, `current_season`, `tags`.
 
 A real card that is already in the collection (same source, id and platform)
-is skipped and counted under "skipped". Two rows resolving to the same record
-give one card.
+is skipped and counted under "skipped": its own fields stay as they are, and
+the row's `tags` are added next to the tags it already has. Two rows resolving
+to the same record give one card.
 
 ### Progress and result
 

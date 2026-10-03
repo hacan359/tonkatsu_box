@@ -19,10 +19,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   for Cyrillic book titles. Exactly one match with the same title, year and
   platform becomes a real card with the source's description and cover; the
   row's status, rating, note, dates, replays, time, favorite, progress and
-  tags go onto it. No match or several matches gives a custom card, and the
-  result screen lists the titles that matched several records. Games take a
-  platform from the file or a single-platform game only. Files may now
-  declare `custom` and `audio` rows; both always become custom cards.
+  tags go onto it. A title already in the collection keeps its own data and
+  only gains the row's tags. No match or several matches gives a custom
+  card, and the result screen lists the titles that matched several records.
+  Games take a platform from the file or a single-platform game only. Files
+  may now declare `custom` and `audio` rows; both always become custom cards.
 
   * packages/core/lib/utils/title_match.dart (normalizeTitle,
     classifyTitleMatches, TitleMatch, TitleMatchKind): New.
@@ -36,7 +37,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/core/import/sources/custom_file/custom_cards_import_service.dart
     (CustomCardsImportService.importSelected, _resolveAll, _candidate,
     _personalFields, _applyTags): `resolveFromSources`; resolved rows go
-    through `ImportWriter`.
+    through `ImportWriter`; file tags are added to an item, never replace
+    its own.
   * lib/core/import/sources/custom_file/custom_card_entry.dart
     (CustomCardFields.allowedTypes): `custom` and `audio`.
   * lib/core/import/sources/custom_file/custom_cards_template.dart
@@ -296,6 +298,16 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/shared/widgets/draggable_fab.dart (DraggableFab.sideActions): New.
   * lib/features/collections/widgets/collection_screen/collection_screen_fab.dart
     (CollectionScreenFab._sideActions): New.
+
+- **Selfhost RPC errors name the SQLite result code only**
+
+  A failed DAO call answers with `SQLite error <code>` for a database error
+  and `Internal server error` for anything else. The full text and the stack
+  trace go to the server log.
+
+  * server/lib/src/rpc_handler.dart (buildRpcHandler, describeDatabaseError,
+    kInternalErrorMessage): Short error message, full text to the log.
+  * server/PROTOCOL.md: Documents the error message.
 
 ### Fixed
 

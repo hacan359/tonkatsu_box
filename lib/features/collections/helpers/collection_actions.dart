@@ -55,6 +55,9 @@ import '../../settings/providers/settings_provider.dart';
 class CollectionActions {
   CollectionActions._();
 
+  // Long enough to read the saved path; snacks no longer wait for a tap.
+  static const Duration _exportedSnackDuration = Duration(seconds: 6);
+
   /// Switches to the shared Search tab with this collection as add target —
   /// no separate search screen, so the shell's single field stays consistent.
   static void addItems({
@@ -382,6 +385,7 @@ class CollectionActions {
       context.showSnack(
         'Exported to ${result.filePath}',
         type: SnackType.success,
+        duration: _exportedSnackDuration,
         action: SnackBarAction(
           label: 'OK',
           onPressed: () {},

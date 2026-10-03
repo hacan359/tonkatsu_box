@@ -440,8 +440,8 @@ class CustomCardsImportService {
     return row;
   }
 
-  /// Missing tags are created, matched by name case-insensitively. A `null`
-  /// item id marks a row that was not written (duplicate or failed insert).
+  /// Additive: a resolved row can land on an item already in the collection,
+  /// whose own tags must survive. A `null` item id marks a row not written.
   Future<void> _applyTags(List<(CustomCardEntry, int?)> targets) async {
     if (!targets.any(((CustomCardEntry, int?) t) => t.$1.tags.isNotEmpty)) {
       return;
@@ -456,7 +456,7 @@ class CustomCardsImportService {
 
     for (final (CustomCardEntry entry, int? itemId) in targets) {
       if (itemId == null || entry.tags.isEmpty) continue;
-      await _db.globalTagDao.setItemTags(itemId, <int>{
+      await _db.globalTagDao.addTagsToItems(<int>[itemId], <int>{
         for (final String name in entry.tags)
           tagIdByName[GlobalTagDao.nameKey(name)]!,
       });

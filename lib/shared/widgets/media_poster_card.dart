@@ -1096,7 +1096,7 @@ class _MoreTagsBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _TagPill(
-      color: AppColors.surface.withAlpha(200),
+      color: AppColors.scrim.withAlpha(170),
       compact: compact,
       child: Text(
         '+$count',

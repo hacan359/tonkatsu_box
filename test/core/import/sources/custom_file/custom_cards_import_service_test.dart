@@ -42,6 +42,7 @@ void main() {
     registerFallbackValue(MediaType.game);
     registerFallbackValue(<Map<String, dynamic>>[]);
     registerFallbackValue(<int>{});
+    registerFallbackValue(<int>[]);
     registerFallbackValue(<TagSeed>[]);
   });
 
@@ -57,7 +58,8 @@ void main() {
     when(() => mockDb.globalTagDao).thenReturn(mockTagDao);
     when(() => mockTagDao.resolveOrCreateAll(any()))
         .thenAnswer((_) async => <String, int>{});
-    when(() => mockTagDao.setItemTags(any(), any())).thenAnswer((_) async {});
+    when(() => mockTagDao.addTagsToItems(any(), any()))
+        .thenAnswer((_) async {});
 
     mockWriter = MockImportWriter();
     mockResolver = MockTitleResolver();
@@ -408,7 +410,8 @@ void main() {
             .captured
             .single as List<TagSeed>;
         expect(seeds.map((TagSeed s) => s.name), <String>['jrpg', 'new tag']);
-        verify(() => mockTagDao.setItemTags(200, <int>{5, 9})).called(1);
+        verify(() => mockTagDao.addTagsToItems(<int>[200], <int>{5, 9}))
+            .called(1);
       });
 
       test('skips tagging rows the insert ignored as duplicates', () async {
@@ -427,8 +430,8 @@ void main() {
           ],
         );
 
-        verify(() => mockTagDao.setItemTags(201, <int>{5})).called(1);
-        verifyNever(() => mockTagDao.setItemTags(200, any()));
+        verify(() => mockTagDao.addTagsToItems(<int>[201], <int>{5})).called(1);
+        verifyNever(() => mockTagDao.addTagsToItems(<int>[200], any()));
       });
 
       test('skips the tag machinery entirely when no entry has tags',
@@ -440,7 +443,7 @@ void main() {
         );
 
         verifyNever(() => mockTagDao.resolveOrCreateAll(any()));
-        verifyNever(() => mockTagDao.setItemTags(any(), any()));
+        verifyNever(() => mockTagDao.addTagsToItems(any(), any()));
       });
 
       test('downloads covers only for entries that have one', () async {
@@ -781,7 +784,7 @@ void main() {
         expect(captured[3], isTrue);
       });
 
-      test('tags of a resolved row land on the written item id', () async {
+      test('should add file tags, not replace, when a row resolves', () async {
         resolverAnswers(ResolvedMatch(duneHit, platformId: null));
         writerAnswers(itemIdsByKey: <String, int>{duneKey: 55});
         when(() => mockTagDao.resolveOrCreateAll(any()))
@@ -796,7 +799,8 @@ void main() {
           ],
         );
 
-        verify(() => mockTagDao.setItemTags(55, <int>{3})).called(1);
+        verify(() => mockTagDao.addTagsToItems(<int>[55], <int>{3})).called(1);
+        verifyNever(() => mockTagDao.setItemTags(any(), any()));
       });
 
       test('an item already in the collection counts as skipped', () async {
