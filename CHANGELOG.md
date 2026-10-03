@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-10-03
+
 ### Added
 
 - **Custom cards import looks rows up in the sources**

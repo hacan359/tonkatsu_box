@@ -1,0 +1,7 @@
+v0.45.0
+
+* Give any card its own cover: a file, a link, IGDB or SteamGridDB.
+* Duplicate any card as your own custom card.
+* Custom cards import finds rows in TMDB, IGDB, AniList, Kitsu and more.
+* Completed marks every episode. Edit episode dates, Undo brings unmarks back.
+* Sort by release date. Statistics count anime and animated films.
