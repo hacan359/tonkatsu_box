@@ -548,6 +548,12 @@ class DatabaseService {
   Future<void> setItemOverrideName(int id, String? name) =>
       collectionDao.setItemOverrideName(id, name);
 
+  Future<void> setItemOverrideCoverUrl(int id, String? url) =>
+      collectionDao.setItemOverrideCoverUrl(id, url);
+
+  Future<int> countItemsWithOverrideCover(String url) =>
+      collectionDao.countItemsWithOverrideCover(url);
+
   /// `totalMinutes` is stored in minutes.
   Future<void> updateItemTimeSpent(int id, int totalMinutes) =>
       collectionDao.updateItemTimeSpent(id, totalMinutes);

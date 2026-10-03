@@ -7,6 +7,488 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Custom cards import looks rows up in the sources**
+
+  A switch on the custom cards import screen. With it on, each row is
+  searched by title in the sources of its type: TMDB and TheTVDB for movies,
+  TMDB, TVmaze and TheTVDB for series, IGDB for games, Kitsu and AniList for
+  anime, AniList, MangaDex, MangaBaka and Kitsu for manga, VNDB for visual
+  novels, OpenLibrary, Google Books and Hardcover for books, Fantlab first
+  for Cyrillic book titles. Exactly one match with the same title, year and
+  platform becomes a real card with the source's description and cover; the
+  row's status, rating, note, dates, replays, time, favorite, progress and
+  tags go onto it. A title already in the collection keeps its own data and
+  only gains the row's tags. No match or several matches gives a custom
+  card, and the result screen lists the titles that matched several records.
+  Games take a platform from the file or a single-platform game only. Files
+  may now declare `custom` and `audio` rows; both always become custom cards.
+
+  * packages/core/lib/utils/title_match.dart (normalizeTitle,
+    classifyTitleMatches, TitleMatch, TitleMatchKind): New.
+  * lib/core/import/title_lookup/lookup_candidate.dart (TitleQuery,
+    LookupCandidate, LookupSource): New.
+  * lib/core/import/title_lookup/lookup_chains.dart (LookupChains.chainFor,
+    LookupKeys): New.
+  * lib/core/import/title_lookup/title_resolver.dart (TitleResolver.resolve,
+    ResolvedMatch, ResolvedAmbiguous, ResolvedNotFound): New.
+  * lib/core/import/media_cache_writer.dart (MediaCacheWriter.upsertAll): New.
+  * lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService.importSelected, _resolveAll, _candidate,
+    _personalFields, _applyTags): `resolveFromSources`; resolved rows go
+    through `ImportWriter`; file tags are added to an item, never replace
+    its own.
+  * lib/core/import/sources/custom_file/custom_card_entry.dart
+    (CustomCardFields.allowedTypes): `custom` and `audio`.
+  * lib/core/import/sources/custom_file/custom_cards_template.dart
+    (CustomCardsTemplate.json): Type hint built from `allowedTypes`.
+  * lib/core/import/import_progress.dart (ImportStage.resolvingTitles,
+    ImportProgress.source, ImportProgress.customCards,
+    ImportProgress.ambiguous): New.
+  * packages/core/lib/models/universal_import_result.dart
+    (UniversalImportResult.unresolvedTitles): New.
+  * lib/core/api/host_rate_limiter.dart (kHostMinRequestGap): IGDB and
+    AniList gaps.
+  * lib/features/settings/content/custom_cards_import_content.dart
+    (_CustomCardsImportContentState._resolveFromSources): The switch.
+  * lib/features/settings/screens/custom_cards_preview_screen.dart
+    (CustomCardsPreviewScreen.resolveFromSources): New.
+  * lib/features/settings/screens/import_result_screen.dart (_LinesCard):
+    Unresolved titles section; replaces `_ErrorsCard`.
+  * lib/l10n/app_*.arb (customImportResolveTitle, customImportResolveHint,
+    customImportDescription, importResultUnresolved,
+    importResultUnresolvedCopied): New strings.
+  * docs/CUSTOM_CARDS_IMPORT.md: New, the file format and the lookup rules.
+  * README.md: Link to it from the import table and the documentation list.
+
+- **Show every tag on grid cards**
+
+  A switch in Settings → Appearance. With it on, grid and compact cards list
+  all of an item's tags as colored chips over the poster, wrapping onto as
+  many lines as needed; tapping them opens the tag picker.
+
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard.tags,
+    MediaPosterCard.showAllTags, _TagTapTarget, _InlineTags, _TagChip,
+    _MoreTagsBadge, _EmptyTagBadge, _TagPill): `tags` and `showAllTags`
+    replace `tagName`, `tagColor`, `tagTextColor` and `tagMoreCount`.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.showAllCardTags, SettingsState.showAllCardTags,
+    SettingsNotifier.setShowAllCardTags): New.
+  * lib/features/settings/screens/settings_screen.dart: The switch.
+  * lib/core/services/config_service.dart (ConfigService._settingsKeys,
+    ConfigService._boolKeys): Exported with the config.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._buildGridCard),
+    lib/features/home/screens/all_items_screen.dart (_AllItemsCard): Pass the
+    item's tags and the setting.
+  * lib/l10n/app_*.arb (settingsShowAllCardTags,
+    settingsShowAllCardTagsSubtitle): New strings.
+
+- **Sort by release date**
+
+  Newest first by default, both directions. Items without a release year stay
+  at the end. IGDB, AniList, Kitsu, VNDB and MusicBrainz give an exact date;
+  other sources give a year.
+
+  * packages/core/lib/models/collection_sort_mode.dart (CollectionSortMode.releaseDate): New.
+  * packages/core/lib/models/collection_item.dart (CollectionItem.releaseDate): New getter.
+  * lib/features/collections/providers/sort_utils.dart (applySortMode, _sortByRelease, _compareRelease): New branch.
+  * lib/shared/constants/collection_sort_mode_ui.dart (CollectionSortModeUi): Labels.
+  * lib/l10n/app_*.arb (sortReleaseDateDisplay, sortReleaseDateShort): New strings.
+
+- **Edit the watched date of an episode**
+
+  A calendar button on a watched episode opens a date picker. "No date"
+  clears the date and keeps the mark.
+
+  * packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao.updateEpisodeWatchedAt): New.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier.setEpisodeWatchedDate): New.
+  * lib/features/collections/widgets/episode_tracker_section.dart (_WatchedDateButton): New.
+  * packages/core/lib/rpc/generated/tv_show_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/tv_show_dao.remote.rpc.dart: Regenerated.
+  * lib/l10n/app_*.arb (episodeWatchedDateEdit, episodeWatchedDateSelect): New strings.
+
+- **Undo for unmarked episodes**
+
+  Unmarking an episode or a whole season shows a snackbar with Undo and a
+  five-second countdown. Undo brings the marks back with their old dates.
+
+  * lib/features/collections/helpers/episode_undo.dart (showUndoSnack,
+    offerWatchedUndo, offerStatusEpisodesUndo): New.
+  * lib/shared/extensions/snackbar_extension.dart (SnackBarExtension.showSnack,
+    _SnackCountdown): `countdown` parameter.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (WatchedMarks, EpisodeTrackerNotifier.toggleEpisode,
+    EpisodeTrackerNotifier.toggleSeason, EpisodeTrackerNotifier.restoreWatched):
+    Toggles return the removed marks.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonExpansionTileState._toggleSeason): Offers the undo.
+  * lib/l10n/app_*.arb (undo, episodeUnmarkedSnack, seasonUnmarkedSnack): New strings.
+
+- **"Completed" status marks every episode**
+
+  Setting a series to Completed marks every regular episode and fetches the
+  seasons that are not cached yet. Leaving Completed clears the marks and
+  offers Undo, which restores the status, dates, replay count and marks.
+  Bulk status changes sync the marks without a snackbar.
+
+  * packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao.unmarkShowWatched): New.
+  * lib/features/collections/providers/collections_provider.dart
+    (syncEpisodesToStatus, ClearedEpisodeMarks,
+    CollectionItemsNotifier.updateStatus, CollectionItemsNotifier.restoreCompleted,
+    CollectionItemsNotifier.updateActivityDates): Status drives the marks.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier.markAllWatched, EpisodeTrackerNotifier.unmarkAllWatched,
+    EpisodeTrackerNotifier._updateAutoStatus): New; auto-status passes
+    `syncEpisodes: false`.
+  * lib/features/collections/helpers/bulk_operations.dart (BulkOperations.updateItemsStatus),
+    lib/features/collections/widgets/collection_items_view.dart (CollectionItemsView),
+    lib/features/collections/screens/item_detail_screen.dart (_ItemDetailScreenState),
+    lib/features/home/screens/all_items_screen.dart (_AllItemsScreenState): Call the sync.
+  * lib/l10n/app_*.arb (episodesClearedSnack): New string.
+
+- **Ctrl+7 and Ctrl+, shortcuts**
+
+  Ctrl+1..7 follow the buttons of the navigation bar, Ctrl+4 opens
+  Personalization. Ctrl+, opens Settings.
+
+  * lib/shared/keyboard/keyboard_shortcuts.dart (buildGlobalShortcuts,
+    globalShortcutGroup): `onSwitchSlot`, `onOpenSettings`.
+  * lib/shared/navigation/nav_destinations.dart (kNavSlotOrder, navStepSlot): New.
+  * lib/shared/navigation/app_shell.dart (_AppShellState._openSlot,
+    _AppShellState._stepSlot): New.
+
+- **Duplicate an item as a custom item**
+
+  The item menu offers "Duplicate as custom item" on every non-custom card. It
+  opens the custom item form filled with the card's metadata, cover and tags,
+  and saves a new custom card in the same collection. Status, rating, note and
+  episode marks start empty.
+
+  * lib/features/collections/helpers/custom_duplicate.dart (customDraftFromItem): New.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (CreateCustomItemDialog.duplicate, CreateCustomItemDialog.prefill,
+    CreateCustomItemDialog.prefillCoverBytes, CreateCustomItemDialog.prefillTags): New.
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.toNewCustomMedia): New.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._handleCreateCustomItem): Uses toNewCustomMedia.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailMenuAction.duplicateAsCustom): New.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._duplicateAsCustom, _ItemDetailScreenState._cachedCoverOf): New.
+  * lib/l10n/app_*.arb (duplicateAsCustom): New string.
+
+- **Replace the cover of any item**
+
+  "Change cover" in the item menu takes a file, a link, and for games a cover
+  from IGDB, a SteamGridDB grid or a ScreenScraper gallery tile (right-click
+  on Windows, long press on Android). "Restore original cover" brings back
+  the provider's one. The cover is per collection item and shows everywhere
+  the item does: grids, the item screen, Home, boards and the collection
+  mosaic. Refreshing from the provider keeps it. A game-type custom card can
+  take a SteamGridDB grid too.
+
+  * packages/core/lib/database/migrations/migration_v66.dart (MigrationV66): New,
+    `collection_items.override_cover_url`.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers v66.
+  * packages/core/lib/models/collection_item.dart (CollectionItem.overrideCoverUrl,
+    CollectionItem.coverUrl, CollectionItem.thumbnailUrl, CollectionItem.imageType,
+    CollectionItem.coverImageId, CollectionItem.cachedCoverUrl,
+    CollectionItem.cachedImageType, CollectionItem.cachedCoverImageId,
+    CollectionItem.toExport, CollectionItem.copyWith): Override field and getters.
+  * packages/core/lib/models/image_type.dart (ImageType.coverOverride): New
+    `cover_overrides` cache folder.
+  * packages/core/lib/utils/cover_image_id.dart (overrideCoverImageId): New.
+  * packages/core/lib/models/canvas_item.dart (CanvasItem.overrideCoverUrl,
+    CanvasItem.mediaThumbnailUrl, CanvasItem.mediaImageType,
+    CanvasItem.mediaCacheId): Board cards show the override.
+  * packages/core/lib/models/cover_info.dart (CoverInfo.overrideCoverUrl,
+    CoverInfo.displayUrl): Collection mosaic shows the override.
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.setItemOverrideCoverUrl, CollectionDao.countItemsWithOverrideCover):
+    New; (CollectionDao.getCollectionCovers): Selects the override.
+  * packages/core/lib/database/dao/canvas_dao.dart (CanvasDao.getCanvasItems,
+    CanvasDao.getGameCanvasItems): Join `override_cover_url`.
+  * packages/core/lib/rpc/generated/collection_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/collection_dao.remote.rpc.dart: Regenerated.
+  * lib/core/database/database_service.dart,
+    lib/data/repositories/collection_repository.dart (setItemOverrideCoverUrl,
+    countItemsWithOverrideCover): New.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.setCoverOverride, CollectionItemsNotifier._releaseOverrideCover):
+    New.
+  * lib/features/collections/providers/canvas_provider.dart
+    (CanvasNotifier._syncOverrides): Patches the cover along with the name.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailMenuAction.changeCover, ItemDetailMenuAction.resetCover): New.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._changeCover, _ItemDetailScreenState._setCoverOverride,
+    _ItemDetailScreenState._setCoverFromGallery): New.
+  * lib/features/collections/widgets/custom_item/cover_image_picker.dart
+    (CoverPickSource, pickCustomCoverImage): Extra sources.
+  * lib/features/collections/widgets/cover_override/cover_candidate_grid.dart
+    (CoverCandidate, CoverCandidateDialog): New.
+  * lib/features/collections/widgets/cover_override/igdb_cover_picker.dart
+    (pickIgdbCover, IgdbCoverPicker): New.
+  * lib/features/collections/widgets/cover_override/steamgriddb_cover_picker.dart
+    (pickSteamGridDbCover, SteamGridDbCoverPicker): New.
+  * lib/features/collections/widgets/screenscraper_gallery_section.dart
+    (ScreenScraperGallerySection.onSetAsCover): New context menu.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._pickCover): SteamGridDB for game-type cards.
+  * lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi.getCoverImageIds),
+    lib/core/api/igdb_api.dart (IgdbApi.getCoverImageIds, IgdbApi.imageUrl): New.
+  * lib/core/services/image_cache_service.dart (ImageCacheService.fetchImageBytes): New.
+  * lib/core/services/cache_cleanup_service.dart (CacheCleanupService.removeOrphans):
+    Keeps both the override and the provider cover of a live item.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions._refreshItemWork): Clears only the provider cover.
+  * lib/core/services/export_service.dart (ExportService.createFullExport),
+    lib/core/services/import_service.dart (ImportService._restoreCoverOverride):
+    `.xcollx` carries and restores the override.
+  * lib/features/home/screens/all_items_screen.dart: Takes the image folder from
+    the item.
+  * lib/features/collections/widgets/deck/deck_collection_card.dart: Uses
+    CoverInfo.displayUrl.
+  * lib/l10n/app_*.arb (coverOverrideChange, coverOverrideReset,
+    coverOverrideSaveFailed, coverOverrideSetFromGallery, coverPickerLoadFailed,
+    coverPickerEmpty, coverSourceIgdb): New strings.
+  * docs/RCOLL_FORMAT.md: `override_cover_url` and `cover_overrides/` images.
+
+### Changed
+
+- **One progress dialog for every import**
+
+  Collection file, Kinorium, IGDB list, Trakt and custom cards imports share
+  one dialog. It shows the stage in the app language, the row and the
+  source being asked, running counts of found, custom and ambiguous rows, a
+  spinner while the import runs, and it stays open until the import ends.
+
+  * lib/shared/widgets/import_progress_dialog.dart (ImportProgressDialog,
+    _ProgressBody): Moved from `lib/features/collections/widgets/`; `title`
+    parameter, generic result type, `PopScope`.
+  * lib/shared/constants/import_stage_ui.dart (ImportStageUi.label): New.
+  * lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/screens/collection_screen.dart,
+    lib/features/settings/content/kinorium_import_content.dart,
+    lib/features/settings/content/igdb_list_import_content.dart,
+    lib/features/settings/content/trakt_import_content.dart,
+    lib/features/settings/screens/custom_cards_preview_screen.dart: Use the
+    shared dialog; private copies removed.
+  * lib/l10n/app_*.arb (importStage*, importBreadcrumb, importTallies): New
+    strings.
+
+- **Posters without the dark overlay**
+
+  Grid posters show the picture as is: no dimming at rest and no outline on
+  hover.
+
+  * lib/shared/widgets/media_poster_card.dart (_MediaPosterCardState._buildGridPoster):
+    Scrim and hover border removed.
+
+- **Create custom item button next to "+"**
+
+  The collection screen shows the button left of "+". The ⋮ menu no longer
+  lists it.
+
+  * lib/shared/widgets/draggable_fab.dart (DraggableFab.sideActions): New.
+  * lib/features/collections/widgets/collection_screen/collection_screen_fab.dart
+    (CollectionScreenFab._sideActions): New.
+
+- **Selfhost RPC errors name the SQLite result code only**
+
+  A failed DAO call answers with `SQLite error <code>` for a database error
+  and `Internal server error` for anything else. The full text and the stack
+  trace go to the server log.
+
+  * server/lib/src/rpc_handler.dart (buildRpcHandler, describeDatabaseError,
+    kInternalErrorMessage): Short error message, full text to the log.
+  * server/PROTOCOL.md: Documents the error message.
+
+### Fixed
+
+- **Kitsu anime lost their watch time after a backup restore**
+
+  Backups and `.xcollx` exports carry the seasons and episodes of Kitsu
+  anime, so the statistics count their watched episodes right after a
+  restore or import.
+
+  * lib/core/services/export_service.dart (ExportService._collectMediaData):
+    Anime with the episode tracker join the TV seasons and episodes export.
+  * docs/RCOLL_FORMAT.md: `tv_seasons` and `tv_episodes` list Kitsu anime.
+
+- **Tag on a grid card was cut to a few letters**
+
+  The primary tag takes all the free width of the poster's bottom strip, and
+  the "+N" count of the other tags is a separate badge that stays visible
+  however long the tag name is.
+
+  * lib/shared/widgets/media_poster_card.dart (_InlineTags, _MoreTagsBadge):
+    No fixed width cap; the count is laid out apart from the name.
+
+- **Keyboard kept popping up in the tag dialogs on Android**
+
+  In the tag manager and the tag picker the keyboard opens only on a tap in
+  the search field: creating a tag, clearing the field or closing a color,
+  rename or delete dialog leaves it closed.
+
+  * lib/features/collections/widgets/tag_search_list.dart
+    (_TagSearchListState._clearSearch, _TagSearchListState.build): No refocus
+    on mobile; a tap outside the field unfocuses it.
+
+- **RetroAchievements import matched Cyrillic game titles to the wrong game**
+
+  Title comparison keeps letters of any alphabet, so two different Russian
+  titles no longer count as the same game.
+
+  * lib/core/services/ra_to_igdb_mapper.dart (RaToIgdbMapper.normalize):
+    Uses `normalizeTitle`.
+
+- **Link dialog of the cover picker crashed on Android**
+
+  Confirming the link dialog, even with an empty link, no longer throws.
+
+  * lib/features/collections/widgets/custom_item/cover_image_picker.dart
+    (_CoverUrlDialog): New, owns its text controller.
+
+- **Some PNG and JPEG covers did not show**
+
+  Pictures with extra bytes after the end-of-image marker now load from the
+  cache.
+
+  * lib/core/services/image_cache_service.dart (ImageCacheService._tailContains,
+    ImageCacheService._isValidImageFile): Looks for the end marker in the file tail.
+
+- **Ctrl+Tab and LB/RB skipped Personalization**
+
+  Both now step through the navigation bar in its visual order.
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._onGamepadTabSwitch): Uses navStepSlot.
+
+- **F1 in Personalization listed the keys of the tab underneath**
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._currentScreenShortcutGroups): Hub group.
+
+- **Type-to-search swallowed Ctrl+digit**
+
+  AltGr characters still reach the search field.
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._handleTypeToSearch): Skips Ctrl, Alt and Meta chords.
+
+- **Screen hotkeys fired every other time**
+
+  Affected Collection, Collections, item card, Tier lists, tier list and
+  Wishlist. Tab and D-pad skip the screen-wide focus node.
+
+  * lib/shared/keyboard/shortcut_helper.dart (wrapWithScreenShortcuts): `skipTraversal`.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/screens/item_detail_screen.dart,
+    lib/features/tier_lists/screens/tier_lists_screen.dart,
+    lib/features/tier_lists/screens/tier_list_detail_screen.dart,
+    lib/features/wishlist/screens/wishlist_screen.dart: Use wrapWithScreenShortcuts.
+
+- **Switches merged with the track on hover and focus**
+
+  The canvas resize handle icon shows again. Floating buttons stay in the
+  brand color.
+
+  * lib/shared/theme/app_palette.dart (AppPalette.brandContainer,
+    AppPalette.onBrandContainer), lib/shared/theme/palettes/dark_palette.dart,
+    lib/shared/theme/palettes/sakura_palette.dart: New colors.
+  * lib/shared/theme/app_theme.dart (AppTheme._switchTheme): New;
+    `primaryContainer`, `hoverColor`, `focusColor`, `floatingActionButtonTheme`.
+
+- **Statistics period picker showed no hover or focus**
+
+  * lib/shared/widgets/focusable_surface.dart (FocusableSurface): New.
+  * lib/features/statistics/widgets/stats_period_picker.dart (StatsPeriodPicker): Uses it.
+
+- **Snackbars with a button stayed on screen until tapped**
+
+  They close after their duration again, including the error snackbar with
+  Details.
+
+  * lib/shared/extensions/snackbar_extension.dart (SnackBarExtension.showSnack):
+    `persist: false`.
+
+- **Export and backup dropped the cards of a collection holding only custom items**
+
+  A full `.xcollx` export and a backup carry the custom cards of every
+  collection.
+
+  * lib/core/services/export_service.dart (ExportService._collectMediaData):
+    Removed the empty-media early return.
+
+- **Import overwrote custom cards sharing an id with the file**
+
+  A custom card keeps its id from the file when the id is free in the
+  database and gets a new one otherwise. Items, board cards, covers and mood
+  grid cells follow the new id. A backup restore keeps a card shared by two
+  collections as one card. Custom items without card data in the file are not
+  created.
+
+  * packages/core/lib/database/dao/custom_media_dao.dart (CustomMediaDao.importAll,
+    CustomMediaDao._isIdFree): New; CustomMediaDao.upsertAll removed.
+  * lib/core/services/import_service.dart (ImportService.importFromXcoll,
+    ImportService._importV2, ImportService._restoreEmbeddedMedia,
+    ImportService._restoreImages, ImportService._importCanvas,
+    ImportService._importPerItemCanvas, ImportService._withLocalCustomId,
+    ImportService._withLocalCustomRef, ImportService._localCustomCoverId):
+    `customIds` map.
+  * lib/core/services/backup_service.dart (BackupService.restoreFromBackup,
+    BackupService._restoreMoodGrids): One map for the whole archive.
+  * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/custom_media_dao.remote.rpc.dart: Regenerated.
+
+- **Removed items left their custom cards in the database**
+
+  Removing an item, deleting a collection or clearing it deletes custom cards
+  that no item, board card or mood grid cell points at. Migration v65 deletes
+  the ones left from earlier versions.
+
+  * packages/core/lib/database/dao/collection_dao.dart
+    (CollectionDao.removeItemFromCollection, CollectionDao.deleteCollection,
+    CollectionDao.clearCollectionItems, CollectionDao._customCardIds,
+    CollectionDao._pruneCustomCards): Prune in the same transaction.
+  * packages/core/lib/database/migrations/migration_v65.dart (MigrationV65): New.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Registers v65.
+
+- **Backup restore lost time spent**
+
+  Restore writes back hours typed by hand and Steam playtime.
+
+  * lib/core/services/import_service.dart (ImportService._hasUserData,
+    ImportService._restoreUserData): Restore `timeSpentMinutes`.
+
+- **Statistics hours left out anime and animated films**
+
+  The estimate counts anime without the episode tracker as watched episodes
+  times the episode length from AniList or Kitsu. A completed title counts
+  in full, each replay adds one more run. Completed animated films count by
+  runtime. Anime with hours typed by hand keeps only those hours. A film's
+  hand-typed hours count unless the estimate already counts that film.
+  Statistics show time to the minute: `22m`, `1h 28m`.
+
+  * packages/core/lib/database/dao/stats_dao.dart (StatsDao.getEstimatedMinutes,
+    StatsDao.getManualMinutes, StatsDao._filmItem, StatsDao._filmRuntime,
+    StatsDao._estimatedFilm, StatsDao._counterAnime): Anime and animated films.
+  * lib/shared/utils/duration_formatter.dart (formatMinutes): New.
+  * lib/features/statistics/widgets/stats_hero_common.dart (StatsHoursBreakdown),
+    lib/features/statistics/widgets/stats_platforms_section.dart,
+    lib/features/statistics/widgets/stats_share_card.dart: Use formatMinutes.
+  * lib/features/statistics/models/library_stats.dart (StatsHours.totalHours,
+    PlatformStats.hours): Removed.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_formatRuntime): Replaced by formatMinutes.
+  * lib/l10n/app_*.arb (statsHoursBreakdown, statsPlatformsSummary): Units moved
+    into the values; statsHoursShort removed.
+
 ## [0.44.0] - 2026-09-16
 
 ### Added

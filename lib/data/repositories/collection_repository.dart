@@ -308,6 +308,13 @@ class CollectionRepository {
     await _db.setItemOverrideName(id, name);
   }
 
+  Future<void> setItemOverrideCoverUrl(int id, String? url) async {
+    await _db.setItemOverrideCoverUrl(id, url);
+  }
+
+  Future<int> countItemsWithOverrideCover(String url) =>
+      _db.countItemsWithOverrideCover(url);
+
   Future<void> updateItemTimeSpent(int id, int totalMinutes) async {
     await _db.updateItemTimeSpent(id, totalMinutes);
   }

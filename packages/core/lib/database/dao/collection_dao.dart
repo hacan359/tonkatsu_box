@@ -200,11 +200,71 @@ class CollectionDao {
   /// Cascades to collection_items via FK.
   Future<void> deleteCollection(int id) async {
     final Database db = await _getDatabase();
-    await db.delete(
-      'collections',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
+    await db.transaction((Transaction txn) async {
+      final List<int> cards = await _customCardIds(
+        txn,
+        where: 'collection_id = ?',
+        whereArgs: <Object?>[id],
+      );
+      await txn.delete(
+        'collections',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      await _pruneCustomCards(txn, cards);
+    });
+  }
+
+  /// Custom cards the matching `collection_items` rows point at, read before
+  /// the rows go so only those cards are re-checked afterwards.
+  static Future<List<int>> _customCardIds(
+    DatabaseExecutor db, {
+    required String where,
+    List<Object?> whereArgs = const <Object?>[],
+  }) async {
+    final List<Map<String, Object?>> rows = await db.query(
+      'collection_items',
+      distinct: true,
+      columns: <String>['external_id'],
+      where: "($where) AND media_type = 'custom'",
+      whereArgs: whereArgs,
     );
+    return <int>[
+      for (final Map<String, Object?> r in rows) r['external_id']! as int,
+    ];
+  }
+
+  /// A custom card belongs to nothing but what points at it; left behind, a
+  /// later import reusing its id would adopt it silently.
+  static Future<void> _pruneCustomCards(
+    DatabaseExecutor db,
+    List<int> cardIds,
+  ) async {
+    for (int i = 0; i < cardIds.length; i += kInClauseChunkSize) {
+      final List<int> chunk = cardIds.sublist(
+        i,
+        i + kInClauseChunkSize < cardIds.length
+            ? i + kInClauseChunkSize
+            : cardIds.length,
+      );
+      final String marks = List<String>.filled(chunk.length, '?').join(',');
+      await db.rawDelete('''
+        DELETE FROM custom_items
+        WHERE id IN ($marks)
+        AND NOT EXISTS (
+          SELECT 1 FROM collection_items ci
+          WHERE ci.media_type = 'custom' AND ci.external_id = custom_items.id
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM canvas_items cv
+          WHERE cv.item_type = 'custom' AND cv.item_ref_id = custom_items.id
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM mood_grid_cells mg
+          WHERE mg.media_type = 'custom' AND mg.external_id = custom_items.id
+        )
+      ''', chunk);
+    }
   }
 
   Future<int> getCollectionCount() async {
@@ -593,11 +653,19 @@ class CollectionDao {
   /// survive removal so re-adding the show restores its progress.
   Future<void> removeItemFromCollection(int id) async {
     final Database db = await _getDatabase();
-    await db.delete(
-      'collection_items',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
+    await db.transaction((Transaction txn) async {
+      final List<int> cards = await _customCardIds(
+        txn,
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      await txn.delete(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      await _pruneCustomCards(txn, cards);
+    });
   }
 
   /// The columns the watched-episodes helpers need, or null when the item
@@ -937,6 +1005,28 @@ class CollectionDao {
     );
   }
 
+  /// `null` drops the override, so the item shows its API cover again.
+  Future<void> setItemOverrideCoverUrl(int id, String? url) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'override_cover_url': url},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// One override file can back several items (an import into two
+  /// collections), so it is deleted only once no row points at it.
+  Future<int> countItemsWithOverrideCover(String url) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM collection_items WHERE override_cover_url = ?',
+      <Object?>[url],
+    );
+    return (rows.first['c'] as int?) ?? 0;
+  }
+
   Future<void> setItemFavorite(int id, {required bool isFavorite}) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -1143,18 +1233,20 @@ class CollectionDao {
 
   Future<void> clearCollectionItems(int? collectionId) async {
     final Database db = await _getDatabase();
-    if (collectionId != null) {
-      await db.delete(
+    final String where =
+        collectionId != null ? 'collection_id = ?' : 'collection_id IS NULL';
+    final List<Object?> whereArgs =
+        collectionId != null ? <Object?>[collectionId] : const <Object?>[];
+    await db.transaction((Transaction txn) async {
+      final List<int> cards =
+          await _customCardIds(txn, where: where, whereArgs: whereArgs);
+      await txn.delete(
         'collection_items',
-        where: 'collection_id = ?',
-        whereArgs: <Object?>[collectionId],
+        where: where,
+        whereArgs: whereArgs.isEmpty ? null : whereArgs,
       );
-    } else {
-      await db.delete(
-        'collection_items',
-        where: 'collection_id IS NULL',
-      );
-    }
+      await _pruneCustomCards(txn, cards);
+    });
   }
 
   /// Maps external_id -> list of collection placements (uncategorized included).
@@ -1214,10 +1306,11 @@ class CollectionDao {
     ];
 
     final List<Map<String, Object?>> rows = await db.rawQuery('''
-      SELECT external_id, media_type, platform_id, source, thumbnail_url
+      SELECT external_id, media_type, platform_id, source, thumbnail_url,
+        override_cover_url
       FROM (
         SELECT ci.external_id, ci.media_type, ci.platform_id, ci.source,
-          ci.status, ci.sort_order,
+          ci.status, ci.sort_order, ci.override_cover_url,
           CASE ci.media_type
             WHEN 'game' THEN g.cover_url
             WHEN 'movie' THEN m.poster_url
@@ -1268,7 +1361,7 @@ class CollectionDao {
           ON ci.media_type = 'custom' AND ci.external_id = cm.id
         WHERE $whereClause
       )
-      WHERE thumbnail_url IS NOT NULL
+      WHERE COALESCE(override_cover_url, thumbnail_url) IS NOT NULL
       ORDER BY
         CASE status
           WHEN 'completed' THEN 0

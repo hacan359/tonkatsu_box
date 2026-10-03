@@ -251,6 +251,12 @@ class SRu extends S {
   String get sortCompletionDateShort => 'Завершено';
 
   @override
+  String get sortReleaseDateDisplay => 'Дата выхода';
+
+  @override
+  String get sortReleaseDateShort => 'Выход';
+
+  @override
   String get sortDateOldest => 'Сначала старые';
 
   @override
@@ -2271,6 +2277,24 @@ class SRu extends S {
   String get noEpisodesFound => 'Эпизоды не найдены';
 
   @override
+  String get undo => 'Отменить';
+
+  @override
+  String get episodeUnmarkedSnack => 'Отметка серии снята';
+
+  @override
+  String get seasonUnmarkedSnack => 'Отметки сезона сняты';
+
+  @override
+  String get episodesClearedSnack => 'Отметки серий сняты';
+
+  @override
+  String get episodeWatchedDateEdit => 'Дата просмотра';
+
+  @override
+  String get episodeWatchedDateSelect => 'Когда посмотрели?';
+
+  @override
   String episodeWatchedDate(String date) {
     return 'просмотрено $date';
   }
@@ -3609,6 +3633,13 @@ class SRu extends S {
       'Показывать фильтры подкатегорий (платформы игр, типы аниме и манги) без предварительного выбора типа медиа';
 
   @override
+  String get settingsShowAllCardTags => 'Все теги на карточке';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'Показывать на постере все теги, а не первый и счётчик +N';
+
+  @override
   String get settingsShowPlatformOverlay => 'Обложки платформ';
 
   @override
@@ -4271,6 +4302,30 @@ class SRu extends S {
 
   @override
   String get collectionCopyToCollection => 'Копировать в коллекцию';
+
+  @override
+  String get duplicateAsCustom => 'Дублировать как свой тайтл';
+
+  @override
+  String get coverOverrideChange => 'Сменить обложку';
+
+  @override
+  String get coverOverrideReset => 'Вернуть оригинальную обложку';
+
+  @override
+  String get coverOverrideSaveFailed => 'Не удалось сохранить обложку';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Сделать обложкой';
+
+  @override
+  String get coverPickerLoadFailed => 'Не удалось загрузить обложки';
+
+  @override
+  String get coverPickerEmpty => 'Обложек не нашлось';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
 
   @override
   String collectionItemCopiedTo(Object collection, Object name) {
@@ -4998,7 +5053,7 @@ class SRu extends S {
 
   @override
   String get customImportDescription =>
-      'Загрузите JSON или CSV файл, собранный вашим скриптом или парсером — каждая строка станет кастомной карточкой. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.';
+      'Загрузите JSON или CSV, подготовленный вашим скриптом или парсером. Каждая строка становится своей карточкой, а при включённом поиске в источниках - настоящей. Скачайте шаблон, чтобы увидеть все поддерживаемые поля и значения.';
 
   @override
   String get customImportSelectFile => 'Выбрать JSON/CSV файл';
@@ -5799,13 +5854,8 @@ class SRu extends S {
   String get statsMetricLikedUnits => 'лайкнутых эпизодов';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours ч';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'часы: вручную $manual ч · трекеры $tracker ч · оценка $estimated ч';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'часы: вручную $manual · трекеры $tracker · оценка $estimated';
   }
 
   @override
@@ -5839,7 +5889,7 @@ class SRu extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours ч · $games игр';
+    return '$hours · $games игр';
   }
 
   @override
@@ -6080,4 +6130,77 @@ class SRu extends S {
 
   @override
   String get markAllListened => 'Отметить всё прослушанным';
+
+  @override
+  String get importStageReading => 'Чтение файла...';
+
+  @override
+  String get importStageFetchingGames => 'Загрузка данных игр...';
+
+  @override
+  String get importStageFetchingMovies => 'Загрузка данных фильмов...';
+
+  @override
+  String get importStageFetchingTvShows => 'Загрузка данных сериалов...';
+
+  @override
+  String get importStageFetchingVisualNovels =>
+      'Загрузка данных визуальных новелл...';
+
+  @override
+  String get importStageFetchingManga => 'Загрузка данных манги...';
+
+  @override
+  String get importStageFetchingAnime => 'Загрузка данных аниме...';
+
+  @override
+  String get importStageFetchingBooks => 'Загрузка данных книг...';
+
+  @override
+  String get importStageCachingMedia => 'Кэширование медиа...';
+
+  @override
+  String get importStageCreatingCollection => 'Создание коллекции...';
+
+  @override
+  String get importStageResolvingTitles => 'Поиск в источниках...';
+
+  @override
+  String get importStageAddingItems => 'Добавление элементов...';
+
+  @override
+  String get importStageImportingCanvas => 'Импорт доски...';
+
+  @override
+  String get importStageRestoringMedia => 'Восстановление данных медиа...';
+
+  @override
+  String get importStageImportingImages => 'Восстановление изображений...';
+
+  @override
+  String get importStageCompleted => 'Импорт завершён';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Найдено $found · Своих карточек $custom · Неоднозначно $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => 'Искать карточки в источниках';
+
+  @override
+  String get customImportResolveHint =>
+      'Каждая строка ищется по названию в источниках своего типа (TMDB, IGDB, Kitsu и другие). Ровно одно совпадение становится настоящей карточкой, иначе создаётся своя. Строки custom и audio не ищутся.';
+
+  @override
+  String get importResultUnresolved =>
+      'Нашлось несколько записей, оставлены своими карточками';
+
+  @override
+  String get importResultUnresolvedCopied => 'Названия скопированы';
 }

@@ -320,6 +320,33 @@ class TvShowDao {
     );
   }
 
+  /// An update, never an insert: editing the date must not mark an unwatched
+  /// episode. Returns whether a mark existed.
+  Future<bool> updateEpisodeWatchedAt(
+    int collectionId,
+    DataSource source,
+    int showId,
+    int seasonNumber,
+    int episodeNumber,
+    int? watchedAtMs,
+  ) async {
+    final Database db = await _getDatabase();
+    final int changed = await db.update(
+      'watched_episodes',
+      <String, dynamic>{'watched_at': watchedAtMs},
+      where: 'collection_id = ? AND source = ? AND show_id = ? '
+          'AND season_number = ? AND episode_number = ?',
+      whereArgs: <Object?>[
+        collectionId,
+        source.name,
+        showId,
+        seasonNumber,
+        episodeNumber,
+      ],
+    );
+    return changed > 0;
+  }
+
   /// Clears the watched mark from an episode.
   Future<void> markEpisodeUnwatched(
     int collectionId,
@@ -388,6 +415,20 @@ class TvShowDao {
       }
       await batch.commit(noResult: true);
     });
+  }
+
+  /// Specials included: leaving `completed` means the whole title is unwatched.
+  Future<void> unmarkShowWatched(
+    int collectionId,
+    DataSource source,
+    int showId,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.delete(
+      'watched_episodes',
+      where: 'collection_id = ? AND source = ? AND show_id = ?',
+      whereArgs: <Object?>[collectionId, source.name, showId],
+    );
   }
 
   /// Clears the watched mark from every episode of a season.

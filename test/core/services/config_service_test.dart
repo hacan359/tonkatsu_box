@@ -314,6 +314,16 @@ void main() {
         expect(prefs.getBool(SettingsKeys.showPlatformOverlay), isFalse);
       });
 
+      test('should round-trip showAllCardTags as a bool', () async {
+        await prefs.setBool(SettingsKeys.showAllCardTags, true);
+
+        final Map<String, Object> config = sut.collectSettings();
+        await prefs.clear();
+        await sut.applySettings(config);
+
+        expect(prefs.getBool(SettingsKeys.showAllCardTags), isTrue);
+      });
+
       test('должен перезаписать существующие значения', () async {
         await prefs.setString(SettingsKeys.clientId, 'old_id');
 

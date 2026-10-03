@@ -16,6 +16,8 @@ const AppPalette sakuraPalette = AppPalette(
   textTertiary: Color(0xFFB08E9A),
   brand: Color(0xFFD96A8A),
   onBrand: Color(0xFFFFFFFF),
+  brandContainer: Color(0xFFFFD9E3),
+  onBrandContainer: Color(0xFF3E0A1C),
   gameAccent: Color(0xFF5A68C0),
   movieAccent: Color(0xFFD96A3F),
   tvShowAccent: Color(0xFF7FA623),

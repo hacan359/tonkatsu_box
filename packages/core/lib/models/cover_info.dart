@@ -12,6 +12,7 @@ class CoverInfo {
     this.platformId,
     this.source,
     this.thumbnailUrl,
+    this.overrideCoverUrl,
   });
 
   factory CoverInfo.fromDb(Map<String, dynamic> row) {
@@ -27,6 +28,7 @@ class CoverInfo {
           ? DataSource.fromName(row['source'] as String?)
           : null,
       thumbnailUrl: _toThumbUrl(rawUrl, mediaType),
+      overrideCoverUrl: row['override_cover_url'] as String?,
     );
   }
 
@@ -41,20 +43,31 @@ class CoverInfo {
   /// Provider, manga-only. Disambiguates a shared `externalId`.
   final DataSource? source;
 
+  /// API cover; the mosaic shows [displayUrl], which honours the override.
   final String? thumbnailUrl;
+
+  /// Mirrors `CollectionItem.overrideCoverUrl`; kept raw, never thumb-rewritten.
+  final String? overrideCoverUrl;
+
+  String? get displayUrl => overrideCoverUrl ?? thumbnailUrl;
 
   /// Source-aware cover cache id (manga is namespaced by provider). Matches
   /// `CollectionItem.coverImageId`.
-  String get coverImageId => cover_id.coverImageId(
-        mediaType: mediaType,
-        externalId: externalId,
-        source: source,
-        coverUrl: thumbnailUrl,
-      );
+  String get coverImageId {
+    final String? override = overrideCoverUrl;
+    if (override != null) return cover_id.overrideCoverImageId(override);
+    return cover_id.coverImageId(
+      mediaType: mediaType,
+      externalId: externalId,
+      source: source,
+      coverUrl: thumbnailUrl,
+    );
+  }
 
   /// Image type for the local cache; for `MediaType.animation` picks
   /// movie/tvShow by [platformId] == [AnimationSource.tvShow].
   ImageType get imageType {
+    if (overrideCoverUrl != null) return ImageType.coverOverride;
     switch (mediaType) {
       case MediaType.game:
         return ImageType.gameCover;
@@ -112,11 +125,12 @@ class CoverInfo {
           mediaType == other.mediaType &&
           platformId == other.platformId &&
           source == other.source &&
-          thumbnailUrl == other.thumbnailUrl;
+          thumbnailUrl == other.thumbnailUrl &&
+          overrideCoverUrl == other.overrideCoverUrl;
 
   @override
-  int get hashCode =>
-      Object.hash(externalId, mediaType, platformId, source, thumbnailUrl);
+  int get hashCode => Object.hash(
+      externalId, mediaType, platformId, source, thumbnailUrl, overrideCoverUrl);
 
   @override
   String toString() =>

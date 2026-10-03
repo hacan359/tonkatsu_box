@@ -937,4 +937,55 @@ void main() {
       expect(bare.getUpcomingGames(), throwsA(isA<IgdbApiException>()));
     });
   });
+
+  group('IgdbApi.getCoverImageIds', () {
+    test('should query covers by game id and return their image ids',
+        () async {
+      when(() => mockDio.post<dynamic>(
+            any(),
+            options: any(named: 'options'),
+            data: any(named: 'data'),
+          )).thenAnswer((_) async => Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[
+              <String, dynamic>{'id': 1, 'image_id': 'co1'},
+              <String, dynamic>{'id': 2},
+              <String, dynamic>{'id': 3, 'image_id': 'co3'},
+            ],
+          ));
+
+      final List<String> ids = await api.getCoverImageIds(1942);
+
+      expect(ids, <String>['co1', 'co3']);
+      final String body = verify(() => mockDio.post<dynamic>(
+            captureAny(that: endsWith('/covers')),
+            options: any(named: 'options'),
+            data: captureAny(named: 'data'),
+          )).captured.last as String;
+      expect(body, contains('where game = 1942'));
+    });
+
+    test('should throw IgdbApiException on a network error', () async {
+      when(() => mockDio.post<dynamic>(
+            any(),
+            options: any(named: 'options'),
+            data: any(named: 'data'),
+          )).thenThrow(DioException(
+            requestOptions: RequestOptions(path: ''),
+            type: DioExceptionType.connectionError,
+          ));
+
+      expect(api.getCoverImageIds(1), throwsA(isA<IgdbApiException>()));
+    });
+  });
+
+  group('IgdbApi.imageUrl', () {
+    test('should build a URL for the requested preset', () {
+      expect(
+        IgdbApi.imageUrl('co1', size: 't_cover_big_2x'),
+        'https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co1.jpg',
+      );
+    });
+  });
 }

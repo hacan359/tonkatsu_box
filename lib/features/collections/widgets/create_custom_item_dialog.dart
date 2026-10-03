@@ -26,6 +26,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/custom_cards_parse_error_l10n.dart';
 import '../../../shared/utils/custom_progress_units.dart';
 import '../../../shared/utils/media_format.dart';
+import '../../settings/providers/settings_provider.dart';
+import 'cover_override/steamgriddb_cover_picker.dart';
 import 'custom_item/cover_image_picker.dart';
 import 'custom_item/custom_item_data.dart';
 import 'custom_item/multi_select_genre_dialog.dart';
@@ -35,9 +37,21 @@ export 'custom_item/custom_item_data.dart' show CustomItemData;
 
 /// Full-screen create / edit form for a custom collection item.
 class CreateCustomItemDialog extends ConsumerStatefulWidget {
-  const CreateCustomItemDialog({this.existing, super.key});
+  const CreateCustomItemDialog({
+    this.existing,
+    this.prefill,
+    this.prefillCoverBytes,
+    this.prefillTags = const <String>[],
+    super.key,
+  });
 
   final CustomMedia? existing;
+
+  /// Seeds a new card (a duplicate) without editing [existing]: the form stays
+  /// in create mode, with note and tags, and saves a separate card.
+  final CustomMedia? prefill;
+  final Uint8List? prefillCoverBytes;
+  final List<String> prefillTags;
 
   static Future<CustomItemData?> show(BuildContext context) {
     return Navigator.of(context).push<CustomItemData>(
@@ -55,6 +69,23 @@ class CreateCustomItemDialog extends ConsumerStatefulWidget {
       MaterialPageRoute<CustomItemData>(
         builder: (BuildContext context) =>
             CreateCustomItemDialog(existing: existing),
+      ),
+    );
+  }
+
+  static Future<CustomItemData?> duplicate(
+    BuildContext context,
+    CustomMedia draft, {
+    Uint8List? coverBytes,
+    List<String> tags = const <String>[],
+  }) {
+    return Navigator.of(context).push<CustomItemData>(
+      MaterialPageRoute<CustomItemData>(
+        builder: (BuildContext context) => CreateCustomItemDialog(
+          prefill: draft,
+          prefillCoverBytes: coverBytes,
+          prefillTags: tags,
+        ),
       ),
     );
   }
@@ -97,7 +128,8 @@ class _CreateCustomItemDialogState
   @override
   void initState() {
     super.initState();
-    final CustomMedia? e = widget.existing;
+    final CustomMedia? e = widget.existing ?? widget.prefill;
+    _coverBytes = widget.prefillCoverBytes;
     _selectedType = e?.displayType ?? MediaType.custom;
     _titleController = TextEditingController(text: e?.title ?? '');
     _altTitleController = TextEditingController(text: e?.altTitle ?? '');
@@ -113,7 +145,8 @@ class _CreateCustomItemDialogState
     _externalUrlController =
         TextEditingController(text: e?.externalUrl ?? '');
     _commentController = TextEditingController();
-    _tagsController = TextEditingController();
+    _tagsController =
+        TextEditingController(text: widget.prefillTags.join(', '));
     _selectedYear = e?.year;
     _selectedPlatformId = e?.platformId;
     _selectedFormat = e?.format;
@@ -524,9 +557,26 @@ class _CreateCustomItemDialogState
   }
 
   Future<void> _pickCover() async {
+    final String title = _titleController.text.trim();
+    // A card posing as a game has no IGDB id, so only the name search fits.
+    final bool offerSteamGridDb = _selectedType == MediaType.game &&
+        title.isNotEmpty &&
+        ref.read(settingsNotifierProvider).hasSteamGridDbKey;
     final CoverPickResult? result = await pickCustomCoverImage(
       context,
       currentUrl: _coverUrlController.text,
+      extraSources: <CoverPickSource>[
+        if (offerSteamGridDb)
+          CoverPickSource(
+            icon: Icons.grid_view,
+            label: S.of(context).steamGridDbPanelTitle,
+            pick: (BuildContext ctx) async {
+              final String? url =
+                  await pickSteamGridDbCover(ctx, gameName: title);
+              return url == null ? null : CoverPickResult.url(url);
+            },
+          ),
+      ],
     );
     if (result == null || !mounted) return;
     setState(() {

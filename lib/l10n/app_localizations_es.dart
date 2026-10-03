@@ -251,6 +251,12 @@ class SEs extends S {
   String get sortCompletionDateShort => 'Terminado';
 
   @override
+  String get sortReleaseDateDisplay => 'Fecha de lanzamiento';
+
+  @override
+  String get sortReleaseDateShort => 'Lanzamiento';
+
+  @override
   String get sortDateOldest => 'Más antiguos primero';
 
   @override
@@ -2268,6 +2274,24 @@ class SEs extends S {
   String get noEpisodesFound => 'No se encontraron episodios';
 
   @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get episodeUnmarkedSnack => 'Episodio desmarcado';
+
+  @override
+  String get seasonUnmarkedSnack => 'Temporada desmarcada';
+
+  @override
+  String get episodesClearedSnack => 'Marcas de episodios borradas';
+
+  @override
+  String get episodeWatchedDateEdit => 'Fecha de visionado';
+
+  @override
+  String get episodeWatchedDateSelect => '¿Cuándo lo viste?';
+
+  @override
   String episodeWatchedDate(String date) {
     return 'visto el $date';
   }
@@ -3598,6 +3622,14 @@ class SEs extends S {
       'Muestra los filtros de subcategoría (plataformas de juego, tipos de anime/manga) sin seleccionar antes su tipo de medio';
 
   @override
+  String get settingsShowAllCardTags =>
+      'Mostrar todas las etiquetas en las tarjetas';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'Muestra todas las etiquetas en el póster en lugar de la primera y un contador +N';
+
+  @override
   String get settingsShowPlatformOverlay => 'Portadas con plataforma';
 
   @override
@@ -4263,6 +4295,30 @@ class SEs extends S {
 
   @override
   String get collectionCopyToCollection => 'Copiar a colección';
+
+  @override
+  String get duplicateAsCustom => 'Duplicar como elemento personalizado';
+
+  @override
+  String get coverOverrideChange => 'Cambiar portada';
+
+  @override
+  String get coverOverrideReset => 'Restaurar la portada original';
+
+  @override
+  String get coverOverrideSaveFailed => 'No se pudo guardar la portada';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Usar como portada';
+
+  @override
+  String get coverPickerLoadFailed => 'No se pudieron cargar las portadas';
+
+  @override
+  String get coverPickerEmpty => 'No se encontraron portadas';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
 
   @override
   String collectionItemCopiedTo(Object collection, Object name) {
@@ -4974,7 +5030,7 @@ class SEs extends S {
 
   @override
   String get customImportDescription =>
-      'Carga un archivo JSON o CSV generado por tu propio script o parser — cada fila se convierte en una tarjeta personalizada. Descarga una plantilla para ver todos los campos y valores admitidos.';
+      'Carga un archivo JSON o CSV generado por tu propio script o analizador. Cada fila se convierte en una tarjeta propia, o en una real si la búsqueda en fuentes está activada. Descarga una plantilla para ver todos los campos y valores admitidos.';
 
   @override
   String get customImportSelectFile => 'Seleccionar archivo JSON/CSV';
@@ -5771,13 +5827,8 @@ class SEs extends S {
   String get statsMetricLikedUnits => 'episodios con me gusta';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'horas: manual $manual h · trackers $tracker h · estimado $estimated h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'horas: manual $manual · trackers $tracker · estimado $estimated';
   }
 
   @override
@@ -5811,7 +5862,7 @@ class SEs extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours h · $games juegos';
+    return '$hours · $games juegos';
   }
 
   @override
@@ -6054,4 +6105,77 @@ class SEs extends S {
 
   @override
   String get markAllListened => 'Marcar todo como escuchado';
+
+  @override
+  String get importStageReading => 'Leyendo archivo...';
+
+  @override
+  String get importStageFetchingGames => 'Obteniendo datos de juegos...';
+
+  @override
+  String get importStageFetchingMovies => 'Obteniendo datos de películas...';
+
+  @override
+  String get importStageFetchingTvShows => 'Obteniendo datos de series...';
+
+  @override
+  String get importStageFetchingVisualNovels =>
+      'Obteniendo datos de novelas visuales...';
+
+  @override
+  String get importStageFetchingManga => 'Obteniendo datos de manga...';
+
+  @override
+  String get importStageFetchingAnime => 'Obteniendo datos de anime...';
+
+  @override
+  String get importStageFetchingBooks => 'Obteniendo datos de libros...';
+
+  @override
+  String get importStageCachingMedia => 'Guardando medios en caché...';
+
+  @override
+  String get importStageCreatingCollection => 'Creando colección...';
+
+  @override
+  String get importStageResolvingTitles => 'Buscando en las fuentes...';
+
+  @override
+  String get importStageAddingItems => 'Añadiendo elementos...';
+
+  @override
+  String get importStageImportingCanvas => 'Importando tablero...';
+
+  @override
+  String get importStageRestoringMedia => 'Restaurando datos de medios...';
+
+  @override
+  String get importStageImportingImages => 'Restaurando imágenes...';
+
+  @override
+  String get importStageCompleted => 'Importación completada';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Encontrados $found · Tarjetas propias $custom · Ambiguos $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => 'Buscar tarjetas en las fuentes';
+
+  @override
+  String get customImportResolveHint =>
+      'Cada fila se busca por título en las fuentes de su tipo (TMDB, IGDB, Kitsu y otras). Una única coincidencia se convierte en tarjeta real; si no, se crea una tarjeta propia. Las filas custom y audio no se buscan.';
+
+  @override
+  String get importResultUnresolved =>
+      'Varias coincidencias, se mantuvieron como tarjetas propias';
+
+  @override
+  String get importResultUnresolvedCopied => 'Títulos copiados';
 }

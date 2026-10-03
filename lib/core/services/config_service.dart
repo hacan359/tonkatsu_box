@@ -107,6 +107,7 @@ class ConfigService {
     SettingsKeys.richCollectionsEnabled,
     SettingsKeys.richHeroStyle,
     SettingsKeys.hideEmptyMediaTypeChevrons,
+    SettingsKeys.showAllCardTags,
   ];
 
   /// Keys whose values are ints, not strings.
@@ -128,6 +129,7 @@ class ConfigService {
     SettingsKeys.discordRaSyncEnabled,
     SettingsKeys.richCollectionsEnabled,
     SettingsKeys.hideEmptyMediaTypeChevrons,
+    SettingsKeys.showAllCardTags,
   ];
 
   Map<String, Object> collectSettings() {

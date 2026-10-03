@@ -7,7 +7,6 @@ import 'package:core/utils/item_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -42,6 +41,7 @@ import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
 import '../../../shared/constants/platform_ui.dart';
+import '../../collections/helpers/episode_undo.dart';
 
 /// Grid of all items across all collections (Home tab). The platforms
 /// filter row appears only while Games is selected.
@@ -407,8 +407,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     Map<int, Tag> tagsMap,
     Map<int, List<int>> itemTags,
   ) {
-    // getAll() returns display order, and the map preserves insertion order.
-    final List<Tag> orderedTags = tagsMap.values.toList();
     final bool isLandscape = isLandscapeMobile(context);
     final double cardScale = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.cardScale),
@@ -461,8 +459,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                               isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
-                      tag: orderedTags.primaryFor(tagIds),
-                      tagCount: tagIds?.length ?? 0,
+                      tags: tagsMap.orderedFor(tagIds),
                       onShowDetails: () =>
                           _showItemDetails(item, collectionNames),
                       onShowContextMenu: (Offset pos) =>
@@ -739,9 +736,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
     if (newStatus != null) {
       if (newStatus != item.status) {
-        await ref
-            .read(collectionItemsNotifierProvider(item.collectionId).notifier)
-            .updateStatus(item.id, newStatus, item.mediaType);
+        final CollectionItemsNotifier notifier = ref
+            .read(collectionItemsNotifierProvider(item.collectionId).notifier);
+        final ClearedEpisodeMarks? cleared =
+            await notifier.updateStatus(item.id, newStatus, item.mediaType);
+        if (!mounted) return;
+        offerStatusEpisodesUndo(context, notifier, cleared);
       }
       return;
     }
@@ -828,34 +828,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.audioItem?.releaseYear;
       case MediaType.custom:
         return item.customMedia?.year;
-    }
-  }
-
-  static ImageType _imageTypeFor(MediaType mediaType, int? platformId) {
-    switch (mediaType) {
-      case MediaType.game:
-        return ImageType.gameCover;
-      case MediaType.movie:
-        return ImageType.moviePoster;
-      case MediaType.tvShow:
-        return ImageType.tvShowPoster;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return ImageType.tvShowPoster;
-        }
-        return ImageType.moviePoster;
-      case MediaType.visualNovel:
-        return ImageType.vnCover;
-      case MediaType.manga:
-        return ImageType.mangaCover;
-      case MediaType.anime:
-        return ImageType.animeCover;
-      case MediaType.book:
-        return ImageType.bookCover;
-      case MediaType.audio:
-        return ImageType.audioCover;
-      case MediaType.custom:
-        return ImageType.customCover;
     }
   }
 }
@@ -964,8 +936,7 @@ class _AllItemsCard extends ConsumerWidget {
   const _AllItemsCard({
     required this.item,
     required this.variant,
-    required this.tag,
-    required this.tagCount,
+    required this.tags,
     required this.onShowDetails,
     required this.onShowContextMenu,
     super.key,
@@ -973,8 +944,7 @@ class _AllItemsCard extends ConsumerWidget {
 
   final CollectionItem item;
   final CardVariant variant;
-  final Tag? tag;
-  final int tagCount;
+  final List<Tag> tags;
   final VoidCallback onShowDetails;
   final void Function(Offset position) onShowContextMenu;
 
@@ -994,6 +964,9 @@ class _AllItemsCard extends ConsumerWidget {
         ),
       ),
     );
+    final bool showAllTags = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.showAllCardTags),
+    );
     final ItemCardProgress? progress =
         itemCardProgress(item) ?? trackerCardProgress(ref, item);
     void toggle() =>
@@ -1007,10 +980,7 @@ class _AllItemsCard extends ConsumerWidget {
           variant: variant,
           title: item.cardTitle(ref.displayNameOf(item)),
           imageUrl: item.thumbnailUrl ?? '',
-          cacheImageType: _AllItemsScreenState._imageTypeFor(
-            item.mediaType,
-            item.platformId,
-          ),
+          cacheImageType: item.imageType,
           cacheImageId: item.coverImageId,
           userRating: item.userRating,
           apiRating: item.apiRating,
@@ -1031,10 +1001,8 @@ class _AllItemsCard extends ConsumerWidget {
               : () => ref
                   .read(allItemsNotifierProvider.notifier)
                   .toggleFavorite(item.id),
-          tagName: tag?.name,
-          tagColor: tag?.color,
-          tagTextColor: tag?.textColor,
-          tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+          tags: tags,
+          showAllTags: showAllTags,
           source: item.dataSource,
           onSourceTap: openUrlCallback(item.externalUrl),
           onTap: selectionActive ? toggle : onShowDetails,

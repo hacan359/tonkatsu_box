@@ -8,6 +8,7 @@ import 'package:tonkatsu_box/shared/keyboard/keyboard_shortcuts.dart';
 void main() {
   group('buildGlobalShortcuts', () {
     late int switchedTab;
+    late bool settingsOpened;
     late bool nextTabCalled;
     late bool previousTabCalled;
     late bool backCalled;
@@ -17,7 +18,8 @@ void main() {
 
     Map<ShortcutActivator, VoidCallback> buildTestShortcuts() {
       return buildGlobalShortcuts(
-        onSwitchTab: (int index) => switchedTab = index,
+        onSwitchSlot: (int slot) => switchedTab = slot,
+        onOpenSettings: () => settingsOpened = true,
         onNextTab: () => nextTabCalled = true,
         onPreviousTab: () => previousTabCalled = true,
         onBack: () => backCalled = true,
@@ -29,6 +31,7 @@ void main() {
 
     setUp(() {
       switchedTab = -1;
+      settingsOpened = false;
       nextTabCalled = false;
       previousTabCalled = false;
       backCalled = false;
@@ -41,7 +44,33 @@ void main() {
       final Map<ShortcutActivator, VoidCallback> shortcuts =
           buildTestShortcuts();
 
-      expect(shortcuts.length, 13);
+      expect(shortcuts.length, 15);
+    });
+
+    test('should map Ctrl+7 to the last slot', () {
+      final Map<ShortcutActivator, VoidCallback> shortcuts =
+          buildTestShortcuts();
+
+      shortcuts[const SingleActivator(
+        LogicalKeyboardKey.digit7,
+        control: true,
+      )]
+          ?.call();
+
+      expect(switchedTab, 6);
+    });
+
+    test('should map Ctrl+, to settings', () {
+      final Map<ShortcutActivator, VoidCallback> shortcuts =
+          buildTestShortcuts();
+
+      shortcuts[const SingleActivator(
+        LogicalKeyboardKey.comma,
+        control: true,
+      )]
+          ?.call();
+
+      expect(settingsOpened, isTrue);
     });
 
     test('should map Ctrl+1 to tab 0', () {

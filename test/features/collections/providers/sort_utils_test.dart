@@ -3,6 +3,7 @@ import 'package:core/models/collection_sort_mode.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/providers/sort_utils.dart';
 
@@ -675,6 +676,103 @@ void main() {
         );
 
         expect(result.map((CollectionItem i) => i.id).toList(), <int>[2, 1]);
+      });
+    });
+
+    group('CollectionSortMode.releaseDate', () {
+      CollectionItem game(int id, String name, DateTime? released) =>
+          CollectionItem(
+            id: id,
+            collectionId: 1,
+            mediaType: MediaType.game,
+            externalId: id,
+            status: ItemStatus.notStarted,
+            addedAt: DateTime(2024),
+            game: Game(id: id, name: name, releaseDate: released),
+          );
+
+      CollectionItem movie(int id, String name, int? year) => CollectionItem(
+            id: id,
+            collectionId: 1,
+            mediaType: MediaType.movie,
+            externalId: id,
+            status: ItemStatus.notStarted,
+            addedAt: DateTime(2024),
+            movie: Movie(tmdbId: id, title: name, releaseYear: year),
+          );
+
+      List<int> ids(List<CollectionItem> items) =>
+          items.map((CollectionItem i) => i.id).toList();
+
+      test('newest first, undated last', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          game(1, 'Undated', null),
+          game(2, 'Old', DateTime(2001, 5, 1)),
+          game(3, 'New', DateTime(2020, 1, 1)),
+        ];
+
+        expect(ids(applySortMode(items, CollectionSortMode.releaseDate)),
+            <int>[3, 2, 1]);
+      });
+
+      test('reversed puts oldest first but keeps undated last', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          game(1, 'Undated', null),
+          game(2, 'Old', DateTime(2001, 5, 1)),
+          game(3, 'New', DateTime(2020, 1, 1)),
+        ];
+
+        expect(
+          ids(applySortMode(items, CollectionSortMode.releaseDate,
+              isDescending: true)),
+          <int>[2, 3, 1],
+        );
+      });
+
+      test('mixes precision: year first, exact date inside the year', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          movie(1, 'Movie 2010', 2010),
+          game(2, 'Game Dec 2010', DateTime(2010, 12, 1)),
+          game(3, 'Game Feb 2010', DateTime(2010, 2, 1)),
+          movie(4, 'Movie 2011', 2011),
+        ];
+
+        expect(ids(applySortMode(items, CollectionSortMode.releaseDate)),
+            <int>[4, 2, 3, 1]);
+      });
+
+      test('same release resolves by name, undated sorted by name', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          movie(1, 'Zeta', 2000),
+          movie(2, 'Alpha', 2000),
+          movie(3, 'Yak', null),
+          movie(4, 'Bee', null),
+        ];
+
+        expect(ids(applySortMode(items, CollectionSortMode.releaseDate)),
+            <int>[2, 1, 4, 3]);
+      });
+
+      test('all undated returns them by name in both directions', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          movie(1, 'B', null),
+          movie(2, 'A', null),
+        ];
+
+        expect(ids(applySortMode(items, CollectionSortMode.releaseDate)),
+            <int>[2, 1]);
+        expect(
+          ids(applySortMode(items, CollectionSortMode.releaseDate,
+              isDescending: true)),
+          <int>[2, 1],
+        );
+      });
+
+      test('stored value round-trips', () {
+        expect(
+          CollectionSortMode.fromString(CollectionSortMode.releaseDate.value),
+          CollectionSortMode.releaseDate,
+        );
       });
     });
 

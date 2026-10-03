@@ -122,6 +122,35 @@ Future<Object?> dispatchCustomMediaDao(
           )
           .toList();
 
+    case 'importAll':
+      final List<int> value = await dao.importAll(
+        asList(args['items'])
+            .map(
+              (Object? e) => CustomMedia(
+                id: decodeInt(asObject(e)['id']),
+                title: asObject(e)['title'] as String,
+                displayType: decodeEnumOrNull<MediaType>(
+                  asObject(e)['displayType'],
+                  MediaType.values,
+                ),
+                altTitle: asObject(e)['altTitle'] as String?,
+                description: asObject(e)['description'] as String?,
+                coverUrl: asObject(e)['coverUrl'] as String?,
+                year: decodeIntOrNull(asObject(e)['year']),
+                genres: asObject(e)['genres'] as String?,
+                platformName: asObject(e)['platformName'] as String?,
+                platformId: decodeIntOrNull(asObject(e)['platformId']),
+                format: asObject(e)['format'] as String?,
+                unitTotal: decodeIntOrNull(asObject(e)['unitTotal']),
+                unitGroupTotal: decodeIntOrNull(asObject(e)['unitGroupTotal']),
+                externalUrl: asObject(e)['externalUrl'] as String?,
+                cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
+              ),
+            )
+            .toList(),
+      );
+      return value.map((int e) => encodeInt(e)).toList();
+
     case 'update':
       await dao.update(
         CustomMedia(
@@ -173,35 +202,6 @@ Future<Object?> dispatchCustomMediaDao(
           externalUrl: asObject(args['item'])['externalUrl'] as String?,
           cachedAt: decodeIntOrNull(asObject(args['item'])['cachedAt']),
         ),
-      );
-      return null;
-
-    case 'upsertAll':
-      await dao.upsertAll(
-        asList(args['items'])
-            .map(
-              (Object? e) => CustomMedia(
-                id: decodeInt(asObject(e)['id']),
-                title: asObject(e)['title'] as String,
-                displayType: decodeEnumOrNull<MediaType>(
-                  asObject(e)['displayType'],
-                  MediaType.values,
-                ),
-                altTitle: asObject(e)['altTitle'] as String?,
-                description: asObject(e)['description'] as String?,
-                coverUrl: asObject(e)['coverUrl'] as String?,
-                year: decodeIntOrNull(asObject(e)['year']),
-                genres: asObject(e)['genres'] as String?,
-                platformName: asObject(e)['platformName'] as String?,
-                platformId: decodeIntOrNull(asObject(e)['platformId']),
-                format: asObject(e)['format'] as String?,
-                unitTotal: decodeIntOrNull(asObject(e)['unitTotal']),
-                unitGroupTotal: decodeIntOrNull(asObject(e)['unitGroupTotal']),
-                externalUrl: asObject(e)['externalUrl'] as String?,
-                cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
-              ),
-            )
-            .toList(),
       );
       return null;
 

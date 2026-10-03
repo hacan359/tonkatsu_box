@@ -73,6 +73,12 @@ Future<Object?> dispatchCollectionDao(
       );
       return encodeIntOrNull(value);
 
+    case 'countItemsWithOverrideCover':
+      final int value = await dao.countItemsWithOverrideCover(
+        args['url'] as String,
+      );
+      return encodeInt(value);
+
     case 'createCollection':
       final Collection value = await dao.createCollection(
         name: args['name'] as String,
@@ -136,6 +142,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -435,6 +442,7 @@ Future<Object?> dispatchCollectionDao(
           'userComment': v.userComment,
           'userRating': v.userRating,
           'overrideName': v.overrideName,
+          'overrideCoverUrl': v.overrideCoverUrl,
           'isFavorite': v.isFavorite,
           'game': encodeNullable<Game>(
             v.game,
@@ -710,6 +718,7 @@ Future<Object?> dispatchCollectionDao(
           'userComment': v.userComment,
           'userRating': v.userRating,
           'overrideName': v.overrideName,
+          'overrideCoverUrl': v.overrideCoverUrl,
           'isFavorite': v.isFavorite,
           'game': encodeNullable<Game>(
             v.game,
@@ -984,6 +993,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -1262,6 +1272,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -1588,6 +1599,7 @@ Future<Object?> dispatchCollectionDao(
               'platformId': encodeIntOrNull(e.platformId),
               'source': e.source?.name,
               'thumbnailUrl': e.thumbnailUrl,
+              'overrideCoverUrl': e.overrideCoverUrl,
             },
           )
           .toList();
@@ -1628,6 +1640,7 @@ Future<Object?> dispatchCollectionDao(
           'userComment': v.userComment,
           'userRating': v.userRating,
           'overrideName': v.overrideName,
+          'overrideCoverUrl': v.overrideCoverUrl,
           'isFavorite': v.isFavorite,
           'game': encodeNullable<Game>(
             v.game,
@@ -1921,6 +1934,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -2199,6 +2213,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -2516,6 +2531,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -2827,6 +2843,7 @@ Future<Object?> dispatchCollectionDao(
               'userComment': e.userComment,
               'userRating': e.userRating,
               'overrideName': e.overrideName,
+              'overrideCoverUrl': e.overrideCoverUrl,
               'isFavorite': e.isFavorite,
               'game': encodeNullable<Game>(
                 e.game,
@@ -3077,6 +3094,13 @@ Future<Object?> dispatchCollectionDao(
       await dao.setItemFavorite(
         decodeInt(args['id']),
         isFavorite: args['isFavorite'] as bool,
+      );
+      return null;
+
+    case 'setItemOverrideCoverUrl':
+      await dao.setItemOverrideCoverUrl(
+        decodeInt(args['id']),
+        args['url'] as String?,
       );
       return null;
 

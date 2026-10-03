@@ -128,6 +128,9 @@ abstract class SettingsKeys {
   /// even when their media-type chevron is not selected.
   static const String alwaysShowSubcategories = 'always_show_subcategories';
 
+  /// Show every tag on a grid card instead of the primary one + "+N".
+  static const String showAllCardTags = 'show_all_card_tags';
+
   /// Date display format id (see [DateFormatPreset]).
   static const String dateFormat = 'date_format';
 
@@ -200,6 +203,7 @@ class SettingsState {
     this.richHeroStyle = RichHeroStyle.classic,
     this.hideEmptyMediaTypeChevrons = false,
     this.alwaysShowSubcategories = false,
+    this.showAllCardTags = false,
     this.dateFormat = SettingsKeys.dateFormatDefault,
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
     this.cardScale = SettingsKeys.cardScaleDefault,
@@ -294,6 +298,8 @@ class SettingsState {
   /// Always show subcategory subfilters (platforms, formats) without first
   /// selecting their media-type chevron.
   final bool alwaysShowSubcategories;
+
+  final bool showAllCardTags;
 
   /// Date display format preset id.
   final String dateFormat;
@@ -425,6 +431,7 @@ class SettingsState {
     RichHeroStyle? richHeroStyle,
     bool? hideEmptyMediaTypeChevrons,
     bool? alwaysShowSubcategories,
+    bool? showAllCardTags,
     String? dateFormat,
     String? animeMangaTitleLanguage,
     double? cardScale,
@@ -470,6 +477,7 @@ class SettingsState {
           hideEmptyMediaTypeChevrons ?? this.hideEmptyMediaTypeChevrons,
       alwaysShowSubcategories:
           alwaysShowSubcategories ?? this.alwaysShowSubcategories,
+      showAllCardTags: showAllCardTags ?? this.showAllCardTags,
       dateFormat: dateFormat ?? this.dateFormat,
       animeMangaTitleLanguage:
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
@@ -650,6 +658,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.hideEmptyMediaTypeChevrons) ?? false;
     final bool alwaysShowSubcategories =
         _prefs.getBool(SettingsKeys.alwaysShowSubcategories) ?? false;
+    final bool showAllCardTags =
+        _prefs.getBool(SettingsKeys.showAllCardTags) ?? false;
     final String dateFormat =
         _prefs.getString(SettingsKeys.dateFormat) ??
             SettingsKeys.dateFormatDefault;
@@ -704,6 +714,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       richHeroStyle: richHeroStyle,
       hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
       alwaysShowSubcategories: alwaysShowSubcategories,
+      showAllCardTags: showAllCardTags,
       dateFormat: dateFormat,
       animeMangaTitleLanguage: animeMangaTitleLanguage,
       cardScale: cardScale,
@@ -1078,6 +1089,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(alwaysShowSubcategories: enabled);
   }
 
+  Future<void> setShowAllCardTags({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.showAllCardTags, enabled);
+    state = state.copyWith(showAllCardTags: enabled);
+  }
+
   Future<void> setDateFormat(String presetId) async {
     await _prefs.setString(SettingsKeys.dateFormat, presetId);
     state = state.copyWith(dateFormat: presetId);
@@ -1290,6 +1306,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.richHeroStyle);
     await _prefs.remove(SettingsKeys.hideEmptyMediaTypeChevrons);
     await _prefs.remove(SettingsKeys.alwaysShowSubcategories);
+    await _prefs.remove(SettingsKeys.showAllCardTags);
     await _prefs.remove(SettingsKeys.dateFormat);
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.cardScale);

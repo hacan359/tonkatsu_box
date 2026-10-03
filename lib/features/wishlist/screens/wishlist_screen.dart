@@ -21,6 +21,7 @@ import '../widgets/add_wishlist_dialog.dart';
 import '../widgets/wishlist_dialogs.dart';
 import '../widgets/wishlist_tag_header.dart';
 import '../widgets/wishlist_tile.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 /// Media type a wishlist hint opens the Search tab on. Null when the hint has
 /// no searchable sources (custom items), which leaves the tab as it was.
@@ -56,7 +57,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     final String searchQuery = ref.watch(wishlistSearchQueryProvider);
     final List<WishlistTagCount> tags = ref.watch(wishlistTagsProvider);
 
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(),
       child: Stack(
         children: <Widget>[

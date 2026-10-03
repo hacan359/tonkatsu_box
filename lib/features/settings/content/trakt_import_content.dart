@@ -24,6 +24,7 @@ import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
 
 /// Flow: ZIP file pick → preview → options → import progress.
 class TraktImportContent extends ConsumerStatefulWidget {
@@ -462,7 +463,9 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => _TraktImportProgressDialog(
+      builder: (BuildContext dialogContext) =>
+          ImportProgressDialog<UniversalImportResult>(
+        title: S.of(context).traktImporting,
         progressNotifier: progressNotifier,
         importFuture: importFuture,
       ),
@@ -500,81 +503,5 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     } else if (result.fatalError != null) {
       context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
     }
-  }
-}
-
-class _TraktImportProgressDialog extends StatelessWidget {
-  const _TraktImportProgressDialog({
-    required this.progressNotifier,
-    required this.importFuture,
-  });
-
-  final ValueNotifier<ImportProgress?> progressNotifier;
-  final Future<UniversalImportResult> importFuture;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      title: Text(S.of(context).traktImporting),
-      content: ValueListenableBuilder<ImportProgress?>(
-        valueListenable: progressNotifier,
-        builder:
-            (BuildContext context, ImportProgress? progress, Widget? child) {
-          if (progress == null) {
-            return const SizedBox(
-              height: 100,
-              child: Center(child: LogoLoader()),
-            );
-          }
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                progress.stage.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              if (progress.message != null) ...<Widget>[
-                const SizedBox(height: 4),
-                Text(
-                  progress.message!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              LinearProgressIndicator(
-                value: progress.total > 0 ? progress.progress : null,
-              ),
-              if (progress.total > 0) ...<Widget>[
-                const SizedBox(height: 8),
-                Text(
-                  '${progress.current} / ${progress.total}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ],
-          );
-        },
-      ),
-      actions: <Widget>[
-        FutureBuilder<UniversalImportResult>(
-          future: importFuture,
-          builder: (BuildContext context,
-              AsyncSnapshot<UniversalImportResult> snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(S.of(context).done),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
-    );
   }
 }

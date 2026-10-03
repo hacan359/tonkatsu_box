@@ -340,6 +340,52 @@ void main() {
       });
     });
 
+    group('setShowAllCardTags', () {
+      test('should default to false when the key is absent', () async {
+        final ProviderContainer container = await createContainer();
+
+        expect(
+          container.read(settingsNotifierProvider).showAllCardTags,
+          isFalse,
+        );
+      });
+
+      test('should load the stored value from prefs', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{SettingsKeys.showAllCardTags: true},
+        );
+
+        expect(
+          container.read(settingsNotifierProvider).showAllCardTags,
+          isTrue,
+        );
+      });
+
+      test('should persist and expose the new value when toggled', () async {
+        final ProviderContainer container = await createContainer();
+
+        await container
+            .read(settingsNotifierProvider.notifier)
+            .setShowAllCardTags(enabled: true);
+
+        expect(
+          container.read(settingsNotifierProvider).showAllCardTags,
+          isTrue,
+        );
+        expect(prefs.getBool(SettingsKeys.showAllCardTags), isTrue);
+      });
+
+      test('should drop the stored value when settings are cleared', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{SettingsKeys.showAllCardTags: true},
+        );
+
+        await container.read(settingsNotifierProvider.notifier).clearSettings();
+
+        expect(prefs.getBool(SettingsKeys.showAllCardTags), isNull);
+      });
+    });
+
     group('clearSettings', () {
       test('должен очистить все настройки включая TMDB ключ', () async {
         final ProviderContainer container = await createContainer(

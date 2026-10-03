@@ -19,6 +19,7 @@ import '../../collections/providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import 'import_result_screen.dart';
 import '../../../shared/constants/media_type_ui.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
 
 /// Preview of a parsed custom-cards file: a summary, select-all controls and
 /// a lazy checkbox list (problem rows first), ending in the import action.
@@ -28,6 +29,7 @@ class CustomCardsPreviewScreen extends ConsumerStatefulWidget {
     required this.duplicateIndexes,
     required this.collectionId,
     required this.author,
+    this.resolveFromSources = false,
     super.key,
   });
 
@@ -40,6 +42,10 @@ class CustomCardsPreviewScreen extends ConsumerStatefulWidget {
   final int? collectionId;
 
   final String author;
+
+  /// Look each row up in its type's sources before writing (see the import
+  /// service); off, every row is a custom card.
+  final bool resolveFromSources;
 
   @override
   ConsumerState<CustomCardsPreviewScreen> createState() =>
@@ -267,6 +273,7 @@ class _CustomCardsPreviewScreenState
       collectionId: widget.collectionId,
       author: widget.author,
       entries: entries,
+      resolveFromSources: widget.resolveFromSources,
       onProgress: (ImportProgress progress) {
         progressNotifier.value = progress;
       },
@@ -280,7 +287,9 @@ class _CustomCardsPreviewScreenState
       await showDialog<bool>(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext dialogContext) => _ImportProgressDialog(
+        builder: (BuildContext dialogContext) =>
+            ImportProgressDialog<UniversalImportResult>(
+          title: S.of(context).customImportImporting,
           progressNotifier: progressNotifier,
           importFuture: importFuture,
         ),
@@ -314,83 +323,5 @@ class _CustomCardsPreviewScreenState
     } else if (result.fatalError != null) {
       context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
     }
-  }
-}
-
-class _ImportProgressDialog extends StatelessWidget {
-  const _ImportProgressDialog({
-    required this.progressNotifier,
-    required this.importFuture,
-  });
-
-  final ValueNotifier<ImportProgress?> progressNotifier;
-  final Future<UniversalImportResult> importFuture;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      title: Text(S.of(context).customImportImporting),
-      content: ValueListenableBuilder<ImportProgress?>(
-        valueListenable: progressNotifier,
-        builder:
-            (BuildContext context, ImportProgress? progress, Widget? child) {
-          if (progress == null) {
-            return const SizedBox(
-              height: 100,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                progress.stage.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              if (progress.currentItem != null) ...<Widget>[
-                const SizedBox(height: 4),
-                Text(
-                  progress.currentItem!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              LinearProgressIndicator(
-                value: progress.total > 0 ? progress.progress : null,
-              ),
-              if (progress.total > 0) ...<Widget>[
-                const SizedBox(height: 8),
-                Text(
-                  '${progress.current} / ${progress.total}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ],
-          );
-        },
-      ),
-      actions: <Widget>[
-        FutureBuilder<UniversalImportResult>(
-          future: importFuture,
-          builder: (BuildContext context,
-              AsyncSnapshot<UniversalImportResult> snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(S.of(context).done),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
-    );
   }
 }

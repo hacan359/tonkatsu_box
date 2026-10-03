@@ -135,6 +135,19 @@ void main() {
       expect(submitted, isEmpty);
     });
 
+    testWidgets('should keep focus on the field after a desktop create', (
+      WidgetTester tester,
+    ) async {
+      await pump(tester);
+      await tester.enterText(find.byType(TextField), 'fresh');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      final EditableText field =
+          tester.widget<EditableText>(find.byType(EditableText));
+      expect(field.focusNode.hasFocus, isTrue);
+    });
+
     testWidgets('should reorder rows when the sort mode changes', (
       WidgetTester tester,
     ) async {

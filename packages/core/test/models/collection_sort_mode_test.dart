@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('CollectionSortMode', () {
     group('значения enum', () {
-      test('should contain 10 значений', () {
-        expect(CollectionSortMode.values.length, 10);
+      test('should contain 11 значений', () {
+        expect(CollectionSortMode.values.length, 11);
       });
 
       test('should contain все режимы сортировки', () {
@@ -108,6 +108,13 @@ void main() {
             CollectionSortMode.fromString('completion_date');
 
         expect(result, CollectionSortMode.completionDate);
+      });
+
+      test('should return releaseDate for "release_date"', () {
+        expect(
+          CollectionSortMode.fromString('release_date'),
+          CollectionSortMode.releaseDate,
+        );
       });
 
       test('should return addedDate для неизвестного значения', () {

@@ -251,6 +251,12 @@ class SFr extends S {
   String get sortCompletionDateShort => 'Terminé';
 
   @override
+  String get sortReleaseDateDisplay => 'Date de sortie';
+
+  @override
+  String get sortReleaseDateShort => 'Sortie';
+
+  @override
   String get sortDateOldest => 'Date d\'ajout (↑)';
 
   @override
@@ -2263,6 +2269,24 @@ class SFr extends S {
   String get noEpisodesFound => 'Aucun épisode trouvé';
 
   @override
+  String get undo => 'Annuler';
+
+  @override
+  String get episodeUnmarkedSnack => 'Épisode décoché';
+
+  @override
+  String get seasonUnmarkedSnack => 'Saison décochée';
+
+  @override
+  String get episodesClearedSnack => 'Épisodes décochés';
+
+  @override
+  String get episodeWatchedDateEdit => 'Date de visionnage';
+
+  @override
+  String get episodeWatchedDateSelect => 'Quand l\'avez-vous vu ?';
+
+  @override
   String episodeWatchedDate(String date) {
     return 'regardé le $date';
   }
@@ -3603,6 +3627,14 @@ class SFr extends S {
       'Montre les filtres de sous-catégories (plateformes de jeux, genres de mangas/animes) sans sélectionner leur type en premier lieu.';
 
   @override
+  String get settingsShowAllCardTags =>
+      'Afficher toutes les étiquettes sur les cartes';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'Affiche toutes les étiquettes sur l\'affiche au lieu de la première et d\'un compteur +N';
+
+  @override
   String get settingsShowPlatformOverlay =>
       'Jacquettes des plateformes de jeux';
 
@@ -4270,6 +4302,30 @@ class SFr extends S {
 
   @override
   String get collectionCopyToCollection => 'Copier vers la collection';
+
+  @override
+  String get duplicateAsCustom => 'Dupliquer en titre personnalisé';
+
+  @override
+  String get coverOverrideChange => 'Changer l\'image';
+
+  @override
+  String get coverOverrideReset => 'Rétablir l\'image d\'origine';
+
+  @override
+  String get coverOverrideSaveFailed => 'Impossible d\'enregistrer l\'image';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Utiliser comme image';
+
+  @override
+  String get coverPickerLoadFailed => 'Impossible de charger les images';
+
+  @override
+  String get coverPickerEmpty => 'Aucune image trouvée';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
 
   @override
   String collectionItemCopiedTo(Object collection, Object name) {
@@ -4991,7 +5047,7 @@ class SFr extends S {
 
   @override
   String get customImportDescription =>
-      'Chargez un fichier JSON ou CSV généré par votre propre script ou parser — chaque rangée devient une carte personnalisée. Téléchargez un modèle pour voir tous les champs et les valeurs supportés.';
+      'Chargez un fichier JSON ou CSV produit par votre propre script ou analyseur. Chaque ligne devient une carte personnalisée, ou une vraie carte si la recherche dans les sources est activée. Téléchargez un modèle pour voir tous les champs et valeurs pris en charge.';
 
   @override
   String get customImportSelectFile => 'Sélectionner un fichier JSON/CSV';
@@ -5789,13 +5845,8 @@ class SFr extends S {
   String get statsMetricLikedUnits => 'épisodes aimés';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'heures : manuel $manual h · trackers $tracker h · estimé $estimated h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'heures : manuel $manual · trackers $tracker · estimé $estimated';
   }
 
   @override
@@ -5829,7 +5880,7 @@ class SFr extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours h · $games jeux';
+    return '$hours · $games jeux';
   }
 
   @override
@@ -6072,4 +6123,82 @@ class SFr extends S {
 
   @override
   String get markAllListened => 'Tout marquer comme écouté';
+
+  @override
+  String get importStageReading => 'Lecture du fichier...';
+
+  @override
+  String get importStageFetchingGames => 'Récupération des données de jeux...';
+
+  @override
+  String get importStageFetchingMovies =>
+      'Récupération des données de films...';
+
+  @override
+  String get importStageFetchingTvShows =>
+      'Récupération des données de séries...';
+
+  @override
+  String get importStageFetchingVisualNovels =>
+      'Récupération des données de visual novels...';
+
+  @override
+  String get importStageFetchingManga =>
+      'Récupération des données de mangas...';
+
+  @override
+  String get importStageFetchingAnime => 'Récupération des données d\'anime...';
+
+  @override
+  String get importStageFetchingBooks =>
+      'Récupération des données de livres...';
+
+  @override
+  String get importStageCachingMedia => 'Mise en cache des médias...';
+
+  @override
+  String get importStageCreatingCollection => 'Création de la collection...';
+
+  @override
+  String get importStageResolvingTitles => 'Recherche dans les sources...';
+
+  @override
+  String get importStageAddingItems => 'Ajout des éléments...';
+
+  @override
+  String get importStageImportingCanvas => 'Import du tableau...';
+
+  @override
+  String get importStageRestoringMedia => 'Restauration des données médias...';
+
+  @override
+  String get importStageImportingImages => 'Restauration des images...';
+
+  @override
+  String get importStageCompleted => 'Import terminé';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Trouvés $found · Cartes personnalisées $custom · Ambigus $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle =>
+      'Rechercher les cartes dans les sources';
+
+  @override
+  String get customImportResolveHint =>
+      'Chaque ligne est recherchée par titre dans les sources de son type (TMDB, IGDB, Kitsu et autres). Une seule correspondance devient une vraie carte, sinon une carte personnalisée est créée. Les lignes custom et audio ne sont pas recherchées.';
+
+  @override
+  String get importResultUnresolved =>
+      'Plusieurs correspondances, conservées en cartes personnalisées';
+
+  @override
+  String get importResultUnresolvedCopied => 'Titres copiés';
 }

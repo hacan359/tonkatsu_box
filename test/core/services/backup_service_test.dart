@@ -75,6 +75,7 @@ void main() {
       );
       registerFallbackValue(DataSource.tmdb);
       registerFallbackValue(<(int, int, int?)>[]);
+      registerFallbackValue(<int, int>{});
       registerFallbackValue(CalendarEntry(
         externalId: 0,
         source: DataSource.tmdb,
@@ -137,7 +138,10 @@ void main() {
         ']';
 
     void stubImportOk() {
-      when(() => importService.importFromXcoll(any())).thenAnswer(
+      when(() => importService.importFromXcoll(
+            any(),
+            customIds: any(named: 'customIds'),
+          )).thenAnswer(
         (_) async => ImportResult.success(createTestCollection(), 3),
       );
     }
@@ -199,7 +203,10 @@ void main() {
       expect(r.wishlistRestored, 1); // "Dup Game" skipped, "New Game" added
       expect(r.settingsRestored, isFalse);
 
-      verify(() => importService.importFromXcoll(any())).called(1);
+      verify(() => importService.importFromXcoll(
+            any(),
+            customIds: any(named: 'customIds'),
+          )).called(1);
       verify(() => wishlistRepo.add(
             text: 'New Game',
             mediaTypeHint: any(named: 'mediaTypeHint'),
@@ -274,7 +281,10 @@ void main() {
 
     test('a failed collection import does not abort the whole restore',
         () async {
-      when(() => importService.importFromXcoll(any()))
+      when(() => importService.importFromXcoll(
+                any(),
+                customIds: any(named: 'customIds'),
+              ))
           .thenAnswer((_) async => const ImportResult.failure('boom'));
       final Uint8List path = writeZip(<String, String>{
         'manifest.json': manifestJson,
@@ -524,6 +534,82 @@ void main() {
             platformId: null,
             source: null,
           )).called(1);
+    });
+
+    test('should point a custom cell at the card id the restore assigned',
+        () async {
+      final MockMoodGridDao moodDao = MockMoodGridDao();
+      when(() => moodDao.createMoodGrid(
+            name: any(named: 'name'),
+            rows: any(named: 'rows'),
+            cols: any(named: 'cols'),
+          )).thenAnswer((_) async => MoodGrid(
+            id: 5,
+            name: 'Mood',
+            rows: 1,
+            cols: 2,
+            createdAt: DateTime(2025),
+            updatedAt: DateTime(2025),
+          ));
+      when(() => moodDao.getCells(5)).thenAnswer(
+        (_) async => const <MoodGridCell>[
+          MoodGridCell(id: 100, gridId: 5, position: 0),
+          MoodGridCell(id: 101, gridId: 5, position: 1),
+        ],
+      );
+      when(() => moodDao.setCellItem(
+            cellId: any(named: 'cellId'),
+            mediaType: any(named: 'mediaType'),
+            externalId: any(named: 'externalId'),
+            platformId: any(named: 'platformId'),
+            source: any(named: 'source'),
+          )).thenAnswer((_) async {});
+      // The collection import is what fills the shared map.
+      when(() => importService.importFromXcoll(
+            any(),
+            customIds: any(named: 'customIds'),
+          )).thenAnswer((Invocation inv) async {
+        (inv.namedArguments[#customIds] as Map<int, int>)[7] = 42;
+        return ImportResult.success(createTestCollection(), 1);
+      });
+
+      const String moodGridsJson = '[{"name":"Mood","rows":1,"cols":2,'
+          '"created_at":1700000000,"updated_at":1700000000,'
+          '"cells":['
+          '{"position":0,"media_type":"custom","external_id":7},'
+          '{"position":1,"media_type":"custom","external_id":8}'
+          ']}]';
+      final Uint8List zip = writeZip(<String, String>{
+        'collections/001_a.xcollx': collectionXcoll,
+        'mood_grids.json': moodGridsJson,
+      });
+
+      final BackupService service = BackupService(
+        database: database,
+        exportService: exportService,
+        importService: importService,
+        configService: configService,
+        collectionRepo: collectionRepo,
+        wishlistRepo: wishlistRepo,
+        moodGridDao: moodDao,
+      );
+      await service.restoreFromBackup(zipBytes: zip);
+
+      verify(() => moodDao.setCellItem(
+            cellId: 100,
+            mediaType: MediaType.custom,
+            externalId: 42,
+            platformId: null,
+            source: null,
+          )).called(1);
+      // Card 8 never came back, so its cell stays empty.
+      verifyNever(() => moodDao.setCellItem(
+            cellId: 101,
+            mediaType: any(named: 'mediaType'),
+            externalId: any(named: 'externalId'),
+            platformId: any(named: 'platformId'),
+            source: any(named: 'source'),
+          ));
     });
   });
 }

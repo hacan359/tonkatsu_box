@@ -55,6 +55,19 @@ class CollectionScreenFab extends StatelessWidget {
     );
   }
 
+  List<DraggableFabItem> _sideActions(S l) {
+    if (isUncategorized || !isCollectionEditable) {
+      return const <DraggableFabItem>[];
+    }
+    return <DraggableFabItem>[
+      DraggableFabItem(
+        icon: Icons.add_box_outlined,
+        label: l.customItemCreate,
+        onTap: () => onMenuAction(CollectionMenuAction.customItem),
+      ),
+    ];
+  }
+
   List<DraggableFabItem> _primaryItems(S l) {
     return <DraggableFabItem>[
       if (!isCanvasMode)
@@ -88,13 +101,6 @@ class CollectionScreenFab extends StatelessWidget {
   List<DraggableFabItem> _secondaryItems(S l) {
     if (isUncategorized) return const <DraggableFabItem>[];
     return <DraggableFabItem>[
-      if (isCollectionEditable)
-        DraggableFabItem(
-          icon: Icons.add_box_outlined,
-          label: l.customItemCreate,
-          iconColor: AppColors.brand,
-          onTap: () => onMenuAction(CollectionMenuAction.customItem),
-        ),
       if (isCollectionEditable)
         DraggableFabItem(
           icon: Icons.tune,
@@ -143,6 +149,7 @@ class CollectionScreenFab extends StatelessWidget {
     return DraggableFab(
       key: ValueKey<bool>(isCanvasMode),
       mainAction: _mainAction(l),
+      sideActions: _sideActions(l),
       primaryItems: _primaryItems(l),
       items: _secondaryItems(l),
       initialRight: isCanvasMode ? 72 : null,

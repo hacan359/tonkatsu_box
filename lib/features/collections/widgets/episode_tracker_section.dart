@@ -20,6 +20,8 @@ import '../../../shared/widgets/cached_image.dart';
 import '../providers/episode_tracker_provider.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
+import '../../../shared/widgets/dual_date_picker_dialog.dart';
+import '../helpers/episode_undo.dart';
 
 enum _EpisodeMarkFilter { all, liked, commented }
 
@@ -606,6 +608,20 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
     }
   }
 
+  Future<void> _toggleSeason(List<TvEpisode>? episodes) async {
+    final int seasonNum = widget.season.seasonNumber;
+    final EpisodeTrackerNotifier tracker =
+        ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+    final String message = S.of(context).seasonUnmarkedSnack;
+    if (episodes == null || episodes.isEmpty) {
+      await tracker.loadSeason(seasonNum);
+      if (!mounted) return;
+    }
+    final WatchedMarks removed = await tracker.toggleSeason(seasonNum);
+    if (!mounted) return;
+    offerWatchedUndo(context, tracker, removed, message);
+  }
+
   @override
   Widget build(BuildContext context) {
     final TvSeason season = widget.season;
@@ -725,24 +741,7 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
               size: 20,
             ),
             tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
-            onPressed: () {
-              if (episodes == null || episodes.isEmpty) {
-                ref
-                    .read(episodeTrackerNotifierProvider(trackerArg).notifier)
-                    .loadSeason(seasonNum)
-                    .then((_) {
-                  if (!mounted) return;
-                  ref
-                      .read(
-                          episodeTrackerNotifierProvider(trackerArg).notifier)
-                      .toggleSeason(seasonNum);
-                });
-              } else {
-                ref
-                    .read(episodeTrackerNotifierProvider(trackerArg).notifier)
-                    .toggleSeason(seasonNum);
-              }
-            },
+            onPressed: () => _toggleSeason(episodes),
           ),
           const Icon(Icons.expand_more, size: 20),
         ],
@@ -876,10 +875,14 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     final double stillWidth = kIsMobile ? 72 : 96;
     final double stillHeight = kIsMobile ? 40 : 54;
 
-    void toggle() {
-      ref
-          .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
-          .toggleEpisode(episode.seasonNumber, episode.episodeNumber);
+    Future<void> toggle() async {
+      final EpisodeTrackerNotifier tracker =
+          ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+      final String message = S.of(context).episodeUnmarkedSnack;
+      final WatchedMarks removed = await tracker.toggleEpisode(
+          episode.seasonNumber, episode.episodeNumber);
+      if (!context.mounted) return;
+      offerWatchedUndo(context, tracker, removed, message);
     }
 
     final Widget tile = InkWell(
@@ -960,6 +963,12 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                           ),
                         ),
                       ),
+                      if (isWatched)
+                        _WatchedDateButton(
+                          trackerArg: widget.trackerArg,
+                          episode: episode,
+                          watchedAt: watchedAt,
+                        ),
                       ItemMarkControls(
                         itemId: widget.itemId,
                         unitType: kUnitEpisode,
@@ -1014,6 +1023,55 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// A separate control, not a long press: long press on Android and right
+/// click on Windows differ, while a button works the same from a gamepad.
+class _WatchedDateButton extends ConsumerWidget {
+  const _WatchedDateButton({
+    required this.trackerArg,
+    required this.episode,
+    required this.watchedAt,
+  });
+
+  final EpisodeTrackerArg trackerArg;
+  final TvEpisode episode;
+  final DateTime? watchedAt;
+
+  static final DateTime _firstDate = DateTime(1950);
+
+  Future<void> _pick(BuildContext context, WidgetRef ref) async {
+    final EpisodeTrackerNotifier tracker =
+        ref.read(episodeTrackerNotifierProvider(trackerArg).notifier);
+    final DateTime now = DateTime.now();
+    final DateTime? current = watchedAt;
+    // The picker asserts initialDate <= lastDate; a skewed clock breaks that.
+    final DateTime initial =
+        current == null || current.isAfter(now) ? now : current;
+    final DualDateResult? picked = await showDualDatePickerResult(
+      context: context,
+      initialDate: initial,
+      firstDate: _firstDate,
+      lastDate: now,
+      helpText: S.of(context).episodeWatchedDateSelect,
+      allowClear: watchedAt != null,
+    );
+    if (picked == null) return;
+    await tracker.setEpisodeWatchedDate(
+        episode.seasonNumber, episode.episodeNumber, picked.date);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return IconButton(
+      icon: const Icon(Icons.edit_calendar_outlined, size: 16),
+      tooltip: S.of(context).episodeWatchedDateEdit,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(),
+      padding: const EdgeInsets.all(AppSpacing.xs),
+      onPressed: () => _pick(context, ref),
     );
   }
 }

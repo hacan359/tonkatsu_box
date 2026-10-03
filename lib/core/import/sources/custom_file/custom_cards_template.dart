@@ -1,3 +1,5 @@
+import 'package:core/models/media_type.dart';
+
 import 'custom_card_entry.dart';
 
 /// Both templates import cleanly as-is — the parser ignores the
@@ -19,7 +21,7 @@ abstract final class CustomCardsTemplate {
     "_title": "REQUIRED. Card name.",
     "title": "Chrono Trigger",
 
-    "_type": "REQUIRED. One of: game, movie, tv_show, animation, visual_novel, manga, anime, book.",
+    "_type": "REQUIRED. One of: ${CustomCardFields.allowedTypes.map((MediaType t) => t.value).join(', ')}. custom and audio are never looked up in sources.",
     "type": "game",
 
     "_alt_title": "Original or alternative name.",

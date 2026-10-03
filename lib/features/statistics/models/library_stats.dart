@@ -131,9 +131,6 @@ class StatsHours {
 
   /// Everything combined.
   int get totalMinutes => manualMinutes + trackerMinutes + estimatedMinutes;
-
-  /// Total, in whole hours.
-  int get totalHours => totalMinutes ~/ 60;
 }
 
 /// One month of the activity ribbon.
@@ -220,9 +217,6 @@ class PlatformStats {
 
   /// Status breakdown of this platform's games.
   final Map<ItemStatus, int> statusCounts;
-
-  /// Whole hours of [minutes].
-  int get hours => minutes ~/ 60;
 }
 
 /// A counted label (tag chips, subgenres).

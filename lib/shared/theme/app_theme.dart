@@ -17,6 +17,8 @@ abstract final class AppTheme {
           brightness: p.brightness,
           primary: p.brand,
           onPrimary: p.onBrand,
+          primaryContainer: p.brandContainer,
+          onPrimaryContainer: p.onBrandContainer,
           secondary: p.movieAccent,
           onSecondary: p.onBrand,
           tertiary: p.tvShowAccent,
@@ -30,6 +32,10 @@ abstract final class AppTheme {
           onError: p.onOverlay,
         ),
         scaffoldBackgroundColor: Colors.transparent,
+        // Spelled out so both palettes agree; the M3 defaults are near
+        // invisible on the dark surface, and focus must read on a gamepad.
+        hoverColor: p.textPrimary.withAlpha(_hoverAlpha),
+        focusColor: p.brand.withAlpha(_focusAlpha),
         // Every platform, not just the two we ship: scaffolds are transparent,
         // so a target without a builder here shows white through every route.
         pageTransitionsTheme: PageTransitionsTheme(
@@ -131,6 +137,12 @@ abstract final class AppTheme {
             foregroundColor: p.brand,
           ),
         ),
+        // M3 fills FABs with primaryContainer; the canvas buttons stay brand.
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: p.brand,
+          foregroundColor: p.onBrand,
+        ),
+        switchTheme: _switchTheme(p),
         dividerTheme: DividerThemeData(
           color: p.surfaceBorder,
           thickness: 1,
@@ -164,6 +176,47 @@ abstract final class AppTheme {
           backgroundColor: p.badge,
           textColor: p.onBadge,
         ),
+      );
+
+  // Overlay opacities: hover 8%, focus 16%.
+  static const int _hoverAlpha = 20;
+  static const int _focusAlpha = 41;
+
+  // M3 disabled-state opacities (38% content, 12% container).
+  static const int _disabledContentAlpha = 97;
+  static const int _disabledContainerAlpha = 31;
+
+  /// The thumb keeps one color through hover and focus: M3 swaps it to
+  /// primaryContainer there, which merged it into the track.
+  static SwitchThemeData _switchTheme(AppPalette p) => SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> s) {
+          final bool on = s.contains(WidgetState.selected);
+          if (s.contains(WidgetState.disabled)) {
+            return (on ? p.onBrand : p.textPrimary)
+                .withAlpha(_disabledContentAlpha);
+          }
+          if (on) return p.onBrand;
+          return s.contains(WidgetState.hovered) ||
+                  s.contains(WidgetState.focused) ||
+                  s.contains(WidgetState.pressed)
+              ? p.textSecondary
+              : p.textTertiary;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> s) {
+          final bool on = s.contains(WidgetState.selected);
+          if (s.contains(WidgetState.disabled)) {
+            return (on ? p.textPrimary : p.surfaceLight)
+                .withAlpha(_disabledContainerAlpha);
+          }
+          return on ? p.brand : p.surfaceLight;
+        }),
+        trackOutlineColor:
+            WidgetStateProperty.resolveWith((Set<WidgetState> s) {
+          if (s.contains(WidgetState.selected)) return Colors.transparent;
+          return s.contains(WidgetState.disabled)
+              ? p.surfaceBorder.withAlpha(_disabledContainerAlpha)
+              : p.surfaceBorder;
+        }),
       );
 }
 

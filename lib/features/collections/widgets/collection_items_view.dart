@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/collection_sort_mode.dart';
 import 'package:core/models/item_status.dart';
@@ -31,6 +33,7 @@ import 'tag_picker_dialog.dart';
 import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 import '../../../shared/constants/platform_ui.dart';
+import '../helpers/episode_undo.dart';
 
 /// Grid or table view picked by [isTableMode]; in table mode a manual sort
 /// enables drag-to-reorder rows.
@@ -134,11 +137,13 @@ class CollectionItemsView extends ConsumerWidget {
               }
             : null,
         onStatusChanged: canEdit
-            ? (int itemId, ItemStatus status, MediaType mediaType) {
-                ref
-                    .read(collectionItemsNotifierProvider(collectionId)
-                        .notifier)
-                    .updateStatus(itemId, status, mediaType);
+            ? (int itemId, ItemStatus status, MediaType mediaType) async {
+                final CollectionItemsNotifier notifier = ref.read(
+                    collectionItemsNotifierProvider(collectionId).notifier);
+                final ClearedEpisodeMarks? cleared =
+                    await notifier.updateStatus(itemId, status, mediaType);
+                if (!context.mounted) return;
+                offerStatusEpisodesUndo(context, notifier, cleared);
               }
             : null,
         onTagsEdit: canEdit
@@ -338,8 +343,7 @@ class CollectionItemsView extends ConsumerWidget {
     SettingsState settings, {
     bool tagGlow = false,
   }) {
-    final Tag? tag = tags.primaryFor(itemTags[item.id]);
-    final int tagCount = itemTags[item.id]?.length ?? 0;
+    final List<Tag> cardTags = tags.orderedFor(itemTags[item.id]);
     final Set<int> selection = canEdit
         ? ref.watch(collectionSelectionProvider(collectionId))
         : const <int>{};
@@ -374,10 +378,8 @@ class CollectionItemsView extends ConsumerWidget {
               .read(collectionItemsNotifierProvider(collectionId).notifier)
               .toggleFavorite(item.id)
           : null,
-      tagName: tag?.name,
-      tagColor: tag?.color,
-      tagTextColor: tag?.textColor,
-      tagMoreCount: tagCount > 1 ? tagCount - 1 : 0,
+      tags: cardTags,
+      showAllTags: settings.showAllCardTags,
       tagGlow: tagGlow,
       source: item.dataSource,
       onSourceTap: openUrlCallback(item.externalUrl),
@@ -518,9 +520,14 @@ class CollectionItemsView extends ConsumerWidget {
       final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
       if (newStatus != null) {
         if (newStatus != item.status) {
-          ref
-              .read(collectionItemsNotifierProvider(collectionId).notifier)
-              .updateStatus(item.id, newStatus, item.mediaType);
+          final CollectionItemsNotifier notifier =
+              ref.read(collectionItemsNotifierProvider(collectionId).notifier);
+          unawaited(notifier
+              .updateStatus(item.id, newStatus, item.mediaType)
+              .then((ClearedEpisodeMarks? cleared) {
+            if (!context.mounted) return;
+            offerStatusEpisodesUndo(context, notifier, cleared);
+          }));
         }
         return;
       }

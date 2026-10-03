@@ -293,16 +293,25 @@ class ImportService {
     }
   }
 
+  /// [customIds] maps custom card ids of the file to ids in this database;
+  /// a multi-file restore passes one map so a shared card stays one row.
   Future<ImportResult> importFromXcoll(
     XcollFile xcoll, {
     int? collectionId,
+    Map<int, int>? customIds,
     ImportProgressCallback? onProgress,
   }) async {
-    return _importV2(xcoll, collectionId: collectionId, onProgress: onProgress);
+    return _importV2(
+      xcoll,
+      collectionId: collectionId,
+      customIds: customIds ?? <int, int>{},
+      onProgress: onProgress,
+    );
   }
 
   Future<ImportResult> _importV2(
     XcollFile xcoll, {
+    required Map<int, int> customIds,
     int? collectionId,
     ImportProgressCallback? onProgress,
   }) async {
@@ -310,7 +319,11 @@ class ImportService {
       final bool hasEmbeddedMedia = xcoll.media.isNotEmpty;
 
       if (hasEmbeddedMedia) {
-        await _restoreEmbeddedMedia(xcoll.media, onProgress: onProgress);
+        await _restoreEmbeddedMedia(
+          xcoll.media,
+          customIds,
+          onProgress: onProgress,
+        );
       } else {
         await _fetchMediaFromApi(xcoll.items, onProgress: onProgress);
       }
@@ -355,6 +368,7 @@ class ImportService {
       final Map<String, int> itemIdMapping = <String, int>{};
       int addedCount = 0;
       int updatedCount = 0;
+      int skippedCustom = 0;
       for (int i = 0; i < xcoll.items.length; i++) {
         final Map<String, dynamic> itemData = xcoll.items[i];
 
@@ -364,7 +378,14 @@ class ImportService {
           total: xcoll.items.length,
         ));
 
-        final CollectionItem parsed = CollectionItem.fromExport(itemData);
+        // Tier lists and tags name items by the file's ids, so the lookup
+        // keys stay on [fileItem]; every write goes through [parsed].
+        final CollectionItem fileItem = CollectionItem.fromExport(itemData);
+        final CollectionItem? parsed = _withLocalCustomId(fileItem, customIds);
+        if (parsed == null) {
+          skippedCustom++;
+          continue;
+        }
 
         final int? itemId = await _repository.addItem(
           collectionId: collection.id,
@@ -381,17 +402,18 @@ class ImportService {
 
         if (itemId != null) {
           addedCount++;
-          _registerItemMapping(itemIdMapping, parsed, itemId);
+          _registerItemMapping(itemIdMapping, fileItem, itemId);
 
           if (xcoll.includesUserData && _hasUserData(parsed)) {
             await _restoreUserData(itemId, parsed);
           }
+          if (xcoll.isFull) await _restoreCoverOverride(itemId, parsed);
 
           final Map<String, dynamic>? perItemCanvas =
               itemData['_canvas'] as Map<String, dynamic>?;
           if (perItemCanvas != null && _canvasRepository != null) {
             await _importPerItemCanvas(
-                perItemCanvas, itemId, collection.id);
+                perItemCanvas, itemId, collection.id, customIds);
           }
 
           if (xcoll.includesUserData) {
@@ -418,7 +440,8 @@ class ImportService {
             source: parsed.source,
           );
           if (existing != null) {
-            _registerItemMapping(itemIdMapping, parsed, existing.id);
+            _registerItemMapping(itemIdMapping, fileItem, existing.id);
+            if (xcoll.isFull) await _restoreCoverOverride(existing.id, parsed);
 
             // Marks are idempotent (insertMarks replaces on the unique key),
             // so re-importing onto an existing item merges, not duplicates.
@@ -443,7 +466,7 @@ class ImportService {
           message: 'Importing board...',
         ));
 
-        await _importCanvas(xcoll, collection.id);
+        await _importCanvas(xcoll, collection.id, customIds);
 
         onProgress?.call(const ImportProgress(
           stage: ImportStage.importingCanvas,
@@ -462,7 +485,11 @@ class ImportService {
           message: 'Restoring cover images...',
         ));
 
-        await _restoreImages(xcoll.images, onProgress: onProgress);
+        await _restoreImages(
+          xcoll.images,
+          customIds,
+          onProgress: onProgress,
+        );
       }
 
       if (xcoll.isFull &&
@@ -489,6 +516,11 @@ class ImportService {
           xcoll.trackerData!.isNotEmpty &&
           _trackerDao != null) {
         await _importTrackerData(xcoll.trackerData!);
+      }
+
+      if (skippedCustom > 0) {
+        _log.warning('Skipped $skippedCustom custom items with no card data '
+            'in "${xcoll.name}"');
       }
 
       onProgress?.call(ImportProgress(
@@ -561,7 +593,16 @@ class ImportService {
         parsed.currentEpisode > 0 ||
         parsed.overrideName != null ||
         parsed.isFavorite ||
-        parsed.rewatchCount != null;
+        parsed.rewatchCount != null ||
+        parsed.timeSpentMinutes > 0;
+  }
+
+  /// Only `.xcollx` carries the override, since only it ships the file; an
+  /// item without one keeps whatever cover it already has.
+  Future<void> _restoreCoverOverride(int itemId, CollectionItem parsed) async {
+    final String? url = parsed.overrideCoverUrl;
+    if (url == null || url.isEmpty) return;
+    await _database.setItemOverrideCoverUrl(itemId, url);
   }
 
   Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {
@@ -588,6 +629,10 @@ class ImportService {
     }
     if (parsed.isFavorite) {
       await _database.setItemFavorite(itemId, isFavorite: true);
+    }
+    // A restore returns the saved state, so the file overwrites local hours.
+    if (parsed.timeSpentMinutes > 0) {
+      await _database.updateItemTimeSpent(itemId, parsed.timeSpentMinutes);
     }
     // The status write above stamps started/completed with "now"; the file's
     // values must win over that bump — including explicit nulls.
@@ -616,7 +661,8 @@ class ImportService {
 
   /// Offline restore from the embedded `media` section of full exports.
   Future<void> _restoreEmbeddedMedia(
-    Map<String, dynamic> media, {
+    Map<String, dynamic> media,
+    Map<int, int> customIds, {
     ImportProgressCallback? onProgress,
   }) async {
     final List<dynamic> rawGames =
@@ -873,12 +919,18 @@ class ImportService {
     }
 
     if (rawCustom.isNotEmpty) {
-      final List<CustomMedia> customItems = <CustomMedia>[];
+      // A card seen earlier in this import (another file of the same backup)
+      // is already written; writing it again would split it in two.
+      final List<CustomMedia> fresh = <CustomMedia>[];
+      final Set<int> queued = <int>{};
       for (final dynamic raw in rawCustom) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
         row['cached_at'] = cachedAt;
-        customItems.add(CustomMedia.fromDb(row));
+        final CustomMedia card = CustomMedia.fromDb(row);
+        if (!customIds.containsKey(card.id) && queued.add(card.id)) {
+          fresh.add(card);
+        }
         current++;
         onProgress?.call(ImportProgress(
           stage: ImportStage.restoringMedia,
@@ -886,7 +938,11 @@ class ImportService {
           total: total,
         ));
       }
-      await _database.customMediaDao.upsertAll(customItems);
+      final List<int> localIds =
+          await _database.customMediaDao.importAll(fresh);
+      for (int i = 0; i < fresh.length; i++) {
+        customIds[fresh[i].id] = localIds[i];
+      }
     }
   }
 
@@ -1322,7 +1378,8 @@ class ImportService {
 
   /// Keys in [images] have the format '{ImageType.folder}/{imageId}'.
   Future<int> _restoreImages(
-    Map<String, String> images, {
+    Map<String, String> images,
+    Map<int, int> customIds, {
     ImportProgressCallback? onProgress,
   }) async {
     final ImageCacheService cache = _imageCacheService!;
@@ -1355,6 +1412,13 @@ class ImportService {
         imageId = 'anilist_$imageId';
       }
 
+      if (imageType == ImageType.customCover) {
+        final String? localId = _localCustomCoverId(imageId, customIds);
+        // The card was not imported, so nothing would ever show this file.
+        if (localId == null) continue;
+        imageId = localId;
+      }
+
       try {
         final Uint8List bytes = base64Decode(entry.value);
         final bool success =
@@ -1379,7 +1443,11 @@ class ImportService {
 
   /// Remaps exported canvas item ids to new autoincrement ids so connections
   /// stay consistent after import.
-  Future<void> _importCanvas(XcollFile xcoll, int collectionId) async {
+  Future<void> _importCanvas(
+    XcollFile xcoll,
+    int collectionId,
+    Map<int, int> customIds,
+  ) async {
     final CanvasRepository repo = _canvasRepository!;
 
     if (xcoll.canvas == null) return;
@@ -1399,12 +1467,14 @@ class ImportService {
     for (final Map<String, dynamic> itemData in canvas.items) {
       final int exportId = itemData['id'] as int? ?? 0;
 
-      final CanvasItem item = CanvasItem.fromExport(
-        itemData,
-        collectionId: collectionId,
-      ).copyWith(id: 0); // Reset id for autoincrement.
+      final CanvasItem? item = _withLocalCustomRef(
+        CanvasItem.fromExport(itemData, collectionId: collectionId),
+        customIds,
+      );
+      if (item == null) continue;
 
-      final CanvasItem created = await repo.createItem(item);
+      final CanvasItem created =
+          await repo.createItem(item.copyWith(id: 0)); // Autoincrement.
       if (exportId != 0) {
         idRemap[exportId] = created.id;
       }
@@ -1438,6 +1508,7 @@ class ImportService {
     Map<String, dynamic> canvasData,
     int collectionItemId,
     int collectionId,
+    Map<int, int> customIds,
   ) async {
     final CanvasRepository repo = _canvasRepository!;
     final ExportCanvas canvas = ExportCanvas.fromJson(canvasData);
@@ -1456,12 +1527,15 @@ class ImportService {
     for (final Map<String, dynamic> itemData in canvas.items) {
       final int exportId = itemData['id'] as int? ?? 0;
 
-      final CanvasItem item = CanvasItem.fromExport(
-        itemData,
-        collectionId: collectionId,
-      ).copyWith(id: 0, collectionItemId: collectionItemId);
+      final CanvasItem? item = _withLocalCustomRef(
+        CanvasItem.fromExport(itemData, collectionId: collectionId),
+        customIds,
+      );
+      if (item == null) continue;
 
-      final CanvasItem created = await repo.createItem(item);
+      final CanvasItem created = await repo.createItem(
+        item.copyWith(id: 0, collectionItemId: collectionItemId),
+      );
       if (exportId != 0) {
         idRemap[exportId] = created.id;
       }
@@ -1692,6 +1766,37 @@ class ImportService {
             .setItemTagPositions(itemId, orderedIds);
       }
     }
+  }
+
+  /// Null for a custom item whose card the file did not carry (a light
+  /// `.xcoll`, or an item already orphaned when exported).
+  static CollectionItem? _withLocalCustomId(
+    CollectionItem item,
+    Map<int, int> customIds,
+  ) {
+    if (item.mediaType != MediaType.custom) return item;
+    final int? localId = customIds[item.externalId];
+    return localId == null ? null : item.copyWith(externalId: localId);
+  }
+
+  static CanvasItem? _withLocalCustomRef(
+    CanvasItem item,
+    Map<int, int> customIds,
+  ) {
+    final int? refId = item.itemRefId;
+    if (item.itemType != CanvasItemType.custom || refId == null) return item;
+    final int? localId = customIds[refId];
+    return localId == null ? null : item.copyWith(itemRefId: localId);
+  }
+
+  /// Cover ids are `<card id>` or `<card id>_<token>`; only the id moves.
+  static String? _localCustomCoverId(String imageId, Map<int, int> customIds) {
+    final int sep = imageId.indexOf('_');
+    final int? fileId =
+        int.tryParse(sep < 0 ? imageId : imageId.substring(0, sep));
+    final int? localId = fileId == null ? null : customIds[fileId];
+    if (localId == null) return null;
+    return sep < 0 ? '$localId' : '$localId${imageId.substring(sep)}';
   }
 
   /// Keys an item is filed under for tier-list/tag lookup: `exact` qualifies

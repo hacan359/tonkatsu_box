@@ -34,6 +34,7 @@ class DraggableFabDivider extends DraggableFabItem {
 class DraggableFab extends StatefulWidget {
   const DraggableFab({
     this.mainAction,
+    this.sideActions = const <DraggableFabItem>[],
     this.primaryItems = const <DraggableFabItem>[],
     this.items = const <DraggableFabItem>[],
     this.icon = Icons.more_vert,
@@ -43,6 +44,9 @@ class DraggableFab extends StatefulWidget {
   });
 
   final DraggableFabItem? mainAction;
+
+  /// Always-visible buttons in the bottom row, left of [mainAction].
+  final List<DraggableFabItem> sideActions;
   final List<DraggableFabItem> primaryItems;
   final List<DraggableFabItem> items;
   final IconData icon;
@@ -74,23 +78,32 @@ class _DraggableFabState extends State<DraggableFab> {
   bool get _hasMenu =>
       widget.primaryItems.isNotEmpty || widget.items.isNotEmpty;
 
+  int get _bottomRowCount =>
+      widget.sideActions.length + (widget.mainAction != null ? 1 : 0);
+
+  // Keeps ⋮ centered above the rightmost, larger bottom-row button.
+  double get _menuInset =>
+      _bottomRowCount > 0 ? (_fabSize - _menuFabSize) / 2 : 0;
+
   double get _blockWidth {
-    final bool hasMain = widget.mainAction != null;
-    if (hasMain) return _fabSize;
-    return _menuFabSize;
+    final int count = _bottomRowCount;
+    final double bottomRow =
+        count > 0 ? count * _fabSize + (count - 1) * _gap : 0;
+    final double menu = _hasMenu ? _menuFabSize + _menuInset : 0;
+    return bottomRow > menu ? bottomRow : menu;
   }
 
   double get _blockHeight {
-    final bool hasMain = widget.mainAction != null;
-    if (hasMain && _hasMenu) return _menuFabSize + _gap + _fabSize;
-    if (hasMain) return _fabSize;
+    final bool hasBottomRow = _bottomRowCount > 0;
+    if (_hasMenu && hasBottomRow) return _menuFabSize + _gap + _fabSize;
+    if (hasBottomRow) return _fabSize;
     return _menuFabSize;
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool hasMain = widget.mainAction != null;
-    if (!hasMain && !_hasMenu) {
+    final bool hasBottomRow = _bottomRowCount > 0;
+    if (!_hasMenu && !hasBottomRow) {
       return const SizedBox.shrink();
     }
 
@@ -102,21 +115,22 @@ class _DraggableFabState extends State<DraggableFab> {
         height: _blockHeight,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
             if (_hasMenu)
-              _buildButton(
-                icon: widget.icon,
-                onTap: () => _showMenu(context),
-                isMenuAnchor: true,
+              Padding(
+                padding: EdgeInsets.only(right: _menuInset),
+                child: _buildButton(
+                  icon: widget.icon,
+                  onTap: () => _showMenu(context),
+                  isSmall: true,
+                ),
               ),
-            if (hasMain && _hasMenu) const SizedBox(height: _gap),
-            if (hasMain)
-              _buildButton(
-                icon: widget.mainAction!.icon,
-                iconColor: widget.mainAction!.iconColor,
-                tooltip: widget.mainAction!.label,
-                onTap: widget.mainAction!.onTap,
+            if (_hasMenu && hasBottomRow) const SizedBox(height: _gap),
+            if (hasBottomRow)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: _bottomRowButtons(),
               ),
           ],
         ),
@@ -124,16 +138,35 @@ class _DraggableFabState extends State<DraggableFab> {
     );
   }
 
+  List<Widget> _bottomRowButtons() {
+    final DraggableFabItem? main = widget.mainAction;
+    final List<DraggableFabItem> actions = <DraggableFabItem>[
+      ...widget.sideActions,
+      ?main,
+    ];
+    return <Widget>[
+      for (int i = 0; i < actions.length; i++) ...<Widget>[
+        if (i > 0) const SizedBox(width: _gap),
+        _buildButton(
+          icon: actions[i].icon,
+          iconColor: actions[i].iconColor,
+          tooltip: actions[i].label,
+          onTap: actions[i].onTap,
+        ),
+      ],
+    ];
+  }
+
   /// Each button owns its gesture detector so the tap surface stays local;
-  /// `_dragStart*` is shared so the block drags as one from either.
+  /// `_dragStart*` is shared so the block drags as one from any of them.
   Widget _buildButton({
     required IconData icon,
     Color? iconColor,
     String? tooltip,
     required VoidCallback onTap,
-    bool isMenuAnchor = false,
+    bool isSmall = false,
   }) {
-    final double size = isMenuAnchor ? _menuFabSize : _fabSize;
+    final double size = isSmall ? _menuFabSize : _fabSize;
     final Widget circle = Material(
       elevation: 6,
       shadowColor: AppColors.brand.withAlpha(80),
@@ -145,7 +178,7 @@ class _DraggableFabState extends State<DraggableFab> {
         child: Icon(
           icon,
           color: iconColor ?? AppColors.textPrimary,
-          size: isMenuAnchor ? 20 : 24,
+          size: isSmall ? 20 : 24,
         ),
       ),
     );
@@ -196,11 +229,12 @@ class _DraggableFabState extends State<DraggableFab> {
   }
 
   void _showMenu(BuildContext context) {
-    // Anchor the popup to the ⋮ button (top of the block), not the larger
+    // Anchor the popup to the ⋮ button (top-right of the block), not the larger
     // main FAB below it, so pills line up with the menu trigger.
     final RenderBox box = context.findRenderObject()! as RenderBox;
     final Offset blockPos = box.localToGlobal(Offset.zero);
-    final double menuLeft = blockPos.dx + (_blockWidth - _menuFabSize) / 2;
+    final double menuLeft =
+        blockPos.dx + _blockWidth - _menuInset - _menuFabSize;
 
     Navigator.of(context, rootNavigator: true).push(
       _FanMenuRoute(

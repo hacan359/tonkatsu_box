@@ -6,6 +6,7 @@ import 'package:core/models/canvas_item.dart';
 import 'package:core/models/canvas_viewport.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/item_mark.dart';
@@ -234,6 +235,39 @@ void main() {
         expect(xcoll.format, equals(ExportFormat.full));
         expect(xcoll.isFull, isTrue);
         expect(xcoll.canvas, isNull);
+      });
+
+      test('should carry a cover override that .xcoll leaves out', () async {
+        when(() => mockCanvasRepo.getViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        when(() => mockCanvasRepo.getGameCanvasItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getGameCanvasViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getGameCanvasConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestCollectionItem(
+            id: 10,
+            externalId: 100,
+            overrideCoverUrl: 'https://example.com/mine.png',
+          ),
+        ];
+
+        final XcollFile full =
+            await sutFull.createFullExport(collection, items, 1);
+        final XcollFile light = sutFull.createLightExport(collection, items);
+
+        expect(
+          full.items.single['override_cover_url'],
+          'https://example.com/mine.png',
+        );
+        expect(light.items.single.containsKey('override_cover_url'), isFalse);
       });
 
       test('должен включить collection canvas', () async {
@@ -1126,6 +1160,36 @@ void main() {
         expect(gameData.containsKey('cached_at'), isFalse);
       });
 
+      test('keeps the cards of a collection holding only custom items',
+          () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+        );
+        final List<CollectionItem> items = <CollectionItem>[
+          for (final int id in <int>[55, 56])
+            createTestCollectionItem(
+              id: id,
+              mediaType: MediaType.custom,
+              externalId: id,
+              customMedia: CustomMedia(id: id, title: 'Card $id'),
+            ),
+        ];
+
+        final XcollFile xcoll = await sutMedia.createFullExport(
+          createTestCollection(),
+          items,
+          1,
+        );
+
+        final List<dynamic> cards =
+            xcoll.media['custom_items'] as List<dynamic>;
+        expect(
+          cards.map((dynamic c) => (c as Map<String, dynamic>)['id']),
+          <int>[55, 56],
+        );
+      });
+
       test('должен включить movie данные через toDb()', () async {
         final ExportService sutMedia = ExportService(
           canvasRepository: mockCanvasRepo,
@@ -1860,6 +1924,84 @@ void main() {
 
         verify(() => mockTvShowDao.getEpisodesByShowId(DataSource.tmdb, 1399)).called(1);
         expect(xcoll.media.containsKey('tv_episodes'), isTrue);
+      });
+
+      test('should include seasons and episodes for kitsu anime', () async {
+        when(() => mockTvShowDao.getTvSeasonsByShowId(DataSource.kitsu, 244))
+            .thenAnswer(
+          (_) async => const <TvSeason>[
+            TvSeason(
+              tmdbShowId: 244,
+              seasonNumber: 1,
+              source: DataSource.kitsu,
+            ),
+          ],
+        );
+        when(() => mockTvShowDao.getEpisodesByShowId(DataSource.kitsu, 244))
+            .thenAnswer(
+          (_) async => const <TvEpisode>[
+            TvEpisode(
+              tmdbShowId: 244,
+              seasonNumber: 1,
+              episodeNumber: 1,
+              name: 'Pilot',
+              runtime: 24,
+              source: DataSource.kitsu,
+            ),
+          ],
+        );
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        final XcollFile xcoll = await sut.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 244,
+              source: DataSource.kitsu,
+              anime: createTestAnime(id: 244, source: DataSource.kitsu),
+            ),
+          ],
+          1,
+        );
+
+        final List<dynamic> episodes =
+            xcoll.media['tv_episodes'] as List<dynamic>;
+        final Map<String, dynamic> episode =
+            episodes.single as Map<String, dynamic>;
+        expect(episode['source'], DataSource.kitsu.name);
+        expect(episode['runtime'], 24);
+        final List<dynamic> seasons = xcoll.media['tv_seasons'] as List<dynamic>;
+        expect(seasons, hasLength(1));
+      });
+
+      test('should not query the episode cache for anilist anime', () async {
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        await sut.createFullExport(
+          createTestCollection(),
+          <CollectionItem>[
+            createTestCollectionItem(
+              id: 1,
+              mediaType: MediaType.anime,
+              externalId: 21,
+              source: DataSource.anilist,
+              anime: createTestAnime(id: 21),
+            ),
+          ],
+          1,
+        );
+
+        verifyNever(() => mockTvShowDao.getEpisodesByShowId(any(), any()));
       });
     });
 

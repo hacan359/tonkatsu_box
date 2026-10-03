@@ -18,6 +18,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/media_detail_view.dart';
 import '../../../../shared/widgets/source_badge.dart';
 import '../../../../shared/constants/collection_item_ui.dart';
+import '../../../../shared/utils/duration_formatter.dart';
 
 class ItemDetailMediaConfig {
   const ItemDetailMediaConfig({
@@ -159,7 +160,7 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
   if (item.runtime != null) {
     chips.add(MediaDetailChip(
       icon: Icons.schedule_outlined,
-      text: _formatRuntime(item.runtime!, l),
+      text: formatMinutes(item.runtime!, l),
     ));
   }
   if (item.totalSeasons != null) {
@@ -313,16 +314,4 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
     ));
   }
   return chips;
-}
-
-String _formatRuntime(int minutes, S l) {
-  final int hours = minutes ~/ 60;
-  final int mins = minutes % 60;
-  if (hours > 0 && mins > 0) {
-    return l.runtimeHoursMinutes(hours, mins);
-  }
-  if (hours > 0) {
-    return l.runtimeHours(hours);
-  }
-  return l.runtimeMinutes(mins);
 }

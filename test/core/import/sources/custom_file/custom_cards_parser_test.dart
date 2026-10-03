@@ -150,7 +150,7 @@ void main() {
         );
       });
 
-      test('unknown type, including the reserved "custom"', () {
+      test('unknown type', () {
         expect(
           hasIssue(
             one(<String, Object?>{'title': 'A', 'type': 'podcast'}),
@@ -158,12 +158,17 @@ void main() {
           ),
           isTrue,
         );
+      });
+
+      test('custom and audio are accepted like the card form offers them',
+          () {
         expect(
-          hasIssue(
-            one(<String, Object?>{'title': 'A', 'type': 'custom'}),
-            CustomCardIssueCode.unknownType,
-          ),
-          isTrue,
+          one(<String, Object?>{'title': 'A', 'type': 'custom'}).entry?.type,
+          MediaType.custom,
+        );
+        expect(
+          one(<String, Object?>{'title': 'A', 'type': 'audio'}).entry?.type,
+          MediaType.audio,
         );
       });
 
@@ -173,8 +178,10 @@ void main() {
         expect(row.entry!.type, MediaType.tvShow);
       });
 
-      test('all eight allowed types resolve', () {
+      test('every allowed type resolves', () {
         const Map<String, MediaType> expected = <String, MediaType>{
+          'custom': MediaType.custom,
+          'audio': MediaType.audio,
           'game': MediaType.game,
           'movie': MediaType.movie,
           'tv_show': MediaType.tvShow,
@@ -184,6 +191,7 @@ void main() {
           'anime': MediaType.anime,
           'book': MediaType.book,
         };
+        expect(expected.length, CustomCardFields.allowedTypes.length);
         for (final MapEntry<String, MediaType> pair in expected.entries) {
           final CustomCardRow row =
               one(<String, Object?>{'title': 'A', 'type': pair.key});

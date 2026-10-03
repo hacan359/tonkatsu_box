@@ -11,6 +11,7 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/tag.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
@@ -21,6 +22,7 @@ import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -39,8 +41,14 @@ import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/custom_duplicate.dart';
 import '../widgets/create_custom_item_dialog.dart';
+import '../widgets/cover_override/igdb_cover_picker.dart';
+import '../widgets/cover_override/steamgriddb_cover_picker.dart';
+import '../widgets/custom_item/cover_image_picker.dart';
 import '../providers/collections_provider.dart';
+import '../providers/global_tags_provider.dart';
+import '../providers/item_tags_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../extensions/item_display_name.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -75,6 +83,8 @@ import '../widgets/status_chip_row.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/constants/collection_item_ui.dart';
+import '../helpers/episode_undo.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 /// Unified detail screen for any collection item, dispatched off
 /// [CollectionItem.mediaType].
@@ -107,6 +117,8 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
+  static final Logger _log = Logger('ItemDetailScreen');
+
   bool _showCanvas = false;
   bool _isViewModeLocked = false;
   DiscordRpcService? _discordRpc;
@@ -193,10 +205,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         _refreshFromApi(item);
       case ItemDetailMenuAction.rename:
         _renameItem(item);
+      case ItemDetailMenuAction.changeCover:
+        _changeCover(item);
+      case ItemDetailMenuAction.resetCover:
+        _setCoverOverride(item);
       case ItemDetailMenuAction.move:
         _moveToCollection(item);
       case ItemDetailMenuAction.clone:
         _cloneToCollection(item);
+      case ItemDetailMenuAction.duplicateAsCustom:
+        _duplicateAsCustom(item);
       case ItemDetailMenuAction.copyLink:
         CollectionActions.copyItemLink(context, item);
       case ItemDetailMenuAction.remove:
@@ -368,6 +386,78 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .setOverrideName(item.id, newName);
   }
 
+  Future<void> _changeCover(CollectionItem item) async {
+    final S l = S.of(context);
+    final String? current = item.overrideCoverUrl;
+    final bool isGame = item.mediaType == MediaType.game;
+    final bool offerSteamGridDb =
+        isGame && ref.read(settingsNotifierProvider).hasSteamGridDbKey;
+    final CoverPickResult? picked = await pickCustomCoverImage(
+      context,
+      currentUrl:
+          current == null || CustomMedia.isLocalCover(current) ? '' : current,
+      extraSources: <CoverPickSource>[
+        if (isGame)
+          CoverPickSource(
+            icon: Icons.sports_esports_outlined,
+            label: l.coverSourceIgdb,
+            pick: (BuildContext ctx) async {
+              final String? url =
+                  await pickIgdbCover(ctx, igdbGameId: item.externalId);
+              return url == null ? null : CoverPickResult.url(url);
+            },
+          ),
+        if (offerSteamGridDb)
+          CoverPickSource(
+            icon: Icons.grid_view,
+            label: l.steamGridDbPanelTitle,
+            pick: (BuildContext ctx) async {
+              final String? url = await pickSteamGridDbCover(
+                ctx,
+                gameName: item.cachedName ?? item.itemName,
+              );
+              return url == null ? null : CoverPickResult.url(url);
+            },
+          ),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    await _setCoverOverride(item, bytes: picked.bytes, url: picked.url);
+  }
+
+  /// ScreenScraper media URLs carry the account's credentials, so the picture
+  /// is stored as an uploaded file rather than by its link.
+  Future<void> _setCoverFromGallery(CollectionItem item, String url) async {
+    final Uint8List? bytes =
+        await ref.read(imageCacheServiceProvider).fetchImageBytes(url);
+    if (!mounted) return;
+    if (bytes == null) {
+      context.showSnack(
+        S.of(context).coverOverrideSaveFailed,
+        type: SnackType.error,
+      );
+      return;
+    }
+    await _setCoverOverride(item, bytes: bytes);
+  }
+
+  /// Neither [bytes] nor [url] resets the card to its API cover.
+  Future<void> _setCoverOverride(
+    CollectionItem item, {
+    Uint8List? bytes,
+    String? url,
+  }) async {
+    final bool ok = await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .setCoverOverride(item.id, bytes: bytes, url: url);
+    if (!ok && mounted) {
+      context.showSnack(
+        S.of(context).coverOverrideSaveFailed,
+        type: SnackType.error,
+      );
+    }
+  }
+
   Future<void> _moveToCollection(CollectionItem item) async {
     final S l = S.of(context);
     final NavigatorState navigator = Navigator.of(context);
@@ -441,6 +531,56 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       collectionId: widget.collectionId,
       item: item,
     );
+  }
+
+  Future<void> _duplicateAsCustom(CollectionItem item) async {
+    final (
+      Uint8List? coverBytes,
+      List<Tag> allTags,
+      Map<int, List<int>> itemTags,
+    ) = await (
+      _cachedCoverOf(item),
+      ref.read(globalTagsProvider.future),
+      ref.read(itemTagsProvider.future),
+    ).wait;
+    if (!mounted) return;
+
+    final CustomItemData? data = await CreateCustomItemDialog.duplicate(
+      context,
+      customDraftFromItem(item, title: ref.currentDisplayNameOf(item)),
+      coverBytes: coverBytes,
+      tags: <String>[
+        for (final Tag tag in allTags.orderedFor(itemTags[item.id])) tag.name,
+      ],
+    );
+    if (data == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addCustomItem(
+          data.toNewCustomMedia(),
+          coverBytes: data.coverBytes,
+          userComment: data.comment,
+          tags: data.tags,
+        );
+    if (!mounted || !success) return;
+    context.showSnack(
+      '${S.of(context).customItemCreated}: ${data.title}',
+      type: SnackType.success,
+    );
+  }
+
+  /// The cached file is what the card shows now; without it (cache off, not
+  /// downloaded, web) addCustomItem fetches the draft's coverUrl itself.
+  Future<Uint8List?> _cachedCoverOf(CollectionItem item) async {
+    try {
+      return await ref
+          .read(imageCacheServiceProvider)
+          .readImageBytes(item.imageType, item.coverImageId);
+    } on Exception catch (e) {
+      _log.warning('Duplicate: cached cover unreadable, using its URL', e);
+      return null;
+    }
   }
 
   Future<void> _removeFromCollection(CollectionItem item) async {
@@ -608,7 +748,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final ItemDetailMediaConfig config =
         ItemDetailMediaConfig.from(item, context);
 
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(item),
       child: Scaffold(
         appBar: ItemDetailAppBar(
@@ -727,6 +867,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       mediaGallery: ScreenScraperGallerySection(
         gameName: item.itemName,
         igdbPlatformId: item.platformId,
+        onSetAsCover: widget.isEditable && item.mediaType == MediaType.game
+            ? (String url) => _setCoverFromGallery(item, url)
+            : null,
       ),
       extraSections: <Widget>[
         if (widget.collectionId == null)
@@ -1260,9 +1403,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     ItemStatus status,
     MediaType mediaType,
   ) async {
-    await ref
-        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateStatus(id, status, mediaType);
+    final CollectionItemsNotifier notifier =
+        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
+    final ClearedEpisodeMarks? cleared =
+        await notifier.updateStatus(id, status, mediaType);
+    if (!mounted) return;
+    offerStatusEpisodesUndo(context, notifier, cleared);
   }
 
   /// A null [date] clears the field ("unknown date"); the status is left

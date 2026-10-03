@@ -15,7 +15,6 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
-import '../../../shared/widgets/logo_loader.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -23,6 +22,7 @@ import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
 
 /// Flow: CSV file pick → options (watchlist toggle, target) → import progress.
 class KinoriumImportContent extends ConsumerStatefulWidget {
@@ -333,7 +333,9 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
     await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => _KinoriumImportProgressDialog(
+      builder: (BuildContext dialogContext) =>
+          ImportProgressDialog<UniversalImportResult>(
+        title: S.of(context).kinoriumImporting,
         progressNotifier: progressNotifier,
         importFuture: importFuture,
       ),
@@ -369,81 +371,5 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
     } else if (result.fatalError != null) {
       context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
     }
-  }
-}
-
-class _KinoriumImportProgressDialog extends StatelessWidget {
-  const _KinoriumImportProgressDialog({
-    required this.progressNotifier,
-    required this.importFuture,
-  });
-
-  final ValueNotifier<ImportProgress?> progressNotifier;
-  final Future<UniversalImportResult> importFuture;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      title: Text(S.of(context).kinoriumImporting),
-      content: ValueListenableBuilder<ImportProgress?>(
-        valueListenable: progressNotifier,
-        builder:
-            (BuildContext context, ImportProgress? progress, Widget? child) {
-          if (progress == null) {
-            return const SizedBox(
-              height: 100,
-              child: Center(child: LogoLoader()),
-            );
-          }
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                progress.stage.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              if (progress.message != null) ...<Widget>[
-                const SizedBox(height: 4),
-                Text(
-                  progress.message!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              LinearProgressIndicator(
-                value: progress.total > 0 ? progress.progress : null,
-              ),
-              if (progress.total > 0) ...<Widget>[
-                const SizedBox(height: 8),
-                Text(
-                  '${progress.current} / ${progress.total}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ],
-          );
-        },
-      ),
-      actions: <Widget>[
-        FutureBuilder<UniversalImportResult>(
-          future: importFuture,
-          builder: (BuildContext context,
-              AsyncSnapshot<UniversalImportResult> snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(S.of(context).done),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
-    );
   }
 }

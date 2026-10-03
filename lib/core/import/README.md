@@ -24,6 +24,8 @@ collection writing, TMDB matching, rate-limit retry — live at the root and are
 | `import_writer.dart` | Shared write-side: resolve-or-create the collection, batch-insert new items, selectively update existing ones (per-source merge policy via a closure), batch-write wishlist fallbacks. Returns the resulting row ids (`itemIdsByKey` / `idFor`) so adapters can act on written items — tags, side-tables — without re-reading the collection. Goes through the **repositories**, never the DAOs. |
 | `tmdb_matcher.dart` | Matches a title against TMDB by name (original + localized query, year then no-year, pick-best, animation-by-genre). For sources whose rows carry no TMDB id. |
 | `rate_limited_retry.dart` | Source-agnostic exponential backoff; the caller decides what counts as a rate limit. |
+| `media_cache_writer.dart` | `MediaCacheWriter.upsertAll` — one batched upsert per media table for any mix of resolved models; the DAOs stay the only writers. |
+| `title_lookup/` | Name-based lookup for rows that carry no id: `LookupChains` (per-type source order over the API clients, keyed sources skipped without a key) and `TitleResolver` (walks the chain, strict "exactly one" via `classifyTitleMatches`; an ambiguous hit stops the walk). Unlike `TmdbMatcher`, it never settles for the first result. |
 | `sources/<name>/` | One adapter per source, each with its own `README.md`. |
 
 ## What is shared vs per-source
@@ -52,3 +54,5 @@ ids), the re-sync merge policy, and media-cache upsert (type-specific DAOs).
    shared helpers.
 
 See `docs/ARCHITECTURE.md` → "Import layer" for the high-level picture.
+The user-facing contract of the custom cards file and its source lookup is
+`docs/CUSTOM_CARDS_IMPORT.md`.

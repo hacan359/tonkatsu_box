@@ -18,6 +18,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
 import '../widgets/tier_list_export_view.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
 
 class TierListDetailScreen extends ConsumerStatefulWidget {
   const TierListDetailScreen({required this.tierListId, super.key});
@@ -52,7 +53,7 @@ class _TierListDetailScreenState
     final String titleLanguage = ref.watch(settingsNotifierProvider
         .select((SettingsState s) => s.animeMangaTitleLanguage));
 
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(state),
       child: Stack(
         children: <Widget>[

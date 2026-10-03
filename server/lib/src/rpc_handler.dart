@@ -93,7 +93,8 @@ class DaoRegistry {
 }
 
 /// `POST /rpc` — runs one DAO method next to the database.
-Handler buildRpcHandler(DaoRegistry daos) {
+Handler buildRpcHandler(DaoRegistry daos, {void Function(String)? log}) {
+  final void Function(String) write = log ?? _printLine;
   return (Request request) async {
     final Map<String, Object?> body;
     try {
@@ -133,12 +134,29 @@ Handler buildRpcHandler(DaoRegistry daos) {
     } on RpcCodecException catch (e) {
       return _error(HttpStatus.ok, 'badRequest', e.message);
     } on DatabaseException catch (e) {
-      return _error(HttpStatus.ok, 'database', e.toString());
-    } on Object catch (e) {
-      return _error(HttpStatus.ok, 'internal', e.toString());
+      write(_failureLine(dao, method, e));
+      return _error(HttpStatus.ok, 'database', describeDatabaseError(e));
+    } on Object catch (e, stack) {
+      write('${_failureLine(dao, method, e)}\n$stack');
+      return _error(HttpStatus.ok, 'internal', kInternalErrorMessage);
     }
   };
 }
+
+const String kInternalErrorMessage = 'Internal server error';
+
+/// What the client learns about a database failure: the SQLite result code
+/// only. `toString()` carries the statement and its bound values.
+String describeDatabaseError(DatabaseException e) {
+  final int? code = e.getResultCode();
+  return code == null ? 'SQLite error' : 'SQLite error $code';
+}
+
+String _failureLine(String dao, String method, Object e) =>
+    '${DateTime.now().toIso8601String()} rpc $dao.$method failed: $e';
+
+// ignore: avoid_print — the container log IS the server's output.
+void _printLine(String line) => print(line);
 
 Future<Object?> _dispatch(
   DaoRegistry daos,

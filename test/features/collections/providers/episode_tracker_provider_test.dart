@@ -22,8 +22,8 @@ class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
 
   final List<CollectionItem> _items;
 
-  final List<(int, ItemStatus, MediaType)> updateStatusCalls =
-      <(int, ItemStatus, MediaType)>[];
+  final List<(int, ItemStatus, MediaType, bool)> updateStatusCalls =
+      <(int, ItemStatus, MediaType, bool)>[];
 
   @override
   AsyncValue<List<CollectionItem>> build(int? arg) {
@@ -31,9 +31,13 @@ class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
   }
 
   @override
-  Future<void> updateStatus(
-      int id, ItemStatus status, MediaType mediaType) async {
-    updateStatusCalls.add((id, status, mediaType));
+  Future<ClearedEpisodeMarks?> updateStatus(
+    int id,
+    ItemStatus status,
+    MediaType mediaType, {
+    bool syncEpisodes = true,
+  }) async {
+    updateStatusCalls.add((id, status, mediaType, syncEpisodes));
     // Mirrors real CollectionItemsNotifier.updateStatus logic.
     final List<CollectionItem>? current = state.valueOrNull;
     if (current != null) {
@@ -71,6 +75,7 @@ class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
         }).toList(),
       );
     }
+    return null;
   }
 }
 
@@ -1828,6 +1833,502 @@ void main() {
           22,
         );
         verify(() => mockTvShowDao.upsertTvShow(any())).called(1);
+      });
+
+      test('auto-status never asks to sync episodes back', () async {
+        final CollectionItem item = createTvItem(totalEpisodes: 1);
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.markEpisodeWatched(
+                testCollectionId, DataSource.tmdb, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.completed);
+        expect(lastTracking.updateStatusCalls.first.$4, isFalse);
+      });
+    });
+
+    group('markAllWatched', () {
+      const TvSeason specials = TvSeason(
+        tmdbShowId: testShowId,
+        seasonNumber: 0,
+        name: 'Specials',
+        episodeCount: 1,
+      );
+      const TvSeason season1 = TvSeason(
+        tmdbShowId: testShowId,
+        seasonNumber: 1,
+        name: 'Season 1',
+        episodeCount: 3,
+      );
+      const TvSeason season2 = TvSeason(
+        tmdbShowId: testShowId,
+        seasonNumber: 2,
+        name: 'Season 2',
+        episodeCount: 2,
+      );
+
+      void stubEpisodes() {
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 0))
+            .thenAnswer((_) async => <TvEpisode>[testEpisodeSpecial]);
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 1))
+            .thenAnswer((_) async =>
+                <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+                DataSource.tmdb, testShowId, 2))
+            .thenAnswer(
+                (_) async => <TvEpisode>[testEpisode2s1, testEpisode2s2]);
+        when(() => mockTvShowDao.markEpisodesWatchedAt(
+            any(), any(), any(), any())).thenAnswer((_) async {});
+      }
+
+      test('marks every regular episode, skips specials, keeps old dates',
+          () async {
+        final DateTime earlier = DateTime(2023, 5, 1);
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{(1, 1): earlier});
+        when(() => mockTvShowDao.getTvSeasonsByShowId(
+                DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <TvSeason>[specials, season1, season2]);
+        stubEpisodes();
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        final DateTime stamp = DateTime(2024, 1, 15, 12);
+        await notifier.markAllWatched(at: stamp);
+
+        final EpisodeTrackerState state =
+            container.read(episodeTrackerNotifierProvider(testArg));
+        expect(state.totalWatchedCount, 5);
+        expect(state.isEpisodeWatched(0, 1), isFalse);
+        expect(state.getWatchedAt(1, 1), earlier);
+        expect(state.getWatchedAt(2, 2), stamp);
+
+        final List<(int, int, int?)> rows = verify(
+          () => mockTvShowDao.markEpisodesWatchedAt(
+              testCollectionId, DataSource.tmdb, testShowId, captureAny()),
+        ).captured.single as List<(int, int, int?)>;
+        expect(rows, hasLength(4));
+        expect(rows.any(((int, int, int?) r) => r.$1 == 1 && r.$2 == 1),
+            isFalse);
+        expect(rows.every(((int, int, int?) r) =>
+                r.$3 == stamp.millisecondsSinceEpoch),
+            isTrue);
+      });
+
+      test('fetches seasons from the source when the cache is empty',
+          () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.getTvSeasonsByShowId(
+                DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <TvSeason>[]);
+        when(() => mockTmdbApi.getTvSeasons(testShowId))
+            .thenAnswer((_) async => <TvSeason>[season1]);
+        when(() => mockTvShowDao.upsertTvSeasons(any()))
+            .thenAnswer((_) async {});
+        stubEpisodes();
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        await notifier.markAllWatched();
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .totalWatchedCount,
+          3,
+        );
+        verify(() => mockTvShowDao.upsertTvSeasons(<TvSeason>[season1]))
+            .called(1);
+      });
+
+      test('writes nothing when everything is already marked', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): null,
+                  (1, 2): null,
+                  (1, 3): null,
+                });
+        when(() => mockTvShowDao.getTvSeasonsByShowId(
+                DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <TvSeason>[season1]);
+        stubEpisodes();
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        await notifier.markAllWatched();
+
+        verifyNever(() =>
+            mockTvShowDao.markEpisodesWatchedAt(any(), any(), any(), any()));
+      });
+
+      test('a failing source leaves state untouched and does not throw',
+          () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockTvShowDao.getTvSeasonsByShowId(
+                DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <TvSeason>[]);
+        when(() => mockTmdbApi.getTvSeasons(testShowId))
+            .thenThrow(Exception('offline'));
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        await notifier.markAllWatched();
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .watchedEpisodes,
+          isEmpty,
+        );
+        verifyNever(() =>
+            mockTvShowDao.markEpisodesWatchedAt(any(), any(), any(), any()));
+      });
+
+      test('does nothing for an uncategorized item', () async {
+        final ProviderContainer container = createContainer();
+        const EpisodeTrackerArg arg = (
+          collectionId: null,
+          showId: testShowId,
+          source: DataSource.tmdb,
+        );
+        await container
+            .read(episodeTrackerNotifierProvider(arg).notifier)
+            .markAllWatched();
+
+        verifyNever(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()));
+      });
+    });
+
+    group('unmarkAllWatched', () {
+      test('clears the DB rows and the state', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (0, 1): null,
+                  (1, 1): DateTime(2024),
+                });
+        when(() => mockTvShowDao.unmarkShowWatched(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        await notifier.unmarkAllWatched();
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .watchedEpisodes,
+          isEmpty,
+        );
+        verify(() => mockTvShowDao.unmarkShowWatched(
+            testCollectionId, DataSource.tmdb, testShowId)).called(1);
+      });
+
+      test('keeps the state when the DB write fails', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{(1, 1): null});
+        when(() => mockTvShowDao.unmarkShowWatched(any(), any(), any()))
+            .thenThrow(Exception('locked'));
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        await notifier.unmarkAllWatched();
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .isEpisodeWatched(1, 1),
+          isTrue,
+        );
+      });
+
+      test('returns what it erased, specials and undated marks included',
+          () async {
+        final WatchedMarks stored = <(int, int), DateTime?>{
+          (0, 1): null,
+          (1, 1): DateTime(2024, 5, 2),
+        };
+        when(() => mockTvShowDao.getWatchedEpisodes(
+                testCollectionId, DataSource.tmdb, testShowId))
+            .thenAnswer((_) async => stored);
+        when(() => mockTvShowDao.unmarkShowWatched(any(), any(), any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(await notifier.unmarkAllWatched(), stored);
+      });
+
+      test('returns nothing when the DB write fails', () async {
+        when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
+            .thenAnswer((_) async => <(int, int), DateTime?>{(1, 1): null});
+        when(() => mockTvShowDao.unmarkShowWatched(any(), any(), any()))
+            .thenThrow(Exception('locked'));
+
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(await notifier.unmarkAllWatched(), isEmpty);
+      });
+    });
+
+    group('undo', () {
+      final DateTime oldDate = DateTime(2023, 4, 10, 21);
+
+      void stubMarked(WatchedMarks marks) {
+        when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
+            .thenAnswer((_) async => marks);
+        when(() => mockTvShowDao.markEpisodeUnwatched(
+            any(), any(), any(), any(), any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.markEpisodeWatched(
+            any(), any(), any(), any(), any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.unmarkSeasonWatched(
+            any(), any(), any(), any())).thenAnswer((_) async {});
+        when(() => mockTvShowDao.markEpisodesWatchedAt(
+            any(), any(), any(), any())).thenAnswer((_) async {});
+      }
+
+      Future<EpisodeTrackerNotifier> tracker(ProviderContainer c) async {
+        final EpisodeTrackerNotifier n =
+            c.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+        return n;
+      }
+
+      test('unmarking an episode returns its old date; marking returns none',
+          () async {
+        stubMarked(<(int, int), DateTime?>{(1, 1): oldDate});
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier = await tracker(container);
+
+        expect(await notifier.toggleEpisode(1, 1),
+            <(int, int), DateTime?>{(1, 1): oldDate});
+        expect(await notifier.toggleEpisode(1, 2), isEmpty);
+      });
+
+      test('restoreWatched brings back the old date, not today', () async {
+        stubMarked(<(int, int), DateTime?>{(1, 1): oldDate});
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier = await tracker(container);
+
+        final WatchedMarks removed = await notifier.toggleEpisode(1, 1);
+        await notifier.restoreWatched(removed);
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .watchedEpisodes[(1, 1)],
+          oldDate,
+        );
+        verify(() => mockTvShowDao.markEpisodesWatchedAt(
+              testCollectionId,
+              DataSource.tmdb,
+              testShowId,
+              <(int, int, int?)>[(1, 1, oldDate.millisecondsSinceEpoch)],
+            )).called(1);
+      });
+
+      test('restoreWatched keeps an undated mark undated', () async {
+        stubMarked(<(int, int), DateTime?>{});
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier = await tracker(container);
+
+        await notifier.restoreWatched(<(int, int), DateTime?>{(1, 3): null});
+
+        final EpisodeTrackerState state =
+            container.read(episodeTrackerNotifierProvider(testArg));
+        expect(state.isEpisodeWatched(1, 3), isTrue);
+        expect(state.watchedEpisodes[(1, 3)], isNull);
+      });
+
+      test('restoreWatched with nothing to restore writes nothing', () async {
+        stubMarked(<(int, int), DateTime?>{});
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier = await tracker(container);
+
+        await notifier.restoreWatched(const <(int, int), DateTime?>{});
+
+        verifyNever(() => mockTvShowDao.markEpisodesWatchedAt(
+            any(), any(), any(), any()));
+      });
+
+      test('a failed restore leaves the state as it was', () async {
+        stubMarked(<(int, int), DateTime?>{});
+        when(() => mockTvShowDao.markEpisodesWatchedAt(
+            any(), any(), any(), any())).thenThrow(Exception('locked'));
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier = await tracker(container);
+
+        await notifier
+            .restoreWatched(<(int, int), DateTime?>{(1, 1): oldDate});
+
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .isEpisodeWatched(1, 1),
+          isFalse,
+        );
+      });
+
+      test('unmarking a whole season returns every mark of that season only',
+          () async {
+        stubMarked(<(int, int), DateTime?>{
+          (1, 1): oldDate,
+          (1, 2): null,
+          (1, 3): oldDate,
+          (2, 1): oldDate,
+        });
+        when(() => mockTvShowDao.getEpisodesByShowAndSeason(any(), any(), 1))
+            .thenAnswer((_) async =>
+                <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier = await tracker(container);
+        await notifier.loadSeason(1);
+
+        final WatchedMarks removed = await notifier.toggleSeason(1);
+
+        expect(removed, <(int, int), DateTime?>{
+          (1, 1): oldDate,
+          (1, 2): null,
+          (1, 3): oldDate,
+        });
+        expect(
+          container.read(episodeTrackerNotifierProvider(testArg))
+              .isEpisodeWatched(2, 1),
+          isTrue,
+        );
+      });
+    });
+
+    group('setEpisodeWatchedDate', () {
+      final DateTime storedDate = DateTime(2024, 1, 1);
+
+      Future<(ProviderContainer, EpisodeTrackerNotifier)> watchedTracker({
+        Future<bool> Function()? onUpdate,
+      }) async {
+        when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
+            .thenAnswer(
+                (_) async => <(int, int), DateTime?>{(1, 1): storedDate});
+        if (onUpdate != null) {
+          when(() => mockTvShowDao.updateEpisodeWatchedAt(
+              any(), any(), any(), any(), any(), any())).thenAnswer(
+            (_) => onUpdate(),
+          );
+        }
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+        await Future<void>.delayed(Duration.zero);
+        return (container, notifier);
+      }
+
+      DateTime? dateOf(ProviderContainer c, int season, int episode) => c
+          .read(episodeTrackerNotifierProvider(testArg))
+          .watchedEpisodes[(season, episode)];
+
+      test('writes the picked day at local noon and patches the state',
+          () async {
+        final (ProviderContainer c, EpisodeTrackerNotifier notifier) =
+            await watchedTracker(onUpdate: () async => true);
+
+        await notifier.setEpisodeWatchedDate(1, 1, DateTime(2023, 6, 30, 23));
+
+        final DateTime noon = DateTime(2023, 6, 30, 12);
+        expect(dateOf(c, 1, 1), noon);
+        verify(() => mockTvShowDao.updateEpisodeWatchedAt(
+              testCollectionId,
+              DataSource.tmdb,
+              testShowId,
+              1,
+              1,
+              noon.millisecondsSinceEpoch,
+            )).called(1);
+      });
+
+      test('a null date clears it but keeps the episode watched', () async {
+        final (ProviderContainer c, EpisodeTrackerNotifier notifier) =
+            await watchedTracker(onUpdate: () async => true);
+
+        await notifier.setEpisodeWatchedDate(1, 1, null);
+
+        expect(
+          c.read(episodeTrackerNotifierProvider(testArg)).isEpisodeWatched(1, 1),
+          isTrue,
+        );
+        expect(dateOf(c, 1, 1), isNull);
+      });
+
+      test('an unwatched episode is left alone, nothing is inserted',
+          () async {
+        final (ProviderContainer c, EpisodeTrackerNotifier notifier) =
+            await watchedTracker();
+
+        await notifier.setEpisodeWatchedDate(1, 2, DateTime(2023));
+
+        verifyNever(() => mockTvShowDao.updateEpisodeWatchedAt(
+            any(), any(), any(), any(), any(), any()));
+        expect(
+          c.read(episodeTrackerNotifierProvider(testArg)).isEpisodeWatched(1, 2),
+          isFalse,
+        );
+      });
+
+      test('a row gone from the DB does not resurrect the mark in state',
+          () async {
+        final (ProviderContainer c, EpisodeTrackerNotifier notifier) =
+            await watchedTracker(onUpdate: () async => false);
+
+        await notifier.setEpisodeWatchedDate(1, 1, DateTime(2020, 2, 2));
+
+        expect(dateOf(c, 1, 1), storedDate);
+      });
+
+      test('a failing write keeps the old date and does not throw', () async {
+        final (ProviderContainer c, EpisodeTrackerNotifier notifier) =
+            await watchedTracker(onUpdate: () => throw Exception('locked'));
+
+        await notifier.setEpisodeWatchedDate(1, 1, DateTime(2020, 2, 2));
+
+        expect(dateOf(c, 1, 1), storedDate);
       });
     });
   });

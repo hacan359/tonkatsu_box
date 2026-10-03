@@ -1,3 +1,4 @@
+import 'package:core/utils/cover_image_id.dart';
 import 'package:core/models/cover_info.dart';
 import 'package:core/models/image_type.dart';
 import 'package:core/models/media_type.dart';
@@ -255,6 +256,48 @@ void main() {
         expect(result, contains('mediaType: MediaType.movie'));
         expect(result, contains('thumbnailUrl: https://example.com/poster.jpg'));
       });
+    });
+  });
+
+  group('CoverInfo override', () {
+    const CoverInfo withOverride = CoverInfo(
+      externalId: 42,
+      mediaType: MediaType.game,
+      thumbnailUrl: 'https://api/cover.jpg',
+      overrideCoverUrl: 'https://example.com/mine.png',
+    );
+
+    test('should display the override from its own cache slot', () {
+      expect(withOverride.displayUrl, 'https://example.com/mine.png');
+      expect(withOverride.imageType, ImageType.coverOverride);
+      expect(
+        withOverride.coverImageId,
+        overrideCoverImageId('https://example.com/mine.png'),
+      );
+    });
+
+    test('should fall back to the API cover without an override', () {
+      const CoverInfo plain = CoverInfo(
+        externalId: 42,
+        mediaType: MediaType.game,
+        thumbnailUrl: 'https://api/cover.jpg',
+      );
+
+      expect(plain.displayUrl, 'https://api/cover.jpg');
+      expect(plain.imageType, ImageType.gameCover);
+      expect(plain.coverImageId, '42');
+    });
+
+    test('should not rewrite a TMDB-looking override to a thumb size', () {
+      final CoverInfo info = CoverInfo.fromDb(<String, dynamic>{
+        'external_id': 1,
+        'media_type': 'movie',
+        'thumbnail_url': 'https://image.tmdb.org/t/p/w500/a.jpg',
+        'override_cover_url': 'https://image.tmdb.org/t/p/w500/b.jpg',
+      });
+
+      expect(info.thumbnailUrl, 'https://image.tmdb.org/t/p/w154/a.jpg');
+      expect(info.displayUrl, 'https://image.tmdb.org/t/p/w500/b.jpg');
     });
   });
 }

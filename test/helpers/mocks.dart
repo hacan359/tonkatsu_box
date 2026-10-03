@@ -52,9 +52,13 @@ import 'package:tonkatsu_box/core/api/tvdb_api.dart';
 import 'package:tonkatsu_box/core/api/tvmaze_api.dart';
 import 'package:tonkatsu_box/core/api/vndb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
+import 'package:tonkatsu_box/core/import/import_writer.dart';
+import 'package:tonkatsu_box/core/import/media_cache_writer.dart';
+import 'package:tonkatsu_box/core/import/sources/custom_file/custom_cards_import_service.dart';
 import 'package:tonkatsu_box/core/import/sources/kinorium/kinorium_import_service.dart';
 import 'package:tonkatsu_box/core/import/sources/steam/steam_import_service.dart';
 import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
+import 'package:tonkatsu_box/core/import/title_lookup/title_resolver.dart';
 import 'package:tonkatsu_box/core/services/config_service.dart';
 import 'package:tonkatsu_box/core/services/discord_rpc_service.dart';
 import 'package:tonkatsu_box/core/services/export_service.dart';
@@ -215,6 +219,15 @@ class MockCanvasRepository extends Mock implements CanvasRepository {}
 class MockGameRepository extends Mock implements GameRepository {}
 
 class MockWishlistRepository extends Mock implements WishlistRepository {}
+
+class MockImportWriter extends Mock implements ImportWriter {}
+
+class MockCustomCardsImportService extends Mock
+    implements CustomCardsImportService {}
+
+class MockMediaCacheWriter extends Mock implements MediaCacheWriter {}
+
+class MockTitleResolver extends Mock implements TitleResolver {}
 
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   MockCollectionItemsNotifier([this._initialState]);

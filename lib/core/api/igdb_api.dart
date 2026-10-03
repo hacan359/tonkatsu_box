@@ -117,6 +117,13 @@ class IgdbApi {
 
   Future<Game?> getGameById(int gameId) => _games.getGameById(gameId);
 
+  Future<List<String>> getCoverImageIds(int gameId) =>
+      _games.getCoverImageIds(gameId);
+
+  /// [size] is an IGDB image preset, e.g. `t_cover_big` or `t_cover_big_2x`.
+  static String imageUrl(String imageId, {String size = 't_cover_big'}) =>
+      'https://images.igdb.com/igdb/image/upload/$size/$imageId.jpg';
+
   Future<List<Game>> getGamesByIds(List<int> gameIds) =>
       _games.getGamesByIds(gameIds);
 

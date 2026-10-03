@@ -260,6 +260,25 @@ Future<Object?> dispatchTvShowDao(
       );
       return null;
 
+    case 'unmarkShowWatched':
+      await dao.unmarkShowWatched(
+        decodeInt(args['collectionId']),
+        decodeEnum<DataSource>(args['source'], DataSource.values),
+        decodeInt(args['showId']),
+      );
+      return null;
+
+    case 'updateEpisodeWatchedAt':
+      final bool value = await dao.updateEpisodeWatchedAt(
+        decodeInt(args['collectionId']),
+        decodeEnum<DataSource>(args['source'], DataSource.values),
+        decodeInt(args['showId']),
+        decodeInt(args['seasonNumber']),
+        decodeInt(args['episodeNumber']),
+        decodeIntOrNull(args['watchedAtMs']),
+      );
+      return value;
+
     case 'upsertEpisodes':
       await dao.upsertEpisodes(
         asList(args['episodes'])

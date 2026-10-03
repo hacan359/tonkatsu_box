@@ -221,4 +221,113 @@ void main() {
       expect(service.localPathIfCached(ImageType.audioCover, 'a1'), isNull);
     });
   });
+
+  group('ImageCacheService end-marker validation', () {
+    const List<int> pngHead = <int>[
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0x0D, //
+    ];
+    const List<int> pngEnd = <int>[
+      0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82, //
+    ];
+    const List<int> jpegHead = <int>[0xFF, 0xD8, 0xFF, 0xE0, 0, 0, 0, 0];
+    const List<int> crlf = <int>[0x0D, 0x0A, 0x0D, 0x0A];
+
+    late ImageCacheService service;
+    late Directory tmp;
+
+    setUp(() {
+      service = ImageCacheService(dio: MockDio());
+      tmp = Directory.systemTemp.createTempSync('image_cache_marker_test');
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'image_cache_path': tmp.path,
+        'image_cache_enabled': true,
+      });
+    });
+
+    tearDown(() {
+      if (tmp.existsSync()) tmp.deleteSync(recursive: true);
+    });
+
+    Future<bool> isLocal(List<int> bytes) async {
+      File(p.join(tmp.path, ImageType.coverOverride.folder, 'x.png'))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(bytes);
+      final ImageResult result = await service.getImageUri(
+        type: ImageType.coverOverride,
+        imageId: 'x',
+        remoteUrl: 'local://cover/1',
+      );
+      return result.isLocal;
+    }
+
+    test('should accept a PNG ending exactly on IEND', () async {
+      expect(await isLocal(<int>[...pngHead, ...List<int>.filled(16, 1), ...pngEnd]),
+          isTrue);
+    });
+
+    test('should accept a PNG with bytes after IEND', () async {
+      expect(
+        await isLocal(
+            <int>[...pngHead, ...List<int>.filled(16, 1), ...pngEnd, ...crlf]),
+        isTrue,
+      );
+    });
+
+    test('should accept a JPEG with bytes after its end marker', () async {
+      expect(await isLocal(<int>[...jpegHead, 0xFF, 0xD9, ...crlf]), isTrue);
+    });
+
+    test('should reject a PNG cut before IEND', () async {
+      expect(await isLocal(<int>[...pngHead, ...List<int>.filled(200, 1)]),
+          isFalse);
+    });
+
+    test('should reject an end marker buried beyond the tail window', () async {
+      expect(
+        await isLocal(<int>[
+          ...pngHead,
+          ...pngEnd,
+          ...List<int>.filled(200, 1),
+        ]),
+        isFalse,
+      );
+    });
+  });
+
+  group('ImageCacheService.fetchImageBytes', () {
+    late MockDio dio;
+    late ImageCacheService service;
+
+    setUp(() {
+      dio = MockDio();
+      service = ImageCacheService(dio: dio);
+    });
+
+    test('should return the downloaded bytes', () async {
+      when(() => dio.get<List<int>>(any(), options: any(named: 'options')))
+          .thenAnswer((_) async => Response<List<int>>(
+                requestOptions: RequestOptions(path: 'img'),
+                data: <int>[1, 2, 3],
+              ));
+
+      expect(await service.fetchImageBytes('https://x/img'), <int>[1, 2, 3]);
+    });
+
+    test('should return null for an empty body', () async {
+      when(() => dio.get<List<int>>(any(), options: any(named: 'options')))
+          .thenAnswer((_) async => Response<List<int>>(
+                requestOptions: RequestOptions(path: 'img'),
+                data: <int>[],
+              ));
+
+      expect(await service.fetchImageBytes('https://x/img'), isNull);
+    });
+
+    test('should return null when the request fails', () async {
+      when(() => dio.get<List<int>>(any(), options: any(named: 'options')))
+          .thenThrow(_statusError(500));
+
+      expect(await service.fetchImageBytes('https://x/img'), isNull);
+    });
+  });
 }

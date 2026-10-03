@@ -196,6 +196,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1.0–10.0, one decimal). Integers from v2 files load as doubles |
 | _canvas | object | no | Per-item canvas data (full only) |
+| override_cover_url | string | no | The user's replacement cover (full only): a link as is, or `local://cover/<token>` for an uploaded picture that travels as `cover_overrides/<token>` in `images`. Restored on import with or without `user_data`; a light `.xcoll` never writes it and its reader ignores it |
 | tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
 | _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
@@ -342,6 +343,10 @@ Key format: `{ImageType.folder}/{imageId}`
 - `manga_covers/anilist_123` — manga cover, namespaced by provider (`anilist_` / `mangabaka_`). Pre-v44 files use a bare `manga_covers/123` and are remapped to `anilist_` on import
 - `anime_covers/anilist_123` — anime cover, namespaced by provider (`anilist_` / `kitsu_`). Pre-v60 files use a bare `anime_covers/123` and are remapped to `anilist_` on import
 
+**Cover overrides** — an item with `override_cover_url` ships that picture instead of its API cover:
+- `cover_overrides/1700000000000` — an uploaded picture, keyed by the token of its `local://cover/<token>` marker
+- `cover_overrides/u3k9x2m1q` — a linked picture, keyed by `u` + base-36 FNV-1a 53-bit hash of the link
+
 **Canvas images** — `imageId` is FNV-1a 32-bit hash of the image URL:
 - `canvas_images/a1b2c3d4` — image added to the canvas board
 
@@ -361,10 +366,11 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 | tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, external_url, ...) |
 | visual_novels | array | VisualNovel objects from VNDB (id, numeric_id, title, alt_title, description, image_url, rating, vote_count, released, length_minutes, length, tags, developers, platforms, external_url) |
 | mangas | array | Manga objects from AniList (id, title, title_english, title_native, cover_url, cover_medium_url, description, genres, average_score, mean_score, popularity, status, start_year, chapters, volumes, format, country_of_origin, staff) |
-| tv_seasons | array | TvSeason objects from TMDB (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
-| tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
+| tv_seasons | array | TvSeason objects of series, animated series and Kitsu anime (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
+| tv_episodes | array | TvEpisode objects of series, animated series and Kitsu anime (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
 | audio_items | array | AudioItem objects (id, source, kind, native_id, title, artists, description, language, primary_type, release_year, genres, rating, release_mbid, track_count, disc_count, cover_url, external_url, ...); albums hash the release-group MBID into `id` (fnv1a53 — 53 bits, so a JS double holds it exactly), podcasts store the Podcast Index feed id as-is — both stable across devices |
 | audio_tracks | array | AudioTrack objects (source, audio_id, disc_number, position, title, native_id, length_ms, artists, date_published); album tracks of the picked release or podcast episodes — lets an offline import restore the list without a provider round-trip |
+| custom_items | array | CustomMedia objects (id, title, display_type, alt_title, description, cover_url, year, genres, platform_name, platform_id, format, unit_total, unit_group_total, external_url); `id` is local to the exporting database, items of type `custom` point at it through `external_id` |
 
 All arrays are optional — only non-empty categories are included.
 
@@ -442,3 +448,9 @@ When `media` is absent (light export or older full exports), the app refetches e
 7. Restores tier lists — creates tier list, saves definitions, resolves entries via `itemIdMapping` (`media_type:external_id` → new item ID)
 8. Restores tracker data (RA progress) if present — upserts into `tracker_game_data`
 9. Restores per-item marks (embedded in `_marks` field of each item, when `user_data` is present) — re-anchored to the new item ID; idempotent on re-import
+
+Custom cards (`media.custom_items`) keep their `id` when nothing in the target
+database uses it — no card, no `custom` item, board card or mood grid cell.
+A taken id gets a new one, and items, board cards and `custom_covers/<id>…`
+images follow it. A `custom` item whose card is missing from the file is not
+imported; a light `.xcoll` carries no cards, so it imports none of them.

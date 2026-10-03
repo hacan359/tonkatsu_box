@@ -15,6 +15,8 @@ const AppPalette darkPalette = AppPalette(
   textTertiary: Color(0xFF707070),
   brand: Color(0xFFEF7B44),
   onBrand: Color(0xFF0A0A0A),
+  brandContainer: Color(0xFF5C2A12),
+  onBrandContainer: Color(0xFFFFDBCB),
   gameAccent: Color(0xFF707DD2),
   movieAccent: Color(0xFFEF7B44),
   tvShowAccent: Color(0xFFB1E140),

@@ -1,5 +1,6 @@
 import 'package:core/models/game.dart';
 import 'package:core/models/ra_game_progress.dart';
+import 'package:core/utils/title_match.dart';
 
 import '../api/igdb_api.dart';
 
@@ -107,8 +108,6 @@ class RaToIgdbMapper {
     return bestMatch(raGame.title, results);
   }
 
-  static final RegExp _nonAlphaNum = RegExp('[^a-z0-9]');
-
   /// Public static: used by both single-item search and batch multiquery.
   static Game? bestMatch(String title, List<Game> candidates) {
     if (candidates.isEmpty) return null;
@@ -130,7 +129,5 @@ class RaToIgdbMapper {
     return candidates.first;
   }
 
-  /// Normalizes a string for comparison: lowercase, letters and digits only.
-  static String normalize(String s) =>
-      s.toLowerCase().replaceAll(_nonAlphaNum, '');
+  static String normalize(String s) => normalizeTitle(s);
 }

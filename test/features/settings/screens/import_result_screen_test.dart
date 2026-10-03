@@ -238,5 +238,34 @@ void main() {
         expect(find.byIcon(Icons.collections_bookmark), findsNothing);
       });
     });
+
+    group('unresolved titles', () {
+      testWidgets('lists the titles several records matched',
+          (WidgetTester tester) async {
+        const UniversalImportResult result = UniversalImportResult(
+          sourceName: 'Custom cards',
+          success: true,
+          importedByType: <MediaType, int>{MediaType.custom: 1},
+          unresolvedTitles: <String>['Dune'],
+        );
+
+        await tester.pumpApp(const ImportResultScreen(result: result));
+
+        expect(find.text('Dune'), findsOneWidget);
+      });
+
+      testWidgets('shows no section when every row resolved',
+          (WidgetTester tester) async {
+        const UniversalImportResult result = UniversalImportResult(
+          sourceName: 'Custom cards',
+          success: true,
+          importedByType: <MediaType, int>{MediaType.movie: 1},
+        );
+
+        await tester.pumpApp(const ImportResultScreen(result: result));
+
+        expect(find.byIcon(Icons.call_split), findsNothing);
+      });
+    });
   });
 }

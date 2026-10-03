@@ -25,10 +25,11 @@ class ShortcutGroup {
   final List<ShortcutEntry> entries;
 }
 
-/// Desktop only. Returns the [ShortcutActivator] → callback map for
-/// [CallbackShortcuts].
+/// Desktop only. [onSwitchSlot] takes a visual slot of the bar, not a
+/// `NavTab` index: slot 3 is Personalization.
 Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
-  required void Function(int tabIndex) onSwitchTab,
+  required void Function(int slot) onSwitchSlot,
+  required VoidCallback onOpenSettings,
   required VoidCallback onNextTab,
   required VoidCallback onPreviousTab,
   required VoidCallback onBack,
@@ -39,19 +40,25 @@ Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
   if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
 
   return <ShortcutActivator, VoidCallback>{
-    // Ctrl+1..6 switch tabs.
+    // Ctrl+1..7, one per visual slot of the bar.
     const SingleActivator(LogicalKeyboardKey.digit1, control: true):
-        () => onSwitchTab(0),
+        () => onSwitchSlot(0),
     const SingleActivator(LogicalKeyboardKey.digit2, control: true):
-        () => onSwitchTab(1),
+        () => onSwitchSlot(1),
     const SingleActivator(LogicalKeyboardKey.digit3, control: true):
-        () => onSwitchTab(2),
+        () => onSwitchSlot(2),
     const SingleActivator(LogicalKeyboardKey.digit4, control: true):
-        () => onSwitchTab(3),
+        () => onSwitchSlot(3),
     const SingleActivator(LogicalKeyboardKey.digit5, control: true):
-        () => onSwitchTab(4),
+        () => onSwitchSlot(4),
     const SingleActivator(LogicalKeyboardKey.digit6, control: true):
-        () => onSwitchTab(5),
+        () => onSwitchSlot(5),
+    const SingleActivator(LogicalKeyboardKey.digit7, control: true):
+        () => onSwitchSlot(6),
+
+    // Ctrl+, opens preferences in most desktop apps.
+    const SingleActivator(LogicalKeyboardKey.comma, control: true):
+        onOpenSettings,
 
     const SingleActivator(LogicalKeyboardKey.tab, control: true):
         onNextTab,
@@ -99,7 +106,8 @@ bool isTextFieldFocused() {
 ShortcutGroup globalShortcutGroup(S l) => ShortcutGroup(
       title: l.shortcutsGroupNavigation,
       entries: <ShortcutEntry>[
-        ShortcutEntry(keys: 'Ctrl+1..6', description: l.shortcutSwitchTab),
+        ShortcutEntry(keys: 'Ctrl+1..7', description: l.shortcutSwitchTab),
+        ShortcutEntry(keys: 'Ctrl+,', description: l.navSettings),
         ShortcutEntry(keys: 'Ctrl+Tab', description: l.shortcutNextTab),
         ShortcutEntry(keys: 'Ctrl+Shift+Tab', description: l.shortcutPreviousTab),
         ShortcutEntry(keys: 'Escape', description: l.back),

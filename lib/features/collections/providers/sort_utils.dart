@@ -38,6 +38,38 @@ int _compareNullableDatesDesc(
   return byDate != 0 ? byDate : tieBreaker();
 }
 
+/// Newest first. Sources mix precision (IGDB has a day, TMDB only a year), so
+/// the year decides first and an exact date only orders items within it.
+int _compareRelease(_Keyed a, _Keyed b) {
+  final int byYear =
+      (b.item.releaseYear ?? 0).compareTo(a.item.releaseYear ?? 0);
+  if (byYear != 0) return byYear;
+  return _compareNullableDatesDesc(
+    a.item.releaseDate,
+    b.item.releaseDate,
+    () => _byName(a, b),
+  );
+}
+
+/// Undated items are appended after the sorted ones, so flipping the
+/// direction never floats them to the top.
+List<CollectionItem> _sortByRelease(
+  List<CollectionItem> items,
+  String lang, {
+  required bool isDescending,
+}) {
+  final List<CollectionItem> dated = <CollectionItem>[];
+  final List<CollectionItem> undated = <CollectionItem>[];
+  for (final CollectionItem item in items) {
+    (item.releaseYear != null ? dated : undated).add(item);
+  }
+  final List<CollectionItem> sorted = _sortKeyed(dated, lang, _compareRelease);
+  return <CollectionItem>[
+    ...isDescending ? sorted.reversed : sorted,
+    ..._sortKeyed(undated, lang, _byName),
+  ];
+}
+
 /// [CollectionSortMode.manual] returns the user-defined `sortOrder` as is;
 /// [isDescending] inverts every other mode but never manual.
 List<CollectionItem> applySortMode(
@@ -57,6 +89,8 @@ List<CollectionItem> applySortMode(
         );
       // Manual is never inverted: the order is user-defined.
       return sorted;
+    case CollectionSortMode.releaseDate:
+      return _sortByRelease(items, lang, isDescending: isDescending);
     case CollectionSortMode.addedDate:
       sorted = List<CollectionItem>.of(items)
         ..sort(

@@ -629,6 +629,9 @@ class BackupService {
           ).hiddenCollections,
       };
       final List<String> sortedKeys = collectionFiles.keys.toList()..sort();
+      // One map for the whole archive: a card held by two collections is
+      // exported twice and must still come back as a single row.
+      final Map<int, int> customIds = <int, int>{};
 
       for (int i = 0; i < sortedKeys.length; i++) {
         final String fileName = sortedKeys[i];
@@ -648,7 +651,7 @@ class BackupService {
           ));
 
           final ImportResult result =
-              await _importService.importFromXcoll(xcoll);
+              await _importService.importFromXcoll(xcoll, customIds: customIds);
           if (result.success) {
             collectionsRestored++;
             itemsRestored += result.itemsImported ?? 0;
@@ -705,7 +708,7 @@ class BackupService {
       // Mood grids — created fresh; ids in the backup file are not preserved.
       if (moodGridsContent != null && _moodGridDao != null) {
         try {
-          await _restoreMoodGrids(moodGridsContent);
+          await _restoreMoodGrids(moodGridsContent, customIds);
         } catch (e) {
           _log.warning('Failed to restore mood grids', e);
         }
@@ -867,7 +870,10 @@ class BackupService {
 
   /// Restores mood grids from a JSON payload. New ids are auto-generated;
   /// cell positions, labels and item references are preserved verbatim.
-  Future<void> _restoreMoodGrids(String jsonContent) async {
+  Future<void> _restoreMoodGrids(
+    String jsonContent,
+    Map<int, int> customIds,
+  ) async {
     final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
     for (final dynamic raw in list) {
       final Map<String, dynamic> entry = raw as Map<String, dynamic>;
@@ -903,11 +909,14 @@ class BackupService {
         if (cellData.label != null) {
           await _moodGridDao.setCellLabel(target.id, cellData.label);
         }
-        if (cellData.mediaType != null && cellData.externalId != null) {
+        final int? externalId = cellData.mediaType == MediaType.custom
+            ? customIds[cellData.externalId]
+            : cellData.externalId;
+        if (cellData.mediaType != null && externalId != null) {
           await _moodGridDao.setCellItem(
             cellId: target.id,
             mediaType: cellData.mediaType!,
-            externalId: cellData.externalId!,
+            externalId: externalId,
             platformId: cellData.platformId,
             source: cellData.source,
           );

@@ -251,6 +251,12 @@ class SPt extends S {
   String get sortCompletionDateShort => 'Concluído';
 
   @override
+  String get sortReleaseDateDisplay => 'Data de lançamento';
+
+  @override
+  String get sortReleaseDateShort => 'Lançamento';
+
+  @override
   String get sortDateOldest => 'Mais antigos primeiro';
 
   @override
@@ -2257,6 +2263,24 @@ class SPt extends S {
   String get noEpisodesFound => 'Nenhum episódio encontrado';
 
   @override
+  String get undo => 'Desfazer';
+
+  @override
+  String get episodeUnmarkedSnack => 'Episódio desmarcado';
+
+  @override
+  String get seasonUnmarkedSnack => 'Temporada desmarcada';
+
+  @override
+  String get episodesClearedSnack => 'Marcações de episódios removidas';
+
+  @override
+  String get episodeWatchedDateEdit => 'Data em que assistiu';
+
+  @override
+  String get episodeWatchedDateSelect => 'Quando você assistiu?';
+
+  @override
   String episodeWatchedDate(String date) {
     return 'assistido em $date';
   }
@@ -3584,6 +3608,13 @@ class SPt extends S {
       'Mostra filtros de subcategoria (plataformas de jogos, tipos de anime/manga) sem selecionar o tipo de mídia primeiro';
 
   @override
+  String get settingsShowAllCardTags => 'Mostrar todas as tags nos cartões';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'Mostra todas as tags no pôster em vez da primeira e de um contador +N';
+
+  @override
   String get settingsShowPlatformOverlay => 'Capas com plataforma';
 
   @override
@@ -4249,6 +4280,30 @@ class SPt extends S {
 
   @override
   String get collectionCopyToCollection => 'Copiar para coleção';
+
+  @override
+  String get duplicateAsCustom => 'Duplicar como item personalizado';
+
+  @override
+  String get coverOverrideChange => 'Alterar capa';
+
+  @override
+  String get coverOverrideReset => 'Restaurar a capa original';
+
+  @override
+  String get coverOverrideSaveFailed => 'Não foi possível salvar a capa';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Usar como capa';
+
+  @override
+  String get coverPickerLoadFailed => 'Não foi possível carregar as capas';
+
+  @override
+  String get coverPickerEmpty => 'Nenhuma capa encontrada';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
 
   @override
   String collectionItemCopiedTo(Object collection, Object name) {
@@ -4958,7 +5013,7 @@ class SPt extends S {
 
   @override
   String get customImportDescription =>
-      'Carregue um arquivo JSON ou CSV produzido pelo seu próprio script ou parser — cada linha vira um card personalizado. Baixe um modelo para ver todos os campos e valores suportados.';
+      'Carregue um arquivo JSON ou CSV gerado pelo seu próprio script ou parser. Cada linha vira um cartão próprio, ou um real quando a busca nas fontes está ativada. Baixe um modelo para ver todos os campos e valores suportados.';
 
   @override
   String get customImportSelectFile => 'Selecionar arquivo JSON/CSV';
@@ -5754,13 +5809,8 @@ class SPt extends S {
   String get statsMetricLikedUnits => 'episódios curtidos';
 
   @override
-  String statsHoursShort(String hours) {
-    return '$hours h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'horas: manual $manual h · trackers $tracker h · estimado $estimated h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'horas: manual $manual · trackers $tracker · estimado $estimated';
   }
 
   @override
@@ -5794,7 +5844,7 @@ class SPt extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '$hours h · $games jogos';
+    return '$hours · $games jogos';
   }
 
   @override
@@ -6035,4 +6085,77 @@ class SPt extends S {
 
   @override
   String get markAllListened => 'Marcar tudo como ouvido';
+
+  @override
+  String get importStageReading => 'Lendo arquivo...';
+
+  @override
+  String get importStageFetchingGames => 'Buscando dados de jogos...';
+
+  @override
+  String get importStageFetchingMovies => 'Buscando dados de filmes...';
+
+  @override
+  String get importStageFetchingTvShows => 'Buscando dados de séries...';
+
+  @override
+  String get importStageFetchingVisualNovels =>
+      'Buscando dados de visual novels...';
+
+  @override
+  String get importStageFetchingManga => 'Buscando dados de mangá...';
+
+  @override
+  String get importStageFetchingAnime => 'Buscando dados de anime...';
+
+  @override
+  String get importStageFetchingBooks => 'Buscando dados de livros...';
+
+  @override
+  String get importStageCachingMedia => 'Armazenando mídia em cache...';
+
+  @override
+  String get importStageCreatingCollection => 'Criando coleção...';
+
+  @override
+  String get importStageResolvingTitles => 'Procurando nas fontes...';
+
+  @override
+  String get importStageAddingItems => 'Adicionando itens...';
+
+  @override
+  String get importStageImportingCanvas => 'Importando quadro...';
+
+  @override
+  String get importStageRestoringMedia => 'Restaurando dados de mídia...';
+
+  @override
+  String get importStageImportingImages => 'Restaurando imagens...';
+
+  @override
+  String get importStageCompleted => 'Importação concluída';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Encontrados $found · Cartões próprios $custom · Ambíguos $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => 'Procurar cartões nas fontes';
+
+  @override
+  String get customImportResolveHint =>
+      'Cada linha é procurada pelo título nas fontes do seu tipo (TMDB, IGDB, Kitsu e outras). Uma única correspondência vira um cartão real; caso contrário, cria-se um cartão próprio. Linhas custom e audio não são procuradas.';
+
+  @override
+  String get importResultUnresolved =>
+      'Várias correspondências, mantidas como cartões próprios';
+
+  @override
+  String get importResultUnresolvedCopied => 'Títulos copiados';
 }

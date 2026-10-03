@@ -1,3 +1,5 @@
+import 'package:core/models/data_source.dart';
+
 /// Receives [ImportProgress] updates while an import runs.
 typedef ImportProgressCallback = void Function(ImportProgress progress);
 
@@ -13,6 +15,9 @@ class ImportProgress {
     this.imported = 0,
     this.updated = 0,
     this.wishlisted = 0,
+    this.source,
+    this.customCards = 0,
+    this.ambiguous = 0,
     this.retryWaitSeconds,
     this.retryAttempt,
     this.retryMaxAttempts,
@@ -33,6 +38,14 @@ class ImportProgress {
   final int imported;
   final int updated;
   final int wishlisted;
+
+  /// The provider being asked for [currentItem] right now (title lookups).
+  final DataSource? source;
+
+  /// Title-lookup tallies: rows that became custom cards, and how many of
+  /// those did so because several records matched.
+  final int customCards;
+  final int ambiguous;
 
   /// Rate-limit back-off info, set only while a source waits out a 429 window.
   final int? retryWaitSeconds;
@@ -64,6 +77,8 @@ enum ImportStage {
   cachingMedia('Caching media...'),
 
   creatingCollection('Creating collection...'),
+
+  resolvingTitles('Looking up sources...'),
 
   addingItems('Adding items...'),
 

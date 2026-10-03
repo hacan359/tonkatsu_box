@@ -109,6 +109,16 @@ class RemoteCollectionDao implements CollectionDao {
   }
 
   @override
+  Future<int> countItemsWithOverrideCover(String url) async {
+    final Object? result = await _transport.call(
+      'CollectionDao',
+      'countItemsWithOverrideCover',
+      <String, Object?>{'url': url},
+    );
+    return decodeInt(result);
+  }
+
+  @override
   Future<Collection> createCollection({
     required String name,
     required String author,
@@ -203,6 +213,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -624,6 +635,7 @@ class RemoteCollectionDao implements CollectionDao {
         userComment: asObject(v)['userComment'] as String?,
         userRating: (asObject(v)['userRating'] as num?)?.toDouble(),
         overrideName: asObject(v)['overrideName'] as String?,
+        overrideCoverUrl: asObject(v)['overrideCoverUrl'] as String?,
         isFavorite: asObject(v)['isFavorite'] as bool,
         game: decodeNullable<Game>(
           asObject(v)['game'],
@@ -1010,6 +1022,7 @@ class RemoteCollectionDao implements CollectionDao {
         userComment: asObject(v)['userComment'] as String?,
         userRating: (asObject(v)['userRating'] as num?)?.toDouble(),
         overrideName: asObject(v)['overrideName'] as String?,
+        overrideCoverUrl: asObject(v)['overrideCoverUrl'] as String?,
         isFavorite: asObject(v)['isFavorite'] as bool,
         game: decodeNullable<Game>(
           asObject(v)['game'],
@@ -1389,6 +1402,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -1775,6 +1789,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -2243,6 +2258,7 @@ class RemoteCollectionDao implements CollectionDao {
               DataSource.values,
             ),
             thumbnailUrl: asObject(e)['thumbnailUrl'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
           ),
         )
         .toList();
@@ -2302,6 +2318,7 @@ class RemoteCollectionDao implements CollectionDao {
         userComment: asObject(v)['userComment'] as String?,
         userRating: (asObject(v)['userRating'] as num?)?.toDouble(),
         overrideName: asObject(v)['overrideName'] as String?,
+        overrideCoverUrl: asObject(v)['overrideCoverUrl'] as String?,
         isFavorite: asObject(v)['isFavorite'] as bool,
         game: decodeNullable<Game>(
           asObject(v)['game'],
@@ -2713,6 +2730,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -3103,6 +3121,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -3542,6 +3561,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -3994,6 +4014,7 @@ class RemoteCollectionDao implements CollectionDao {
             userComment: asObject(e)['userComment'] as String?,
             userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
             overrideName: asObject(e)['overrideName'] as String?,
+            overrideCoverUrl: asObject(e)['overrideCoverUrl'] as String?,
             isFavorite: asObject(e)['isFavorite'] as bool,
             game: decodeNullable<Game>(
               asObject(e)['game'],
@@ -4344,6 +4365,16 @@ class RemoteCollectionDao implements CollectionDao {
       'id': encodeInt(id),
       'isFavorite': isFavorite,
     });
+    return;
+  }
+
+  @override
+  Future<void> setItemOverrideCoverUrl(int id, String? url) async {
+    await _transport.call(
+      'CollectionDao',
+      'setItemOverrideCoverUrl',
+      <String, Object?>{'id': encodeInt(id), 'url': url},
+    );
     return;
   }
 

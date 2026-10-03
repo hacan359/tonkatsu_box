@@ -251,6 +251,12 @@ class SEn extends S {
   String get sortCompletionDateShort => 'Finished';
 
   @override
+  String get sortReleaseDateDisplay => 'Release Date';
+
+  @override
+  String get sortReleaseDateShort => 'Released';
+
+  @override
   String get sortDateOldest => 'Oldest first';
 
   @override
@@ -2226,6 +2232,24 @@ class SEn extends S {
   String get noEpisodesFound => 'No episodes found';
 
   @override
+  String get undo => 'Undo';
+
+  @override
+  String get episodeUnmarkedSnack => 'Episode unmarked';
+
+  @override
+  String get seasonUnmarkedSnack => 'Season unmarked';
+
+  @override
+  String get episodesClearedSnack => 'Episode marks cleared';
+
+  @override
+  String get episodeWatchedDateEdit => 'Watched date';
+
+  @override
+  String get episodeWatchedDateSelect => 'When did you watch it?';
+
+  @override
   String episodeWatchedDate(String date) {
     return 'watched $date';
   }
@@ -3543,6 +3567,13 @@ class SEn extends S {
       'Show subcategory filters (game platforms, anime/manga types) without selecting their media type first';
 
   @override
+  String get settingsShowAllCardTags => 'Show all tags on cards';
+
+  @override
+  String get settingsShowAllCardTagsSubtitle =>
+      'List every tag on the poster instead of the first one and a +N counter';
+
+  @override
   String get settingsShowPlatformOverlay => 'Game platform covers';
 
   @override
@@ -4204,6 +4235,30 @@ class SEn extends S {
 
   @override
   String get collectionCopyToCollection => 'Copy to collection';
+
+  @override
+  String get duplicateAsCustom => 'Duplicate as custom item';
+
+  @override
+  String get coverOverrideChange => 'Change cover';
+
+  @override
+  String get coverOverrideReset => 'Restore original cover';
+
+  @override
+  String get coverOverrideSaveFailed => 'Couldn\'t save the cover';
+
+  @override
+  String get coverOverrideSetFromGallery => 'Make it the cover';
+
+  @override
+  String get coverPickerLoadFailed => 'Couldn\'t load covers';
+
+  @override
+  String get coverPickerEmpty => 'No covers found';
+
+  @override
+  String get coverSourceIgdb => 'IGDB';
 
   @override
   String collectionItemCopiedTo(Object collection, Object name) {
@@ -4906,7 +4961,7 @@ class SEn extends S {
 
   @override
   String get customImportDescription =>
-      'Load a JSON or CSV file produced by your own script or parser — every row becomes a custom card. Download a template to see all supported fields and values.';
+      'Load a JSON or CSV file produced by your own script or parser. Each row becomes a custom card, or a real one when the source lookup is on. Download a template to see all supported fields and values.';
 
   @override
   String get customImportSelectFile => 'Select JSON/CSV file';
@@ -5700,13 +5755,8 @@ class SEn extends S {
   String get statsMetricLikedUnits => 'liked episodes';
 
   @override
-  String statsHoursShort(String hours) {
-    return '${hours}h';
-  }
-
-  @override
-  String statsHoursBreakdown(int manual, int tracker, int estimated) {
-    return 'hours: manual ${manual}h · trackers ${tracker}h · estimated ${estimated}h';
+  String statsHoursBreakdown(String manual, String tracker, String estimated) {
+    return 'hours: manual $manual · trackers $tracker · estimated $estimated';
   }
 
   @override
@@ -5740,7 +5790,7 @@ class SEn extends S {
 
   @override
   String statsPlatformsSummary(String hours, int games) {
-    return '${hours}h · $games games';
+    return '$hours · $games games';
   }
 
   @override
@@ -5979,4 +6029,76 @@ class SEn extends S {
 
   @override
   String get markAllListened => 'Mark all listened';
+
+  @override
+  String get importStageReading => 'Reading file...';
+
+  @override
+  String get importStageFetchingGames => 'Fetching game data...';
+
+  @override
+  String get importStageFetchingMovies => 'Fetching movie data...';
+
+  @override
+  String get importStageFetchingTvShows => 'Fetching TV show data...';
+
+  @override
+  String get importStageFetchingVisualNovels => 'Fetching visual novel data...';
+
+  @override
+  String get importStageFetchingManga => 'Fetching manga data...';
+
+  @override
+  String get importStageFetchingAnime => 'Fetching anime data...';
+
+  @override
+  String get importStageFetchingBooks => 'Fetching book data...';
+
+  @override
+  String get importStageCachingMedia => 'Caching media...';
+
+  @override
+  String get importStageCreatingCollection => 'Creating collection...';
+
+  @override
+  String get importStageResolvingTitles => 'Looking up sources...';
+
+  @override
+  String get importStageAddingItems => 'Adding items...';
+
+  @override
+  String get importStageImportingCanvas => 'Importing board...';
+
+  @override
+  String get importStageRestoringMedia => 'Restoring media data...';
+
+  @override
+  String get importStageImportingImages => 'Restoring images...';
+
+  @override
+  String get importStageCompleted => 'Import completed';
+
+  @override
+  String importBreadcrumb(String title, String source) {
+    return '$title → $source';
+  }
+
+  @override
+  String importTallies(int found, int custom, int ambiguous) {
+    return 'Found $found · Custom cards $custom · Ambiguous $ambiguous';
+  }
+
+  @override
+  String get customImportResolveTitle => 'Look up cards in sources';
+
+  @override
+  String get customImportResolveHint =>
+      'Searches each row by title in the sources of its type (TMDB, IGDB, Kitsu and others). Exactly one match becomes a real card, otherwise a custom card is created. Custom and audio rows are never looked up.';
+
+  @override
+  String get importResultUnresolved =>
+      'Several records matched, kept as custom cards';
+
+  @override
+  String get importResultUnresolvedCopied => 'Titles copied';
 }

@@ -90,6 +90,9 @@ class EpisodeTrackerState {
   }
 }
 
+/// Watched marks keyed by (season, episode); a null date is a legacy import.
+typedef WatchedMarks = Map<(int, int), DateTime?>;
+
 /// Family argument of the episode tracker. `source` selects the
 /// season/episode provider ([TvEpisodeSource]) and namespaces DB rows.
 typedef EpisodeTrackerArg = ({
@@ -111,6 +114,7 @@ final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
 class EpisodeTrackerNotifier
     extends FamilyNotifier<EpisodeTrackerState, EpisodeTrackerArg> {
   static final Logger _log = Logger('EpisodeTrackerNotifier');
+  static const int _watchedDateHour = 12;
 
   late DatabaseService _db;
   late TvEpisodeSource _episodeSource;
@@ -298,12 +302,18 @@ class EpisodeTrackerNotifier
     }
   }
 
-  Future<void> toggleEpisode(int season, int episode) async {
+  /// Returns the marks an unmark removed (empty when it marked), so the
+  /// caller can offer an undo that brings the old dates back.
+  Future<WatchedMarks> toggleEpisode(int season, int episode) async {
     final int? collId = _collectionId;
-    if (collId == null) return;
+    if (collId == null) return const <(int, int), DateTime?>{};
     final bool isWatched = state.isEpisodeWatched(season, episode);
+    WatchedMarks removed = const <(int, int), DateTime?>{};
 
     if (isWatched) {
+      removed = <(int, int), DateTime?>{
+        (season, episode): state.watchedEpisodes[(season, episode)],
+      };
       await _db.tvShowDao.markEpisodeUnwatched(
           collId, _source, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
@@ -320,25 +330,34 @@ class EpisodeTrackerNotifier
     }
 
     unawaited(_updateAutoStatus());
+    return removed;
   }
 
-  Future<void> toggleSeason(int season) async {
+  /// Same contract as [toggleEpisode]: returns what an unmark removed.
+  Future<WatchedMarks> toggleSeason(int season) async {
     final int? collId = _collectionId;
-    if (collId == null) return;
+    if (collId == null) return const <(int, int), DateTime?>{};
     final List<TvEpisode>? episodes = state.episodesBySeason[season];
-    if (episodes == null || episodes.isEmpty) return;
+    if (episodes == null || episodes.isEmpty) {
+      return const <(int, int), DateTime?>{};
+    }
 
     final int watchedCount = state.watchedCountForSeason(season);
     final bool allWatched = watchedCount == episodes.length;
+    WatchedMarks removed = const <(int, int), DateTime?>{};
 
     if (allWatched) {
+      removed = <(int, int), DateTime?>{
+        for (final MapEntry<(int, int), DateTime?> e
+            in state.watchedEpisodes.entries)
+          if (e.key.$1 == season) e.key: e.value,
+      };
       await _db.tvShowDao.unmarkSeasonWatched(
           collId, _source, _showId, season);
+      // The DELETE is season-wide, so marks outside the loaded list go too.
       final Map<(int, int), DateTime?> updated =
-          Map<(int, int), DateTime?>.of(state.watchedEpisodes);
-      for (final TvEpisode ep in episodes) {
-        updated.remove((season, ep.episodeNumber));
-      }
+          Map<(int, int), DateTime?>.of(state.watchedEpisodes)
+            ..removeWhere(((int, int) key, DateTime? _) => key.$1 == season);
       state = state.copyWith(watchedEpisodes: updated);
     } else {
       final List<int> episodeNumbers =
@@ -355,6 +374,64 @@ class EpisodeTrackerNotifier
     }
 
     unawaited(_updateAutoStatus());
+    return removed;
+  }
+
+  /// Undo for an unmark: writes the marks back with their original dates.
+  /// [syncStatus] is off when the caller restores the status itself.
+  Future<void> restoreWatched(
+    WatchedMarks marks, {
+    bool syncStatus = true,
+  }) async {
+    final int? collId = _collectionId;
+    if (collId == null || marks.isEmpty) return;
+    try {
+      await _db.tvShowDao.markEpisodesWatchedAt(collId, _source, _showId, <(
+        int,
+        int,
+        int?,
+      )>[
+        for (final MapEntry<(int, int), DateTime?> e in marks.entries)
+          (e.key.$1, e.key.$2, e.value?.millisecondsSinceEpoch),
+      ]);
+      state = state.copyWith(
+        watchedEpisodes: <(int, int), DateTime?>{
+          ...state.watchedEpisodes,
+          ...marks,
+        },
+      );
+    } on Exception catch (e) {
+      _log.warning('Failed to restore episode marks of show $_showId', e);
+      return;
+    }
+    if (syncStatus) unawaited(_updateAutoStatus());
+  }
+
+  /// Written at local noon: stats bucket months in local time, and midnight
+  /// would push an edge-of-month episode into the neighbouring month.
+  Future<void> setEpisodeWatchedDate(
+    int season,
+    int episode,
+    DateTime? date,
+  ) async {
+    final int? collId = _collectionId;
+    if (collId == null || !state.isEpisodeWatched(season, episode)) return;
+    final DateTime? stamp = date == null
+        ? null
+        : DateTime(date.year, date.month, date.day, _watchedDateHour);
+    try {
+      final bool existed = await _db.tvShowDao.updateEpisodeWatchedAt(collId,
+          _source, _showId, season, episode, stamp?.millisecondsSinceEpoch);
+      if (!existed) return;
+      state = state.copyWith(
+        watchedEpisodes: <(int, int), DateTime?>{
+          ...state.watchedEpisodes,
+          (season, episode): stamp,
+        },
+      );
+    } on Exception catch (e) {
+      _log.warning('Failed to set watched date of show $_showId', e);
+    }
   }
 
   Future<void> _updateAutoStatus() async {
@@ -449,7 +526,89 @@ class EpisodeTrackerNotifier
       await ref
           .read(collectionItemsNotifierProvider(collId).notifier)
           .updateStatus(
-              targetItem.id, targetStatus, targetItem.mediaType);
+            targetItem.id,
+            targetStatus,
+            targetItem.mediaType,
+            syncEpisodes: false,
+          );
     }
+  }
+
+  /// Marks every regular episode watched; seasons not yet cached are fetched
+  /// from the source. Existing marks keep their own dates.
+  Future<void> markAllWatched({DateTime? at}) async {
+    final int? collId = _collectionId;
+    if (collId == null) return;
+    final DateTime stamp = at ?? DateTime.now();
+
+    try {
+      final List<TvSeason> seasons = await _resolveSeasons();
+      // Specials (season 0) don't count toward completion, so a "completed"
+      // title must not claim them as watched.
+      final List<int> seasonNumbers = <int>[
+        for (final TvSeason season in seasons)
+          if (season.seasonNumber > 0) season.seasonNumber,
+      ];
+      for (final int seasonNumber in seasonNumbers) {
+        await loadSeason(seasonNumber);
+      }
+
+      // State may still be loading on a freshly built tracker; the DB knows
+      // which marks already exist and must keep their dates.
+      final Map<(int, int), DateTime?> updated = <(int, int), DateTime?>{
+        ...await _db.tvShowDao.getWatchedEpisodes(collId, _source, _showId),
+        ...state.watchedEpisodes,
+      };
+      final List<(int, int, int?)> rows = <(int, int, int?)>[];
+      for (final int seasonNumber in seasonNumbers) {
+        final List<TvEpisode> episodes =
+            state.episodesBySeason[seasonNumber] ?? const <TvEpisode>[];
+        for (final TvEpisode ep in episodes) {
+          final (int, int) key = (seasonNumber, ep.episodeNumber);
+          if (updated.containsKey(key)) continue;
+          updated[key] = stamp;
+          rows.add((seasonNumber, ep.episodeNumber,
+              stamp.millisecondsSinceEpoch));
+        }
+      }
+      if (rows.isEmpty) return;
+
+      await _db.tvShowDao.markEpisodesWatchedAt(collId, _source, _showId, rows);
+      state = state.copyWith(watchedEpisodes: updated);
+    } on Exception catch (e) {
+      _log.warning('Failed to mark all episodes of show $_showId watched', e);
+    }
+  }
+
+  /// Returns the removed marks for an undo; empty when nothing was marked
+  /// or the write failed.
+  Future<WatchedMarks> unmarkAllWatched() async {
+    final int? collId = _collectionId;
+    if (collId == null) return const <(int, int), DateTime?>{};
+    try {
+      // State may still be loading on a freshly built tracker; the DB is
+      // the full picture of what the DELETE is about to erase.
+      final WatchedMarks removed =
+          await _db.tvShowDao.getWatchedEpisodes(collId, _source, _showId);
+      await _db.tvShowDao.unmarkShowWatched(collId, _source, _showId);
+      state = state.copyWith(
+        watchedEpisodes: const <(int, int), DateTime?>{},
+      );
+      return removed;
+    } on Exception catch (e) {
+      _log.warning('Failed to unmark episodes of show $_showId', e);
+      return const <(int, int), DateTime?>{};
+    }
+  }
+
+  Future<List<TvSeason>> _resolveSeasons() async {
+    final List<TvSeason> cached =
+        await _db.tvShowDao.getTvSeasonsByShowId(_source, _showId);
+    if (cached.isNotEmpty) return cached;
+    final List<TvSeason> fetched = await _episodeSource.getSeasons(_showId);
+    if (fetched.isNotEmpty) {
+      await _db.tvShowDao.upsertTvSeasons(fetched);
+    }
+    return fetched;
   }
 }

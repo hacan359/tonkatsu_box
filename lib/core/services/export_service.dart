@@ -130,8 +130,10 @@ class ExportService {
     bool includeUserData = false,
   }) async {
     final List<Map<String, dynamic>> exportItems = items
-        .map((CollectionItem i) =>
-            i.toExport(includeUserData: includeUserData))
+        .map((CollectionItem i) => i.toExport(
+              includeUserData: includeUserData,
+              includeCoverOverride: true,
+            ))
         .toList();
 
     ExportCanvas? canvas;
@@ -574,6 +576,11 @@ class ExportService {
           if (item.anime != null && !animes.containsKey(animeKey)) {
             animes[animeKey] = item.anime!.toExport();
           }
+          // Kitsu anime keep per-episode runtimes in the TV cache; without
+          // them restored watch marks count zero minutes in the stats.
+          if (item.usesEpisodeTracker) {
+            tvShowKeys.add((item.dataSource, item.externalId));
+          }
         case MediaType.custom:
           if (item.customMedia != null &&
               !customItems.containsKey(item.externalId)) {
@@ -634,21 +641,8 @@ class ExportService {
       }
     }
 
-    if (games.isEmpty &&
-        movies.isEmpty &&
-        tvShows.isEmpty &&
-        vns.isEmpty &&
-        mangas.isEmpty &&
-        books.isEmpty &&
-        albums.isEmpty &&
-        allTracks.isEmpty &&
-        animes.isEmpty &&
-        allSeasons.isEmpty &&
-        allEpisodes.isEmpty &&
-        allPlatforms.isEmpty) {
-      return const <String, dynamic>{};
-    }
-
+    // Every entry is conditional, so an empty map needs no early return — a
+    // hand-kept list of "all empty" checks once forgot custom cards.
     return <String, dynamic>{
       if (games.isNotEmpty) 'games': games.values.toList(),
       if (movies.isNotEmpty) 'movies': movies.values.toList(),

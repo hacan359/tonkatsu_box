@@ -1,6 +1,5 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
-import 'package:core/models/custom_media.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/steamgriddb_image.dart';
@@ -28,7 +27,6 @@ import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../home/providers/all_items_provider.dart';
-import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
 import '../helpers/collection_filters.dart';
 import '../providers/collection_covers_provider.dart';
@@ -52,6 +50,8 @@ import '../widgets/tag_management_dialog.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
+import '../../../shared/keyboard/shortcut_helper.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({
@@ -201,7 +201,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     // The rich banner carries the back arrow and title itself; the plain
     // title bar would duplicate both and waste a row.
     final bool heroCarriesTitle = _isRich(ref) && !_isCanvasMode;
-    return CallbackShortcuts(
+    return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(l),
       child: Stack(
         children: <Widget>[
@@ -651,29 +651,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CustomItemData? data = await CreateCustomItemDialog.show(context);
     if (data == null || !mounted) return;
 
-    // For local files coverUrl stays null; the file is copied into the cache
-    // via addCustomItem.
-    final CustomMedia customMedia = CustomMedia(
-      id: 0,
-      title: data.title,
-      displayType: data.mediaType != MediaType.custom ? data.mediaType : null,
-      altTitle: data.altTitle,
-      description: data.description,
-      coverUrl: data.coverUrl,
-      year: data.year,
-      genres: data.genres,
-      platformName: data.platform,
-      platformId: data.platformId,
-      format: data.format,
-      unitTotal: data.unitTotal,
-      unitGroupTotal: data.unitGroupTotal,
-      externalUrl: data.externalUrl,
-    );
-
     final bool success = await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addCustomItem(
-          customMedia,
+          data.toNewCustomMedia(),
           coverBytes: data.coverBytes,
           userComment: data.comment,
           tags: data.tags,
@@ -794,7 +775,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => ImportProgressDialog(
+      builder: (BuildContext dialogContext) =>
+          ImportProgressDialog<ImportResult>(
+        title: S.of(context).collectionsImporting,
         progressNotifier: progressNotifier,
         importFuture: importFuture,
       ),

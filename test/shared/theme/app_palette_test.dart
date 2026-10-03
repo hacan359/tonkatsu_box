@@ -67,9 +67,46 @@ void main() {
       // Both ColorScheme() and the 0.41 ColorScheme.dark(...) leave the
       // derived roles null, so the getters resolve them from our overrides.
       final ColorScheme scheme = AppTheme.darkTheme.colorScheme;
-      expect(scheme.primaryContainer, AppPalette.dark.brand);
       expect(scheme.errorContainer, AppPalette.dark.error);
       expect(scheme.onSurfaceVariant, AppPalette.dark.textPrimary);
     });
+
+    for (final AppPalette palette in <AppPalette>[
+      AppPalette.dark,
+      AppPalette.sakura,
+    ]) {
+      group('${palette.brightness.name} palette', () {
+        final ThemeData theme = AppTheme.build(palette);
+
+        test('primaryContainer differs from primary', () {
+          expect(theme.colorScheme.primaryContainer,
+              isNot(theme.colorScheme.primary));
+        });
+
+        test('a hovered or focused selected thumb stays off the track color',
+            () {
+          final SwitchThemeData sw = theme.switchTheme;
+          final Color? track =
+              sw.trackColor?.resolve(<WidgetState>{WidgetState.selected});
+          for (final WidgetState state in <WidgetState>[
+            WidgetState.hovered,
+            WidgetState.focused,
+            WidgetState.pressed,
+          ]) {
+            expect(
+              sw.thumbColor
+                  ?.resolve(<WidgetState>{WidgetState.selected, state}),
+              isNot(track),
+            );
+          }
+        });
+
+        test('an unselected thumb stays off its track', () {
+          final SwitchThemeData sw = theme.switchTheme;
+          expect(sw.thumbColor?.resolve(<WidgetState>{WidgetState.hovered}),
+              isNot(sw.trackColor?.resolve(<WidgetState>{})));
+        });
+      });
+    }
   });
 }

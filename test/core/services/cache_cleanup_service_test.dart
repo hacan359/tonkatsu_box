@@ -136,4 +136,52 @@ void main() {
           reason: 'folder not in keep map left alone');
     });
   });
+
+  group('CacheCleanupService.removeOrphans cover overrides', () {
+    test('should keep both the API cover and the override of a live item',
+        () async {
+      stubItems(<CollectionItem>[
+        createTestCollectionItem(
+          mediaType: MediaType.game,
+          externalId: 100,
+          game: createTestGame(id: 100),
+          overrideCoverUrl: 'local://cover/555',
+        ),
+      ]);
+      final File apiCover = await writeCacheFile(ImageType.gameCover, '100');
+      final File override =
+          await writeCacheFile(ImageType.coverOverride, '555');
+
+      final CacheCleanupResult result = await cleanup.removeOrphans();
+
+      expect(result.deletedCount, 0);
+      expect(apiCover.existsSync(), isTrue);
+      expect(override.existsSync(), isTrue);
+    });
+
+    test('should delete an override file no item points at', () async {
+      stubItems(<CollectionItem>[
+        createTestCollectionItem(
+          mediaType: MediaType.game,
+          externalId: 100,
+          game: createTestGame(id: 100),
+          overrideCoverUrl: 'local://cover/555',
+        ),
+      ]);
+      final File stale = await writeCacheFile(ImageType.coverOverride, '444');
+
+      await cleanup.removeOrphans();
+
+      expect(stale.existsSync(), isFalse);
+    });
+
+    test('should leave custom-card covers alone', () async {
+      stubItems(<CollectionItem>[]);
+      final File custom = await writeCacheFile(ImageType.customCover, '7');
+
+      await cleanup.removeOrphans();
+
+      expect(custom.existsSync(), isTrue);
+    });
+  });
 }

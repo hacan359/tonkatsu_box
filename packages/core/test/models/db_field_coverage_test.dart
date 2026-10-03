@@ -24,7 +24,7 @@ const Map<String, Set<String>> _notStored = <String, Set<String>>{
     'customMedia',
     'platform',
   },
-  // Joined media plus override_name read from collection_items.
+  // Joined media plus the overrides read from collection_items.
   'CanvasItem': <String>{
     'game',
     'movie',
@@ -36,6 +36,7 @@ const Map<String, Set<String>> _notStored = <String, Set<String>>{
     'audioItem',
     'customMedia',
     'overrideName',
+    'overrideCoverUrl',
   },
   // Transient: fetched with search, never stored.
   'Game': <String>{'timeToBeat'},

@@ -1,6 +1,7 @@
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
@@ -63,10 +64,8 @@ class MediaPosterCard extends StatefulWidget {
     this.onSecondaryTap,
     this.onOpenInCollection,
     this.onFocusChanged,
-    this.tagName,
-    this.tagColor,
-    this.tagTextColor,
-    this.tagMoreCount = 0,
+    this.tags = const <Tag>[],
+    this.showAllTags = false,
     this.tagGlow = false,
     this.onTagTap,
     this.source,
@@ -157,17 +156,11 @@ class MediaPosterCard extends StatefulWidget {
 
   final ValueChanged<bool>? onFocusChanged;
 
-  /// Tag (section) name. Grid/compact only.
-  final String? tagName;
+  /// The item's tags in display order; the first one is primary. Grid/compact.
+  final List<Tag> tags;
 
-  /// Tag color (ARGB int). Grid/compact only.
-  final int? tagColor;
-
-  /// Explicit tag label color (ARGB int); `null` means white.
-  final int? tagTextColor;
-
-  /// How many more tags the item carries beyond the shown one ("+N").
-  final int tagMoreCount;
+  /// Show every tag as a wrapped chip row instead of the primary one + "+N".
+  final bool showAllTags;
 
   /// Glow the poster with the tag color.
   final bool tagGlow;
@@ -345,8 +338,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         widget.platformLabel != null &&
         widget.platformColor != null;
 
-    final Color? glowColor = widget.tagGlow && widget.tagColor != null
-        ? Color(widget.tagColor!)
+    final int? primaryTagColor =
+        widget.tags.isEmpty ? null : widget.tags.first.color;
+    final Color? glowColor = widget.tagGlow && primaryTagColor != null
+        ? Color(primaryTagColor)
         : null;
 
     return _TagGlowWrapper(
@@ -370,41 +365,6 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   fit: BoxFit.fill,
                 ),
               ),
-
-            // Scrim: ~25% at idle, fades to transparent on hover.
-            AnimatedBuilder(
-              animation: _hoverController!,
-              builder: (BuildContext context, Widget? child) {
-                final int alpha =
-                    (0x40 * (1.0 - _hoverController!.value)).round();
-                return Positioned.fill(
-                  child: ColoredBox(
-                    color: Color.fromARGB(alpha, 0, 0, 0),
-                  ),
-                );
-              },
-            ),
-
-            AnimatedBuilder(
-              animation: _hoverController!,
-              builder: (BuildContext context, Widget? child) {
-                if (_hoverController!.value == 0) {
-                  return const SizedBox.shrink();
-                }
-                return Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.textPrimary.withAlpha(
-                          (40 * _hoverController!.value).round(),
-                        ),
-                      ),
-                      borderRadius: BorderRadius.circular(borderRadius),
-                    ),
-                  ),
-                );
-              },
-            ),
 
             // The personal badge is split-mode only — otherwise both ratings
             // render in the subtitle line under the poster.
@@ -530,8 +490,13 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     final double vPad = _isCompact ? 2 : 4;
     final bool showStatusDot =
         widget.status != null && widget.status != ItemStatus.notStarted;
-    final bool hasTag = widget.onTagTap != null || widget.tagName != null;
-    if (!showStatusDot && widget.progress == null && !hasTag) {
+    final bool tagWrap = widget.showAllTags && widget.tags.isNotEmpty;
+    // The inline slot also hosts the empty "add a tag" badge.
+    final bool inlineTag =
+        !tagWrap && (widget.onTagTap != null || widget.tags.isNotEmpty);
+    final bool showRow =
+        showStatusDot || widget.progress != null || inlineTag;
+    if (!showRow && !tagWrap) {
       return const SizedBox.shrink();
     }
 
@@ -549,64 +514,84 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(hPad, vPad, hPad, vPad),
-            child: Row(
-              children: <Widget>[
-                if (showStatusDot) ...<Widget>[
-                  Container(
-                    padding: EdgeInsets.all(_isCompact ? 2 : 3),
-                    decoration: BoxDecoration(
-                      color: widget.status!.color,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      widget.status!.materialIcon,
-                      size: _isCompact ? 7 : 10,
-                      color: AppColors.onOverlay,
-                    ),
-                  ),
-                  SizedBox(width: _isCompact ? 2 : 4),
-                ],
-                // The tag takes the free space so the label lands on the right
-                // edge; a Spacer would split that flex with the tag.
-                if (hasTag)
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: _TagBadge(
-                        tagName: widget.tagName,
-                        tagColor: widget.tagColor,
-                        tagTextColor: widget.tagTextColor,
-                        moreCount: widget.tagMoreCount,
+          if (tagWrap)
+            Padding(
+              padding:
+                  EdgeInsets.fromLTRB(hPad, vPad, hPad, showRow ? 0 : vPad),
+              child: _TagTapTarget(
+                onTap: widget.onTagTap,
+                child: Wrap(
+                  spacing: _isCompact ? 2 : 3,
+                  runSpacing: _isCompact ? 2 : 3,
+                  children: <Widget>[
+                    for (final Tag tag in widget.tags)
+                      _TagChip(
+                        key: ValueKey<int>(tag.id),
+                        tag: tag,
                         compact: _isCompact,
-                        onTap: widget.onTagTap,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          if (showRow)
+            Padding(
+              padding: EdgeInsets.fromLTRB(hPad, vPad, hPad, vPad),
+              child: Row(
+                children: <Widget>[
+                  if (showStatusDot) ...<Widget>[
+                    Container(
+                      padding: EdgeInsets.all(_isCompact ? 2 : 3),
+                      decoration: BoxDecoration(
+                        color: widget.status!.color,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        widget.status!.materialIcon,
+                        size: _isCompact ? 7 : 10,
+                        color: AppColors.onOverlay,
                       ),
                     ),
-                  )
-                else if (widget.progress == null)
-                  const Spacer(),
-                if (widget.progress != null) ...<Widget>[
-                  SizedBox(width: _isCompact ? 2 : 4),
-                  if (hasTag)
-                    _ProgressLabel(
-                      label: widget.progress!.label,
-                      compact: _isCompact,
-                    )
-                  else
+                    SizedBox(width: _isCompact ? 2 : 4),
+                  ],
+                  // The tag takes the free space so the label lands on the
+                  // right edge; a Spacer would split that flex with the tag.
+                  if (inlineTag)
                     Expanded(
                       child: Align(
-                        alignment: Alignment.centerRight,
-                        child: _ProgressLabel(
-                          label: widget.progress!.label,
-                          compact: _isCompact,
+                        alignment: Alignment.centerLeft,
+                        child: _TagTapTarget(
+                          onTap: widget.onTagTap,
+                          child: _InlineTags(
+                            tags: widget.tags,
+                            compact: _isCompact,
+                          ),
                         ),
                       ),
-                    ),
+                    )
+                  else if (widget.progress == null)
+                    const Spacer(),
+                  if (widget.progress != null) ...<Widget>[
+                    SizedBox(width: _isCompact ? 2 : 4),
+                    if (inlineTag)
+                      _ProgressLabel(
+                        label: widget.progress!.label,
+                        compact: _isCompact,
+                      )
+                    else
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _ProgressLabel(
+                            label: widget.progress!.label,
+                            compact: _isCompact,
+                          ),
+                        ),
+                      ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
           if (widget.progress?.fraction != null)
             SizedBox(
               height: _isCompact ? 2 : 3,
@@ -980,7 +965,6 @@ class _GlowBorderPainter extends CustomPainter {
       color != oldDelegate.color;
 }
 
-/// Tappable tag badge shown over the poster.
 class _ProgressLabel extends StatelessWidget {
   const _ProgressLabel({required this.label, required this.compact});
 
@@ -1002,76 +986,183 @@ class _ProgressLabel extends StatelessWidget {
   }
 }
 
-class _TagBadge extends StatelessWidget {
-  const _TagBadge({
-    required this.tagName,
-    required this.tagColor,
-    required this.compact,
-    this.tagTextColor,
-    this.moreCount = 0,
-    this.onTap,
-  });
+/// Fires [onTap] with the global position, so the picker can anchor to it.
+class _TagTapTarget extends StatelessWidget {
+  const _TagTapTarget({required this.onTap, required this.child});
 
-  final String? tagName;
-  final int? tagColor;
-  final int? tagTextColor;
-  final int moreCount;
-  final bool compact;
   final void Function(Offset globalPosition)? onTap;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final Color accentColor = tagColor != null
-        ? Color(tagColor!)
-        : AppColors.textSecondary;
-    final bool hasTag = tagName != null;
-    final Color labelColor =
-        tagTextColor != null ? Color(tagTextColor!) : AppColors.onOverlay;
-    final String label =
-        moreCount > 0 ? '$tagName +$moreCount' : (tagName ?? '');
+    final void Function(Offset globalPosition)? tap = onTap;
+    if (tap == null) return child;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (TapDownDetails details) => tap(details.globalPosition),
+      child: child,
+    );
+  }
+}
 
-    final Widget badge = Container(
-      constraints: BoxConstraints(
-        maxWidth: compact ? 50 : 70,
+/// The primary tag plus a separate "+N" badge: only the name ellipsizes, so
+/// the count of hidden tags stays visible on any card width.
+class _InlineTags extends StatelessWidget {
+  const _InlineTags({required this.tags, required this.compact});
+
+  final List<Tag> tags;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    if (tags.isEmpty) return _EmptyTagBadge(compact: compact);
+    final Widget chip = _TagChip(tag: tags.first, compact: compact);
+    if (tags.length == 1) return chip;
+
+    final int count = tags.length - 1;
+    final double gap = compact ? 2 : 3;
+    final Widget row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Flexible(child: chip),
+        SizedBox(width: gap),
+        _MoreTagsBadge(count: count, compact: compact),
+      ],
+    );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double minWidth =
+            gap + _MoreTagsBadge.widthOf(context, count, compact: compact);
+        if (constraints.maxWidth >= minWidth) return row;
+        // No room for both: the count alone says more than a clipped name.
+        return _MoreTagsBadge(count: count, compact: compact);
+      },
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  const _TagChip({required this.tag, required this.compact, super.key});
+
+  final Tag tag;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final int? color = tag.color;
+    final int? textColor = tag.textColor;
+    return _TagPill(
+      color: (color != null ? Color(color) : AppColors.textSecondary)
+          .withAlpha(200),
+      compact: compact,
+      child: Text(
+        tag.name,
+        style: _tagLabelStyle(
+          compact: compact,
+          color: textColor != null ? Color(textColor) : AppColors.onOverlay,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
+    );
+  }
+}
+
+class _MoreTagsBadge extends StatelessWidget {
+  const _MoreTagsBadge({required this.count, required this.compact});
+
+  final int count;
+  final bool compact;
+
+  static double widthOf(
+    BuildContext context,
+    int count, {
+    required bool compact,
+  }) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(
+        text: '+$count',
+        style: _tagLabelStyle(compact: compact, color: AppColors.onOverlay),
+      ),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final double width = painter.width;
+    painter.dispose();
+    return width + 2 * _TagPill.horizontalPadding(compact: compact);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _TagPill(
+      color: AppColors.scrim.withAlpha(170),
+      compact: compact,
+      child: Text(
+        '+$count',
+        style: _tagLabelStyle(compact: compact, color: AppColors.onOverlay),
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.clip,
+      ),
+    );
+  }
+}
+
+class _EmptyTagBadge extends StatelessWidget {
+  const _EmptyTagBadge({required this.compact});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return _TagPill(
+      color: AppColors.surface.withAlpha(180),
+      compact: compact,
+      child: Icon(
+        Icons.label_outline,
+        size: compact ? 10 : 14,
+        color: AppColors.textTertiary,
+      ),
+    );
+  }
+}
+
+class _TagPill extends StatelessWidget {
+  const _TagPill({
+    required this.color,
+    required this.compact,
+    required this.child,
+  });
+
+  final Color color;
+  final bool compact;
+  final Widget child;
+
+  static double horizontalPadding({required bool compact}) => compact ? 3 : 5;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 3 : 5,
+        horizontal: horizontalPadding(compact: compact),
         vertical: compact ? 1 : 2,
       ),
       decoration: BoxDecoration(
-        color: hasTag
-            ? accentColor.withAlpha(200)
-            : AppColors.surface.withAlpha(180),
+        color: color,
         borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
       ),
-      child: hasTag
-          ? Text(
-              label,
-              style: TextStyle(
-                color: labelColor,
-                fontSize: compact ? 7 : 9,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : Icon(
-              Icons.label_outline,
-              size: compact ? 10 : 14,
-              color: AppColors.textTertiary,
-            ),
-    );
-
-    if (onTap == null) return badge;
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (TapDownDetails details) {
-        onTap!(details.globalPosition);
-      },
-      child: badge,
+      child: child,
     );
   }
+}
+
+TextStyle _tagLabelStyle({required bool compact, required Color color}) {
+  return TextStyle(
+    color: color,
+    fontSize: compact ? 7 : 9,
+    fontWeight: FontWeight.w600,
+  );
 }
 
 /// Source brand logo opening the meta line, optionally a link to the item's

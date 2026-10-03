@@ -41,3 +41,29 @@ int navSelectedSlot({required int selectedIndex, required bool centerActive}) {
   if (selectedIndex < 0) return -1;
   return selectedIndex < kNavCenterSlot ? selectedIndex : selectedIndex + 1;
 }
+
+/// Visual slot order of the bars, shared by Ctrl+Tab, LB/RB and Ctrl+1..7;
+/// `null` is the Personalization centre button. Settings lives on the gear.
+const List<NavTab?> kNavSlotOrder = <NavTab?>[
+  NavTab.home,
+  NavTab.collections,
+  NavTab.tierLists,
+  null,
+  NavTab.releases,
+  NavTab.wishlist,
+  NavTab.search,
+];
+
+/// Wraps around; `null` is Personalization. Settings is off the cycle, so
+/// stepping from it starts over at either end.
+NavTab? navStepSlot({
+  required NavTab current,
+  required bool centerActive,
+  required bool forward,
+}) {
+  final int count = kNavSlotOrder.length;
+  final int from =
+      centerActive ? kNavCenterSlot : kNavSlotOrder.indexOf(current);
+  if (from < 0) return forward ? kNavSlotOrder.first : kNavSlotOrder.last;
+  return kNavSlotOrder[(from + (forward ? 1 : -1) + count) % count];
+}

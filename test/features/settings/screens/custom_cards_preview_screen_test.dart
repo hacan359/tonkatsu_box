@@ -1,13 +1,22 @@
 import 'package:core/models/media_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:core/models/universal_import_result.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/import/sources/custom_file/custom_card_entry.dart';
+import 'package:tonkatsu_box/core/import/sources/custom_file/custom_cards_import_service.dart';
 import 'package:tonkatsu_box/features/settings/screens/custom_cards_preview_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 
 import '../../../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() {
+    registerAllFallbacks();
+    registerFallbackValue(<CustomCardEntry>[]);
+  });
+
   CustomCardRow valid(int index, String title) => CustomCardRow(
         index: index,
         sourceTitle: title,
@@ -24,6 +33,7 @@ void main() {
   Widget screen({
     required List<CustomCardRow> rows,
     Set<int> duplicates = const <int>{},
+    bool resolveFromSources = false,
   }) {
     return Scaffold(
       body: CustomCardsPreviewScreen(
@@ -31,6 +41,7 @@ void main() {
         duplicateIndexes: duplicates,
         collectionId: 1,
         author: 'me',
+        resolveFromSources: resolveFromSources,
       ),
     );
   }
@@ -129,6 +140,45 @@ void main() {
             .value,
         isFalse,
       );
+    });
+
+    testWidgets('passes the source lookup flag to the import service',
+        (WidgetTester tester) async {
+      final MockCustomCardsImportService service =
+          MockCustomCardsImportService();
+      when(() => service.importSelected(
+            collectionId: any(named: 'collectionId'),
+            author: any(named: 'author'),
+            entries: any(named: 'entries'),
+            resolveFromSources: any(named: 'resolveFromSources'),
+            onProgress: any(named: 'onProgress'),
+          )).thenAnswer(
+        (_) async => const UniversalImportResult.failure(
+          sourceName: 'Custom cards',
+          error: 'stub',
+        ),
+      );
+
+      await tester.pumpApp(
+        screen(rows: <CustomCardRow>[valid(1, 'Valid')], resolveFromSources: true),
+        overrides: <Override>[
+          customCardsImportServiceProvider.overrideWithValue(service),
+        ],
+      );
+      await tester.tap(find.text(S.of(tester.element(find.byType(
+        CustomCardsPreviewScreen,
+      ))).customImportStart));
+      // The progress dialog's loader animates forever: settle by time.
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      verify(() => service.importSelected(
+            collectionId: 1,
+            author: 'me',
+            entries: any(named: 'entries'),
+            resolveFromSources: true,
+            onProgress: any(named: 'onProgress'),
+          )).called(1);
     });
   });
 }

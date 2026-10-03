@@ -1,19 +1,19 @@
-# 0.44.0
+# 0.45.0
 
-**だってばよ 0.44**
+**Midnight Shinigami 0.45**
 
-**The personalization hub got a rebuild.** It opens on cards for Statistics, Recommendations, Showcase and Likes,
-each with a live preview. Showcase is new: release boards for anime, films, episodes, games and albums.
+**Any card can get its own cover.** A file, a link, an IGDB or SteamGridDB cover for games, or a ScreenScraper picture. The original comes back with one tap.
 
-- Search the library by details: genre, studio, author, tag, label or year. Chips on an item card run that search.
-- Likes, notes and replays: everything you hearted, noted or went through twice, grouped by title.
-- "Started and finished this day" on the item card fills both dates and marks the title Completed.
-- Anime search by studio on the AniList tab.
-- Text size slider in Settings.
-- A collection name on the All items screen opens that collection.
-- Search opens empty; poster feeds moved to the showcase.
-- Search inside a collection matches album artists and book authors.
-- IGDB search finds titles made of common words, such as "Until Then".
+- Duplicate any card as your own custom card, with its cover and tags.
+- The button for a new custom card now sits next to "+" in a collection instead of the ⋮ menu. <3
+- Custom cards import can look your rows up in the catalogs: TMDB, IGDB, AniList, Kitsu, VNDB, book sources and more. A row with exactly one match by title, year and platform becomes a real card and keeps your status, rating, notes, dates and tags. The rest stay custom cards.
+- All imports share one progress dialog with the current row, the source being asked and running counts.
+- Completed marks every episode of a series; leaving it clears the marks, with Undo.
+- The watched date of an episode can be edited, and unmarked episodes come back with Undo.
+- Statistics count anime and animated films and show time to the minute.
+- Sort by release date.
+- New setting: show every tag on grid cards. Otherwise the "+N" count of other tags is always visible.
+- Backup restore keeps time spent, custom cards and Kitsu episodes.
 
 A friendly reminder: our cozy [Discord](https://discord.gg/JZVNPF7cS2) server is where you can directly influence
 which features get built. And if you use the app but have not starred it on

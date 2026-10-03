@@ -9,6 +9,10 @@ const Map<String, Duration> kHostMinRequestGap = <String, Duration>{
   // Cover Art Archive tolerates images better than lookups, but a 40-cover
   // burst from a fresh grid still trips it — pace the background refills.
   'coverartarchive.org': Duration(milliseconds: 300),
+  // IGDB: 4 requests per second per client id.
+  'api.igdb.com': Duration(milliseconds: 260),
+  // AniList: 90 requests per minute, 429 with Retry-After past that.
+  'graphql.anilist.co': Duration(milliseconds: 700),
 };
 
 /// Serialises requests to one host: starts stay in FIFO order and at least

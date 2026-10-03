@@ -55,9 +55,9 @@ abstract final class CustomCardFields {
     tags,
   ];
 
-  /// Card types a file may declare. `custom` itself is not accepted: the card
-  /// is always stored as a custom item, `type` only picks how it masquerades.
+  /// Every type the custom card form offers; `custom` keeps no display type.
   static const List<MediaType> allowedTypes = <MediaType>[
+    MediaType.custom,
     MediaType.game,
     MediaType.movie,
     MediaType.tvShow,
@@ -66,6 +66,7 @@ abstract final class CustomCardFields {
     MediaType.manga,
     MediaType.anime,
     MediaType.book,
+    MediaType.audio,
   ];
 }
 
@@ -156,7 +157,7 @@ class CustomCardEntry {
 
   final String title;
 
-  /// Display type of the created custom card (never [MediaType.custom]).
+  /// Display type of the created custom card; [MediaType.custom] means none.
   final MediaType type;
 
   final String? altTitle;

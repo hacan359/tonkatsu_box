@@ -1,6 +1,7 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -269,6 +270,51 @@ void main() {
       await tester.tap(find.byType(NavCenterButton));
       await tester.pumpAndSettle();
       expect(find.byType(PersonalizationHubScreen), findsOneWidget);
+    });
+
+    group('keyboard slots', () {
+      Future<void> press(
+        WidgetTester tester,
+        LogicalKeyboardKey key, {
+        bool shift = false,
+      }) async {
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+        if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyEvent(key);
+        if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('Ctrl+4 opens Personalization, Ctrl+1 leaves it', (
+        WidgetTester tester,
+      ) async {
+        await pumpShell(tester);
+        // A tab switch moves focus into the shell, under its shortcuts.
+        await tester.tap(find.byType(NavIconButton).at(1));
+        await tester.pumpAndSettle();
+
+        await press(tester, LogicalKeyboardKey.digit4);
+        expect(find.byType(PersonalizationHubScreen), findsOneWidget);
+
+        await press(tester, LogicalKeyboardKey.digit1);
+        expect(find.byType(PersonalizationHubScreen), findsNothing);
+        expect(find.byType(AllItemsScreen), findsOneWidget);
+      });
+
+      testWidgets('Ctrl+Tab from tier lists lands on Personalization', (
+        WidgetTester tester,
+      ) async {
+        await pumpShell(tester);
+        await tester.tap(find.byType(NavIconButton).at(2));
+        await tester.pumpAndSettle();
+
+        await press(tester, LogicalKeyboardKey.tab);
+        expect(find.byType(PersonalizationHubScreen), findsOneWidget);
+
+        await press(tester, LogicalKeyboardKey.tab, shift: true);
+        expect(find.byType(PersonalizationHubScreen), findsNothing);
+      });
     });
   });
 }
