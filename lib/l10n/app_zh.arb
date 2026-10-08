@@ -243,6 +243,8 @@
   "settingsThemeSubtitle": "应用配色主题",
   "settingsThemeDark": "深色",
   "settingsThemeSakura": "樱花",
+  "settingsThemePs1": "PS1 复古灰",
+  "settingsThemeEva": "Eva 蔚蓝",
   "settingsAppLanguageSubtitle": "界面语言",
   "settingsContentLanguageSubtitle": "目前仅适用于 TMDB（电影和剧集）",
   "settingsDataSources": "数据源",
@@ -1770,6 +1772,7 @@
       "count": {"type": "int"}
     }
   },
+  "importCustomSkipped": "跳过的自定义卡片：{count}",
   "steamImportUpdated": "已更新：{count}",
   "@steamImportUpdated": {
     "placeholders": {

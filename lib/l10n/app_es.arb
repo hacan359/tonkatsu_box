@@ -243,6 +243,8 @@
   "settingsThemeSubtitle": "Tema de color de la aplicación",
   "settingsThemeDark": "Oscuro",
   "settingsThemeSakura": "Sakura",
+  "settingsThemePs1": "PS1 Retro",
+  "settingsThemeEva": "Eva Azul",
   "settingsAppLanguageSubtitle": "Idioma de la interfaz",
   "settingsContentLanguageSubtitle": "Por ahora solo TMDB (películas y series)",
   "settingsDataSources": "Fuentes de datos",
@@ -1775,6 +1777,7 @@
       "count": {"type": "int"}
     }
   },
+  "importCustomSkipped": "Tarjetas propias omitidas: {count}",
   "steamImportUpdated": "Actualizados: {count}",
   "@steamImportUpdated": {
     "placeholders": {

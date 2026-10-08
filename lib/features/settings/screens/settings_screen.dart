@@ -853,6 +853,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _themeLabel(S l, AppThemeId theme) => switch (theme) {
         AppThemeId.dark => l.settingsThemeDark,
         AppThemeId.sakura => l.settingsThemeSakura,
+        AppThemeId.ps1 => l.settingsThemePs1,
+        AppThemeId.eva => l.settingsThemeEva,
       };
 
   void _showThemePicker(SettingsState settings) {

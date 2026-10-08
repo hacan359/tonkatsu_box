@@ -588,6 +588,12 @@ class SZh extends S {
   String get settingsThemeSakura => '樱花';
 
   @override
+  String get settingsThemePs1 => 'PS1 复古灰';
+
+  @override
+  String get settingsThemeEva => 'Eva 蔚蓝';
+
+  @override
   String get settingsAppLanguageSubtitle => '界面语言';
 
   @override
@@ -3944,6 +3950,11 @@ class SZh extends S {
   @override
   String steamImportWishlisted(int count) {
     return '已加入愿望单：$count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return '跳过的自定义卡片：$count';
   }
 
   @override

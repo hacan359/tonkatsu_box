@@ -641,6 +641,12 @@ class SFr extends S {
   String get settingsThemeSakura => 'Sakura';
 
   @override
+  String get settingsThemePs1 => 'PS1 Rétro';
+
+  @override
+  String get settingsThemeEva => 'Eva Azur';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Langue de l\'interface';
 
   @override
@@ -4240,6 +4246,11 @@ class SFr extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Ajoutés à la liste de souhaits : $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Cartes perso ignorées : $count';
   }
 
   @override

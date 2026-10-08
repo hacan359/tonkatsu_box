@@ -61,6 +61,37 @@ class CustomItemData {
   /// created automatically. Only produced by the create flow.
   final List<String> tags;
 
+  /// [card] after an edit. A null field means the user emptied it, so it is
+  /// cleared rather than kept — only [coverUrl] comes from the caller.
+  CustomMedia applyTo(CustomMedia card, {required String? coverUrl}) {
+    final bool clearDisplayType = mediaType == MediaType.custom;
+    return card.copyWith(
+      title: title,
+      altTitle: altTitle,
+      clearAltTitle: altTitle == null,
+      description: description,
+      clearDescription: description == null,
+      coverUrl: coverUrl,
+      year: year,
+      genres: genres,
+      clearGenres: genres == null,
+      platformName: platform,
+      clearPlatformName: platform == null,
+      platformId: platformId,
+      clearPlatformId: platformId == null,
+      format: format,
+      clearFormat: format == null,
+      unitTotal: unitTotal,
+      clearUnitTotal: unitTotal == null,
+      unitGroupTotal: unitGroupTotal,
+      clearUnitGroupTotal: unitGroupTotal == null,
+      externalUrl: externalUrl,
+      clearExternalUrl: externalUrl == null,
+      displayType: clearDisplayType ? null : mediaType,
+      clearDisplayType: clearDisplayType,
+    );
+  }
+
   /// An unsaved card: `id` 0, and a local cover stays out of `coverUrl` —
   /// `addCustomItem` stores [coverBytes] and writes the marker itself.
   CustomMedia toNewCustomMedia() => CustomMedia(

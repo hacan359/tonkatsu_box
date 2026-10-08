@@ -640,6 +640,12 @@ class SPt extends S {
   String get settingsThemeSakura => 'Sakura';
 
   @override
+  String get settingsThemePs1 => 'PS1 Retrô';
+
+  @override
+  String get settingsThemeEva => 'Eva Azul';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Idioma da interface';
 
   @override
@@ -4218,6 +4224,11 @@ class SPt extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Adicionados à lista de desejos: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Cartões próprios ignorados: $count';
   }
 
   @override

@@ -648,6 +648,12 @@ class SRu extends S {
   String get settingsThemeSakura => 'Сакура';
 
   @override
+  String get settingsThemePs1 => 'PS1 Ретро';
+
+  @override
+  String get settingsThemeEva => 'Eva Лазурь';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Язык интерфейса';
 
   @override
@@ -4241,6 +4247,11 @@ class SRu extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'В вишлист: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Пропущено своих карточек: $count';
   }
 
   @override

@@ -659,28 +659,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       await cache.evictDecodedImage(ImageType.customCover, previousCoverId);
     }
 
-    final bool clearDisplayType = data.mediaType == MediaType.custom;
-    final CustomMedia updated = item.customMedia!.copyWith(
-      title: data.title,
-      altTitle: data.altTitle,
-      description: data.description,
-      coverUrl: newCoverUrl,
-      year: data.year,
-      genres: data.genres,
-      platformName: data.platform,
-      clearPlatformName: data.platform == null,
-      platformId: data.platformId,
-      clearPlatformId: data.platformId == null,
-      format: data.format,
-      clearFormat: data.format == null,
-      unitTotal: data.unitTotal,
-      clearUnitTotal: data.unitTotal == null,
-      unitGroupTotal: data.unitGroupTotal,
-      clearUnitGroupTotal: data.unitGroupTotal == null,
-      externalUrl: data.externalUrl,
-      displayType: clearDisplayType ? null : data.mediaType,
-      clearDisplayType: clearDisplayType,
-    );
+    final CustomMedia updated =
+        data.applyTo(item.customMedia!, coverUrl: newCoverUrl);
 
     final DatabaseService db = ref.read(databaseServiceProvider);
     await db.customMediaDao.update(updated);

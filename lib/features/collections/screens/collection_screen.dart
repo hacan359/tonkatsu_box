@@ -811,6 +811,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       if (result.itemsUpdated > 0) {
         message.write(', ${l.steamImportUpdated(result.itemsUpdated)}');
       }
+      if (result.customSkipped > 0) {
+        message.write(', ${l.importCustomSkipped(result.customSkipped)}');
+      }
       context.showSnack(message.toString(), type: SnackType.success);
     } else if (!result.isCancelled && result.error != null) {
       context.showSnack(result.error!, type: SnackType.error);

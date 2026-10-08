@@ -7,6 +7,72 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Two new themes: PS1 Retro and Eva Azure**
+
+  PS1 Retro is the grey PlayStation shell with the four logo colours; Eva
+  Azure is built from the Eva Design System shades. Both are light themes and
+  appear in Settings → Theme. Ported from the TonkatsuBox CN fork by shingo110.
+
+  * lib/shared/theme/palettes/ps1_palette.dart (ps1Palette),
+    lib/shared/theme/palettes/eva_palette.dart (evaPalette): New.
+  * lib/shared/theme/app_theme_id.dart (AppThemeId.ps1, AppThemeId.eva,
+    AppThemeId.palette): Two new themes.
+  * lib/shared/theme/app_palette.dart (AppPalette.ps1, AppPalette.eva),
+    lib/shared/theme/app_assets.dart (AppAssets.backgroundTilePs1,
+    AppAssets.backgroundTileEva): Palettes and background tiles.
+  * assets/images/background_tile_ps1.png,
+    assets/images/background_tile_eva.png: New.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._themeLabel): Labels for the new themes.
+  * lib/l10n/app_*.arb (settingsThemePs1, settingsThemeEva): New strings.
+
+### Changed
+
+- **Collection import reports skipped custom cards**
+
+  The import message counts items whose custom card is missing from the
+  file.
+
+  * lib/core/services/import_service.dart (ImportResult.customSkipped,
+    ImportResult.success, ImportService.importFromXcoll): Carry the count.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/screens/home_screen.dart: Show it.
+  * lib/l10n/app_*.arb (importCustomSkipped): New string.
+
+### Fixed
+
+- **Emptied fields of a custom card are saved**
+
+  Clearing the description, alternative title, genres or link while editing
+  a custom card removes the old value.
+
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.applyTo): New, builds the edited card.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._editCustomItem): Use it.
+
+- **Episode stills come back after an interrupted download**
+
+  A picture whose download broke off is fetched again the next time it is
+  shown, and deleting a cached picture lets it download again.
+
+  * lib/core/services/image_cache_service.dart (ImageCacheService.downloadImage,
+    ImageCacheService.deleteImage, ImageCacheService._hasImageSignature):
+    Retry cut-off files, forget a failure on delete.
+
+- **Cache cleanup removes covers of deleted custom cards**
+
+  * lib/core/services/cache_cleanup_service.dart
+    (CacheCleanupService.removeOrphans): Sweep the custom cover folder,
+    keeping covers of every existing card.
+  * packages/core/lib/database/dao/custom_media_dao.dart
+    (CustomMediaDao.getAll): New.
+  * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/custom_media_dao.remote.rpc.dart:
+    Regenerated.
+
 ## [0.45.0] - 2026-10-03
 
 ### Added

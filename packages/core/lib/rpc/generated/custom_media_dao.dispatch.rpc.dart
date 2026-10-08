@@ -73,6 +73,30 @@ Future<Object?> dispatchCustomMediaDao(
       await dao.delete(decodeInt(args['id']));
       return null;
 
+    case 'getAll':
+      final List<CustomMedia> value = await dao.getAll();
+      return value
+          .map(
+            (CustomMedia e) => <String, Object?>{
+              'id': encodeInt(e.id),
+              'title': e.title,
+              'displayType': e.displayType?.name,
+              'altTitle': e.altTitle,
+              'description': e.description,
+              'coverUrl': e.coverUrl,
+              'year': encodeIntOrNull(e.year),
+              'genres': e.genres,
+              'platformName': e.platformName,
+              'platformId': encodeIntOrNull(e.platformId),
+              'format': e.format,
+              'unitTotal': encodeIntOrNull(e.unitTotal),
+              'unitGroupTotal': encodeIntOrNull(e.unitGroupTotal),
+              'externalUrl': e.externalUrl,
+              'cachedAt': encodeIntOrNull(e.cachedAt),
+            },
+          )
+          .toList();
+
     case 'getById':
       final CustomMedia? value = await dao.getById(decodeInt(args['id']));
       return encodeNullable<CustomMedia>(

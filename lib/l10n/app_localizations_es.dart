@@ -640,6 +640,12 @@ class SEs extends S {
   String get settingsThemeSakura => 'Sakura';
 
   @override
+  String get settingsThemePs1 => 'PS1 Retro';
+
+  @override
+  String get settingsThemeEva => 'Eva Azul';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Idioma de la interfaz';
 
   @override
@@ -4233,6 +4239,11 @@ class SEs extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Añadidos a la lista de deseos: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Tarjetas propias omitidas: $count';
   }
 
   @override

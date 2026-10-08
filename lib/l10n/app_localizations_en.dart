@@ -636,6 +636,12 @@ class SEn extends S {
   String get settingsThemeSakura => 'Sakura';
 
   @override
+  String get settingsThemePs1 => 'PS1 Retro';
+
+  @override
+  String get settingsThemeEva => 'Eva Azure';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Interface language';
 
   @override
@@ -4174,6 +4180,11 @@ class SEn extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Added to wishlist: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Custom cards skipped: $count';
   }
 
   @override

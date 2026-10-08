@@ -1197,6 +1197,18 @@ abstract class S {
   /// **'Sakura'**
   String get settingsThemeSakura;
 
+  /// No description provided for @settingsThemePs1.
+  ///
+  /// In en, this message translates to:
+  /// **'PS1 Retro'**
+  String get settingsThemePs1;
+
+  /// No description provided for @settingsThemeEva.
+  ///
+  /// In en, this message translates to:
+  /// **'Eva Azure'**
+  String get settingsThemeEva;
+
   /// No description provided for @settingsAppLanguageSubtitle.
   ///
   /// In en, this message translates to:
@@ -7453,6 +7465,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Added to wishlist: {count}'**
   String steamImportWishlisted(int count);
+
+  /// No description provided for @importCustomSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom cards skipped: {count}'**
+  String importCustomSkipped(int count);
 
   /// No description provided for @steamImportUpdated.
   ///
