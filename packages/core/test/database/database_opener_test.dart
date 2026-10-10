@@ -118,5 +118,55 @@ void main() {
       );
       expect(await db.getVersion(), MigrationRegistry.latestVersion);
     });
+
+    test('should refuse a database written by a newer build and leave it as is',
+        () async {
+      final int newer = MigrationRegistry.latestVersion + 1;
+      final Database seeded = await open();
+      await seeded.execute('PRAGMA user_version = $newer');
+      await seeded.close();
+
+      await expectLater(
+        open(),
+        throwsA(
+          isA<DatabaseTooNewException>()
+              .having((DatabaseTooNewException e) => e.fileVersion,
+                  'fileVersion', newer)
+              .having((DatabaseTooNewException e) => e.appVersion,
+                  'appVersion', MigrationRegistry.latestVersion),
+        ),
+      );
+
+      // The stamp must survive: a silent downgrade is the bug being guarded.
+      final Database raw = await databaseFactoryFfi.openDatabase(dbPath);
+      addTearDown(raw.close);
+      expect(await raw.getVersion(), newer);
+    });
+
+    test('should fail on v63 after a build without the guard rewound the stamp',
+        () async {
+      const int oldBuild = 55;
+      final Database current = await open();
+      await current.close();
+
+      // A pre-guard build: sqflite with no onDowngrade keeps the schema but
+      // stamps its own, lower version.
+      final Database legacy = await databaseFactoryFfi.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(version: oldBuild),
+      );
+      expect(await legacy.getVersion(), oldBuild);
+      await legacy.close();
+
+      await expectLater(
+        open(),
+        throwsA(
+          isA<MigrationFailure>()
+              .having((MigrationFailure f) => f.version, 'version', 63)
+              .having((MigrationFailure f) => f.fromVersion, 'fromVersion',
+                  oldBuild),
+        ),
+      );
+    });
   });
 }
