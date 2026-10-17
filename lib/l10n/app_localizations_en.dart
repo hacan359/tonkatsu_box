@@ -1802,6 +1802,30 @@ class SEn extends S {
   String get customItemGenresHint => 'e.g. RPG, Action, Puzzle';
 
   @override
+  String get customItemAuthors => 'Authors';
+
+  @override
+  String get customItemAuthorsHint => 'e.g. Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Director';
+
+  @override
+  String get creatorCreator => 'Creator';
+
+  @override
+  String get creatorDeveloper => 'Developer';
+
+  @override
+  String get creatorPublisher => 'Publisher';
+
+  @override
+  String get creatorStudio => 'Studio';
+
+  @override
+  String get creatorAuthor => 'Author';
+
+  @override
   String get platform => 'Platform';
 
   @override

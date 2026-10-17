@@ -10,9 +10,13 @@ class IgdbGamesApi {
 
   final IgdbHttpClient _client;
 
+  // Shared by search too, so a game added from a result already has its
+  // companies; three short fields per company keep the response small.
   static const String _gameFields = '''
     fields id, name, summary, rating, rating_count, first_release_date,
-           cover.image_id, artworks.image_id, genres.name, platforms, url;
+           cover.image_id, artworks.image_id, genres.name, platforms, url,
+           involved_companies.company.name, involved_companies.developer,
+           involved_companies.publisher;
   ''';
 
   /// IGDB multiquery cap: 10 sub-queries per request.

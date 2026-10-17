@@ -1835,6 +1835,30 @@ class SFr extends S {
   String get customItemGenresHint => 'ex : RPG, Action, Puzzle';
 
   @override
+  String get customItemAuthors => 'Auteurs';
+
+  @override
+  String get customItemAuthorsHint => 'ex : Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Réalisateur';
+
+  @override
+  String get creatorCreator => 'Créateur';
+
+  @override
+  String get creatorDeveloper => 'Développeur';
+
+  @override
+  String get creatorPublisher => 'Éditeur';
+
+  @override
+  String get creatorStudio => 'Studio';
+
+  @override
+  String get creatorAuthor => 'Auteur';
+
+  @override
   String get platform => 'Plateforme';
 
   @override

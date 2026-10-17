@@ -1841,6 +1841,30 @@ class SEs extends S {
   String get customItemGenresHint => 'p. ej. RPG, acción, puzle';
 
   @override
+  String get customItemAuthors => 'Autores';
+
+  @override
+  String get customItemAuthorsHint => 'p. ej. Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Director';
+
+  @override
+  String get creatorCreator => 'Creador';
+
+  @override
+  String get creatorDeveloper => 'Desarrollador';
+
+  @override
+  String get creatorPublisher => 'Distribuidor';
+
+  @override
+  String get creatorStudio => 'Estudio';
+
+  @override
+  String get creatorAuthor => 'Autor';
+
+  @override
   String get platform => 'Plataforma';
 
   @override

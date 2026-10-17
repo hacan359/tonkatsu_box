@@ -28,6 +28,67 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (_SettingsScreenState._themeLabel): Labels for the new themes.
   * lib/l10n/app_*.arb (settingsThemePs1, settingsThemeEva): New strings.
 
+- **Cards show directors, creators, studios, developers and publishers**
+
+  A movie card lists its directors and studios, a series its creators and
+  networks, a game its developers and publishers, a custom card its authors.
+  Each name is a chip with its role in a tooltip; a tap searches the
+  collection by that name. Title search also finds a movie by its director,
+  a series by its creator, a game by its developer and a custom card by its
+  author. "Refresh from source" fills these in for cards added earlier.
+  Custom cards get an Authors field in the form and an `authors` column in
+  the CSV and JSON import.
+
+  * packages/core/lib/database/migrations/migration_v67.dart (MigrationV67):
+    New, adds movies_cache.directors, movies_cache.studios,
+    tv_shows_cache.creators, tv_shows_cache.studios, games.developers,
+    games.publishers, custom_items.authors.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Register it.
+  * packages/core/lib/models/movie.dart (Movie.directors, Movie.studios),
+    packages/core/lib/models/tv_show.dart (TvShow.creators, TvShow.studios),
+    packages/core/lib/models/game.dart (Game.developers, Game.publishers),
+    packages/core/lib/models/custom_media.dart (CustomMedia.authors): New
+    fields, parsed from TMDB, TheTVDB, TVmaze and IGDB.
+  * packages/core/lib/utils/json_list.dart (decodeJsonStringListOrNull,
+    encodeJsonStringList, distinctNames, distinctEntryNames),
+    packages/core/lib/utils/tvdb_json.dart (tvdbPeople, tvdbCompanies),
+    packages/core/lib/utils/tvmaze_json.dart (tvMazeCreators,
+    tvMazeNetworks): New.
+  * packages/core/lib/database/dao/movie_dao.dart (MovieDao._movieUpsert),
+    packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao._showUpsert):
+    A list hit keeps the cached names.
+  * packages/core/lib/models/collection_item.dart
+    (CollectionItem.searchableMeta), packages/core/lib/utils/item_search.dart
+    (ItemSearch.creatorsOf): Search by the names.
+  * packages/core/lib/rpc/generated/*.rpc.dart: Regenerated.
+  * lib/core/api/tmdb/tmdb_movies_api.dart (TmdbMoviesApi.getMovie): Append
+    credits. lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi._gameFields):
+    Request involved companies. lib/core/api/tvmaze/tvmaze_show_api.dart
+    (TvMazeShowApi.getShow): Embed crew.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_creatorChips): New, at most four chips per role.
+  * lib/shared/widgets/media_detail/media_detail_chip.dart
+    (MediaDetailChip.tooltip), lib/shared/widgets/media_detail/identity_header.dart
+    (_InfoChip.tooltip): New.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._buildAuthorsSection),
+    lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.authors): Authors field; an emptied field clears it.
+  * lib/core/import/sources/custom_file/custom_card_entry.dart
+    (CustomCardFields.authors, CustomCardEntry.authors),
+    lib/core/import/sources/custom_file/custom_cards_parser.dart
+    (CustomCardsParser._authors),
+    lib/core/import/sources/custom_file/custom_cards_template.dart
+    (CustomCardsTemplate.json),
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService._card): Import the column.
+  * lib/features/collections/helpers/custom_duplicate.dart
+    (customDraftFromItem): A duplicate takes the item's people as authors.
+  * lib/l10n/app_*.arb (customItemAuthors, customItemAuthorsHint,
+    creatorDirector, creatorCreator, creatorDeveloper, creatorPublisher,
+    creatorStudio, creatorAuthor): New strings.
+
 ### Changed
 
 - **Collection import reports skipped custom cards**
@@ -72,6 +133,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,
     packages/core/lib/rpc/generated/custom_media_dao.remote.rpc.dart:
     Regenerated.
+
+- **Collection lists pick up a card refreshed from the source**
+
+  After "Refresh from source" every collection holding the title and All
+  Items show the new data, and a search by a name from the card finds it.
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi): Reload every item list on
+    success.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._refreshFromApi): Drop its own reload.
 
 ## [0.45.0] - 2026-10-03
 

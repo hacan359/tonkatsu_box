@@ -1686,6 +1686,30 @@ class SZh extends S {
   String get customItemGenresHint => '例如：RPG、动作、益智';
 
   @override
+  String get customItemAuthors => '作者';
+
+  @override
+  String get customItemAuthorsHint => '例如：小岛秀夫、新川洋司';
+
+  @override
+  String get creatorDirector => '导演';
+
+  @override
+  String get creatorCreator => '主创';
+
+  @override
+  String get creatorDeveloper => '开发商';
+
+  @override
+  String get creatorPublisher => '发行商';
+
+  @override
+  String get creatorStudio => '制作公司';
+
+  @override
+  String get creatorAuthor => '作者';
+
+  @override
   String get platform => '平台';
 
   @override

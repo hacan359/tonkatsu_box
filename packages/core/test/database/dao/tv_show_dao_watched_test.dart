@@ -2,6 +2,7 @@ import 'package:core/database/dao/tv_show_dao.dart';
 import 'package:core/database/migrations/migration.dart';
 import 'package:core/database/migrations/migration_registry.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/tv_show.dart';
 import 'package:test/test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -155,6 +156,24 @@ void main() {
               otherCollectionId, DataSource.tmdb, showId))[(1, 1)],
           untouched,
         );
+      });
+    });
+
+    group('upsertTvShow', () {
+      test('a list hit keeps the cached creators and studios', () async {
+        await dao.upsertTvShow(
+          const TvShow(
+            tmdbId: 3,
+            title: 'BB',
+            creators: <String>['V. G.'],
+            studios: <String>['AMC'],
+          ),
+        );
+        await dao.upsertTvShow(const TvShow(tmdbId: 3, title: 'BB'));
+
+        final TvShow? cached = await dao.getTvShowByTmdbId(3);
+        expect(cached?.creators, <String>['V. G.']);
+        expect(cached?.studios, <String>['AMC']);
       });
     });
   });

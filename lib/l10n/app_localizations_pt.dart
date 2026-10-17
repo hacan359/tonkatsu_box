@@ -1830,6 +1830,30 @@ class SPt extends S {
   String get customItemGenresHint => 'ex.: RPG, Ação, Puzzle';
 
   @override
+  String get customItemAuthors => 'Autores';
+
+  @override
+  String get customItemAuthorsHint => 'ex.: Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Diretor';
+
+  @override
+  String get creatorCreator => 'Criador';
+
+  @override
+  String get creatorDeveloper => 'Desenvolvedora';
+
+  @override
+  String get creatorPublisher => 'Publicadora';
+
+  @override
+  String get creatorStudio => 'Estúdio';
+
+  @override
+  String get creatorAuthor => 'Autor';
+
+  @override
   String get platform => 'Plataforma';
 
   @override

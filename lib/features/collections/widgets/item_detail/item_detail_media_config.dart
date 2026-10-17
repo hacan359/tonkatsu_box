@@ -148,6 +148,34 @@ String _typeLabel(CollectionItem item, BuildContext context) {
 VoidCallback _metaSearchTap(BuildContext context, String value) =>
     () => Navigator.of(context).pop(MetaSearchRequest(value));
 
+/// Long studio and crew lists would push every other chip off the header.
+const int _maxCreatorChips = 4;
+
+List<MediaDetailChip> _creatorChips(CollectionItem item, BuildContext context) {
+  final S l = S.of(context);
+  final List<(IconData, String, List<String>?)> roles =
+      <(IconData, String, List<String>?)>[
+    (Icons.movie_creation_outlined, l.creatorDirector, item.movie?.directors),
+    (Icons.person_outline, l.creatorCreator, item.tvShow?.creators),
+    (Icons.business, l.creatorStudio, item.movie?.studios),
+    (Icons.business, l.creatorStudio, item.tvShow?.studios),
+    (Icons.code, l.creatorDeveloper, item.game?.developers),
+    (Icons.business, l.creatorPublisher, item.game?.publishers),
+    (Icons.person_outline, l.creatorAuthor, item.customMedia?.authors),
+  ];
+  return <MediaDetailChip>[
+    for (final (IconData icon, String role, List<String>? names) in roles)
+      for (final String name in (names ?? const <String>[])
+          .take(_maxCreatorChips))
+        MediaDetailChip(
+          icon: icon,
+          text: name,
+          tooltip: role,
+          onTap: _metaSearchTap(context, name),
+        ),
+  ];
+}
+
 List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
   final S l = S.of(context);
   final List<MediaDetailChip> chips = <MediaDetailChip>[];
@@ -182,6 +210,7 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
       iconColor: AppColors.ratingStar,
     ));
   }
+  chips.addAll(_creatorChips(item, context));
   if (item.mediaType == MediaType.custom && item.customMedia != null) {
     final CustomMedia c = item.customMedia!;
     if (c.altTitle != null && c.altTitle!.isNotEmpty) {

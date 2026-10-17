@@ -3206,6 +3206,54 @@ abstract class S {
   /// **'e.g. RPG, Action, Puzzle'**
   String get customItemGenresHint;
 
+  /// No description provided for @customItemAuthors.
+  ///
+  /// In en, this message translates to:
+  /// **'Authors'**
+  String get customItemAuthors;
+
+  /// No description provided for @customItemAuthorsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Hideo Kojima, Yoji Shinkawa'**
+  String get customItemAuthorsHint;
+
+  /// No description provided for @creatorDirector.
+  ///
+  /// In en, this message translates to:
+  /// **'Director'**
+  String get creatorDirector;
+
+  /// No description provided for @creatorCreator.
+  ///
+  /// In en, this message translates to:
+  /// **'Creator'**
+  String get creatorCreator;
+
+  /// No description provided for @creatorDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get creatorDeveloper;
+
+  /// No description provided for @creatorPublisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Publisher'**
+  String get creatorPublisher;
+
+  /// No description provided for @creatorStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio'**
+  String get creatorStudio;
+
+  /// No description provided for @creatorAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get creatorAuthor;
+
   /// No description provided for @platform.
   ///
   /// In en, this message translates to:

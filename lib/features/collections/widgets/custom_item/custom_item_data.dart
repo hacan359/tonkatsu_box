@@ -14,6 +14,7 @@ class CustomItemData {
     this.coverUrl,
     this.coverBytes,
     this.genres,
+    this.authors,
     this.platform,
     this.platformId,
     this.format,
@@ -35,6 +36,8 @@ class CustomItemData {
   /// cache (local on desktop, the server's on web) by the caller.
   final Uint8List? coverBytes;
   final String? genres;
+
+  final List<String>? authors;
 
   /// Platform display name (only set for the game display type).
   final String? platform;
@@ -75,6 +78,8 @@ class CustomItemData {
       year: year,
       genres: genres,
       clearGenres: genres == null,
+      authors: authors,
+      clearAuthors: authors == null,
       platformName: platform,
       clearPlatformName: platform == null,
       platformId: platformId,
@@ -103,6 +108,7 @@ class CustomItemData {
         coverUrl: coverUrl,
         year: year,
         genres: genres,
+        authors: authors,
         platformName: platform,
         platformId: platformId,
         format: format,

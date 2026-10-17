@@ -104,6 +104,7 @@ class IdentityHeader extends StatelessWidget {
                         text: chip.text,
                         iconColor: chip.iconColor,
                         onTap: chip.onTap,
+                        tooltip: chip.tooltip,
                       ),
                   ],
                 ),
@@ -124,12 +125,14 @@ class _InfoChip extends StatefulWidget {
     required this.text,
     this.iconColor,
     this.onTap,
+    this.tooltip,
   });
 
   final IconData icon;
   final String text;
   final Color? iconColor;
   final VoidCallback? onTap;
+  final String? tooltip;
 
   @override
   State<_InfoChip> createState() => _InfoChipState();
@@ -204,7 +207,7 @@ class _InfoChipState extends State<_InfoChip> {
           ),
         );
 
-        return Material(
+        final Widget chip = Material(
           color: AppColors.surfaceLight,
           shape: shape,
           child: widget.onTap != null || expandable
@@ -216,6 +219,8 @@ class _InfoChipState extends State<_InfoChip> {
                 )
               : inner,
         );
+        final String? tooltip = widget.tooltip;
+        return tooltip == null ? chip : Tooltip(message: tooltip, child: chip);
       },
     );
   }

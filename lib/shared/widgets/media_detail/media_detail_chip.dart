@@ -7,10 +7,14 @@ class MediaDetailChip {
     required this.text,
     this.iconColor,
     this.onTap,
+    this.tooltip,
   });
 
   final IconData icon;
   final String text;
   final VoidCallback? onTap;
   final Color? iconColor;
+
+  /// Names the role when the icon alone is ambiguous (director, publisher).
+  final String? tooltip;
 }

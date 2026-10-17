@@ -313,15 +313,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _refreshFromApi(CollectionItem item) async {
-    final bool ok = await CollectionActions.refreshItemFromApi(
+    // Success invalidates every item list, this screen's included.
+    await CollectionActions.refreshItemFromApi(
       context: context,
       ref: ref,
       item: item,
     );
-    if (!ok || !mounted) return;
-    // The detail screen reads from the cache tables; nudging the items
-    // provider makes sure the refreshed row reaches the open view.
-    ref.invalidate(collectionItemsNotifierProvider(widget.collectionId));
   }
 
   void _addAnimeMangaSuggestions(

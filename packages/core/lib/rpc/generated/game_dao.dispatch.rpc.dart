@@ -51,6 +51,8 @@ Future<Object?> dispatchGameDao(
           'externalUrl': v.externalUrl,
           'cachedAt': encodeIntOrNull(v.cachedAt),
           'artworkUrl': v.artworkUrl,
+          'developers': v.developers?.map((String e) => e).toList(),
+          'publishers': v.publishers?.map((String e) => e).toList(),
           'timeToBeat': encodeNullable<GameTimeToBeat>(
             v.timeToBeat,
             (GameTimeToBeat v) => <String, Object?>{
@@ -88,6 +90,8 @@ Future<Object?> dispatchGameDao(
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'artworkUrl': e.artworkUrl,
+              'developers': e.developers?.map((String e) => e).toList(),
+              'publishers': e.publishers?.map((String e) => e).toList(),
               'timeToBeat': encodeNullable<GameTimeToBeat>(
                 e.timeToBeat,
                 (GameTimeToBeat v) => <String, Object?>{
@@ -156,6 +160,8 @@ Future<Object?> dispatchGameDao(
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'artworkUrl': e.artworkUrl,
+              'developers': e.developers?.map((String e) => e).toList(),
+              'publishers': e.publishers?.map((String e) => e).toList(),
               'timeToBeat': encodeNullable<GameTimeToBeat>(
                 e.timeToBeat,
                 (GameTimeToBeat v) => <String, Object?>{
@@ -194,6 +200,16 @@ Future<Object?> dispatchGameDao(
           externalUrl: asObject(args['game'])['externalUrl'] as String?,
           cachedAt: decodeIntOrNull(asObject(args['game'])['cachedAt']),
           artworkUrl: asObject(args['game'])['artworkUrl'] as String?,
+          developers: asObject(args['game'])['developers'] == null
+              ? null
+              : asList(
+                  asObject(args['game'])['developers'],
+                ).map((Object? e) => e as String).toList(),
+          publishers: asObject(args['game'])['publishers'] == null
+              ? null
+              : asList(
+                  asObject(args['game'])['publishers'],
+                ).map((Object? e) => e as String).toList(),
           timeToBeat: decodeNullable<GameTimeToBeat>(
             asObject(args['game'])['timeToBeat'],
             (Object? v) => GameTimeToBeat(
@@ -232,6 +248,16 @@ Future<Object?> dispatchGameDao(
                 externalUrl: asObject(e)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
                 artworkUrl: asObject(e)['artworkUrl'] as String?,
+                developers: asObject(e)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(e)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(e)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(

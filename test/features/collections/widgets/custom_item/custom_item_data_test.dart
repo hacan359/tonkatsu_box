@@ -13,6 +13,7 @@ void main() {
     coverUrl: 'https://x/c.png',
     year: 2001,
     genres: 'RPG',
+    authors: <String>['Ann'],
     platformName: 'PC',
     externalUrl: 'https://x',
   );
@@ -29,6 +30,7 @@ void main() {
         expect(updated.altTitle, isNull);
         expect(updated.description, isNull);
         expect(updated.genres, isNull);
+        expect(updated.authors, isNull);
         expect(updated.externalUrl, isNull);
         expect(updated.platformName, isNull);
       });
@@ -41,6 +43,7 @@ void main() {
           description: 'Text',
           year: 2001,
           genres: 'RPG',
+          authors: <String>['Ann'],
           platform: 'PC',
           externalUrl: 'https://x',
         );
@@ -66,6 +69,14 @@ void main() {
 
         expect(updated.title, 'New');
         expect(updated.description, 'Fresh');
+        expect(
+          const CustomItemData(
+            title: 'New',
+            mediaType: MediaType.game,
+            authors: <String>['Bob'],
+          ).applyTo(card, coverUrl: null).authors,
+          <String>['Bob'],
+        );
         expect(updated.coverUrl, card.coverUrl);
         expect(updated.year, card.year);
       });
@@ -83,6 +94,18 @@ void main() {
             CustomItemData(title: 'Old', mediaType: MediaType.movie);
 
         expect(data.applyTo(card, coverUrl: null).displayType, MediaType.movie);
+      });
+    });
+
+    group('toNewCustomMedia', () {
+      test('should carry the authors onto the new card', () {
+        const CustomItemData data = CustomItemData(
+          title: 'New',
+          mediaType: MediaType.custom,
+          authors: <String>['Ann'],
+        );
+
+        expect(data.toNewCustomMedia().authors, <String>['Ann']);
       });
     });
   });

@@ -1845,6 +1845,30 @@ class SRu extends S {
   String get customItemGenresHint => 'напр. RPG, Экшен, Головоломка';
 
   @override
+  String get customItemAuthors => 'Авторы';
+
+  @override
+  String get customItemAuthorsHint => 'напр. Хидэо Кодзима, Ёдзи Синкава';
+
+  @override
+  String get creatorDirector => 'Режиссёр';
+
+  @override
+  String get creatorCreator => 'Создатель';
+
+  @override
+  String get creatorDeveloper => 'Разработчик';
+
+  @override
+  String get creatorPublisher => 'Издатель';
+
+  @override
+  String get creatorStudio => 'Студия';
+
+  @override
+  String get creatorAuthor => 'Автор';
+
+  @override
   String get platform => 'Платформа';
 
   @override

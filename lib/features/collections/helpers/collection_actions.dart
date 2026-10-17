@@ -41,6 +41,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/copy_as_text_dialog.dart';
@@ -587,11 +588,17 @@ class CollectionActions {
       pickedFantlabEdition: pickedFantlab,
       pickedHardcoverEdition: pickedHardcover,
     );
+    if (outcome.success) {
+      ref.invalidate(collectionsProvider);
+      // The refetched cache row backs this title in every collection and in
+      // All Items; a stale list would miss it in a meta search by creator.
+      ref.invalidate(collectionItemsNotifierProvider);
+      ref.invalidate(allItemsNotifierProvider);
+    }
     if (!context.mounted) return outcome.success;
 
     switch (outcome.message) {
       case _RefreshMessage.success:
-        ref.invalidate(collectionsProvider);
         context.showSnack(l.refreshItemSuccess, type: SnackType.success);
       case _RefreshMessage.notFound:
         context.showSnack(l.refreshItemNotFound, type: SnackType.error);
