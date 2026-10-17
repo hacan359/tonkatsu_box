@@ -10849,6 +10849,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Titles copied'**
   String get importResultUnresolvedCopied;
+
+  /// No description provided for @collectionImportPickSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Import into collection'**
+  String get collectionImportPickSource;
+
+  /// No description provided for @collectionImportFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From a collection file'**
+  String get collectionImportFromFile;
+
+  /// No description provided for @collectionImportLastRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Last run {date}'**
+  String collectionImportLastRun(String date);
+
+  /// No description provided for @collectionImportRerunTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run {source} import again?'**
+  String collectionImportRerunTitle(String source);
+
+  /// No description provided for @collectionImportRerunMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New items from {source} are added to “{collection}” with the same settings as last time.'**
+  String collectionImportRerunMessage(String source, String collection);
+
+  /// No description provided for @collectionImportRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run'**
+  String get collectionImportRun;
+
+  /// No description provided for @collectionImportSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} synced: {count} new'**
+  String collectionImportSynced(String source, int count);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

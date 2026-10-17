@@ -6136,4 +6136,33 @@ class SEn extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Titles copied';
+
+  @override
+  String get collectionImportPickSource => 'Import into collection';
+
+  @override
+  String get collectionImportFromFile => 'From a collection file';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Last run $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Run $source import again?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'New items from $source are added to “$collection” with the same settings as last time.';
+  }
+
+  @override
+  String get collectionImportRun => 'Run';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source synced: $count new';
+  }
 }

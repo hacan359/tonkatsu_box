@@ -1,12 +1,17 @@
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/trakt_import_content.dart';
+import '../widgets/remembered_import_collection.dart';
 
 class TraktImportScreen extends StatelessWidget {
-  const TraktImportScreen({super.key});
+  const TraktImportScreen({this.initialCollectionId, super.key});
+
+  /// Preselects "existing collection" when opened from a collection.
+  final int? initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,12 @@ class TraktImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: const TraktImportContent(),
+                child: RememberedImportCollection(
+                  source: ImportSourceKind.trakt,
+                  initialCollectionId: initialCollectionId,
+                  builder: (int? collectionId) =>
+                      TraktImportContent(initialCollectionId: collectionId),
+                ),
               ),
             ),
           ),

@@ -6236,4 +6236,33 @@ class SFr extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Titres copiés';
+
+  @override
+  String get collectionImportPickSource => 'Importer dans la collection';
+
+  @override
+  String get collectionImportFromFile => 'Depuis un fichier de collection';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Dernière exécution $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Relancer l\'import depuis $source ?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Les nouveaux éléments de $source seront ajoutés à « $collection » avec les mêmes réglages que la dernière fois.';
+  }
+
+  @override
+  String get collectionImportRun => 'Lancer';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source synchronisé : $count nouveaux';
+  }
 }

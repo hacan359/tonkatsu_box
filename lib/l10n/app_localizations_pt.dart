@@ -6193,4 +6193,33 @@ class SPt extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Títulos copiados';
+
+  @override
+  String get collectionImportPickSource => 'Importar para a coleção';
+
+  @override
+  String get collectionImportFromFile => 'De um arquivo de coleção';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Última execução $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Repetir a importação de $source?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Os itens novos de $source serão adicionados a «$collection» com as mesmas configurações da última vez.';
+  }
+
+  @override
+  String get collectionImportRun => 'Executar';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source sincronizado: $count novos';
+  }
 }

@@ -2623,5 +2623,12 @@
   "customImportResolveTitle": "Rechercher les cartes dans les sources",
   "customImportResolveHint": "Chaque ligne est recherchée par titre dans les sources de son type (TMDB, IGDB, Kitsu et autres). Une seule correspondance devient une vraie carte, sinon une carte personnalisée est créée. Les lignes custom et audio ne sont pas recherchées.",
   "importResultUnresolved": "Plusieurs correspondances, conservées en cartes personnalisées",
-  "importResultUnresolvedCopied": "Titres copiés"
+  "importResultUnresolvedCopied": "Titres copiés",
+  "collectionImportPickSource": "Importer dans la collection",
+  "collectionImportFromFile": "Depuis un fichier de collection",
+  "collectionImportLastRun": "Dernière exécution {date}",
+  "collectionImportRerunTitle": "Relancer l'import depuis {source} ?",
+  "collectionImportRerunMessage": "Les nouveaux éléments de {source} seront ajoutés à « {collection} » avec les mêmes réglages que la dernière fois.",
+  "collectionImportRun": "Lancer",
+  "collectionImportSynced": "{source} synchronisé : {count} nouveaux"
 }

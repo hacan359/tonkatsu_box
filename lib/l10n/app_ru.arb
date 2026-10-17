@@ -2284,5 +2284,12 @@
   "customImportResolveTitle": "Искать карточки в источниках",
   "customImportResolveHint": "Каждая строка ищется по названию в источниках своего типа (TMDB, IGDB, Kitsu и другие). Ровно одно совпадение становится настоящей карточкой, иначе создаётся своя. Строки custom и audio не ищутся.",
   "importResultUnresolved": "Нашлось несколько записей, оставлены своими карточками",
-  "importResultUnresolvedCopied": "Названия скопированы"
+  "importResultUnresolvedCopied": "Названия скопированы",
+  "collectionImportPickSource": "Импорт в коллекцию",
+  "collectionImportFromFile": "Из файла коллекции",
+  "collectionImportLastRun": "Последний запуск {date}",
+  "collectionImportRerunTitle": "Повторить импорт из {source}?",
+  "collectionImportRerunMessage": "Новые записи из {source} добавятся в «{collection}» с теми же настройками, что и в прошлый раз.",
+  "collectionImportRun": "Запустить",
+  "collectionImportSynced": "{source} синхронизирован: новых {count}"
 }

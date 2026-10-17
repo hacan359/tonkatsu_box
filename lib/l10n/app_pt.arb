@@ -3051,5 +3051,12 @@
   "customImportResolveTitle": "Procurar cartões nas fontes",
   "customImportResolveHint": "Cada linha é procurada pelo título nas fontes do seu tipo (TMDB, IGDB, Kitsu e outras). Uma única correspondência vira um cartão real; caso contrário, cria-se um cartão próprio. Linhas custom e audio não são procuradas.",
   "importResultUnresolved": "Várias correspondências, mantidas como cartões próprios",
-  "importResultUnresolvedCopied": "Títulos copiados"
+  "importResultUnresolvedCopied": "Títulos copiados",
+  "collectionImportPickSource": "Importar para a coleção",
+  "collectionImportFromFile": "De um arquivo de coleção",
+  "collectionImportLastRun": "Última execução {date}",
+  "collectionImportRerunTitle": "Repetir a importação de {source}?",
+  "collectionImportRerunMessage": "Os itens novos de {source} serão adicionados a «{collection}» com as mesmas configurações da última vez.",
+  "collectionImportRun": "Executar",
+  "collectionImportSynced": "{source} sincronizado: {count} novos"
 }

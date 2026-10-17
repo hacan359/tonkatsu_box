@@ -2716,5 +2716,34 @@
   "customImportResolveTitle": "Look up cards in sources",
   "customImportResolveHint": "Searches each row by title in the sources of its type (TMDB, IGDB, Kitsu and others). Exactly one match becomes a real card, otherwise a custom card is created. Custom and audio rows are never looked up.",
   "importResultUnresolved": "Several records matched, kept as custom cards",
-  "importResultUnresolvedCopied": "Titles copied"
+  "importResultUnresolvedCopied": "Titles copied",
+  "collectionImportPickSource": "Import into collection",
+  "collectionImportFromFile": "From a collection file",
+  "collectionImportLastRun": "Last run {date}",
+  "@collectionImportLastRun": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "collectionImportRerunTitle": "Run {source} import again?",
+  "@collectionImportRerunTitle": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "collectionImportRerunMessage": "New items from {source} are added to “{collection}” with the same settings as last time.",
+  "@collectionImportRerunMessage": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "collectionImportRun": "Run",
+  "collectionImportSynced": "{source} synced: {count} new",
+  "@collectionImportSynced": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  }
 }

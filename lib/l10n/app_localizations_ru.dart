@@ -6238,4 +6238,33 @@ class SRu extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Названия скопированы';
+
+  @override
+  String get collectionImportPickSource => 'Импорт в коллекцию';
+
+  @override
+  String get collectionImportFromFile => 'Из файла коллекции';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Последний запуск $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Повторить импорт из $source?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Новые записи из $source добавятся в «$collection» с теми же настройками, что и в прошлый раз.';
+  }
+
+  @override
+  String get collectionImportRun => 'Запустить';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source синхронизирован: новых $count';
+  }
 }

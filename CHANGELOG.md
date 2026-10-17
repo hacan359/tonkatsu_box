@@ -102,6 +102,73 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/collections/screens/home_screen.dart: Show it.
   * lib/l10n/app_*.arb (importCustomSkipped): New string.
 
+- **A collection remembers where its imports came from**
+
+  Every successful import from Steam, RetroAchievements, Simkl, AniList,
+  Hardcover, Kinorium, IGDB lists, Trakt, MyAnimeList or a custom-cards file
+  is recorded against the collection it filled, with the switches it ran
+  with. "Import" inside that collection then offers the collection file plus
+  each of those sources with the date of its last run; picking a source runs
+  it again into the same collection with the same switches and reports the
+  result in a toast. Sources that read a file ask for the file; a source
+  missing a credential opens its form with the collection preselected. An
+  import form opened from Settings starts on the collection that source
+  filled last time.
+
+  * packages/core/lib/models/collection_import.dart (CollectionImport,
+    CollectionImportOption), packages/core/lib/models/import_source_kind.dart
+    (ImportSourceKind): New.
+  * packages/core/lib/database/migrations/migration_v68.dart (MigrationV68),
+    packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): The `collection_imports` table.
+  * packages/core/lib/database/dao/collection_import_dao.dart
+    (CollectionImportDao.getForCollection,
+    CollectionImportDao.getLatestForSource, CollectionImportDao.upsert,
+    CollectionImportDao.delete): New.
+  * packages/core/lib/rpc/generated/collection_import_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/collection_import_dao.remote.rpc.dart,
+    packages/core/lib/rpc/generated/dao_dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/remote_daos.rpc.dart,
+    server/lib/src/rpc_handler.dart: Regenerated.
+  * lib/core/database/database_service.dart
+    (DatabaseService.collectionImportDao): New DAO.
+  * lib/features/collections/providers/collection_imports_provider.dart
+    (collectionImportsProvider, recordCollectionImport): New.
+  * lib/features/collections/helpers/saved_import_launcher.dart
+    (SavedImportLauncher.prepare): New, builds the rerun from a record.
+  * lib/features/collections/widgets/dialogs/collection_import_source_dialog.dart
+    (CollectionImportSourceDialog): New.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._handleImportIntoCollection,
+    _CollectionScreenState._rerunSavedImport,
+    _CollectionScreenState._runSavedImport,
+    _CollectionScreenState._invalidateAfterImport): Source picker, rerun,
+    toast with the counts.
+  * lib/features/settings/widgets/remembered_import_collection.dart
+    (RememberedImportCollection): New, resolves the last collection of a
+    source.
+  * lib/features/settings/screens/steam_import_screen.dart,
+    ra_import_screen.dart, simkl_import_screen.dart, anilist_import_screen.dart,
+    hardcover_import_screen.dart, kinorium_import_screen.dart,
+    igdb_list_import_screen.dart, trakt_import_screen.dart,
+    mal_import_screen.dart, custom_cards_import_screen.dart
+    (initialCollectionId): Accept a collection and wrap the form in
+    RememberedImportCollection.
+  * lib/features/settings/content/steam_import_content.dart,
+    ra_import_content.dart, simkl_import_content.dart,
+    anilist_import_content.dart, hardcover_import_content.dart,
+    kinorium_import_content.dart, igdb_list_import_content.dart,
+    trakt_import_content.dart, mal_import_content.dart,
+    custom_cards_import_content.dart (initialCollectionId),
+    lib/features/settings/screens/custom_cards_preview_screen.dart: Preselect
+    the collection and record the run.
+  * lib/shared/constants/import_source_kind_ui.dart (ImportSourceKindUi):
+    Labels and icons.
+  * lib/l10n/app_*.arb (collectionImportPickSource, collectionImportFromFile,
+    collectionImportLastRun, collectionImportRerunTitle,
+    collectionImportRerunMessage, collectionImportRun,
+    collectionImportSynced): New strings.
+
 ### Fixed
 
 - **Emptied fields of a custom card are saved**

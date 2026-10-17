@@ -1,4 +1,5 @@
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
@@ -6,12 +7,15 @@ import 'package:core/models/steamgriddb_image.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/models/tag_sort_mode.dart';
 import 'package:core/models/tier_list.dart';
+import 'package:core/models/universal_import_result.dart';
 import 'package:core/models/xcoll_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/api/api_error_extract.dart';
+import '../../../core/import/import_source.dart';
 import '../../../core/services/collection_hero_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -28,8 +32,11 @@ import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/saved_import_launcher.dart';
 import '../helpers/collection_filters.dart';
 import '../providers/collection_covers_provider.dart';
+import '../providers/canvas_provider.dart';
+import '../providers/collection_imports_provider.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
 import '../providers/tag_sort_provider.dart';
@@ -37,6 +44,7 @@ import '../providers/collections_provider.dart';
 import '../widgets/collection_screen/collection_bulk_action_bar.dart';
 import '../widgets/collection_screen/collection_error_state.dart';
 import '../widgets/collection_screen/collection_screen_fab.dart';
+import '../widgets/dialogs/collection_import_source_dialog.dart';
 import '../widgets/dialogs/create_tier_list_dialog.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
@@ -52,6 +60,9 @@ import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
 import '../../../shared/widgets/import_progress_dialog.dart';
+import '../../../shared/constants/import_source_kind_ui.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
+import '../../wishlist/providers/wishlist_provider.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({
@@ -741,6 +752,158 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Future<void> _handleImportIntoCollection() async {
+    final int? cid = widget.collectionId;
+    final List<CollectionImport> saved = cid == null
+        ? const <CollectionImport>[]
+        : await ref.read(collectionImportsProvider(cid).future);
+    if (!mounted) return;
+    if (saved.isEmpty) return _importFromFile();
+
+    final CollectionImportChoice? choice =
+        await CollectionImportSourceDialog.show(context, saved);
+    if (!mounted) return;
+    switch (choice) {
+      case null:
+        return;
+      case CollectionImportFromFile():
+        return _importFromFile();
+      case CollectionImportRerun(:final CollectionImport record):
+        return _rerunSavedImport(record);
+    }
+  }
+
+  Future<void> _rerunSavedImport(CollectionImport saved) async {
+    final S l = S.of(context);
+    final String sourceLabel = saved.source.localizedLabel(l);
+    final String collectionName = _collection?.name ?? '';
+    final bool confirmed = await ConfirmDialog.show(
+      context,
+      title: l.collectionImportRerunTitle(sourceLabel),
+      message: l.collectionImportRerunMessage(sourceLabel, collectionName),
+      confirmLabel: l.collectionImportRun,
+      destructive: false,
+    );
+    if (!confirmed || !mounted) return;
+
+    final SavedImportLaunch launch = await SavedImportLauncher.prepare(
+      context,
+      ref,
+      saved,
+      collectionName: collectionName,
+    );
+    if (!mounted) return;
+    switch (launch) {
+      case SavedImportCancelled():
+        return;
+      case SavedImportOpenScreen(:final Widget screen):
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (BuildContext _) => screen),
+        );
+      case SavedImportReady(
+          :final ImportSource source,
+          :final ImportOptions options,
+        ):
+        await _runSavedImport(saved, source, options, title: sourceLabel);
+    }
+  }
+
+  Future<void> _runSavedImport(
+    CollectionImport saved,
+    ImportSource source,
+    ImportOptions options, {
+    required String title,
+  }) async {
+    final ValueNotifier<ImportProgress?> progressNotifier =
+        ValueNotifier<ImportProgress?>(null);
+    UniversalImportResult? importResult;
+    Exception? failure;
+    // The dialog only watches the future; an adapter throwing on a network
+    // error must land in a snackbar, not in the dialog's error snapshot.
+    final Future<UniversalImportResult?> importFuture = () async {
+      try {
+        return importResult = await source.import(
+          options,
+          onProgress: (ImportProgress progress) =>
+              progressNotifier.value = progress,
+        );
+      } on Exception catch (e) {
+        failure = e;
+        return null;
+      }
+    }();
+
+    await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) =>
+          ImportProgressDialog<UniversalImportResult?>(
+        title: title,
+        progressNotifier: progressNotifier,
+        importFuture: importFuture,
+      ),
+    );
+    progressNotifier.dispose();
+    if (!mounted) return;
+
+    // The adapter may have written before failing.
+    _invalidateAfterImport();
+    final Exception? error = failure;
+    if (error != null) {
+      final ApiError err = extractApiError(error);
+      context.showErrorSnack(
+        S.of(context).importFailed(err.message),
+        detail: err.detail,
+      );
+      return;
+    }
+    final UniversalImportResult? result = importResult;
+    if (result == null) return;
+    if (!result.success) {
+      if (result.fatalError != null) {
+        context.showErrorSnack(result.fatalError!, detail: result.fatalDetail);
+      }
+      return;
+    }
+    await recordCollectionImport(
+      ref,
+      source: saved.source,
+      collectionId: result.effectiveCollectionId ?? saved.collectionId,
+      options: saved.options,
+    );
+    if (!mounted) return;
+    // A rerun is a sync, not a first import: a toast beats a result screen.
+    final S l = S.of(context);
+    final StringBuffer message = StringBuffer(
+      l.collectionImportSynced(title, result.totalImported),
+    );
+    if (result.totalUpdated > 0) {
+      message.write(', ${l.steamImportUpdated(result.totalUpdated)}');
+    }
+    if (result.skipped > 0) {
+      message.write(', ${l.importResultSkipped(result.skipped)}');
+    }
+    if (result.errors.isNotEmpty) {
+      message.write(', ${l.importResultErrors(result.errors.length)}');
+    }
+    context.showSnack(message.toString(), type: SnackType.success);
+  }
+
+  /// Every list that reads this collection, plus the wishlist and the tags
+  /// an import can create.
+  void _invalidateAfterImport() {
+    final int? cid = widget.collectionId;
+    ref.invalidate(collectionsProvider);
+    ref.invalidate(collectionItemsNotifierProvider(cid));
+    ref.invalidate(collectionStatsProvider(cid));
+    ref.invalidate(collectionCoversProvider(cid));
+    if (cid != null) ref.invalidate(canvasNotifierProvider(cid));
+    ref.invalidate(allItemsNotifierProvider);
+    ref.invalidate(wishlistProvider);
+    ref.invalidate(globalTagsProvider);
+    ref.invalidate(itemTagsProvider);
+  }
+
+  Future<void> _importFromFile() async {
     final ImportService importService = ref.read(importServiceProvider);
 
     final XcollFile? xcoll;
@@ -790,16 +953,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final ImportResult result = importResult!;
 
     if (result.success) {
-      ref.invalidate(
-        collectionItemsNotifierProvider(widget.collectionId),
-      );
-      ref.invalidate(collectionStatsProvider(widget.collectionId));
-      ref.invalidate(collectionCoversProvider(widget.collectionId));
-      ref.invalidate(allItemsNotifierProvider);
-      // Import writes tags straight through the DAO, so the in-memory tag
-      // state must be rebuilt.
-      ref.invalidate(globalTagsProvider);
-      ref.invalidate(itemTagsProvider);
+      _invalidateAfterImport();
 
       final S l = S.of(context);
       final StringBuffer message = StringBuffer(

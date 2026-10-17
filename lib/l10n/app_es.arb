@@ -2623,5 +2623,12 @@
   "customImportResolveTitle": "Buscar tarjetas en las fuentes",
   "customImportResolveHint": "Cada fila se busca por título en las fuentes de su tipo (TMDB, IGDB, Kitsu y otras). Una única coincidencia se convierte en tarjeta real; si no, se crea una tarjeta propia. Las filas custom y audio no se buscan.",
   "importResultUnresolved": "Varias coincidencias, se mantuvieron como tarjetas propias",
-  "importResultUnresolvedCopied": "Títulos copiados"
+  "importResultUnresolvedCopied": "Títulos copiados",
+  "collectionImportPickSource": "Importar a la colección",
+  "collectionImportFromFile": "Desde un archivo de colección",
+  "collectionImportLastRun": "Última ejecución {date}",
+  "collectionImportRerunTitle": "¿Repetir la importación de {source}?",
+  "collectionImportRerunMessage": "Los elementos nuevos de {source} se añadirán a «{collection}» con los mismos ajustes de la última vez.",
+  "collectionImportRun": "Ejecutar",
+  "collectionImportSynced": "{source} sincronizado: {count} nuevos"
 }

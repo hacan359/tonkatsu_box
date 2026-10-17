@@ -5834,4 +5834,33 @@ class SZh extends S {
 
   @override
   String get importResultUnresolvedCopied => '已复制标题';
+
+  @override
+  String get collectionImportPickSource => '导入到收藏';
+
+  @override
+  String get collectionImportFromFile => '从收藏文件';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return '上次运行 $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return '再次从 $source 导入？';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return '来自 $source 的新条目将以上次的设置添加到“$collection”。';
+  }
+
+  @override
+  String get collectionImportRun => '运行';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source 已同步：新增 $count';
+  }
 }

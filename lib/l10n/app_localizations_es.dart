@@ -6213,4 +6213,33 @@ class SEs extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Títulos copiados';
+
+  @override
+  String get collectionImportPickSource => 'Importar a la colección';
+
+  @override
+  String get collectionImportFromFile => 'Desde un archivo de colección';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Última ejecución $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return '¿Repetir la importación de $source?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Los elementos nuevos de $source se añadirán a «$collection» con los mismos ajustes de la última vez.';
+  }
+
+  @override
+  String get collectionImportRun => 'Ejecutar';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source sincronizado: $count nuevos';
+  }
 }

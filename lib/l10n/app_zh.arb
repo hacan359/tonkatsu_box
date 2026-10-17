@@ -2618,5 +2618,12 @@
   "customImportResolveTitle": "在来源中查找卡片",
   "customImportResolveHint": "按标题在同类型来源（TMDB、IGDB、Kitsu 等）中搜索每一行。恰好一个匹配时创建真实卡片，否则创建自定义卡片。custom 和 audio 行不会被搜索。",
   "importResultUnresolved": "匹配到多条记录，已保留为自定义卡片",
-  "importResultUnresolvedCopied": "已复制标题"
+  "importResultUnresolvedCopied": "已复制标题",
+  "collectionImportPickSource": "导入到收藏",
+  "collectionImportFromFile": "从收藏文件",
+  "collectionImportLastRun": "上次运行 {date}",
+  "collectionImportRerunTitle": "再次从 {source} 导入？",
+  "collectionImportRerunMessage": "来自 {source} 的新条目将以上次的设置添加到“{collection}”。",
+  "collectionImportRun": "运行",
+  "collectionImportSynced": "{source} 已同步：新增 {count}"
 }
