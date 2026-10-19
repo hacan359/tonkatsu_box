@@ -123,11 +123,11 @@ The whole interface is localized with runtime switching. Pick your language in *
 | Platform | Link |
 |----------|------|
 | Windows | [**Download .zip**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
-| Linux | [**Download .tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
+| Linux | [**Download .AppImage**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**.tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | macOS | [**Download .dmg**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**RuStore**](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox) |
 
-> The Linux build ships as a plain bundle: unpack it anywhere and run `tonkatsu_box`. It needs GTK 3 and SQLite from your distribution, plus `zenity` for the file dialogs and `xdg-utils` for opening links.
+> On Linux the AppImage is the easy route: `chmod +x` and run (x86_64 only). The .tar.gz is a plain bundle: unpack it anywhere and run `tonkatsu_box`. Both need GTK 3 from your distribution, plus `zenity` for the file dialogs and `xdg-utils` for opening links.
 
 > macOS support is experimental. That build has not been tested by the maintainers yet, so expect rough edges. It is also unsigned, so macOS will warn about an unidentified developer on first launch.
 
