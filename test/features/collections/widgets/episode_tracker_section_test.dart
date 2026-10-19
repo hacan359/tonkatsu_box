@@ -60,6 +60,11 @@ void main() {
         .thenAnswer((_) async => <TvSeason>[]);
     when(() => mockItemMarkDao.getMarksForItem(testItemId))
         .thenAnswer((_) async => <ItemMark>[]);
+    // The picked season's panel loads its episodes as soon as it appears.
+    when(() => mockTvShowDao.getEpisodesByShowAndSeason(any(), any(), any()))
+        .thenAnswer((_) async => <TvEpisode>[]);
+    when(() => mockTmdbApi.getSeasonEpisodes(any(), any()))
+        .thenAnswer((_) async => <TvEpisode>[]);
   });
 
   Future<void> pumpSeasonsList(
@@ -371,11 +376,17 @@ void main() {
       // TMDB returns season 0 first — the widget must reorder it to the end.
       await pumpSeasonsList(tester, <TvSeason>[specialsSeason, season1]);
 
-      final double specialsTop =
-          tester.getTopLeft(find.byKey(const ValueKey<int>(0))).dy;
-      final double season1Top =
-          tester.getTopLeft(find.byKey(const ValueKey<int>(1))).dy;
-      expect(specialsTop, greaterThan(season1Top));
+      // Posters wrap, so "after" is reading order: a later row, or further
+      // right on the same one.
+      final Offset specialsAt =
+          tester.getTopLeft(find.byKey(const ValueKey<int>(0)));
+      final Offset season1At =
+          tester.getTopLeft(find.byKey(const ValueKey<int>(1)));
+      expect(
+        specialsAt.dy > season1At.dy ||
+            (specialsAt.dy == season1At.dy && specialsAt.dx > season1At.dx),
+        isTrue,
+      );
     });
 
     testWidgets('длинное название сезона не ломает вёрстку на телефоне',

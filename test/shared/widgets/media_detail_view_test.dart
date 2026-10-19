@@ -14,6 +14,9 @@ class _DefaultSettingsNotifier extends SettingsNotifier {
   SettingsState build() => const SettingsState();
 }
 
+const double _phoneWidth = 400;
+const double _desktopWidth = 1000;
+
 void main() {
   setUpAll(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -46,6 +49,8 @@ void main() {
     DateTime? lastActivityAt,
     Duration? completionTime,
     OnActivityDateChanged? onActivityDateChanged,
+    Widget? statusListWidget,
+    double width = _phoneWidth,
   }) {
     return ProviderScope(
       overrides: <Override>[
@@ -55,7 +60,13 @@ void main() {
       child: MaterialApp(
             localizationsDelegates: S.localizationsDelegates,
             supportedLocales: S.supportedLocales,
-      home: MediaDetailView(
+      // The layout picks mobile or desktop from its own width.
+      home: Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: width,
+          child: MediaDetailView(
+        statusListWidget: statusListWidget,
         title: title,
         coverUrl: coverUrl,
         externalUrl: externalUrl,
@@ -82,6 +93,8 @@ void main() {
         lastActivityAt: lastActivityAt,
         completionTime: completionTime,
         onActivityDateChanged: onActivityDateChanged,
+          ),
+        ),
       ),
       ),
     );
@@ -863,6 +876,63 @@ void main() {
         expect(find.text('Extra'), findsOneWidget);
       });
     });
+
+    group('desktop layout', () {
+      Future<void> pumpDesktop(WidgetTester tester, Widget widget) async {
+        tester.view.physicalSize = const Size(_desktopWidth, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(widget);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('should render title and description without exceptions',
+          (WidgetTester tester) async {
+        await pumpDesktop(
+          tester,
+          buildTestWidget(
+            title: 'Desk Title',
+            description: 'Desk description',
+            width: _desktopWidth,
+          ),
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Desk Title'), findsWidgets);
+        expect(find.text('Desk description'), findsOneWidget);
+      });
+
+      testWidgets('should hide the author review but keep the notes',
+          (WidgetTester tester) async {
+        await pumpDesktop(
+          tester,
+          buildTestWidget(
+            authorComment: 'Author text',
+            hasAuthorComment: true,
+            userComment: 'User text',
+            hasUserComment: true,
+            width: _desktopWidth,
+          ),
+        );
+
+        expect(find.text('Author text'), findsNothing);
+        expect(find.text('User text'), findsOneWidget);
+      });
+
+      testWidgets('should prefer the status list over the chip row',
+          (WidgetTester tester) async {
+        await pumpDesktop(
+          tester,
+          buildTestWidget(
+            statusWidget: const Text('Status row'),
+            statusListWidget: const Text('Status list'),
+            width: _desktopWidth,
+          ),
+        );
+
+        expect(find.text('Status list'), findsOneWidget);
+        expect(find.text('Status row'), findsNothing);
+      });
+    });
   });
 }
-

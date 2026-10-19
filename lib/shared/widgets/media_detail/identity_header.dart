@@ -7,111 +7,148 @@ import '../../utils/url_launch.dart';
 import '../source_badge.dart';
 import 'media_detail_chip.dart';
 
-/// Cover + short identity facts: source, type, RA badge, info chips.
+/// Cover beside the identity badges and info chips — the mobile card's head.
 class IdentityHeader extends StatelessWidget {
   const IdentityHeader({
     required this.cover,
-    required this.source,
-    required this.typeIcon,
-    required this.typeLabel,
-    required this.accentColor,
+    required this.badges,
     required this.infoChips,
-    this.externalUrl,
-    this.raBadge,
-    this.platformOverlayAsset,
     super.key,
   });
 
+  /// Framed cover; the header gives it the poster size.
   final Widget cover;
-  final DataSource source;
-  final IconData typeIcon;
-  final String typeLabel;
-  final Color accentColor;
+  final Widget badges;
   final List<MediaDetailChip> infoChips;
-  final String? externalUrl;
-  final Widget? raBadge;
-
-  /// Platform-overlay asset path (PNG 600×900).
-  final String? platformOverlayAsset;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            platformOverlayAsset != null ? 0 : AppSpacing.radiusSm,
-          ),
-          child: SizedBox(
-            width: 100,
-            height: 150,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                cover,
-                if (platformOverlayAsset != null)
-                  Image.asset(platformOverlayAsset!, fit: BoxFit.fill),
-              ],
-            ),
-          ),
-        ),
+        SizedBox(width: 100, height: 150, child: cover),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: <Widget>[
-                  SourceBadge(
-                    source: source,
-                    size: SourceBadgeSize.medium,
-                    onTap: externalUrl != null
-                        ? () => launchExternalUrl(externalUrl!)
-                        : null,
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(typeIcon, size: 16, color: accentColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        typeLabel,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: accentColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                  ?raBadge,
-                ],
-              ),
+              badges,
               if (infoChips.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: <Widget>[
-                    for (final MediaDetailChip chip in infoChips)
-                      _InfoChip(
-                        icon: chip.icon,
-                        text: chip.text,
-                        iconColor: chip.iconColor,
-                        onTap: chip.onTap,
-                        tooltip: chip.tooltip,
-                      ),
-                  ],
-                ),
+                InfoChipWrap(chips: infoChips),
               ],
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Cover clipped to the card radius, with the platform overlay on top; the
+/// overlay art has its own frame, so it drops the rounding.
+class MediaCoverFrame extends StatelessWidget {
+  const MediaCoverFrame({
+    required this.cover,
+    this.platformOverlayAsset,
+    super.key,
+  });
+
+  final Widget cover;
+  final String? platformOverlayAsset;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(
+        platformOverlayAsset != null ? 0 : AppSpacing.radiusSm,
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          cover,
+          if (platformOverlayAsset != null)
+            Image.asset(platformOverlayAsset!, fit: BoxFit.fill),
+        ],
+      ),
+    );
+  }
+}
+
+/// Source badge, media type label and the optional RA badge in one wrap.
+class IdentityBadges extends StatelessWidget {
+  const IdentityBadges({
+    required this.source,
+    required this.typeIcon,
+    required this.typeLabel,
+    required this.accentColor,
+    this.externalUrl,
+    this.raBadge,
+    super.key,
+  });
+
+  final DataSource source;
+  final IconData typeIcon;
+  final String typeLabel;
+  final Color accentColor;
+  final String? externalUrl;
+  final Widget? raBadge;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: <Widget>[
+        SourceBadge(
+          source: source,
+          size: SourceBadgeSize.medium,
+          onTap: externalUrl != null
+              ? () => launchExternalUrl(externalUrl!)
+              : null,
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(typeIcon, size: 16, color: accentColor),
+            const SizedBox(width: 4),
+            Text(
+              typeLabel,
+              style: AppTypography.bodySmall.copyWith(
+                color: accentColor,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        ?raBadge,
+      ],
+    );
+  }
+}
+
+class InfoChipWrap extends StatelessWidget {
+  const InfoChipWrap({required this.chips, super.key});
+
+  final List<MediaDetailChip> chips;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: <Widget>[
+        for (final MediaDetailChip chip in chips)
+          _InfoChip(
+            icon: chip.icon,
+            text: chip.text,
+            iconColor: chip.iconColor,
+            onTap: chip.onTap,
+            tooltip: chip.tooltip,
+          ),
       ],
     );
   }

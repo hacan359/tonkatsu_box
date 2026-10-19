@@ -172,6 +172,7 @@ List<MediaDetailChip> _creatorChips(CollectionItem item, BuildContext context) {
           text: name,
           tooltip: role,
           onTap: _metaSearchTap(context, name),
+          isCreator: true,
         ),
   ];
 }

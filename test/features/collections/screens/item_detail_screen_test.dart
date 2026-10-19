@@ -18,7 +18,7 @@ import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/collections/screens/item_detail_screen.dart';
-import 'package:tonkatsu_box/features/collections/widgets/status_chip_row.dart';
+import 'package:tonkatsu_box/features/collections/widgets/status_list.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
@@ -297,28 +297,6 @@ void main() {
       expect(find.text('IGDB'), findsOneWidget);
     });
 
-    testWidgets('должен отображать комментарий автора',
-        (WidgetTester tester) async {
-      const Game game = Game(id: 100, name: 'Test Game');
-      const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionItem item = createGameItem(
-        game: game,
-        platform: platform,
-        authorComment: 'Best RPG ever!',
-      );
-
-      await tester.pumpWidget(createTestWidget(
-        collectionId: 1,
-        itemId: 1,
-        isEditable: true,
-        items: <CollectionItem>[item],
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text("Author's Review"), findsOneWidget);
-      expect(find.text('Best RPG ever!'), findsOneWidget);
-    });
-
     group('Board toggle', () {
       testWidgets('should show Board toggle кнопку если collectionId != null',
           (WidgetTester tester) async {
@@ -381,8 +359,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text("Author's Review"), findsOneWidget);
-        expect(find.text('Test author comment'), findsOneWidget);
+        expect(find.byType(StatusList), findsOneWidget);
       });
     });
 
@@ -713,7 +690,7 @@ void main() {
     });
 
     group('Статус', () {
-      testWidgets('StatusChipRow использует MediaType.movie',
+      testWidgets('StatusList использует MediaType.movie',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
         final CollectionItem item = createMovieItem(movie: movie);
@@ -726,10 +703,10 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        final StatusChipRow dropdown = tester.widget<StatusChipRow>(
-          find.byType(StatusChipRow),
+        final StatusList list = tester.widget<StatusList>(
+          find.byType(StatusList),
         );
-        expect(dropdown.mediaType, MediaType.movie);
+        expect(list.mediaType, MediaType.movie);
       });
 
       testWidgets('should show иконку play для inProgress',
@@ -1256,7 +1233,7 @@ void main() {
       expect(find.text('TMDB'), findsOneWidget);
     });
 
-    testWidgets('должен отображать StatusChipRow',
+    testWidgets('должен отображать StatusList',
         (WidgetTester tester) async {
       final Movie movie = createTestMovie();
       final CollectionItem item = createAnimeItem(
@@ -1273,7 +1250,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatusChipRow), findsOneWidget);
+      expect(find.byType(StatusList), findsOneWidget);
     });
 
     testWidgets('не should show Board toggle для uncategorized',
@@ -1415,7 +1392,7 @@ void main() {
       expect(find.text('Reviews'), findsNothing);
     });
 
-    testWidgets('должен отображать StatusChipRow',
+    testWidgets('должен отображать StatusList',
         (WidgetTester tester) async {
       final VisualNovel vn = createTestVn();
       final CollectionItem item = createVnItem(
@@ -1431,7 +1408,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatusChipRow), findsOneWidget);
+      expect(find.byType(StatusList), findsOneWidget);
     });
 
     testWidgets('should show MediaDetailView',

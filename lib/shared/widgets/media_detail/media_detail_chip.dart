@@ -8,6 +8,7 @@ class MediaDetailChip {
     this.iconColor,
     this.onTap,
     this.tooltip,
+    this.isCreator = false,
   });
 
   final IconData icon;
@@ -17,4 +18,7 @@ class MediaDetailChip {
 
   /// Names the role when the icon alone is ambiguous (director, publisher).
   final String? tooltip;
+
+  /// A person or company credit; [tooltip] then holds its role.
+  final bool isCreator;
 }

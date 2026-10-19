@@ -38,6 +38,7 @@ import '../../../core/database/database_service.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../releases/widgets/add_to_calendar_dialog.dart';
 import '../../../shared/widgets/media_detail_view.dart';
+import '../../../shared/widgets/media_detail/media_cover_image.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
@@ -80,6 +81,7 @@ import '../widgets/rename_item_dialog.dart';
 import '../widgets/screenscraper_gallery_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
+import '../widgets/status_list.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/constants/collection_item_ui.dart';
@@ -814,6 +816,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         onChanged: (ItemStatus status) =>
             _updateStatus(item.id, status, item.mediaType),
       ),
+      statusListWidget: StatusList(
+        status: item.status,
+        mediaType: item.mediaType,
+        onChanged: (ItemStatus status) =>
+            _updateStatus(item.id, status, item.mediaType),
+      ),
       addedAt: item.addedAt,
       startedAt: item.startedAt,
       completedAt: item.completedAt,
@@ -859,6 +867,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             source: item.dataSource,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
+            fallbackCover: MediaCoverImage(
+              coverUrl: config.coverUrl,
+              placeholderIcon: config.placeholderIcon,
+              cacheImageType: config.cacheImageType,
+              cacheImageId: config.cacheImageId,
+            ),
           ),
         if (config.hasEpisodeTracker && widget.collectionId == null)
           SeasonsInfo(
