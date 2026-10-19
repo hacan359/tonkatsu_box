@@ -155,7 +155,7 @@ class _AppShellState extends ConsumerState<AppShell> {
           onNextTab: () => _stepSlot(forward: true),
           onPreviousTab: () => _stepSlot(forward: false),
           onBack: () => _handleBack(),
-          onSearch: () => _onDestinationSelected(NavTab.search.index),
+          onSearch: _onSearchShortcut,
           onRefresh: _onRefresh,
           onShowHelp: () => KeyboardShortcutsDialog.show(
             context,
@@ -371,7 +371,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  void _onDestinationSelected(int index) {
+  void _onDestinationSelected(int index, {bool focusContent = true}) {
     if (index == _selectedIndex && !_personalizationOpen) {
       // Pressing again returns to the tab root, but not while Personalization
       // is open — that tap must close the cloud, not pop a hidden tab.
@@ -390,6 +390,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       // button.
       _personalizationOpen = false;
     });
+    if (!focusContent) return;
     // Explicitly focus the new tab's content for the gamepad.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -400,6 +401,16 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   void _resetSearchTab() => resetSearchTabState(ref);
+
+  /// Ctrl+F lands in the field: the usual hand-off to the tab's first card
+  /// would take focus back from it.
+  void _onSearchShortcut() {
+    _onDestinationSelected(NavTab.search.index, focusContent: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(appTopBarFocusProvider).requestFocus();
+    });
+  }
 
   /// Reuses the Search tab instead of pushing a separate screen, so the shell
   /// keeps a single top-bar search field.

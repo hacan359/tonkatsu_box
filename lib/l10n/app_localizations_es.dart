@@ -547,16 +547,6 @@ class SEs extends S {
       'Configura primero la clave de SteamGridDB para algunas herramientas';
 
   @override
-  String get settingsLaboratory => 'Laboratorio';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Diseños del banner de tarjetas';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Diseños experimentales para las tarjetas de póster';
-
-  @override
   String get settingsHelp => 'Ayuda';
 
   @override
@@ -5809,12 +5799,6 @@ class SEs extends S {
 
   @override
   String get shortcutFocusSearchField => 'Ir al campo de búsqueda';
-
-  @override
-  String get shortcutClearOrBack => 'Limpiar / atrás';
-
-  @override
-  String get shortcutRunSearch => 'Ejecutar búsqueda';
 
   @override
   String get debugKeyEvents => 'Eventos de los botones';

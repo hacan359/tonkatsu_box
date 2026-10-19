@@ -544,16 +544,6 @@ class SEn extends S {
       'Set SteamGridDB key first for some tools';
 
   @override
-  String get settingsLaboratory => 'Laboratory';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Card banner designs';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Experimental poster card layouts';
-
-  @override
   String get settingsHelp => 'Help';
 
   @override
@@ -5738,12 +5728,6 @@ class SEn extends S {
 
   @override
   String get shortcutFocusSearchField => 'Focus search field';
-
-  @override
-  String get shortcutClearOrBack => 'Clear / back';
-
-  @override
-  String get shortcutRunSearch => 'Run search';
 
   @override
   String get debugKeyEvents => 'Button key events';

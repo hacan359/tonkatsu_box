@@ -499,15 +499,6 @@ class SZh extends S {
   String get settingsDebugSubtitleNoKey => '部分工具需先设置 SteamGridDB 密钥';
 
   @override
-  String get settingsLaboratory => '实验室';
-
-  @override
-  String get settingsLaboratoryCardDesigns => '卡片横幅设计';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle => '海报卡片的实验性布局';
-
-  @override
   String get settingsHelp => '帮助';
 
   @override
@@ -5448,12 +5439,6 @@ class SZh extends S {
 
   @override
   String get shortcutFocusSearchField => '聚焦搜索框';
-
-  @override
-  String get shortcutClearOrBack => '清除/返回';
-
-  @override
-  String get shortcutRunSearch => '执行搜索';
 
   @override
   String get debugKeyEvents => '按键事件';

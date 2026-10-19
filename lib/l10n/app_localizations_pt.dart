@@ -546,16 +546,6 @@ class SPt extends S {
       'Configure a chave do SteamGridDB primeiro para algumas ferramentas';
 
   @override
-  String get settingsLaboratory => 'Laboratório';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Designs de banner dos cards';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Layouts experimentais de cards de pôster';
-
-  @override
   String get settingsHelp => 'Ajuda';
 
   @override
@@ -5791,12 +5781,6 @@ class SPt extends S {
 
   @override
   String get shortcutFocusSearchField => 'Focar campo de busca';
-
-  @override
-  String get shortcutClearOrBack => 'Limpar / voltar';
-
-  @override
-  String get shortcutRunSearch => 'Executar busca';
 
   @override
   String get debugKeyEvents => 'Eventos de teclas do botão';

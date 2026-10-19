@@ -39,8 +39,6 @@ class SearchScreen extends ConsumerStatefulWidget {
         title: l.search,
         entries: <ShortcutEntry>[
           ShortcutEntry(keys: 'Ctrl+F', description: l.shortcutFocusSearchField),
-          ShortcutEntry(keys: 'Escape', description: l.shortcutClearOrBack),
-          ShortcutEntry(keys: 'Enter', description: l.shortcutRunSearch),
         ],
       );
 

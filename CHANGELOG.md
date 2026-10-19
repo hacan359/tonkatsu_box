@@ -89,7 +89,53 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     creatorDirector, creatorCreator, creatorDeveloper, creatorPublisher,
     creatorStudio, creatorAuthor): New strings.
 
+- **Linux AppImage in every release**
+
+  Each release ships `tonkatsu-box-vX-linux-x86_64.AppImage` next to the
+  tar.gz: make it executable and run it. It needs GTK 3, `zenity` and
+  `xdg-utils` from the system, like the tar.gz. Packaging script by
+  Cybercountry (#456).
+
+  * tool/build_appimage.sh: New; wraps a `flutter build linux` bundle with a
+    pinned, checksum-verified appimagetool.
+  * .github/workflows/release.yml (build-linux, create-release): Build the
+    AppImage and attach it to the release.
+  * README.md: AppImage download link and Linux notes.
+
 ### Changed
+
+- **Badges on a card grow with the card**
+
+  The rating, play time, heart, in-collection mark, platform label, status
+  dot, tags and progress over the poster scale with the card width, up to
+  1.6×. The open-in-collection button reacts to taps around its circle.
+
+  * lib/shared/theme/app_spacing.dart (AppSpacing.badgeScale,
+    AppSpacing.compactRefCardWidth, AppSpacing.badgeScaleMin,
+    AppSpacing.badgeScaleMax): New.
+  * lib/shared/widgets/media_poster_card.dart
+    (_MediaPosterCardState._buildGridPoster,
+    _MediaPosterCardState._buildStatsStrip, _BadgeMetrics, _tapTarget,
+    _InCollectionButton, _FavoriteButton, _MoreTagsBadge.widthOf, _TagPill,
+    _tagLabelStyle): Size every badge from one scale.
+  * lib/shared/widgets/dual_rating_badge.dart (DualRatingBadge.scale),
+    lib/shared/widgets/in_collection_badge.dart (InCollectionBadge.scale,
+    InCollectionBadge.icon): New parameters.
+
+- **Filter chips, table filters and sort menus show hover and focus**
+
+  The search filter and sort chips, the collection table filter dropdowns,
+  the TMDB language dropdown in the welcome tour and the copy-as-text sort
+  menu highlight on hover and draw a focus ring for keyboard and gamepad.
+
+  * lib/shared/widgets/focusable_surface.dart (FocusableSurface.borderColor):
+    New parameter.
+  * lib/features/search/widgets/filter_dropdown.dart
+    (_FilterDropdownState.build, SortDropdown.build),
+    lib/features/collections/widgets/collection_table/table_filter.dart,
+    lib/features/welcome/widgets/welcome_step_language.dart,
+    lib/features/collections/widgets/copy_as_text_dialog.dart: Move the fill
+    and border onto FocusableSurface.
 
 - **Collection import reports skipped custom cards**
 
@@ -171,6 +217,16 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Fixed
 
+- **Ctrl+F puts the cursor in the search field**
+
+  The F1 legend for Search lists only Ctrl+F.
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._onSearchShortcut):
+    New; opens Search and focuses the top bar field.
+  * lib/features/search/screens/search_screen.dart (SearchScreen.shortcutGroup):
+    Drop the Escape and Enter rows.
+  * lib/l10n/app_*.arb (shortcutClearOrBack, shortcutRunSearch): Removed.
+
 - **Emptied fields of a custom card are saved**
 
   Clearing the description, alternative title, genres or link while editing
@@ -211,6 +267,15 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     success.
   * lib/features/collections/screens/item_detail_screen.dart
     (_ItemDetailScreenState._refreshFromApi): Drop its own reload.
+
+### Removed
+
+- **Laboratory section in Settings**
+
+  * lib/features/settings/screens/card_banner_debug_screen.dart: Removed.
+  * lib/features/settings/screens/settings_screen.dart: Drop the group.
+  * lib/l10n/app_*.arb (settingsLaboratory, settingsLaboratoryCardDesigns,
+    settingsLaboratoryCardDesignsSubtitle): Removed.
 
 ## [0.45.0] - 2026-10-03
 

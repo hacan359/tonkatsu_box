@@ -547,16 +547,6 @@ class SFr extends S {
       'Ajoutez une clé API SteamGridDB pour accéder aux outils.';
 
   @override
-  String get settingsLaboratory => 'Laboratoire';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Designs des bannières';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Mises en pages expérimentales des affiches';
-
-  @override
   String get settingsHelp => 'Aide';
 
   @override
@@ -5827,12 +5817,6 @@ class SFr extends S {
 
   @override
   String get shortcutFocusSearchField => 'Focus sur la barre de recherche';
-
-  @override
-  String get shortcutClearOrBack => 'Effacer / précédent';
-
-  @override
-  String get shortcutRunSearch => 'Lancer la recherche';
 
   @override
   String get debugKeyEvents => 'Événements des touches/boutons';
