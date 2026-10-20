@@ -3713,6 +3713,13 @@ class SFr extends S {
       'Taille du texte de l’interface, en plus du réglage système';
 
   @override
+  String get settingsUiScale => 'Échelle de l\'interface';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Agrandit toute l\'application, comme un navigateur. Ctrl+molette ou Ctrl+plus / moins, Ctrl+0 réinitialise';
+
+  @override
   String get collectionEditHeroImage => 'Bannière';
 
   @override
@@ -5744,6 +5751,15 @@ class SFr extends S {
   String get shortcutThisHelp => 'Peut aider';
 
   @override
+  String get shortcutZoomIn => 'Zoom avant';
+
+  @override
+  String get shortcutZoomOut => 'Zoom arrière';
+
+  @override
+  String get shortcutZoomReset => 'Réinitialiser le zoom';
+
+  @override
   String get shortcutCreateCollection => 'Créer une collection';
 
   @override
@@ -6205,6 +6221,46 @@ class SFr extends S {
   String importTallies(int found, int custom, int ambiguous) {
     return 'Trouvés $found · Cartes personnalisées $custom · Ambigus $ambiguous';
   }
+
+  @override
+  String get importStageFetchingAudio => 'Récupération des données audio...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Rafraîchis $updated · Introuvables $notFound · Erreurs $failed · Ignorés $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Rafraîchir $count titres depuis leurs sources ?',
+      one: 'Rafraîchir 1 titre depuis sa source ?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count titres sélectionnés n\'ont pas de source et seront ignorés.',
+      one: '1 titre sélectionné n\'a pas de source et sera ignoré.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Rafraîchir';
+
+  @override
+  String get bulkRefreshProblems => 'Non rafraîchis';
+
+  @override
+  String get stop => 'Arrêter';
 
   @override
   String get customImportResolveTitle =>

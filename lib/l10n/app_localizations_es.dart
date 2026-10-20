@@ -3707,6 +3707,13 @@ class SEs extends S {
       'Tamaño del texto de la interfaz, además del ajuste del sistema';
 
   @override
+  String get settingsUiScale => 'Escala de la interfaz';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Amplía toda la aplicación, como un navegador. Ctrl+rueda o Ctrl+más / menos, Ctrl+0 restablece';
+
+  @override
   String get collectionEditHeroImage => 'Imagen de portada';
 
   @override
@@ -5726,6 +5733,15 @@ class SEs extends S {
   String get shortcutThisHelp => 'Esta ayuda';
 
   @override
+  String get shortcutZoomIn => 'Acercar';
+
+  @override
+  String get shortcutZoomOut => 'Alejar';
+
+  @override
+  String get shortcutZoomReset => 'Restablecer zoom';
+
+  @override
   String get shortcutCreateCollection => 'Crear colección';
 
   @override
@@ -6183,6 +6199,45 @@ class SEs extends S {
   String importTallies(int found, int custom, int ambiguous) {
     return 'Encontrados $found · Tarjetas propias $custom · Ambiguos $ambiguous';
   }
+
+  @override
+  String get importStageFetchingAudio => 'Obteniendo datos de audio...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Actualizados $updated · No encontrados $notFound · Errores $failed · Omitidos $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '¿Actualizar $count elementos desde sus fuentes?',
+      one: '¿Actualizar 1 elemento desde su fuente?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos seleccionados no tienen fuente y se omitirán.',
+      one: '1 elemento seleccionado no tiene fuente y se omitirá.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Actualizar';
+
+  @override
+  String get bulkRefreshProblems => 'No actualizados';
+
+  @override
+  String get stop => 'Detener';
 
   @override
   String get customImportResolveTitle => 'Buscar tarjetas en las fuentes';

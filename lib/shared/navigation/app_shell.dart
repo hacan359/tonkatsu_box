@@ -14,6 +14,7 @@ import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/releases/screens/releases_screen.dart';
 import '../../features/search/providers/browse_provider.dart';
 import '../../features/search/screens/search_screen.dart';
+import '../../features/settings/providers/settings_provider.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../../features/welcome/widgets/menu_tour_overlay.dart';
@@ -161,6 +162,13 @@ class _AppShellState extends ConsumerState<AppShell> {
             context,
             screenGroups: _currentScreenShortcutGroups(S.of(context)),
           ),
+          onZoomIn: () =>
+              ref.read(settingsNotifierProvider.notifier).stepUiScale(1),
+          onZoomOut: () =>
+              ref.read(settingsNotifierProvider.notifier).stepUiScale(-1),
+          onZoomReset: () => ref
+              .read(settingsNotifierProvider.notifier)
+              .setUiScale(SettingsKeys.uiScaleDefault),
         ),
         child: FocusTraversalGroup(
           policy: ReadingOrderTraversalPolicy(),

@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/app_binding.dart';
 import 'core/logging/app_logger.dart';
 import 'core/logging/startup_error.dart';
 import 'core/services/api_key_initializer.dart';
@@ -30,7 +31,7 @@ Future<void> main() async {
 
   await runZonedGuarded<Future<void>>(
     () async {
-      WidgetsFlutterBinding.ensureInitialized();
+      TonkatsuBinding.ensureInitialized();
       AppLogger.setupErrorHandlers();
       initPlatform();
 

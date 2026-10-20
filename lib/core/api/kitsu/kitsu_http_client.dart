@@ -5,12 +5,12 @@ import '../api_dio.dart';
 import '../api_error_detail.dart';
 import 'kitsu_types.dart';
 
-// Kitsu transport (https://kitsu.io/api/edge). JSON:API; no auth.
+// Kitsu transport (https://kitsu.app/api/edge). JSON:API; no auth.
 class KitsuHttpClient {
   KitsuHttpClient({Dio? dio})
       : _dio = dio ??
             createApiDio(
-              baseUrl: 'https://kitsu.io/api/edge/',
+              baseUrl: 'https://kitsu.app/api/edge/',
               connectTimeout: const Duration(seconds: 15),
               receiveTimeout: const Duration(seconds: 20),
               headers: <String, String>{

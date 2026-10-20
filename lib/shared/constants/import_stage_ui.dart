@@ -11,6 +11,7 @@ extension ImportStageUi on ImportStage {
         ImportStage.fetchingManga => l.importStageFetchingManga,
         ImportStage.fetchingAnime => l.importStageFetchingAnime,
         ImportStage.fetchingBooks => l.importStageFetchingBooks,
+        ImportStage.fetchingAudio => l.importStageFetchingAudio,
         ImportStage.cachingMedia => l.importStageCachingMedia,
         ImportStage.creatingCollection => l.importStageCreatingCollection,
         ImportStage.resolvingTitles => l.importStageResolvingTitles,

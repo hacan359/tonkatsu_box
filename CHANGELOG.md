@@ -102,7 +102,79 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     AppImage and attach it to the release.
   * README.md: AppImage download link and Linux notes.
 
+- **Refresh selected cards from their sources**
+
+  The bulk action bar in a collection and in All Items gets "Refresh from
+  source". A confirmation names how many cards will be refreshed and how many
+  have no source. The cards refresh one after another in the progress window
+  with a running count of updated, not found, failed and skipped; Stop ends
+  the run after the current card. Fantlab and Hardcover books keep their
+  edition and cover. Cards the run could not refresh are listed at the end.
+
+  * lib/features/collections/helpers/item_refresh.dart (refreshItemFromSource,
+    canRefreshFromSource, RefreshOutcome, RefreshOutcomeKind): New; the
+    per-source refetch shared by the card button and the bulk run.
+  * lib/features/collections/helpers/bulk_refresh.dart (runBulkRefresh,
+    BulkRefreshResult, BulkRefreshProblem, BulkRefreshCancellation): New.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi): Delegate to refreshItemFromSource.
+  * lib/features/collections/widgets/bulk_action_bar.dart
+    (BulkActionBar._handleRefresh, _RefreshProblemList): The action, the
+    confirmation and the result list.
+  * lib/shared/widgets/import_progress_dialog.dart (ImportProgressDialog.onCancel,
+    ImportProgressDialog.talliesBuilder, ImportProgressDialog.resultBuilder):
+    Optional Stop button, custom tallies line and a result view.
+  * lib/core/import/import_progress.dart (ImportProgress.notFound,
+    ImportProgress.failed, ImportProgress.skipped, ImportStage.fetchingAudio):
+    New tallies and the audio stage.
+  * lib/shared/constants/import_stage_ui.dart (ImportStageUi.label): Label for
+    the audio stage.
+  * lib/l10n/app_*.arb (bulkRefreshConfirm, bulkRefreshSkippedNote,
+    bulkRefreshStart, bulkRefreshProblems, refreshTallies,
+    importStageFetchingAudio, stop): New strings.
+
+- **Interface scale: Ctrl+wheel zooms the whole app**
+
+  Settings → Appearance gets an "Interface scale" slider from 50% to 200%.
+  Ctrl+wheel, Ctrl+plus and Ctrl+minus step it by 10%, Ctrl+0 returns to
+  100%. The layout reflows as if the window were smaller or larger and text
+  stays sharp. The shortcuts are listed in the F1 help.
+
+  * lib/shared/widgets/ui_scale_scope.dart (UiScaleScope): New; lays the app
+    out in a virtual window and paints it scaled.
+  * lib/core/app_binding.dart (TonkatsuBinding): New; takes Ctrl+wheel before
+    any scrollable sees it.
+  * lib/main.dart (main): Start with TonkatsuBinding.
+  * lib/app.dart (_TonkatsuBoxAppState._onCtrlWheel,
+    _TonkatsuBoxAppState.build): Install the wheel handler and wrap the app in
+    UiScaleScope.
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.uiScale,
+    SettingsState.uiScale, SettingsNotifier.setUiScale,
+    SettingsNotifier.stepUiScale): The setting.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState.build): The slider.
+  * lib/shared/keyboard/keyboard_shortcuts.dart (buildGlobalShortcuts,
+    globalShortcutGroup): Ctrl+plus, Ctrl+minus, Ctrl+0 and their help rows.
+  * lib/shared/navigation/app_shell.dart (_AppShellState.build): Wire the
+    zoom shortcuts to the setting.
+  * lib/l10n/app_*.arb (settingsUiScale, settingsUiScaleSubtitle,
+    shortcutZoomIn, shortcutZoomOut, shortcutZoomReset): New strings.
+
 ### Changed
+
+- **Kitsu is reached at kitsu.app**
+
+  Requests, the web proxy allowlist, links from a card and the source list
+  all use kitsu.app, the host Kitsu moved to; kitsu.io only redirects there.
+
+  * lib/core/api/kitsu/kitsu_http_client.dart (KitsuHttpClient): New base URL.
+  * packages/core/lib/api/proxy_targets.dart (ProxyTarget.kitsu): New host.
+  * packages/core/lib/models/anime.dart (Anime.fromKitsu),
+    packages/core/lib/models/manga.dart (Manga.fromKitsu): externalUrl on
+    kitsu.app.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
+    lib/features/settings/content/credits_content.dart (CreditsContent),
+    README.md: Links to kitsu.app.
 
 - **Badges on a card grow with the card**
 
@@ -159,7 +231,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   result in a toast. Sources that read a file ask for the file; a source
   missing a credential opens its form with the collection preselected. An
   import form opened from Settings starts on the collection that source
-  filled last time.
+  filled last time. A full backup carries these records and a restore
+  re-attaches them to the restored collections.
 
   * packages/core/lib/models/collection_import.dart (CollectionImport,
     CollectionImportOption), packages/core/lib/models/import_source_kind.dart
@@ -210,6 +283,10 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     the collection and record the run.
   * lib/shared/constants/import_source_kind_ui.dart (ImportSourceKindUi):
     Labels and icons.
+  * lib/core/services/backup_service.dart (BackupService.createBackup,
+    BackupService.restoreFromBackup, BackupService.importToExport,
+    BackupService.importFromExport): Write collection_imports.json keyed by
+    the collection's archive path and restore it onto the new ids.
   * lib/l10n/app_*.arb (collectionImportPickSource, collectionImportFromFile,
     collectionImportLastRun, collectionImportRerunTitle,
     collectionImportRerunMessage, collectionImportRun,
@@ -256,6 +333,19 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,
     packages/core/lib/rpc/generated/custom_media_dao.remote.rpc.dart:
     Regenerated.
+
+- **Refresh from source keeps the cover until the source answers**
+
+  The cached cover is dropped after a successful refetch, so a refresh that
+  times out or finds nothing leaves the card's art in place.
+
+  * lib/features/collections/helpers/item_refresh.dart
+    (refreshItemFromSource): Delete the cover after the upsert.
+
+- **MangaBaka credits a person once when listed as author and artist**
+
+  * packages/core/lib/models/manga.dart (Manga.fromMangaBaka): Merge authors
+    and artists without duplicates.
 
 - **Collection lists pick up a card refreshed from the source**
 

@@ -3650,6 +3650,13 @@ class SEn extends S {
       'Interface text size, on top of the system setting';
 
   @override
+  String get settingsUiScale => 'Interface scale';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Zooms the whole app, like a browser. Ctrl+wheel or Ctrl+plus / minus, Ctrl+0 resets';
+
+  @override
   String get collectionEditHeroImage => 'Cover image';
 
   @override
@@ -5655,6 +5662,15 @@ class SEn extends S {
   String get shortcutThisHelp => 'This help';
 
   @override
+  String get shortcutZoomIn => 'Zoom in';
+
+  @override
+  String get shortcutZoomOut => 'Zoom out';
+
+  @override
+  String get shortcutZoomReset => 'Reset zoom';
+
+  @override
   String get shortcutCreateCollection => 'Create collection';
 
   @override
@@ -6106,6 +6122,45 @@ class SEn extends S {
   String importTallies(int found, int custom, int ambiguous) {
     return 'Found $found · Custom cards $custom · Ambiguous $ambiguous';
   }
+
+  @override
+  String get importStageFetchingAudio => 'Fetching audio data...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Updated $updated · Not found $notFound · Errors $failed · Skipped $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Refresh $count items from their sources?',
+      one: 'Refresh 1 item from its source?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected items have no source and will be skipped.',
+      one: '1 selected item has no source and will be skipped.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Refresh';
+
+  @override
+  String get bulkRefreshProblems => 'Not refreshed';
+
+  @override
+  String get stop => 'Stop';
 
   @override
   String get customImportResolveTitle => 'Look up cards in sources';

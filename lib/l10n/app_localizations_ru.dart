@@ -3716,6 +3716,13 @@ class SRu extends S {
       'Размер текста интерфейса поверх системной настройки';
 
   @override
+  String get settingsUiScale => 'Масштаб интерфейса';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Увеличивает всё приложение, как в браузере. Ctrl+колесо или Ctrl+плюс / минус, Ctrl+0 сбрасывает';
+
+  @override
   String get collectionEditHeroImage => 'Обложка';
 
   @override
@@ -5754,6 +5761,15 @@ class SRu extends S {
   String get shortcutThisHelp => 'Эта справка';
 
   @override
+  String get shortcutZoomIn => 'Увеличить масштаб';
+
+  @override
+  String get shortcutZoomOut => 'Уменьшить масштаб';
+
+  @override
+  String get shortcutZoomReset => 'Сбросить масштаб';
+
+  @override
   String get shortcutCreateCollection => 'Создать коллекцию';
 
   @override
@@ -6208,6 +6224,49 @@ class SRu extends S {
   String importTallies(int found, int custom, int ambiguous) {
     return 'Найдено $found · Своих карточек $custom · Неоднозначно $ambiguous';
   }
+
+  @override
+  String get importStageFetchingAudio => 'Загрузка данных аудио...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Обновлено $updated · Не найдено $notFound · Ошибок $failed · Пропущено $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Обновить $count элементов из источников?',
+      many: 'Обновить $count элементов из источников?',
+      few: 'Обновить $count элемента из источников?',
+      one: 'Обновить 1 элемент из источника?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'У $count элементов нет источника, они будут пропущены.',
+      many: 'У $count элементов нет источника, они будут пропущены.',
+      few: 'У $count элементов нет источника, они будут пропущены.',
+      one: 'У 1 элемента нет источника, он будет пропущен.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Обновить';
+
+  @override
+  String get bulkRefreshProblems => 'Не обновлены';
+
+  @override
+  String get stop => 'Остановить';
 
   @override
   String get customImportResolveTitle => 'Искать карточки в источниках';

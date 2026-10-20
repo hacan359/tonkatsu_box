@@ -3438,6 +3438,13 @@ class SZh extends S {
   String get settingsTextScaleSubtitle => '界面文字大小，在系统设置基础上调整';
 
   @override
+  String get settingsUiScale => '界面缩放';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      '像浏览器一样缩放整个应用。Ctrl+滚轮或 Ctrl+加号 / 减号，Ctrl+0 重置';
+
+  @override
   String get collectionEditHeroImage => '封面图片';
 
   @override
@@ -5366,6 +5373,15 @@ class SZh extends S {
   String get shortcutThisHelp => '此帮助';
 
   @override
+  String get shortcutZoomIn => '放大';
+
+  @override
+  String get shortcutZoomOut => '缩小';
+
+  @override
+  String get shortcutZoomReset => '重置缩放';
+
+  @override
   String get shortcutCreateCollection => '创建收藏';
 
   @override
@@ -5806,6 +5822,33 @@ class SZh extends S {
   String importTallies(int found, int custom, int ambiguous) {
     return '已找到 $found · 自定义卡片 $custom · 不明确 $ambiguous';
   }
+
+  @override
+  String get importStageFetchingAudio => '正在获取音频数据...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return '已更新 $updated · 未找到 $notFound · 错误 $failed · 已跳过 $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    return '从来源刷新 $count 项？';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    return '所选的 $count 项没有来源，将被跳过。';
+  }
+
+  @override
+  String get bulkRefreshStart => '刷新';
+
+  @override
+  String get bulkRefreshProblems => '未刷新';
+
+  @override
+  String get stop => '停止';
 
   @override
   String get customImportResolveTitle => '在来源中查找卡片';

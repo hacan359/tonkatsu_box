@@ -7,7 +7,7 @@ enum ProxyTarget {
   googlebooks('www.googleapis.com'),
   hardcover('api.hardcover.app'),
   igdb('api.igdb.com'),
-  kitsu('kitsu.io'),
+  kitsu('kitsu.app'),
   listenbrainz('api.listenbrainz.org'),
   mangabaka('api.mangabaka.org'),
   mangadex('api.mangadex.org'),

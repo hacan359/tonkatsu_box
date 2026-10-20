@@ -6470,6 +6470,18 @@ abstract class S {
   /// **'Interface text size, on top of the system setting'**
   String get settingsTextScaleSubtitle;
 
+  /// No description provided for @settingsUiScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface scale'**
+  String get settingsUiScale;
+
+  /// No description provided for @settingsUiScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zooms the whole app, like a browser. Ctrl+wheel or Ctrl+plus / minus, Ctrl+0 resets'**
+  String get settingsUiScaleSubtitle;
+
   /// No description provided for @collectionEditHeroImage.
   ///
   /// In en, this message translates to:
@@ -9980,6 +9992,24 @@ abstract class S {
   /// **'This help'**
   String get shortcutThisHelp;
 
+  /// No description provided for @shortcutZoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get shortcutZoomIn;
+
+  /// No description provided for @shortcutZoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get shortcutZoomOut;
+
+  /// No description provided for @shortcutZoomReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset zoom'**
+  String get shortcutZoomReset;
+
   /// No description provided for @shortcutCreateCollection.
   ///
   /// In en, this message translates to:
@@ -10795,6 +10825,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Found {found} · Custom cards {custom} · Ambiguous {ambiguous}'**
   String importTallies(int found, int custom, int ambiguous);
+
+  /// No description provided for @importStageFetchingAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching audio data...'**
+  String get importStageFetchingAudio;
+
+  /// No description provided for @refreshTallies.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {updated} · Not found {notFound} · Errors {failed} · Skipped {skipped}'**
+  String refreshTallies(int updated, int notFound, int failed, int skipped);
+
+  /// No description provided for @bulkRefreshConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Refresh 1 item from its source?} other{Refresh {count} items from their sources?}}'**
+  String bulkRefreshConfirm(int count);
+
+  /// No description provided for @bulkRefreshSkippedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected item has no source and will be skipped.} other{{count} selected items have no source and will be skipped.}}'**
+  String bulkRefreshSkippedNote(int count);
+
+  /// No description provided for @bulkRefreshStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get bulkRefreshStart;
+
+  /// No description provided for @bulkRefreshProblems.
+  ///
+  /// In en, this message translates to:
+  /// **'Not refreshed'**
+  String get bulkRefreshProblems;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
 
   /// No description provided for @customImportResolveTitle.
   ///

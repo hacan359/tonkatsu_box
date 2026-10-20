@@ -8,8 +8,10 @@ import 'package:core/database/dao/mood_grid_dao.dart';
 import 'package:core/database/dao/tracker_dao.dart';
 import 'package:core/models/calendar_entry.dart';
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/data_source.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/mood_grid.dart';
 import 'package:core/models/mood_grid_cell.dart';
@@ -20,6 +22,7 @@ import 'package:core/models/tracker_profile.dart';
 import 'package:core/models/wishlist_item.dart';
 import 'package:core/models/xcoll_file.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -268,6 +271,9 @@ class BackupService {
       final Archive archive = Archive();
       int totalItems = 0;
       final List<String> hiddenCollectionFiles = <String>[];
+      // Keyed by archive path like hidden_collections: ids change on restore.
+      final Map<String, List<Map<String, dynamic>>> importsByFile =
+          <String, List<Map<String, dynamic>>>{};
 
       for (int i = 0; i < collections.length; i++) {
         final Collection collection = collections[i];
@@ -300,6 +306,23 @@ class BackupService {
         if (collection.isHidden) {
           hiddenCollectionFiles.add('collections/$fileName');
         }
+        final List<CollectionImport> imports =
+            await _database.collectionImportDao.getForCollection(collection.id);
+        if (imports.isNotEmpty) {
+          importsByFile['collections/$fileName'] =
+              imports.map(importToExport).toList();
+        }
+      }
+
+      if (importsByFile.isNotEmpty) {
+        final List<int> importsBytes = utf8.encode(
+          const JsonEncoder.withIndent('  ').convert(importsByFile),
+        );
+        archive.addFile(ArchiveFile(
+          'collection_imports.json',
+          importsBytes.length,
+          importsBytes,
+        ));
       }
 
       onProgress?.call(const BackupProgress(
@@ -585,6 +608,7 @@ class BackupService {
       String? calendarContent;
       String? watchedContent;
       String? listenedContent;
+      String? importsContent;
 
       for (final ArchiveFile file in archive) {
         if (!file.isFile) continue;
@@ -611,6 +635,8 @@ class BackupService {
           watchedContent = content;
         } else if (file.name == 'listened_tracks.json') {
           listenedContent = content;
+        } else if (file.name == 'collection_imports.json') {
+          importsContent = content;
         }
       }
 
@@ -628,6 +654,9 @@ class BackupService {
             jsonDecode(manifestContent) as Map<String, dynamic>,
           ).hiddenCollections,
       };
+      final Map<String, dynamic> importsByFile = importsContent == null
+          ? <String, dynamic>{}
+          : jsonDecode(importsContent) as Map<String, dynamic>;
       final List<String> sortedKeys = collectionFiles.keys.toList()..sort();
       // One map for the whole archive: a card held by two collections is
       // exported twice and must still come back as a single row.
@@ -656,8 +685,14 @@ class BackupService {
             collectionsRestored++;
             itemsRestored += result.itemsImported ?? 0;
             final Collection? restored = result.collection;
-            if (restored != null && hiddenFiles.contains(fileName)) {
-              await _collectionRepo.setHidden(restored.id, isHidden: true);
+            if (restored != null) {
+              if (hiddenFiles.contains(fileName)) {
+                await _collectionRepo.setHidden(restored.id, isHidden: true);
+              }
+              await _restoreCollectionImports(
+                restored.id,
+                importsByFile[fileName],
+              );
             }
           }
         } catch (e) {
@@ -836,6 +871,56 @@ class BackupService {
     }
 
     return restored;
+  }
+
+  /// Re-attaches the import records of one restored collection; an unknown
+  /// source (a newer build's) is skipped, not fatal.
+  Future<void> _restoreCollectionImports(
+    int collectionId,
+    Object? entries,
+  ) async {
+    if (entries is! List<dynamic> || entries.isEmpty) return;
+    for (final dynamic entry in entries) {
+      if (entry is! Map<String, dynamic>) continue;
+      final CollectionImport? record =
+          importFromExport(entry, collectionId: collectionId);
+      if (record == null) continue;
+      try {
+        await _database.collectionImportDao.upsert(record);
+      } catch (e) {
+        _log.warning('Failed to restore an import source', e);
+      }
+    }
+  }
+
+  /// Options stay a JSON object here, unlike the DB column, so the archive
+  /// reads as plain text.
+  @visibleForTesting
+  static Map<String, dynamic> importToExport(CollectionImport record) =>
+      <String, dynamic>{
+        'source': record.source.key,
+        'options': record.options,
+        'last_run_at': record.lastRunAt.millisecondsSinceEpoch ~/ 1000,
+      };
+
+  @visibleForTesting
+  static CollectionImport? importFromExport(
+    Map<String, dynamic> json, {
+    required int collectionId,
+  }) {
+    final ImportSourceKind? source =
+        ImportSourceKind.tryFromKey(json['source'] as String?);
+    final Object? lastRun = json['last_run_at'];
+    if (source == null || lastRun is! int) return null;
+    final Object? options = json['options'];
+    return CollectionImport(
+      collectionId: collectionId,
+      source: source,
+      options: options is Map<String, dynamic>
+          ? Map<String, Object?>.from(options)
+          : const <String, Object?>{},
+      lastRunAt: DateTime.fromMillisecondsSinceEpoch(lastRun * 1000),
+    );
   }
 
   String _collectionFileName(int index, String name) {

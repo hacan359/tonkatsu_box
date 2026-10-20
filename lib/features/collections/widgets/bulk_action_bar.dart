@@ -5,6 +5,7 @@ import 'package:core/models/item_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/import/import_progress.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -12,7 +13,11 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/widgets/import_progress_dialog.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../helpers/bulk_operations.dart';
+import '../helpers/bulk_refresh.dart';
+import '../helpers/item_refresh.dart';
 import '../providers/collections_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'bulk_export/bulk_poster_export_dialog.dart';
@@ -170,6 +175,12 @@ class BulkActionBar extends ConsumerWidget {
             tooltip: l.bulkRemoveTags,
             onTap: () => _handleTags(context, ref, add: false),
           ),
+          if (items.any(canRefreshFromSource))
+            _BarAction(
+              icon: Icons.sync_outlined,
+              tooltip: l.refreshItemFromApi,
+              onTap: () => _handleRefresh(context, ref),
+            ),
           _BarAction(
             icon: Icons.image_outlined,
             tooltip: l.bulkExportPngTitle,
@@ -332,6 +343,62 @@ class BulkActionBar extends ConsumerWidget {
     );
   }
 
+  Future<void> _handleRefresh(BuildContext context, WidgetRef ref) async {
+    final S l = S.of(context);
+    final List<CollectionItem> snapshot = List<CollectionItem>.of(items);
+    final int skipped =
+        snapshot.where((CollectionItem i) => !canRefreshFromSource(i)).length;
+    final StringBuffer message =
+        StringBuffer(l.bulkRefreshConfirm(snapshot.length - skipped));
+    if (skipped > 0) {
+      message
+        ..write('\n\n')
+        ..write(l.bulkRefreshSkippedNote(skipped));
+    }
+    final bool confirmed = await ConfirmDialog.show(
+      context,
+      title: l.refreshItemFromApi,
+      message: message.toString(),
+      confirmLabel: l.bulkRefreshStart,
+      destructive: false,
+    );
+    if (!confirmed || !context.mounted) return;
+
+    final ValueNotifier<ImportProgress?> progress =
+        ValueNotifier<ImportProgress?>(null);
+    final BulkRefreshCancellation cancellation = BulkRefreshCancellation();
+    final Future<BulkRefreshResult> run = runBulkRefresh(
+      ref,
+      snapshot,
+      onProgress: (ImportProgress p) => progress.value = p,
+      cancellation: cancellation,
+    );
+    await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext _) => ImportProgressDialog<BulkRefreshResult>(
+        title: l.refreshItemFromApi,
+        progressNotifier: progress,
+        importFuture: run,
+        onCancel: cancellation.request,
+        talliesBuilder: (S l, ImportProgress p) =>
+            l.refreshTallies(p.updated, p.notFound, p.failed, p.skipped),
+        resultBuilder: (BuildContext _, BulkRefreshResult r) =>
+            r.problems.isEmpty ? null : _RefreshProblemList(r.problems),
+      ),
+    );
+    // The dialog cannot be dismissed before the run settles.
+    final BulkRefreshResult result = await run;
+    progress.dispose();
+    if (result.updated > 0) {
+      // One invalidation for the whole run, not one per item.
+      ref.invalidate(collectionsProvider);
+      ref.invalidate(collectionItemsNotifierProvider);
+      ref.invalidate(allItemsNotifierProvider);
+    }
+    onClearSelection();
+  }
+
   Future<void> _handleExportPng(BuildContext context) {
     return showBulkPosterExportDialog(
       context: context,
@@ -354,6 +421,41 @@ class BulkActionBar extends ConsumerWidget {
         .read(collectionItemsNotifierProvider(collectionId).notifier)
         .moveItemsToBottom(ids);
     onClearSelection();
+  }
+}
+
+/// Titles the run could not refresh, each with the reason.
+class _RefreshProblemList extends StatelessWidget {
+  const _RefreshProblemList(this.problems);
+
+  final List<BulkRefreshProblem> problems;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    final ThemeData theme = Theme.of(context);
+    final TextStyle? muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(l.bulkRefreshProblems, style: theme.textTheme.bodyMedium),
+        const SizedBox(height: AppSpacing.xs),
+        for (final BulkRefreshProblem p in problems)
+          Padding(
+            key: ValueKey<String>('${p.kind.name}:${p.title}'),
+            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+            child: Text(
+              '${p.title} — ${switch (p.kind) {
+                RefreshOutcomeKind.failed => l.refreshItemFailed(p.error ?? ''),
+                _ => l.refreshItemNotFound,
+              }}',
+              style: muted,
+            ),
+          ),
+      ],
+    );
   }
 }
 

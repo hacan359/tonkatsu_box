@@ -3692,6 +3692,13 @@ class SPt extends S {
       'Tamanho do texto da interface, além da configuração do sistema';
 
   @override
+  String get settingsUiScale => 'Escala da interface';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Amplia o aplicativo inteiro, como um navegador. Ctrl+roda ou Ctrl+mais / menos, Ctrl+0 redefine';
+
+  @override
   String get collectionEditHeroImage => 'Imagem de capa';
 
   @override
@@ -5708,6 +5715,15 @@ class SPt extends S {
   String get shortcutThisHelp => 'Esta ajuda';
 
   @override
+  String get shortcutZoomIn => 'Aumentar zoom';
+
+  @override
+  String get shortcutZoomOut => 'Diminuir zoom';
+
+  @override
+  String get shortcutZoomReset => 'Redefinir zoom';
+
+  @override
   String get shortcutCreateCollection => 'Criar coleção';
 
   @override
@@ -6163,6 +6179,45 @@ class SPt extends S {
   String importTallies(int found, int custom, int ambiguous) {
     return 'Encontrados $found · Cartões próprios $custom · Ambíguos $ambiguous';
   }
+
+  @override
+  String get importStageFetchingAudio => 'Buscando dados de áudio...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Atualizados $updated · Não encontrados $notFound · Erros $failed · Ignorados $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Atualizar $count itens a partir das fontes?',
+      one: 'Atualizar 1 item a partir da fonte?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count itens selecionados não têm fonte e serão ignorados.',
+      one: '1 item selecionado não tem fonte e será ignorado.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Atualizar';
+
+  @override
+  String get bulkRefreshProblems => 'Não atualizados';
+
+  @override
+  String get stop => 'Parar';
 
   @override
   String get customImportResolveTitle => 'Procurar cartões nas fontes';

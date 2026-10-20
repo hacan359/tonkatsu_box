@@ -240,7 +240,7 @@ When you pick an empty folder, the app copies your current data there. When you 
 | <img src="assets/images/icon_anilist_color.png" width="28" alt="AniList"> | Anime & Manga | [AniList](https://anilist.co/) | Not required |
 | <img src="assets/images/icon_mangabaka_color.png" width="28" alt="MangaBaka"> | Manga | [MangaBaka](https://mangabaka.org/) | Not required |
 | <img src="assets/images/icon_mangadex_color.png" width="28" alt="MangaDex"> | Manga | [MangaDex](https://mangadex.org/) | Not required |
-| <img src="assets/images/icon_kitsu_color.png" width="28" alt="Kitsu"> | Anime & Manga | [Kitsu](https://kitsu.io/) | Not required |
+| <img src="assets/images/icon_kitsu_color.png" width="28" alt="Kitsu"> | Anime & Manga | [Kitsu](https://kitsu.app/) | Not required |
 | <img src="assets/images/open_library_color.png" width="28" alt="OpenLibrary"> | Books | [OpenLibrary](https://openlibrary.org/) | Not required |
 | <img src="assets/images/icon_fantlab_color.png" width="28" alt="Fantlab"> | Books | [Fantlab](https://fantlab.ru/) | Not required |
 | <img src="assets/images/icon_google_book_color.png" width="28" alt="Google Books"> | Books | [Google Books](https://books.google.com/) | Optional (free key) |
@@ -390,7 +390,7 @@ Contributions welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for build ins
 
 ## Credits
 
-Catalogs: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.io/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MusicBrainz](https://musicbrainz.org/) · [Cover Art Archive](https://coverartarchive.org/) · [ListenBrainz](https://listenbrainz.org/) · [Podcast Index](https://podcastindex.org/)
+Catalogs: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.app/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MusicBrainz](https://musicbrainz.org/) · [Cover Art Archive](https://coverartarchive.org/) · [ListenBrainz](https://listenbrainz.org/) · [Podcast Index](https://podcastindex.org/)
 
 Imports and extras: [Simkl](https://simkl.com/) · [Trakt.tv](https://trakt.tv/) · [Steam](https://store.steampowered.com/) · [Kinorium](https://kinorium.com/) · [MyAnimeList](https://myanimelist.net/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/) · [ScreenScraper](https://www.screenscraper.fr/) · [Kodi](https://kodi.tv/)
 

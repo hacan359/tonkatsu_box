@@ -16,11 +16,11 @@ void main() {
             },
             'synopsis': 'The elf mage Frieren...',
             'posterImage': <String, dynamic>{
-              'original': 'https://media.kitsu.io/original.jpg',
-              'medium': 'https://media.kitsu.io/medium.jpg',
+              'original': 'https://media.kitsu.app/original.jpg',
+              'medium': 'https://media.kitsu.app/medium.jpg',
             },
             'coverImage': <String, dynamic>{
-              'original': 'https://media.kitsu.io/banner.jpg',
+              'original': 'https://media.kitsu.app/banner.jpg',
             },
             'startDate': '2023-09-29',
             'averageRating': '86.10',
@@ -39,15 +39,15 @@ void main() {
       expect(a.title, 'Sousou no Frieren');
       expect(a.titleEnglish, "Frieren: Beyond Journey's End");
       expect(a.titleNative, '葬送のフリーレン');
-      expect(a.coverUrl, 'https://media.kitsu.io/original.jpg');
-      expect(a.bannerUrl, 'https://media.kitsu.io/banner.jpg');
+      expect(a.coverUrl, 'https://media.kitsu.app/original.jpg');
+      expect(a.bannerUrl, 'https://media.kitsu.app/banner.jpg');
       expect(a.startYear, 2023);
       expect(a.averageScore, 86);
       expect(a.episodes, 28);
       expect(a.duration, 24);
       expect(a.status, 'FINISHED');
       expect(a.format, 'TV');
-      expect(a.externalUrl, 'https://kitsu.io/anime/frieren');
+      expect(a.externalUrl, 'https://kitsu.app/anime/frieren');
     });
   });
 }

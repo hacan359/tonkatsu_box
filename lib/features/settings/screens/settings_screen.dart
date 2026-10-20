@@ -565,6 +565,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onChangeEnd: notifier.setTextScale,
             ),
           ),
+          SettingsTile(
+            leadingIcon: Icons.zoom_in_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsUiScale,
+            subtitle: l.settingsUiScaleSubtitle,
+            showChevron: false,
+            trailing: _ScaleSlider(
+              scale: settings.uiScale,
+              min: SettingsKeys.uiScaleMin,
+              max: SettingsKeys.uiScaleMax,
+              step: SettingsKeys.uiScaleStep,
+              onChanged: (double value) =>
+                  notifier.setUiScale(value, persist: false),
+              onChangeEnd: notifier.setUiScale,
+            ),
+          ),
         ],
       ),
       gap,
