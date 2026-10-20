@@ -10,24 +10,22 @@ import '../../core/database/database_service.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../features/settings/providers/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../utils/date_format_preset.dart';
 import '../utils/duration_formatter.dart';
 import 'card_link_picker.dart';
 import 'dual_date_picker_dialog.dart';
-import 'media_detail/comment_container.dart';
-import 'media_detail/expandable_description.dart';
+import 'media_detail/desktop_detail_layout.dart';
+import 'media_detail/detail_note_section.dart';
+import 'media_detail/detail_sections.dart';
 import 'media_detail/identity_header.dart';
 import 'media_detail/media_cover_image.dart';
 import 'media_detail/media_detail_backdrop.dart';
 import 'media_detail/media_detail_chip.dart';
+import 'media_detail/mobile_detail_layout.dart';
 import 'media_detail/progress_tiles.dart';
-import 'media_detail/system_meta_info_button.dart';
-import 'media_detail/tracker_comments_layout.dart';
-import 'media_detail/user_rating_section.dart';
-import 'mini_markdown_text.dart';
 export 'media_detail/media_detail_chip.dart' show MediaDetailChip;
 
 /// Which activity date an edit targets — distinct from [ItemStatus] even
@@ -41,8 +39,8 @@ enum ActivityDateField { started, completed, both }
 typedef OnActivityDateChanged =
     Future<void> Function(ActivityDateField field, DateTime? date);
 
-/// Shared layout for game / movie / TV detail screens. Type-specific blocks
-/// are injected via [extraSections].
+/// Shared card for game / movie / TV detail screens: owns note editing and
+/// date picking, then hands the blocks to a desktop or mobile layout.
 class MediaDetailView extends ConsumerStatefulWidget {
   const MediaDetailView({
     required this.title,
@@ -59,6 +57,7 @@ class MediaDetailView extends ConsumerStatefulWidget {
     this.infoChips = const <MediaDetailChip>[],
     this.description,
     this.statusWidget,
+    this.statusListWidget,
     this.tagWidget,
     this.raBadge,
     this.trackerSection,
@@ -101,6 +100,10 @@ class MediaDetailView extends ConsumerStatefulWidget {
   final List<MediaDetailChip> infoChips;
   final String? description;
   final Widget? statusWidget;
+
+  /// Labelled vertical status picker for the desktop side column; falls back
+  /// to [statusWidget] there.
+  final Widget? statusListWidget;
   final Widget? tagWidget;
   final Widget? raBadge;
 
@@ -320,27 +323,16 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    // The backing's own padding is the only outer inset, so narrow screens
-    // don't lose width to a doubled-up margin.
-    final Widget content = ListView(
-      padding: EdgeInsets.zero,
-      children: <Widget>[
-        // Descendant ListTile/ExpansionTile need a Material ancestor for ink —
-        // Flutter 3.44 asserts when a coloured DecoratedBox sits between.
-        Material(
-          color: AppColors.surface.withAlpha(80),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: Border.all(color: AppColors.surfaceBorder.withAlpha(40)),
-            ),
-            child: _buildBody(context),
-          ),
-        ),
-      ],
-    );
+    final DetailSections sections = _buildSections(context);
+    final Widget mobile = MobileDetailLayout(sections: sections);
+    final Widget content = kIsMobile
+        ? mobile
+        : LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) =>
+                constraints.maxWidth < kDesktopDetailMinWidth
+                    ? mobile
+                    : DesktopDetailLayout(sections: sections),
+          );
 
     final Widget withBackdrop = widget.backdropUrl != null
         ? MediaDetailBackdrop(imageUrl: widget.backdropUrl!, child: content)
@@ -359,92 +351,71 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
-    final bool hasDescription =
-        widget.description != null && widget.description!.isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        _buildIdentityHeader(),
-        if (hasDescription) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
-          ExpandableDescription(text: widget.description!),
-        ],
-        if (widget.tagWidget != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
-          widget.tagWidget!,
-        ],
-        if (widget.statusWidget != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          widget.statusWidget!,
-        ],
-        if (widget.onUserRatingChanged != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          UserRatingSection(
-            value: widget.userRating,
-            onChanged: widget.onUserRatingChanged!,
-          ),
-        ],
-        if (widget.addedAt != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          _buildProgressTiles(context),
-        ],
-        const SizedBox(height: AppSpacing.md),
-        TrackerCommentsLayout(
-          trackerSection: widget.trackerSection,
-          notesSection: _buildUserNotesSection(context),
-          authorSection: _buildAuthorCommentSection(context),
+  DetailSections _buildSections(BuildContext context) {
+    final Color accent = widget.accentColor ?? AppColors.brand;
+    return DetailSections(
+      title: widget.title,
+      cover: MediaCoverFrame(
+        cover: MediaCoverImage(
+          coverUrl: widget.coverUrl,
+          placeholderIcon: widget.placeholderIcon,
+          cacheImageType: widget.cacheImageType,
+          cacheImageId: widget.cacheImageId,
         ),
-        if (widget.mediaGallery != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          widget.mediaGallery!,
-        ],
-        if (widget.extraSections != null && widget.extraSections!.isNotEmpty)
-          for (final Widget section in widget.extraSections!) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            section,
-          ],
-        if (widget.recommendationSections != null &&
-            widget.recommendationSections!.isNotEmpty)
-          for (final Widget section
-              in widget.recommendationSections!) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            section,
-          ],
-      ],
-    );
-  }
-
-  Widget _buildIdentityHeader() {
-    return IdentityHeader(
-      cover: MediaCoverImage(
-        coverUrl: widget.coverUrl,
-        placeholderIcon: widget.placeholderIcon,
-        cacheImageType: widget.cacheImageType,
-        cacheImageId: widget.cacheImageId,
+        platformOverlayAsset: widget.platformOverlayAsset,
       ),
-      source: widget.source,
-      typeIcon: widget.typeIcon,
-      typeLabel: widget.typeLabel,
-      accentColor: widget.accentColor ?? AppColors.brand,
-      infoChips: widget.infoChips,
-      externalUrl: widget.externalUrl,
-      raBadge: widget.raBadge,
-      platformOverlayAsset: widget.platformOverlayAsset,
+      badges: IdentityBadges(
+        source: widget.source,
+        typeIcon: widget.typeIcon,
+        typeLabel: widget.typeLabel,
+        accentColor: accent,
+        externalUrl: widget.externalUrl,
+        raBadge: widget.raBadge,
+      ),
+      chips: widget.infoChips,
+      accentColor: accent,
+      description: widget.description,
+      tags: widget.tagWidget,
+      status: widget.statusWidget,
+      statusList: widget.statusListWidget,
+      rating: widget.userRating,
+      onRatingChanged: widget.onUserRatingChanged,
+      progress: _buildProgress(context),
+      tracker: widget.trackerSection,
+      notes: _buildUserNotesSection(context),
+      author: _buildAuthorCommentSection(context),
+      gallery: widget.mediaGallery,
+      extras: widget.extraSections ?? const <Widget>[],
+      recommendations: widget.recommendationSections ?? const <Widget>[],
     );
   }
 
-  /// Symmetric row (2×N grid on narrow widths) of the user-set progress
-  /// facts: started / completed dates, time spent, rewatch count.
-  Widget _buildProgressTiles(BuildContext context) {
+  DetailProgress? _buildProgress(BuildContext context) {
+    final DateTime? addedAt = widget.addedAt;
+    if (addedAt == null) return null;
+    final String systemMeta = _systemMetaParts(context).join('\n');
+    return DetailProgress(
+      facts: _progressFacts(context),
+      added: ProgressFact(
+        icon: Icons.history,
+        label: S.of(context).activityDatesAdded,
+        value: _dateFormatter(context)(addedAt),
+        hasValue: true,
+        tooltip: systemMeta,
+      ),
+      systemMeta: systemMeta,
+    );
+  }
+
+  List<ProgressFact> _progressFacts(BuildContext context) {
     final S l = S.of(context);
     final String Function(DateTime) fmt = _dateFormatter(context);
     final bool editableDates = widget.onActivityDateChanged != null;
     final int hours = widget.timeSpentMinutes ~/ 60;
     final int minutes = widget.timeSpentMinutes % 60;
 
-    final List<Widget> tiles = <Widget>[
-      ProgressTile(
+    return <ProgressFact>[
+      ProgressFact(
         icon: Icons.play_circle_outline,
         label: l.activityDatesStarted,
         value: widget.startedAt != null ? fmt(widget.startedAt!) : '—',
@@ -457,7 +428,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
                 )
             : null,
       ),
-      ProgressTile(
+      ProgressFact(
         icon: Icons.check_circle_outline,
         label: l.activityDatesCompleted,
         value: widget.completedAt != null ? fmt(widget.completedAt!) : '—',
@@ -474,7 +445,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
             : null,
       ),
       if (widget.onTimeSpentTap != null)
-        ProgressTile(
+        ProgressFact(
           icon: Icons.timer_outlined,
           label: l.timeSpentTitle,
           value: widget.timeSpentMinutes > 0
@@ -484,7 +455,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
           onTap: widget.onTimeSpentTap,
         ),
       if (widget.onRewatchCountTap != null)
-        ProgressTile(
+        ProgressFact(
           icon: Icons.replay,
           label: l.rewatchCountEdit,
           value: widget.rewatchCount?.toString() ?? '—',
@@ -492,13 +463,6 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
           onTap: widget.onRewatchCountTap,
         ),
     ];
-
-    return ProgressTileGrid(
-      tiles: tiles,
-      trailing: SystemMetaInfoButton(
-        text: _systemMetaParts(context).join('\n'),
-      ),
-    );
   }
 
   String Function(DateTime) _dateFormatter(BuildContext context) {
@@ -561,98 +525,56 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
   Widget _buildAuthorCommentSection(BuildContext context) {
     final S l = S.of(context);
     final bool isEditing = _editingField == _EditingField.author;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        CommentSectionHeader(
-          icon: Icons.format_quote,
-          iconColor: AppColors.movieAccent,
-          title: l.detailAuthorReview,
-          isEditing: isEditing,
-          onToggleEdit: widget.isEditable
-              ? (isEditing
-                  ? _finishEditing
-                  : () => _startEditing(_EditingField.author))
-              : null,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          l.detailReviewVisibility,
-          style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
-        ),
-        const SizedBox(height: 6),
-        CommentContainer(
-          accentColor: AppColors.movieAccent,
-          isEditing: isEditing,
-          controller: _authorController,
-          hint: l.detailWriteReviewHint,
-          onTap: widget.isEditable
-              ? () => _startEditing(_EditingField.author)
-              : null,
-          displayWidget: widget.hasAuthorComment
-              ? MiniMarkdownText(
-                  text: widget.authorComment!,
-                  style: AppTypography.body.copyWith(
-                    fontStyle: FontStyle.italic,
-                    height: 1.5,
-                  ),
-                  resolvedLinks: _resolvedCardLinks,
-                  onCardLink: widget.onCardLinkTap,
-                )
-              : Text(
-                  widget.isEditable
-                      ? l.detailNoReviewEditable
-                      : l.detailNoReviewReadonly,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textTertiary,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-        ),
-      ],
+    return DetailNoteSection(
+      icon: Icons.format_quote,
+      accentColor: AppColors.movieAccent,
+      title: l.detailAuthorReview,
+      subtitle: l.detailReviewVisibility,
+      isEditing: isEditing,
+      onToggleEdit: widget.isEditable
+          ? (isEditing
+              ? _finishEditing
+              : () => _startEditing(_EditingField.author))
+          : null,
+      controller: _authorController,
+      hint: l.detailWriteReviewHint,
+      onTap: widget.isEditable
+          ? () => _startEditing(_EditingField.author)
+          : null,
+      text: widget.hasAuthorComment ? widget.authorComment : null,
+      emptyText: widget.isEditable
+          ? l.detailNoReviewEditable
+          : l.detailNoReviewReadonly,
+      textStyle: AppTypography.body.copyWith(
+        fontStyle: FontStyle.italic,
+        height: 1.5,
+      ),
+      resolvedLinks: _resolvedCardLinks,
+      onCardLink: widget.onCardLinkTap,
     );
   }
 
   Widget _buildUserNotesSection(BuildContext context) {
     final S l = S.of(context);
     final bool isEditing = _editingField == _EditingField.user;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        CommentSectionHeader(
-          icon: Icons.note_alt_outlined,
-          iconColor: widget.accentColor ?? AppColors.brand,
-          title: l.detailMyNotes,
-          isEditing: isEditing,
-          onToggleEdit: isEditing
-              ? _finishEditing
-              : () => _startEditing(_EditingField.user),
-        ),
-        const SizedBox(height: 6),
-        CommentContainer(
-          accentColor: widget.accentColor ?? AppColors.brand,
-          isEditing: isEditing,
-          controller: _userController,
-          hint: l.detailWriteNotesHint,
-          onTap: () => _startEditing(_EditingField.user),
-          onInsertCardLink:
-              widget.onCardLinkTap != null ? () => _insertCardLink() : null,
-          displayWidget: widget.hasUserComment
-              ? MiniMarkdownText(
-                  text: widget.userComment!,
-                  style: AppTypography.body.copyWith(height: 1.5),
-                  resolvedLinks: _resolvedCardLinks,
-                  onCardLink: widget.onCardLinkTap,
-                )
-              : Text(
-                  l.detailNoNotesYet,
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textTertiary,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-        ),
-      ],
+    return DetailNoteSection(
+      icon: Icons.note_alt_outlined,
+      accentColor: widget.accentColor ?? AppColors.brand,
+      title: l.detailMyNotes,
+      isEditing: isEditing,
+      onToggleEdit: isEditing
+          ? _finishEditing
+          : () => _startEditing(_EditingField.user),
+      controller: _userController,
+      hint: l.detailWriteNotesHint,
+      onTap: () => _startEditing(_EditingField.user),
+      onInsertCardLink:
+          widget.onCardLinkTap != null ? () => _insertCardLink() : null,
+      text: widget.hasUserComment ? widget.userComment : null,
+      emptyText: l.detailNoNotesYet,
+      textStyle: AppTypography.body.copyWith(height: 1.5),
+      resolvedLinks: _resolvedCardLinks,
+      onCardLink: widget.onCardLinkTap,
     );
   }
 }

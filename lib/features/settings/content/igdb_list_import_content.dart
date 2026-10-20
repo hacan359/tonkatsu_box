@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as model;
@@ -21,6 +25,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/widgets/status_chip_row.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -35,7 +40,9 @@ import '../../../shared/widgets/import_progress_dialog.dart';
 
 /// Flow: CSV file pick → options (status, platform, target) → import progress.
 class IgdbListImportContent extends ConsumerStatefulWidget {
-  const IgdbListImportContent({super.key});
+  const IgdbListImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<IgdbListImportContent> createState() =>
@@ -48,8 +55,8 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
   ItemStatus _status = ItemStatus.notStarted;
   int? _platformId;
   String? _platformName;
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
 
   List<model.Platform> _platforms = <model.Platform>[];
   bool _platformsLoaded = false;
@@ -459,6 +466,15 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
     if (result.success) {
       ref.invalidate(collectionsProvider);
       final int? cid = result.effectiveCollectionId;
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.igdbList,
+        collectionId: cid,
+        options: <String, Object?>{
+          CollectionImportOption.status: _status.value,
+          CollectionImportOption.platformId: _platformId,
+        },
+      ));
       if (cid != null) {
         ref.invalidate(collectionStatsProvider(cid));
         ref.invalidate(collectionCoversProvider(cid));

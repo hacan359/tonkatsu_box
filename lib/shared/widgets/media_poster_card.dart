@@ -272,7 +272,20 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Expanded(child: _buildGridPoster()),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints c) =>
+                          _buildGridPoster(
+                        _BadgeMetrics(
+                          compact: _isCompact,
+                          scale: AppSpacing.badgeScale(
+                            cardWidth: c.maxWidth,
+                            compact: _isCompact,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   _buildTitleBlock(context),
                 ],
               ),
@@ -324,7 +337,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  Widget _buildGridPoster() {
+  Widget _buildGridPoster(_BadgeMetrics m) {
     final bool hasOverlay =
         widget.platformOverlayAsset != null && !widget.isInCollection;
     final double borderRadius =
@@ -371,8 +384,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             if ((widget.splitRatings && widget.userRating != null) ||
                 widget.timeToBeatHours != null)
               Positioned(
-                top: _isCompact ? 2 : AppSpacing.xs,
-                left: _isCompact ? 2 : AppSpacing.xs,
+                top: m.of(2, AppSpacing.xs),
+                left: m.of(2, AppSpacing.xs),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -380,13 +393,14 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                       DualRatingBadge(
                         userRating: widget.userRating,
                         compact: _isCompact,
+                        scale: m.scale,
                       ),
                     // Average time-to-beat — search game cards only.
                     if (widget.timeToBeatHours != null && !showStatusDot)
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: _isCompact ? 3 : 5,
-                          vertical: _isCompact ? 1 : 2,
+                          horizontal: m.of(3, 5),
+                          vertical: m.of(1, 2),
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.scrim.withAlpha(170),
@@ -398,16 +412,16 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                           children: <Widget>[
                             Icon(
                               Icons.schedule,
-                              size: _isCompact ? 8 : 11,
+                              size: m.of(8, 11),
                               color: AppColors.onOverlay,
                             ),
-                            SizedBox(width: _isCompact ? 1 : 2),
+                            SizedBox(width: m.of(1, 2)),
                             Text(
                               S.of(context).runtimeHours(
                                   widget.timeToBeatHours!),
                               style: TextStyle(
                                 color: AppColors.onOverlay,
-                                fontSize: _isCompact ? 7 : 9,
+                                fontSize: m.of(7, 9),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -421,8 +435,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             // The in-collection button (search) and the platform badge (games)
             // are mutually exclusive; the heart sits before either.
             Positioned(
-              top: _isCompact ? 2 : AppSpacing.xs,
-              right: _isCompact ? 2 : AppSpacing.xs,
+              top: m.of(2, AppSpacing.xs),
+              right: m.of(2, AppSpacing.xs),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -430,25 +444,28 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   if (showFavoriteBadge)
                     _FavoriteButton(
                       isFavorite: widget.isFavorite,
-                      compact: _isCompact,
+                      metrics: m,
                       onTap: widget.onToggleFavorite,
                     ),
                   if (showFavoriteBadge &&
                       (widget.isInCollection || showPlatformBadge))
-                    SizedBox(width: _isCompact ? 2 : 4),
+                    SizedBox(width: m.of(2, 4)),
                   if (widget.isInCollection)
                     widget.onOpenInCollection != null
                         ? _InCollectionButton(
-                            compact: _isCompact,
+                            metrics: m,
                             onTap: widget.onOpenInCollection!,
                           )
-                        : InCollectionBadge(compact: _isCompact)
+                        : InCollectionBadge(
+                            compact: _isCompact,
+                            scale: m.scale,
+                          )
                   // Platform text badge — fallback when there's no overlay.
                   else if (showPlatformBadge)
                     Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: _isCompact ? 3 : 5,
-                        vertical: _isCompact ? 1 : 2,
+                        horizontal: m.of(3, 5),
+                        vertical: m.of(1, 2),
                       ),
                       decoration: BoxDecoration(
                         color: widget.platformColor!.withAlpha(210),
@@ -459,7 +476,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                         widget.platformLabel!,
                         style: TextStyle(
                           color: AppColors.onOverlay,
-                          fontSize: _isCompact ? 7 : 9,
+                          fontSize: m.of(7, 9),
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
                         ),
@@ -475,7 +492,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               left: 0,
               right: 0,
               bottom: 0,
-              child: _buildStatsStrip(),
+              child: _buildStatsStrip(m),
             ),
           ],
         ),
@@ -485,9 +502,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
   /// Collapses to nothing when the item has no status, progress or tag,
   /// leaving the poster bare.
-  Widget _buildStatsStrip() {
-    final double hPad = _isCompact ? 4 : 6;
-    final double vPad = _isCompact ? 2 : 4;
+  Widget _buildStatsStrip(_BadgeMetrics m) {
+    final double hPad = m.of(4, 6);
+    final double vPad = m.of(2, 4);
     final bool showStatusDot =
         widget.status != null && widget.status != ItemStatus.notStarted;
     final bool tagWrap = widget.showAllTags && widget.tags.isNotEmpty;
@@ -521,14 +538,14 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               child: _TagTapTarget(
                 onTap: widget.onTagTap,
                 child: Wrap(
-                  spacing: _isCompact ? 2 : 3,
-                  runSpacing: _isCompact ? 2 : 3,
+                  spacing: m.of(2, 3),
+                  runSpacing: m.of(2, 3),
                   children: <Widget>[
                     for (final Tag tag in widget.tags)
                       _TagChip(
                         key: ValueKey<int>(tag.id),
                         tag: tag,
-                        compact: _isCompact,
+                        metrics: m,
                       ),
                   ],
                 ),
@@ -541,18 +558,18 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 children: <Widget>[
                   if (showStatusDot) ...<Widget>[
                     Container(
-                      padding: EdgeInsets.all(_isCompact ? 2 : 3),
+                      padding: EdgeInsets.all(m.of(2, 3)),
                       decoration: BoxDecoration(
                         color: widget.status!.color,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         widget.status!.materialIcon,
-                        size: _isCompact ? 7 : 10,
+                        size: m.of(7, 10),
                         color: AppColors.onOverlay,
                       ),
                     ),
-                    SizedBox(width: _isCompact ? 2 : 4),
+                    SizedBox(width: m.of(2, 4)),
                   ],
                   // The tag takes the free space so the label lands on the
                   // right edge; a Spacer would split that flex with the tag.
@@ -564,7 +581,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                           onTap: widget.onTagTap,
                           child: _InlineTags(
                             tags: widget.tags,
-                            compact: _isCompact,
+                            metrics: m,
                           ),
                         ),
                       ),
@@ -572,11 +589,11 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   else if (widget.progress == null)
                     const Spacer(),
                   if (widget.progress != null) ...<Widget>[
-                    SizedBox(width: _isCompact ? 2 : 4),
+                    SizedBox(width: m.of(2, 4)),
                     if (inlineTag)
                       _ProgressLabel(
                         label: widget.progress!.label,
-                        compact: _isCompact,
+                        metrics: m,
                       )
                     else
                       Expanded(
@@ -584,7 +601,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                           alignment: Alignment.centerRight,
                           child: _ProgressLabel(
                             label: widget.progress!.label,
-                            compact: _isCompact,
+                            metrics: m,
                           ),
                         ),
                       ),
@@ -594,7 +611,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             ),
           if (widget.progress?.fraction != null)
             SizedBox(
-              height: _isCompact ? 2 : 3,
+              height: m.of(2, 3),
               child: ColoredBox(
                 color: AppColors.scrim.withAlpha(120),
                 child: FractionallySizedBox(
@@ -965,11 +982,23 @@ class _GlowBorderPainter extends CustomPainter {
       color != oldDelegate.color;
 }
 
+/// Badge sizes over the poster: the compact or full base times the factor
+/// the poster's real width gives ([AppSpacing.badgeScale]).
+class _BadgeMetrics {
+  const _BadgeMetrics({required this.compact, required this.scale});
+
+  final bool compact;
+  final double scale;
+
+  double of(double compactSize, double fullSize) =>
+      (compact ? compactSize : fullSize) * scale;
+}
+
 class _ProgressLabel extends StatelessWidget {
-  const _ProgressLabel({required this.label, required this.compact});
+  const _ProgressLabel({required this.label, required this.metrics});
 
   final String label;
-  final bool compact;
+  final _BadgeMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -977,7 +1006,7 @@ class _ProgressLabel extends StatelessWidget {
       label,
       style: TextStyle(
         color: AppColors.onOverlay,
-        fontSize: compact ? 7 : 9,
+        fontSize: metrics.of(7, 9),
         fontWeight: FontWeight.w700,
       ),
       maxLines: 1,
@@ -1008,44 +1037,44 @@ class _TagTapTarget extends StatelessWidget {
 /// The primary tag plus a separate "+N" badge: only the name ellipsizes, so
 /// the count of hidden tags stays visible on any card width.
 class _InlineTags extends StatelessWidget {
-  const _InlineTags({required this.tags, required this.compact});
+  const _InlineTags({required this.tags, required this.metrics});
 
   final List<Tag> tags;
-  final bool compact;
+  final _BadgeMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
-    if (tags.isEmpty) return _EmptyTagBadge(compact: compact);
-    final Widget chip = _TagChip(tag: tags.first, compact: compact);
+    if (tags.isEmpty) return _EmptyTagBadge(metrics: metrics);
+    final Widget chip = _TagChip(tag: tags.first, metrics: metrics);
     if (tags.length == 1) return chip;
 
     final int count = tags.length - 1;
-    final double gap = compact ? 2 : 3;
+    final double gap = metrics.of(2, 3);
     final Widget row = Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Flexible(child: chip),
         SizedBox(width: gap),
-        _MoreTagsBadge(count: count, compact: compact),
+        _MoreTagsBadge(count: count, metrics: metrics),
       ],
     );
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final double minWidth =
-            gap + _MoreTagsBadge.widthOf(context, count, compact: compact);
+            gap + _MoreTagsBadge.widthOf(context, count, metrics: metrics);
         if (constraints.maxWidth >= minWidth) return row;
         // No room for both: the count alone says more than a clipped name.
-        return _MoreTagsBadge(count: count, compact: compact);
+        return _MoreTagsBadge(count: count, metrics: metrics);
       },
     );
   }
 }
 
 class _TagChip extends StatelessWidget {
-  const _TagChip({required this.tag, required this.compact, super.key});
+  const _TagChip({required this.tag, required this.metrics, super.key});
 
   final Tag tag;
-  final bool compact;
+  final _BadgeMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -1054,11 +1083,11 @@ class _TagChip extends StatelessWidget {
     return _TagPill(
       color: (color != null ? Color(color) : AppColors.textSecondary)
           .withAlpha(200),
-      compact: compact,
+      metrics: metrics,
       child: Text(
         tag.name,
         style: _tagLabelStyle(
-          compact: compact,
+          metrics: metrics,
           color: textColor != null ? Color(textColor) : AppColors.onOverlay,
         ),
         maxLines: 1,
@@ -1069,20 +1098,20 @@ class _TagChip extends StatelessWidget {
 }
 
 class _MoreTagsBadge extends StatelessWidget {
-  const _MoreTagsBadge({required this.count, required this.compact});
+  const _MoreTagsBadge({required this.count, required this.metrics});
 
   final int count;
-  final bool compact;
+  final _BadgeMetrics metrics;
 
   static double widthOf(
     BuildContext context,
     int count, {
-    required bool compact,
+    required _BadgeMetrics metrics,
   }) {
     final TextPainter painter = TextPainter(
       text: TextSpan(
         text: '+$count',
-        style: _tagLabelStyle(compact: compact, color: AppColors.onOverlay),
+        style: _tagLabelStyle(metrics: metrics, color: AppColors.onOverlay),
       ),
       textDirection: TextDirection.ltr,
       textScaler: MediaQuery.textScalerOf(context),
@@ -1090,17 +1119,17 @@ class _MoreTagsBadge extends StatelessWidget {
     )..layout();
     final double width = painter.width;
     painter.dispose();
-    return width + 2 * _TagPill.horizontalPadding(compact: compact);
+    return width + 2 * _TagPill.horizontalPadding(metrics);
   }
 
   @override
   Widget build(BuildContext context) {
     return _TagPill(
       color: AppColors.scrim.withAlpha(170),
-      compact: compact,
+      metrics: metrics,
       child: Text(
         '+$count',
-        style: _tagLabelStyle(compact: compact, color: AppColors.onOverlay),
+        style: _tagLabelStyle(metrics: metrics, color: AppColors.onOverlay),
         maxLines: 1,
         softWrap: false,
         overflow: TextOverflow.clip,
@@ -1110,18 +1139,18 @@ class _MoreTagsBadge extends StatelessWidget {
 }
 
 class _EmptyTagBadge extends StatelessWidget {
-  const _EmptyTagBadge({required this.compact});
+  const _EmptyTagBadge({required this.metrics});
 
-  final bool compact;
+  final _BadgeMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
     return _TagPill(
       color: AppColors.surface.withAlpha(180),
-      compact: compact,
+      metrics: metrics,
       child: Icon(
         Icons.label_outline,
-        size: compact ? 10 : 14,
+        size: metrics.of(10, 14),
         color: AppColors.textTertiary,
       ),
     );
@@ -1131,22 +1160,22 @@ class _EmptyTagBadge extends StatelessWidget {
 class _TagPill extends StatelessWidget {
   const _TagPill({
     required this.color,
-    required this.compact,
+    required this.metrics,
     required this.child,
   });
 
   final Color color;
-  final bool compact;
+  final _BadgeMetrics metrics;
   final Widget child;
 
-  static double horizontalPadding({required bool compact}) => compact ? 3 : 5;
+  static double horizontalPadding(_BadgeMetrics metrics) => metrics.of(3, 5);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding(compact: compact),
-        vertical: compact ? 1 : 2,
+        horizontal: horizontalPadding(metrics),
+        vertical: metrics.of(1, 2),
       ),
       decoration: BoxDecoration(
         color: color,
@@ -1157,10 +1186,13 @@ class _TagPill extends StatelessWidget {
   }
 }
 
-TextStyle _tagLabelStyle({required bool compact, required Color color}) {
+TextStyle _tagLabelStyle({
+  required _BadgeMetrics metrics,
+  required Color color,
+}) {
   return TextStyle(
     color: color,
-    fontSize: compact ? 7 : 9,
+    fontSize: metrics.of(7, 9),
     fontWeight: FontWeight.w600,
   );
 }
@@ -1212,12 +1244,12 @@ class _SourceLogoLink extends StatelessWidget {
 class _FavoriteButton extends StatelessWidget {
   const _FavoriteButton({
     required this.isFavorite,
-    required this.compact,
+    required this.metrics,
     this.onTap,
   });
 
   final bool isFavorite;
-  final bool compact;
+  final _BadgeMetrics metrics;
 
   /// When null the heart is a static indicator: taps fall through to the card
   /// (e.g. select it) instead of toggling the flag.
@@ -1230,11 +1262,11 @@ class _FavoriteButton extends StatelessWidget {
       shape: const CircleBorder(),
       elevation: 2,
       child: Padding(
-        padding: EdgeInsets.all(compact ? 2 : 4),
+        padding: EdgeInsets.all(metrics.of(2, 4)),
         child: Icon(
           isFavorite ? Icons.favorite : Icons.heart_broken,
           color: AppColors.onOverlay,
-          size: compact ? 10 : 13,
+          size: metrics.of(10, 13),
         ),
       ),
     );
@@ -1243,7 +1275,7 @@ class _FavoriteButton extends StatelessWidget {
 
     // The bare icon is far under the ~40px touch guideline; the padded box
     // also lets the heart's recognizer win over the card's open-tap.
-    final double target = compact ? 28 : 32;
+    final double target = _tapTarget(metrics);
     return SizedBox(
       width: target,
       height: target,
@@ -1259,29 +1291,37 @@ class _FavoriteButton extends StatelessWidget {
   }
 }
 
+/// Side of the transparent box around a tappable badge; the visible circle
+/// stays its own size inside it.
+double _tapTarget(_BadgeMetrics metrics) => metrics.of(28, 32);
+
 class _InCollectionButton extends StatelessWidget {
   const _InCollectionButton({
-    required this.compact,
+    required this.metrics,
     required this.onTap,
   });
 
-  final bool compact;
+  final _BadgeMetrics metrics;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.success,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.all(compact ? 2 : 4),
-          child: Icon(
-            Icons.open_in_new,
-            color: AppColors.onOverlay,
-            size: compact ? 8 : 12,
+    final double target = _tapTarget(metrics);
+    return SizedBox(
+      width: target,
+      height: target,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: InCollectionBadge(
+              compact: metrics.compact,
+              scale: metrics.scale,
+              icon: Icons.open_in_new,
+            ),
           ),
         ),
       ),

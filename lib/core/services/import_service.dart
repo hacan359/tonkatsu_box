@@ -97,14 +97,20 @@ class ImportResult {
     this.collection,
     this.itemsImported,
     this.itemsUpdated = 0,
+    this.customSkipped = 0,
     this.error,
   });
 
-  const ImportResult.success(Collection col, int items, {int updated = 0})
-      : success = true,
+  const ImportResult.success(
+    Collection col,
+    int items, {
+    int updated = 0,
+    int skippedCustom = 0,
+  })  : success = true,
         collection = col,
         itemsImported = items,
         itemsUpdated = updated,
+        customSkipped = skippedCustom,
         error = null;
 
   const ImportResult.failure(String message)
@@ -112,6 +118,7 @@ class ImportResult {
         collection = null,
         itemsImported = null,
         itemsUpdated = 0,
+        customSkipped = 0,
         error = message;
 
   const ImportResult.cancelled()
@@ -119,6 +126,7 @@ class ImportResult {
         collection = null,
         itemsImported = null,
         itemsUpdated = 0,
+        customSkipped = 0,
         error = null;
 
   final bool success;
@@ -128,6 +136,9 @@ class ImportResult {
   final int? itemsImported;
 
   final int itemsUpdated;
+
+  // Items pointing at a card the file lacks, as files before 0.45 exported.
+  final int customSkipped;
 
   final String? error;
 
@@ -530,7 +541,12 @@ class ImportService {
         message: 'Imported $addedCount items',
       ));
 
-      return ImportResult.success(collection, addedCount, updated: updatedCount);
+      return ImportResult.success(
+        collection,
+        addedCount,
+        updated: updatedCount,
+        skippedCustom: skippedCustom,
+      );
     } on IgdbApiException catch (e) {
       return ImportResult.failure(
           'Failed to fetch games from IGDB: ${e.message}');

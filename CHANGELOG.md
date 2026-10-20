@@ -7,6 +7,366 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Two new themes: PS1 Retro and Eva Azure**
+
+  PS1 Retro is the grey PlayStation shell with the four logo colours; Eva
+  Azure is built from the Eva Design System shades. Both are light themes and
+  appear in Settings → Theme. Ported from the TonkatsuBox CN fork by shingo110.
+
+  * lib/shared/theme/palettes/ps1_palette.dart (ps1Palette),
+    lib/shared/theme/palettes/eva_palette.dart (evaPalette): New.
+  * lib/shared/theme/app_theme_id.dart (AppThemeId.ps1, AppThemeId.eva,
+    AppThemeId.palette): Two new themes.
+  * lib/shared/theme/app_palette.dart (AppPalette.ps1, AppPalette.eva),
+    lib/shared/theme/app_assets.dart (AppAssets.backgroundTilePs1,
+    AppAssets.backgroundTileEva): Palettes and background tiles.
+  * assets/images/background_tile_ps1.png,
+    assets/images/background_tile_eva.png: New.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._themeLabel): Labels for the new themes.
+  * lib/l10n/app_*.arb (settingsThemePs1, settingsThemeEva): New strings.
+
+- **Cards show directors, creators, studios, developers and publishers**
+
+  A movie card lists its directors and studios, a series its creators and
+  networks, a game its developers and publishers, a custom card its authors.
+  Each name is a chip with its role in a tooltip; a tap searches the
+  collection by that name. Title search also finds a movie by its director,
+  a series by its creator, a game by its developer and a custom card by its
+  author. "Refresh from source" fills these in for cards added earlier.
+  Custom cards get an Authors field in the form and an `authors` column in
+  the CSV and JSON import.
+
+  * packages/core/lib/database/migrations/migration_v67.dart (MigrationV67):
+    New, adds movies_cache.directors, movies_cache.studios,
+    tv_shows_cache.creators, tv_shows_cache.studios, games.developers,
+    games.publishers, custom_items.authors.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Register it.
+  * packages/core/lib/models/movie.dart (Movie.directors, Movie.studios),
+    packages/core/lib/models/tv_show.dart (TvShow.creators, TvShow.studios),
+    packages/core/lib/models/game.dart (Game.developers, Game.publishers),
+    packages/core/lib/models/custom_media.dart (CustomMedia.authors): New
+    fields, parsed from TMDB, TheTVDB, TVmaze and IGDB.
+  * packages/core/lib/utils/json_list.dart (decodeJsonStringListOrNull,
+    encodeJsonStringList, distinctNames, distinctEntryNames),
+    packages/core/lib/utils/tvdb_json.dart (tvdbPeople, tvdbCompanies),
+    packages/core/lib/utils/tvmaze_json.dart (tvMazeCreators,
+    tvMazeNetworks): New.
+  * packages/core/lib/database/dao/movie_dao.dart (MovieDao._movieUpsert),
+    packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao._showUpsert):
+    A list hit keeps the cached names.
+  * packages/core/lib/models/collection_item.dart
+    (CollectionItem.searchableMeta), packages/core/lib/utils/item_search.dart
+    (ItemSearch.creatorsOf): Search by the names.
+  * packages/core/lib/rpc/generated/*.rpc.dart: Regenerated.
+  * lib/core/api/tmdb/tmdb_movies_api.dart (TmdbMoviesApi.getMovie): Append
+    credits. lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi._gameFields):
+    Request involved companies. lib/core/api/tvmaze/tvmaze_show_api.dart
+    (TvMazeShowApi.getShow): Embed crew.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (_creatorChips): New, at most four chips per role.
+  * lib/shared/widgets/media_detail/media_detail_chip.dart
+    (MediaDetailChip.tooltip), lib/shared/widgets/media_detail/identity_header.dart
+    (_InfoChip.tooltip): New.
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState._buildAuthorsSection),
+    lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.authors): Authors field; an emptied field clears it.
+  * lib/core/import/sources/custom_file/custom_card_entry.dart
+    (CustomCardFields.authors, CustomCardEntry.authors),
+    lib/core/import/sources/custom_file/custom_cards_parser.dart
+    (CustomCardsParser._authors),
+    lib/core/import/sources/custom_file/custom_cards_template.dart
+    (CustomCardsTemplate.json),
+    lib/core/import/sources/custom_file/custom_cards_import_service.dart
+    (CustomCardsImportService._card): Import the column.
+  * lib/features/collections/helpers/custom_duplicate.dart
+    (customDraftFromItem): A duplicate takes the item's people as authors.
+  * lib/l10n/app_*.arb (customItemAuthors, customItemAuthorsHint,
+    creatorDirector, creatorCreator, creatorDeveloper, creatorPublisher,
+    creatorStudio, creatorAuthor): New strings.
+
+- **Linux AppImage in every release**
+
+  Each release ships `tonkatsu-box-vX-linux-x86_64.AppImage` next to the
+  tar.gz: make it executable and run it. It needs GTK 3, `zenity` and
+  `xdg-utils` from the system, like the tar.gz. Packaging script by
+  Cybercountry (#456).
+
+  * tool/build_appimage.sh: New; wraps a `flutter build linux` bundle with a
+    pinned, checksum-verified appimagetool.
+  * .github/workflows/release.yml (build-linux, create-release): Build the
+    AppImage and attach it to the release.
+  * README.md: AppImage download link and Linux notes.
+
+- **Refresh selected cards from their sources**
+
+  The bulk action bar in a collection and in All Items gets "Refresh from
+  source". A confirmation names how many cards will be refreshed and how many
+  have no source. The cards refresh one after another in the progress window
+  with a running count of updated, not found, failed and skipped; Stop ends
+  the run after the current card. Fantlab and Hardcover books keep their
+  edition and cover. Cards the run could not refresh are listed at the end.
+
+  * lib/features/collections/helpers/item_refresh.dart (refreshItemFromSource,
+    canRefreshFromSource, RefreshOutcome, RefreshOutcomeKind): New; the
+    per-source refetch shared by the card button and the bulk run.
+  * lib/features/collections/helpers/bulk_refresh.dart (runBulkRefresh,
+    BulkRefreshResult, BulkRefreshProblem, BulkRefreshCancellation): New.
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi): Delegate to refreshItemFromSource.
+  * lib/features/collections/widgets/bulk_action_bar.dart
+    (BulkActionBar._handleRefresh, _RefreshProblemList): The action, the
+    confirmation and the result list.
+  * lib/shared/widgets/import_progress_dialog.dart (ImportProgressDialog.onCancel,
+    ImportProgressDialog.talliesBuilder, ImportProgressDialog.resultBuilder):
+    Optional Stop button, custom tallies line and a result view.
+  * lib/core/import/import_progress.dart (ImportProgress.notFound,
+    ImportProgress.failed, ImportProgress.skipped, ImportStage.fetchingAudio):
+    New tallies and the audio stage.
+  * lib/shared/constants/import_stage_ui.dart (ImportStageUi.label): Label for
+    the audio stage.
+  * lib/l10n/app_*.arb (bulkRefreshConfirm, bulkRefreshSkippedNote,
+    bulkRefreshStart, bulkRefreshProblems, refreshTallies,
+    importStageFetchingAudio, stop): New strings.
+
+- **Interface scale: Ctrl+wheel zooms the whole app**
+
+  Settings → Appearance gets an "Interface scale" slider from 50% to 200%.
+  Ctrl+wheel, Ctrl+plus and Ctrl+minus step it by 10%, Ctrl+0 returns to
+  100%. The layout reflows as if the window were smaller or larger and text
+  stays sharp. The shortcuts are listed in the F1 help.
+
+  * lib/shared/widgets/ui_scale_scope.dart (UiScaleScope): New; lays the app
+    out in a virtual window and paints it scaled.
+  * lib/core/app_binding.dart (TonkatsuBinding): New; takes Ctrl+wheel before
+    any scrollable sees it.
+  * lib/main.dart (main): Start with TonkatsuBinding.
+  * lib/app.dart (_TonkatsuBoxAppState._onCtrlWheel,
+    _TonkatsuBoxAppState.build): Install the wheel handler and wrap the app in
+    UiScaleScope.
+  * lib/features/settings/providers/settings_provider.dart (SettingsKeys.uiScale,
+    SettingsState.uiScale, SettingsNotifier.setUiScale,
+    SettingsNotifier.stepUiScale): The setting.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState.build): The slider.
+  * lib/shared/keyboard/keyboard_shortcuts.dart (buildGlobalShortcuts,
+    globalShortcutGroup): Ctrl+plus, Ctrl+minus, Ctrl+0 and their help rows.
+  * lib/shared/navigation/app_shell.dart (_AppShellState.build): Wire the
+    zoom shortcuts to the setting.
+  * lib/l10n/app_*.arb (settingsUiScale, settingsUiScaleSubtitle,
+    shortcutZoomIn, shortcutZoomOut, shortcutZoomReset): New strings.
+
+### Changed
+
+- **Kitsu is reached at kitsu.app**
+
+  Requests, the web proxy allowlist, links from a card and the source list
+  all use kitsu.app, the host Kitsu moved to; kitsu.io only redirects there.
+
+  * lib/core/api/kitsu/kitsu_http_client.dart (KitsuHttpClient): New base URL.
+  * packages/core/lib/api/proxy_targets.dart (ProxyTarget.kitsu): New host.
+  * packages/core/lib/models/anime.dart (Anime.fromKitsu),
+    packages/core/lib/models/manga.dart (Manga.fromKitsu): externalUrl on
+    kitsu.app.
+  * lib/shared/constants/source_catalog.dart (kDataSourceCatalog),
+    lib/features/settings/content/credits_content.dart (CreditsContent),
+    README.md: Links to kitsu.app.
+
+- **Badges on a card grow with the card**
+
+  The rating, play time, heart, in-collection mark, platform label, status
+  dot, tags and progress over the poster scale with the card width, up to
+  1.6×. The open-in-collection button reacts to taps around its circle.
+
+  * lib/shared/theme/app_spacing.dart (AppSpacing.badgeScale,
+    AppSpacing.compactRefCardWidth, AppSpacing.badgeScaleMin,
+    AppSpacing.badgeScaleMax): New.
+  * lib/shared/widgets/media_poster_card.dart
+    (_MediaPosterCardState._buildGridPoster,
+    _MediaPosterCardState._buildStatsStrip, _BadgeMetrics, _tapTarget,
+    _InCollectionButton, _FavoriteButton, _MoreTagsBadge.widthOf, _TagPill,
+    _tagLabelStyle): Size every badge from one scale.
+  * lib/shared/widgets/dual_rating_badge.dart (DualRatingBadge.scale),
+    lib/shared/widgets/in_collection_badge.dart (InCollectionBadge.scale,
+    InCollectionBadge.icon): New parameters.
+
+- **Filter chips, table filters and sort menus show hover and focus**
+
+  The search filter and sort chips, the collection table filter dropdowns,
+  the TMDB language dropdown in the welcome tour and the copy-as-text sort
+  menu highlight on hover and draw a focus ring for keyboard and gamepad.
+
+  * lib/shared/widgets/focusable_surface.dart (FocusableSurface.borderColor):
+    New parameter.
+  * lib/features/search/widgets/filter_dropdown.dart
+    (_FilterDropdownState.build, SortDropdown.build),
+    lib/features/collections/widgets/collection_table/table_filter.dart,
+    lib/features/welcome/widgets/welcome_step_language.dart,
+    lib/features/collections/widgets/copy_as_text_dialog.dart: Move the fill
+    and border onto FocusableSurface.
+
+- **Collection import reports skipped custom cards**
+
+  The import message counts items whose custom card is missing from the
+  file.
+
+  * lib/core/services/import_service.dart (ImportResult.customSkipped,
+    ImportResult.success, ImportService.importFromXcoll): Carry the count.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/screens/home_screen.dart: Show it.
+  * lib/l10n/app_*.arb (importCustomSkipped): New string.
+
+- **A collection remembers where its imports came from**
+
+  Every successful import from Steam, RetroAchievements, Simkl, AniList,
+  Hardcover, Kinorium, IGDB lists, Trakt, MyAnimeList or a custom-cards file
+  is recorded against the collection it filled, with the switches it ran
+  with. "Import" inside that collection then offers the collection file plus
+  each of those sources with the date of its last run; picking a source runs
+  it again into the same collection with the same switches and reports the
+  result in a toast. Sources that read a file ask for the file; a source
+  missing a credential opens its form with the collection preselected. An
+  import form opened from Settings starts on the collection that source
+  filled last time. A full backup carries these records and a restore
+  re-attaches them to the restored collections.
+
+  * packages/core/lib/models/collection_import.dart (CollectionImport,
+    CollectionImportOption), packages/core/lib/models/import_source_kind.dart
+    (ImportSourceKind): New.
+  * packages/core/lib/database/migrations/migration_v68.dart (MigrationV68),
+    packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): The `collection_imports` table.
+  * packages/core/lib/database/dao/collection_import_dao.dart
+    (CollectionImportDao.getForCollection,
+    CollectionImportDao.getLatestForSource, CollectionImportDao.upsert,
+    CollectionImportDao.delete): New.
+  * packages/core/lib/rpc/generated/collection_import_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/collection_import_dao.remote.rpc.dart,
+    packages/core/lib/rpc/generated/dao_dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/remote_daos.rpc.dart,
+    server/lib/src/rpc_handler.dart: Regenerated.
+  * lib/core/database/database_service.dart
+    (DatabaseService.collectionImportDao): New DAO.
+  * lib/features/collections/providers/collection_imports_provider.dart
+    (collectionImportsProvider, recordCollectionImport): New.
+  * lib/features/collections/helpers/saved_import_launcher.dart
+    (SavedImportLauncher.prepare): New, builds the rerun from a record.
+  * lib/features/collections/widgets/dialogs/collection_import_source_dialog.dart
+    (CollectionImportSourceDialog): New.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._handleImportIntoCollection,
+    _CollectionScreenState._rerunSavedImport,
+    _CollectionScreenState._runSavedImport,
+    _CollectionScreenState._invalidateAfterImport): Source picker, rerun,
+    toast with the counts.
+  * lib/features/settings/widgets/remembered_import_collection.dart
+    (RememberedImportCollection): New, resolves the last collection of a
+    source.
+  * lib/features/settings/screens/steam_import_screen.dart,
+    ra_import_screen.dart, simkl_import_screen.dart, anilist_import_screen.dart,
+    hardcover_import_screen.dart, kinorium_import_screen.dart,
+    igdb_list_import_screen.dart, trakt_import_screen.dart,
+    mal_import_screen.dart, custom_cards_import_screen.dart
+    (initialCollectionId): Accept a collection and wrap the form in
+    RememberedImportCollection.
+  * lib/features/settings/content/steam_import_content.dart,
+    ra_import_content.dart, simkl_import_content.dart,
+    anilist_import_content.dart, hardcover_import_content.dart,
+    kinorium_import_content.dart, igdb_list_import_content.dart,
+    trakt_import_content.dart, mal_import_content.dart,
+    custom_cards_import_content.dart (initialCollectionId),
+    lib/features/settings/screens/custom_cards_preview_screen.dart: Preselect
+    the collection and record the run.
+  * lib/shared/constants/import_source_kind_ui.dart (ImportSourceKindUi):
+    Labels and icons.
+  * lib/core/services/backup_service.dart (BackupService.createBackup,
+    BackupService.restoreFromBackup, BackupService.importToExport,
+    BackupService.importFromExport): Write collection_imports.json keyed by
+    the collection's archive path and restore it onto the new ids.
+  * lib/l10n/app_*.arb (collectionImportPickSource, collectionImportFromFile,
+    collectionImportLastRun, collectionImportRerunTitle,
+    collectionImportRerunMessage, collectionImportRun,
+    collectionImportSynced): New strings.
+
+### Fixed
+
+- **Ctrl+F puts the cursor in the search field**
+
+  The F1 legend for Search lists only Ctrl+F.
+
+  * lib/shared/navigation/app_shell.dart (_AppShellState._onSearchShortcut):
+    New; opens Search and focuses the top bar field.
+  * lib/features/search/screens/search_screen.dart (SearchScreen.shortcutGroup):
+    Drop the Escape and Enter rows.
+  * lib/l10n/app_*.arb (shortcutClearOrBack, shortcutRunSearch): Removed.
+
+- **Emptied fields of a custom card are saved**
+
+  Clearing the description, alternative title, genres or link while editing
+  a custom card removes the old value.
+
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData.applyTo): New, builds the edited card.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._editCustomItem): Use it.
+
+- **Episode stills come back after an interrupted download**
+
+  A picture whose download broke off is fetched again the next time it is
+  shown, and deleting a cached picture lets it download again.
+
+  * lib/core/services/image_cache_service.dart (ImageCacheService.downloadImage,
+    ImageCacheService.deleteImage, ImageCacheService._hasImageSignature):
+    Retry cut-off files, forget a failure on delete.
+
+- **Cache cleanup removes covers of deleted custom cards**
+
+  * lib/core/services/cache_cleanup_service.dart
+    (CacheCleanupService.removeOrphans): Sweep the custom cover folder,
+    keeping covers of every existing card.
+  * packages/core/lib/database/dao/custom_media_dao.dart
+    (CustomMediaDao.getAll): New.
+  * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/custom_media_dao.remote.rpc.dart:
+    Regenerated.
+
+- **Refresh from source keeps the cover until the source answers**
+
+  The cached cover is dropped after a successful refetch, so a refresh that
+  times out or finds nothing leaves the card's art in place.
+
+  * lib/features/collections/helpers/item_refresh.dart
+    (refreshItemFromSource): Delete the cover after the upsert.
+
+- **MangaBaka credits a person once when listed as author and artist**
+
+  * packages/core/lib/models/manga.dart (Manga.fromMangaBaka): Merge authors
+    and artists without duplicates.
+
+- **Collection lists pick up a card refreshed from the source**
+
+  After "Refresh from source" every collection holding the title and All
+  Items show the new data, and a search by a name from the card finds it.
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi): Reload every item list on
+    success.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._refreshFromApi): Drop its own reload.
+
+### Removed
+
+- **Laboratory section in Settings**
+
+  * lib/features/settings/screens/card_banner_debug_screen.dart: Removed.
+  * lib/features/settings/screens/settings_screen.dart: Drop the group.
+  * lib/l10n/app_*.arb (settingsLaboratory, settingsLaboratoryCardDesigns,
+    settingsLaboratoryCardDesignsSubtitle): Removed.
+
 ## [0.45.0] - 2026-10-03
 
 ### Added

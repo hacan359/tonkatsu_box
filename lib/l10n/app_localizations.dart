@@ -1029,24 +1029,6 @@ abstract class S {
   /// **'Set SteamGridDB key first for some tools'**
   String get settingsDebugSubtitleNoKey;
 
-  /// No description provided for @settingsLaboratory.
-  ///
-  /// In en, this message translates to:
-  /// **'Laboratory'**
-  String get settingsLaboratory;
-
-  /// No description provided for @settingsLaboratoryCardDesigns.
-  ///
-  /// In en, this message translates to:
-  /// **'Card banner designs'**
-  String get settingsLaboratoryCardDesigns;
-
-  /// No description provided for @settingsLaboratoryCardDesignsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Experimental poster card layouts'**
-  String get settingsLaboratoryCardDesignsSubtitle;
-
   /// No description provided for @settingsHelp.
   ///
   /// In en, this message translates to:
@@ -1196,6 +1178,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Sakura'**
   String get settingsThemeSakura;
+
+  /// No description provided for @settingsThemePs1.
+  ///
+  /// In en, this message translates to:
+  /// **'PS1 Retro'**
+  String get settingsThemePs1;
+
+  /// No description provided for @settingsThemeEva.
+  ///
+  /// In en, this message translates to:
+  /// **'Eva Azure'**
+  String get settingsThemeEva;
 
   /// No description provided for @settingsAppLanguageSubtitle.
   ///
@@ -3193,6 +3187,54 @@ abstract class S {
   /// In en, this message translates to:
   /// **'e.g. RPG, Action, Puzzle'**
   String get customItemGenresHint;
+
+  /// No description provided for @customItemAuthors.
+  ///
+  /// In en, this message translates to:
+  /// **'Authors'**
+  String get customItemAuthors;
+
+  /// No description provided for @customItemAuthorsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Hideo Kojima, Yoji Shinkawa'**
+  String get customItemAuthorsHint;
+
+  /// No description provided for @creatorDirector.
+  ///
+  /// In en, this message translates to:
+  /// **'Director'**
+  String get creatorDirector;
+
+  /// No description provided for @creatorCreator.
+  ///
+  /// In en, this message translates to:
+  /// **'Creator'**
+  String get creatorCreator;
+
+  /// No description provided for @creatorDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get creatorDeveloper;
+
+  /// No description provided for @creatorPublisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Publisher'**
+  String get creatorPublisher;
+
+  /// No description provided for @creatorStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio'**
+  String get creatorStudio;
+
+  /// No description provided for @creatorAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get creatorAuthor;
 
   /// No description provided for @platform.
   ///
@@ -6428,6 +6470,18 @@ abstract class S {
   /// **'Interface text size, on top of the system setting'**
   String get settingsTextScaleSubtitle;
 
+  /// No description provided for @settingsUiScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface scale'**
+  String get settingsUiScale;
+
+  /// No description provided for @settingsUiScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zooms the whole app, like a browser. Ctrl+wheel or Ctrl+plus / minus, Ctrl+0 resets'**
+  String get settingsUiScaleSubtitle;
+
   /// No description provided for @collectionEditHeroImage.
   ///
   /// In en, this message translates to:
@@ -7453,6 +7507,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Added to wishlist: {count}'**
   String steamImportWishlisted(int count);
+
+  /// No description provided for @importCustomSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom cards skipped: {count}'**
+  String importCustomSkipped(int count);
 
   /// No description provided for @steamImportUpdated.
   ///
@@ -9932,6 +9992,24 @@ abstract class S {
   /// **'This help'**
   String get shortcutThisHelp;
 
+  /// No description provided for @shortcutZoomIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom in'**
+  String get shortcutZoomIn;
+
+  /// No description provided for @shortcutZoomOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom out'**
+  String get shortcutZoomOut;
+
+  /// No description provided for @shortcutZoomReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset zoom'**
+  String get shortcutZoomReset;
+
   /// No description provided for @shortcutCreateCollection.
   ///
   /// In en, this message translates to:
@@ -10081,18 +10159,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Focus search field'**
   String get shortcutFocusSearchField;
-
-  /// No description provided for @shortcutClearOrBack.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear / back'**
-  String get shortcutClearOrBack;
-
-  /// No description provided for @shortcutRunSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Run search'**
-  String get shortcutRunSearch;
 
   /// No description provided for @debugKeyEvents.
   ///
@@ -10760,6 +10826,48 @@ abstract class S {
   /// **'Found {found} · Custom cards {custom} · Ambiguous {ambiguous}'**
   String importTallies(int found, int custom, int ambiguous);
 
+  /// No description provided for @importStageFetchingAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching audio data...'**
+  String get importStageFetchingAudio;
+
+  /// No description provided for @refreshTallies.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {updated} · Not found {notFound} · Errors {failed} · Skipped {skipped}'**
+  String refreshTallies(int updated, int notFound, int failed, int skipped);
+
+  /// No description provided for @bulkRefreshConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Refresh 1 item from its source?} other{Refresh {count} items from their sources?}}'**
+  String bulkRefreshConfirm(int count);
+
+  /// No description provided for @bulkRefreshSkippedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected item has no source and will be skipped.} other{{count} selected items have no source and will be skipped.}}'**
+  String bulkRefreshSkippedNote(int count);
+
+  /// No description provided for @bulkRefreshStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get bulkRefreshStart;
+
+  /// No description provided for @bulkRefreshProblems.
+  ///
+  /// In en, this message translates to:
+  /// **'Not refreshed'**
+  String get bulkRefreshProblems;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
+
   /// No description provided for @customImportResolveTitle.
   ///
   /// In en, this message translates to:
@@ -10783,6 +10891,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Titles copied'**
   String get importResultUnresolvedCopied;
+
+  /// No description provided for @collectionImportPickSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Import into collection'**
+  String get collectionImportPickSource;
+
+  /// No description provided for @collectionImportFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From a collection file'**
+  String get collectionImportFromFile;
+
+  /// No description provided for @collectionImportLastRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Last run {date}'**
+  String collectionImportLastRun(String date);
+
+  /// No description provided for @collectionImportRerunTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run {source} import again?'**
+  String collectionImportRerunTitle(String source);
+
+  /// No description provided for @collectionImportRerunMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'New items from {source} are added to “{collection}” with the same settings as last time.'**
+  String collectionImportRerunMessage(String source, String collection);
+
+  /// No description provided for @collectionImportRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run'**
+  String get collectionImportRun;
+
+  /// No description provided for @collectionImportSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} synced: {count} new'**
+  String collectionImportSynced(String source, int count);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -706,4 +706,119 @@ void main() {
       });
     });
   });
+
+  group('Movie directors', () {
+    test('fromJson reads Director jobs from appended credits', () {
+      final Movie movie = Movie.fromJson(<String, dynamic>{
+        'id': 1,
+        'title': 'Alien',
+        'credits': <String, dynamic>{
+          'crew': <dynamic>[
+            <String, dynamic>{'job': 'Director', 'name': 'Ridley Scott'},
+            <String, dynamic>{'job': 'Writer', 'name': "Dan O'Bannon"},
+            <String, dynamic>{'job': 'Director', 'name': 'Ridley Scott'},
+          ],
+        },
+      });
+      expect(movie.directors, <String>['Ridley Scott']);
+    });
+
+    test('fromJson reads production companies as studios', () {
+      final Movie movie = Movie.fromJson(<String, dynamic>{
+        'id': 1,
+        'title': 'Alien',
+        'production_companies': <dynamic>[
+          <String, dynamic>{'name': 'Brandywine'},
+          <String, dynamic>{'name': '20th Century Fox'},
+        ],
+      });
+      expect(movie.studios, <String>['Brandywine', '20th Century Fox']);
+    });
+
+    test('fromJson leaves directors null without credits', () {
+      final Movie movie =
+          Movie.fromJson(<String, dynamic>{'id': 1, 'title': 'Alien'});
+      expect(movie.directors, isNull);
+    });
+
+    test('fromJson leaves directors null when no crew is a director', () {
+      final Movie movie = Movie.fromJson(<String, dynamic>{
+        'id': 1,
+        'title': 'Alien',
+        'credits': <String, dynamic>{
+          'crew': <dynamic>[
+            <String, dynamic>{'job': 'Writer', 'name': 'W'},
+          ],
+        },
+      });
+      expect(movie.directors, isNull);
+    });
+
+    test('fromTvdb reads Director people', () {
+      final Movie movie = Movie.fromTvdb(<String, dynamic>{
+        'id': 5,
+        'name': 'Alien',
+        'characters': <dynamic>[
+          <String, dynamic>{'peopleType': 'Director', 'personName': 'R. S.'},
+          <String, dynamic>{'peopleType': 'Actor', 'personName': 'S. W.'},
+        ],
+      });
+      expect(movie.directors, <String>['R. S.']);
+    });
+
+    test('fromTvdb reads studios, then production companies', () {
+      Movie movie(Map<String, dynamic> companies) => Movie.fromTvdb(
+            <String, dynamic>{'id': 5, 'name': 'A', 'companies': companies},
+          );
+      expect(
+        movie(<String, dynamic>{
+          'studio': <dynamic>[
+            <String, dynamic>{'name': 'S'},
+          ],
+          'production': <dynamic>[
+            <String, dynamic>{'name': 'P'},
+          ],
+        }).studios,
+        <String>['S'],
+      );
+      expect(
+        movie(<String, dynamic>{
+          'production': <dynamic>[
+            <String, dynamic>{'name': 'P'},
+          ],
+        }).studios,
+        <String>['P'],
+      );
+    });
+
+    test('toDb and fromDb round-trip directors and studios', () {
+      const Movie movie = Movie(
+        tmdbId: 1,
+        title: 'Alien',
+        directors: <String>['Ridley Scott'],
+        studios: <String>['Brandywine'],
+      );
+      final Map<String, dynamic> row = movie.toDb();
+      expect(jsonDecode(row['directors'] as String), <String>['Ridley Scott']);
+      expect(Movie.fromDb(row).directors, <String>['Ridley Scott']);
+      expect(Movie.fromDb(row).studios, <String>['Brandywine']);
+    });
+
+    test('toDb writes null for no directors, fromDb reads null back', () {
+      const Movie movie = Movie(tmdbId: 1, title: 'Alien');
+      final Map<String, dynamic> row = movie.toDb();
+      expect(row['directors'], isNull);
+      expect(Movie.fromDb(row).directors, isNull);
+    });
+
+    test('copyWith replaces and keeps directors', () {
+      const Movie movie =
+          Movie(tmdbId: 1, title: 'A', directors: <String>['X']);
+      expect(movie.copyWith(title: 'B').directors, <String>['X']);
+      expect(
+        movie.copyWith(directors: <String>['Y']).directors,
+        <String>['Y'],
+      );
+    });
+  });
 }

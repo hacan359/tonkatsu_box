@@ -14,6 +14,7 @@ import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/releases/screens/releases_screen.dart';
 import '../../features/search/providers/browse_provider.dart';
 import '../../features/search/screens/search_screen.dart';
+import '../../features/settings/providers/settings_provider.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../../features/welcome/widgets/menu_tour_overlay.dart';
@@ -155,12 +156,19 @@ class _AppShellState extends ConsumerState<AppShell> {
           onNextTab: () => _stepSlot(forward: true),
           onPreviousTab: () => _stepSlot(forward: false),
           onBack: () => _handleBack(),
-          onSearch: () => _onDestinationSelected(NavTab.search.index),
+          onSearch: _onSearchShortcut,
           onRefresh: _onRefresh,
           onShowHelp: () => KeyboardShortcutsDialog.show(
             context,
             screenGroups: _currentScreenShortcutGroups(S.of(context)),
           ),
+          onZoomIn: () =>
+              ref.read(settingsNotifierProvider.notifier).stepUiScale(1),
+          onZoomOut: () =>
+              ref.read(settingsNotifierProvider.notifier).stepUiScale(-1),
+          onZoomReset: () => ref
+              .read(settingsNotifierProvider.notifier)
+              .setUiScale(SettingsKeys.uiScaleDefault),
         ),
         child: FocusTraversalGroup(
           policy: ReadingOrderTraversalPolicy(),
@@ -371,7 +379,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  void _onDestinationSelected(int index) {
+  void _onDestinationSelected(int index, {bool focusContent = true}) {
     if (index == _selectedIndex && !_personalizationOpen) {
       // Pressing again returns to the tab root, but not while Personalization
       // is open — that tap must close the cloud, not pop a hidden tab.
@@ -390,6 +398,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       // button.
       _personalizationOpen = false;
     });
+    if (!focusContent) return;
     // Explicitly focus the new tab's content for the gamepad.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -400,6 +409,16 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   void _resetSearchTab() => resetSearchTabState(ref);
+
+  /// Ctrl+F lands in the field: the usual hand-off to the tab's first card
+  /// would take focus back from it.
+  void _onSearchShortcut() {
+    _onDestinationSelected(NavTab.search.index, focusContent: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(appTopBarFocusProvider).requestFocus();
+    });
+  }
 
   /// Reuses the Search tab instead of pushing a separate screen, so the shell
   /// keeps a single top-bar search field.

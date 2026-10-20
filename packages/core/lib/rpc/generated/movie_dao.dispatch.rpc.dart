@@ -37,6 +37,8 @@ Future<Object?> dispatchMovieDao(
           'releaseYear': encodeIntOrNull(v.releaseYear),
           'rating': v.rating,
           'runtime': encodeIntOrNull(v.runtime),
+          'directors': v.directors?.map((String e) => e).toList(),
+          'studios': v.studios?.map((String e) => e).toList(),
           'externalUrl': v.externalUrl,
           'cachedAt': encodeIntOrNull(v.cachedAt),
           'source': encodeEnum(v.source),
@@ -60,6 +62,8 @@ Future<Object?> dispatchMovieDao(
               'releaseYear': encodeIntOrNull(e.releaseYear),
               'rating': e.rating,
               'runtime': encodeIntOrNull(e.runtime),
+              'directors': e.directors?.map((String e) => e).toList(),
+              'studios': e.studios?.map((String e) => e).toList(),
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'source': encodeEnum(e.source),
@@ -91,6 +95,16 @@ Future<Object?> dispatchMovieDao(
           releaseYear: decodeIntOrNull(asObject(args['movie'])['releaseYear']),
           rating: (asObject(args['movie'])['rating'] as num?)?.toDouble(),
           runtime: decodeIntOrNull(asObject(args['movie'])['runtime']),
+          directors: asObject(args['movie'])['directors'] == null
+              ? null
+              : asList(
+                  asObject(args['movie'])['directors'],
+                ).map((Object? e) => e as String).toList(),
+          studios: asObject(args['movie'])['studios'] == null
+              ? null
+              : asList(
+                  asObject(args['movie'])['studios'],
+                ).map((Object? e) => e as String).toList(),
           externalUrl: asObject(args['movie'])['externalUrl'] as String?,
           cachedAt: decodeIntOrNull(asObject(args['movie'])['cachedAt']),
           source: decodeEnum<DataSource>(
@@ -120,6 +134,16 @@ Future<Object?> dispatchMovieDao(
                 releaseYear: decodeIntOrNull(asObject(e)['releaseYear']),
                 rating: (asObject(e)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(e)['runtime']),
+                directors: asObject(e)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(e)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(e)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
                 source: decodeEnum<DataSource>(

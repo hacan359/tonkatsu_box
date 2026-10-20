@@ -36,6 +36,7 @@ Only `title` and `type` are required.
 | `description` | text | Shown on a custom card. Ignored when the row resolves to a real card. |
 | `year` | 1000–9999 | Release year. Narrows the source lookup. |
 | `genres` | `Action, Drama` | Comma separated, stored as is. |
+| `authors` | `Ann, Bob` or a JSON array | Authors, directors or developers of a custom card. Comma separated, duplicates dropped. |
 | `link` | URL | Opened from the card. |
 | `cover` | `http(s)` URL | Downloaded after import. For a real card it is used only when the source has no cover. |
 | `platform` | `SNES`, `PlayStation 2`, … | Abbreviation or full name from the platform catalog, case-insensitive. Unknown text stays as a label on a custom card. |
@@ -119,8 +120,8 @@ platforms do not join the candidates.
 ### Which data comes from where
 
 For a real card the source owns the metadata: title, description, cover,
-genres, year, episode and volume counts, format and link from the file are
-dropped. The file's `cover` is kept as the card's cover only when the source
+genres, authors, year, episode and volume counts, format and link from the
+file are dropped. The file's `cover` is kept as the card's cover only when the source
 has none.
 
 Your own fields always come from the file: `status`, `rating`, `comment`,

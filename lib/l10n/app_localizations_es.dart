@@ -547,16 +547,6 @@ class SEs extends S {
       'Configura primero la clave de SteamGridDB para algunas herramientas';
 
   @override
-  String get settingsLaboratory => 'Laboratorio';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Diseños del banner de tarjetas';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Diseños experimentales para las tarjetas de póster';
-
-  @override
   String get settingsHelp => 'Ayuda';
 
   @override
@@ -638,6 +628,12 @@ class SEs extends S {
 
   @override
   String get settingsThemeSakura => 'Sakura';
+
+  @override
+  String get settingsThemePs1 => 'PS1 Retro';
+
+  @override
+  String get settingsThemeEva => 'Eva Azul';
 
   @override
   String get settingsAppLanguageSubtitle => 'Idioma de la interfaz';
@@ -1833,6 +1829,30 @@ class SEs extends S {
 
   @override
   String get customItemGenresHint => 'p. ej. RPG, acción, puzle';
+
+  @override
+  String get customItemAuthors => 'Autores';
+
+  @override
+  String get customItemAuthorsHint => 'p. ej. Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Director';
+
+  @override
+  String get creatorCreator => 'Creador';
+
+  @override
+  String get creatorDeveloper => 'Desarrollador';
+
+  @override
+  String get creatorPublisher => 'Distribuidor';
+
+  @override
+  String get creatorStudio => 'Estudio';
+
+  @override
+  String get creatorAuthor => 'Autor';
 
   @override
   String get platform => 'Plataforma';
@@ -3687,6 +3707,13 @@ class SEs extends S {
       'Tamaño del texto de la interfaz, además del ajuste del sistema';
 
   @override
+  String get settingsUiScale => 'Escala de la interfaz';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Amplía toda la aplicación, como un navegador. Ctrl+rueda o Ctrl+más / menos, Ctrl+0 restablece';
+
+  @override
   String get collectionEditHeroImage => 'Imagen de portada';
 
   @override
@@ -4233,6 +4260,11 @@ class SEs extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Añadidos a la lista de deseos: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Tarjetas propias omitidas: $count';
   }
 
   @override
@@ -5701,6 +5733,15 @@ class SEs extends S {
   String get shortcutThisHelp => 'Esta ayuda';
 
   @override
+  String get shortcutZoomIn => 'Acercar';
+
+  @override
+  String get shortcutZoomOut => 'Alejar';
+
+  @override
+  String get shortcutZoomReset => 'Restablecer zoom';
+
+  @override
   String get shortcutCreateCollection => 'Crear colección';
 
   @override
@@ -5774,12 +5815,6 @@ class SEs extends S {
 
   @override
   String get shortcutFocusSearchField => 'Ir al campo de búsqueda';
-
-  @override
-  String get shortcutClearOrBack => 'Limpiar / atrás';
-
-  @override
-  String get shortcutRunSearch => 'Ejecutar búsqueda';
 
   @override
   String get debugKeyEvents => 'Eventos de los botones';
@@ -6166,6 +6201,45 @@ class SEs extends S {
   }
 
   @override
+  String get importStageFetchingAudio => 'Obteniendo datos de audio...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Actualizados $updated · No encontrados $notFound · Errores $failed · Omitidos $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '¿Actualizar $count elementos desde sus fuentes?',
+      one: '¿Actualizar 1 elemento desde su fuente?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos seleccionados no tienen fuente y se omitirán.',
+      one: '1 elemento seleccionado no tiene fuente y se omitirá.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Actualizar';
+
+  @override
+  String get bulkRefreshProblems => 'No actualizados';
+
+  @override
+  String get stop => 'Detener';
+
+  @override
   String get customImportResolveTitle => 'Buscar tarjetas en las fuentes';
 
   @override
@@ -6178,4 +6252,33 @@ class SEs extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Títulos copiados';
+
+  @override
+  String get collectionImportPickSource => 'Importar a la colección';
+
+  @override
+  String get collectionImportFromFile => 'Desde un archivo de colección';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Última ejecución $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return '¿Repetir la importación de $source?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Los elementos nuevos de $source se añadirán a «$collection» con los mismos ajustes de la última vez.';
+  }
+
+  @override
+  String get collectionImportRun => 'Ejecutar';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source sincronizado: $count nuevos';
+  }
 }

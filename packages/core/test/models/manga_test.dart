@@ -783,6 +783,16 @@ void main() {
             <String>['Kanehito Yamada', 'Tsukasa Abe']);
       });
 
+      test('lists a person credited as both author and artist once', () {
+        final Map<String, dynamic> json = baseJson()
+          ..['authors'] = <dynamic>['Masashi Kishimoto']
+          ..['artists'] = <dynamic>['Masashi Kishimoto'];
+        expect(
+          Manga.fromMangaBaka(json).authors,
+          <String>['Masashi Kishimoto'],
+        );
+      });
+
       test('derives start year from published start_date', () {
         expect(Manga.fromMangaBaka(baseJson()).startYear, 2020);
       });

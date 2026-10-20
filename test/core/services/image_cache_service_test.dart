@@ -130,6 +130,54 @@ void main() {
 
       verify(() => dio.download(any(), any<dynamic>())).called(1);
     });
+
+    test('should retry when a PNG transfer is cut before its end marker',
+        () async {
+      when(() => dio.download(any(), any<dynamic>())).thenAnswer((Invocation inv)
+          async {
+        final String path = inv.positionalArguments[1] as String;
+        File(path).writeAsBytesSync(<int>[
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, //
+          ...List<int>.filled(32, 0),
+        ]);
+        return Response<dynamic>(
+          requestOptions: RequestOptions(path: 'still'),
+          statusCode: 200,
+        );
+      });
+
+      for (int i = 0; i < 2; i++) {
+        expect(
+          await service.downloadImage(
+            type: ImageType.tvShowPoster,
+            imageId: 's1',
+            remoteUrl: 'https://stills.example/s1',
+          ),
+          isFalse,
+        );
+      }
+
+      verify(() => dio.download(any(), any<dynamic>())).called(2);
+    });
+
+    test('should download again after deleteImage clears a 404 mark',
+        () async {
+      when(() => dio.download(any(), any<dynamic>())).thenThrow(_statusError(404));
+
+      await service.downloadImage(
+        type: ImageType.audioCover,
+        imageId: 'a5',
+        remoteUrl: 'https://covers.example/a5',
+      );
+      await service.deleteImage(ImageType.audioCover, 'a5');
+      await service.downloadImage(
+        type: ImageType.audioCover,
+        imageId: 'a5',
+        remoteUrl: 'https://covers.example/a5',
+      );
+
+      verify(() => dio.download(any(), any<dynamic>())).called(2);
+    });
   });
 
   group('ImageCacheService.localPathIfCached', () {

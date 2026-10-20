@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'dart:typed_data';
 
@@ -18,6 +22,7 @@ import '../../../shared/widgets/collection_picker_field.dart';
 import '../../../shared/widgets/logo_loader.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
@@ -28,7 +33,9 @@ import '../../../shared/widgets/import_progress_dialog.dart';
 
 /// Flow: ZIP file pick → preview → options → import progress.
 class TraktImportContent extends ConsumerStatefulWidget {
-  const TraktImportContent({super.key});
+  const TraktImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<TraktImportContent> createState() =>
@@ -42,8 +49,8 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   bool _importWatched = true;
   bool _importRatings = true;
   bool _importWatchlist = true;
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
   bool _isValidating = false;
   String? _validationError;
 
@@ -479,6 +486,16 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
     if (result.success) {
       ref.invalidate(collectionsProvider);
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.trakt,
+        collectionId: result.effectiveCollectionId,
+        options: <String, Object?>{
+          CollectionImportOption.importWatched: _importWatched,
+          CollectionImportOption.importRatings: _importRatings,
+          CollectionImportOption.importWatchlist: _importWatchlist,
+        },
+      ));
       if (result.collection != null) {
         final int cid = result.collection!.id;
         ref.invalidate(collectionStatsProvider(cid));

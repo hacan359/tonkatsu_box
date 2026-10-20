@@ -1,52 +1,31 @@
-import 'package:core/models/audio_item.dart';
-import 'package:core/models/anime.dart';
 import 'package:core/models/book.dart';
 import 'package:core/models/card_link.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/data_source.dart';
-import 'package:core/models/game.dart';
-import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
-import 'package:core/models/movie.dart';
 import 'package:core/models/steamgriddb_image.dart';
-import 'package:core/models/tv_show.dart';
-import 'package:core/models/visual_novel.dart';
 import 'package:core/models/xcoll_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/anilist_api.dart';
-import '../../../core/api/episode_source/tv_episode_source.dart';
-import '../../../core/api/comicvine_api.dart';
-import '../../../core/api/google_books_api.dart';
 import '../../../core/api/hardcover_api.dart';
 import '../../../core/api/fantlab_api.dart';
-import '../../../core/api/igdb_api.dart';
-import '../../../core/api/kitsu_api.dart';
-import '../../../core/api/mangabaka_api.dart';
-import '../../../core/api/mangadex_api.dart';
-import '../../../core/api/musicbrainz_api.dart';
-import '../../../core/api/podcast_index_api.dart';
-import '../../../core/api/openlibrary_api.dart';
-import '../../../core/api/tmdb_api.dart';
-import '../../../core/api/tvdb_api.dart';
-import '../../../core/api/vndb_api.dart';
-import '../../../core/database/database_service.dart';
 import '../../../core/services/export_service.dart';
-import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/copy_as_text_dialog.dart';
 import '../widgets/edit_collection_dialog.dart';
 import '../widgets/fantlab_edition_picker.dart';
 import '../widgets/hardcover_edition_picker.dart';
+import 'item_refresh.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../settings/providers/settings_provider.dart';
 
@@ -548,8 +527,8 @@ class CollectionActions {
     }
   }
 
-  /// Re-fetches from the source API and upserts into the cache table; the
-  /// cached cover is deleted first so it re-downloads with the new URL.
+  /// Re-fetches from the source API and upserts into the cache table; on
+  /// success the cached cover is dropped so it re-downloads with the new URL.
   static Future<bool> refreshItemFromApi({
     required BuildContext context,
     required WidgetRef ref,
@@ -581,200 +560,34 @@ class CollectionActions {
       if (!context.mounted) return false;
     }
 
-    final _RefreshOutcome outcome = await _refreshItemWork(
+    final RefreshOutcome outcome = await refreshItemFromSource(
       ref,
       item,
       pickedFantlabEdition: pickedFantlab,
       pickedHardcoverEdition: pickedHardcover,
     );
-    if (!context.mounted) return outcome.success;
+    if (outcome.isSuccess) {
+      ref.invalidate(collectionsProvider);
+      // The refetched cache row backs this title in every collection and in
+      // All Items; a stale list would miss it in a meta search by creator.
+      ref.invalidate(collectionItemsNotifierProvider);
+      ref.invalidate(allItemsNotifierProvider);
+    }
+    if (!context.mounted) return outcome.isSuccess;
 
-    switch (outcome.message) {
-      case _RefreshMessage.success:
-        ref.invalidate(collectionsProvider);
+    switch (outcome.kind) {
+      case RefreshOutcomeKind.success:
         context.showSnack(l.refreshItemSuccess, type: SnackType.success);
-      case _RefreshMessage.notFound:
+      case RefreshOutcomeKind.notFound:
         context.showSnack(l.refreshItemNotFound, type: SnackType.error);
-      case _RefreshMessage.unsupported:
+      case RefreshOutcomeKind.unsupported:
         context.showSnack(l.refreshItemUnsupported, type: SnackType.error);
-      case _RefreshMessage.failed:
+      case RefreshOutcomeKind.failed:
         context.showSnack(
           l.refreshItemFailed(outcome.error ?? ''),
           type: SnackType.error,
         );
     }
-    return outcome.success;
+    return outcome.isSuccess;
   }
-
-  /// Context-free so the lint can see that UI feedback happens behind a
-  /// single mounted check in the caller.
-  static Future<_RefreshOutcome> _refreshItemWork(
-    WidgetRef ref,
-    CollectionItem item, {
-    FantlabEdition? pickedFantlabEdition,
-    HardcoverEdition? pickedHardcoverEdition,
-  }) async {
-    final DatabaseService db = ref.read(databaseServiceProvider);
-    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
-
-    try {
-      // The cached getters: a user's override file must survive the refetch.
-      await cache.deleteImage(item.cachedImageType, item.cachedCoverImageId);
-      // The refetched cover lands on the same path, which also keys Flutter's
-      // decoded-image cache — without this the old art renders until restart.
-      await cache.evictDecodedImage(
-          item.cachedImageType, item.cachedCoverImageId);
-
-      switch (item.mediaType) {
-        case MediaType.game:
-          final Game? game =
-              await ref.read(igdbApiProvider).getGameById(item.externalId);
-          if (game == null) return _RefreshOutcome.notFound();
-          await db.gameDao.upsertGame(game);
-        case MediaType.movie:
-          final Movie? movie = item.source == DataSource.tvdb
-              ? await ref.read(tvdbApiProvider).getMovie(item.externalId)
-              : await ref.read(tmdbApiProvider).getMovie(item.externalId);
-          if (movie == null) return _RefreshOutcome.notFound();
-          await db.movieDao.upsertMovie(movie);
-        case MediaType.tvShow:
-        case MediaType.animation:
-          final TvEpisodeSource api = ref.read(tvEpisodeSourceResolverProvider)(
-            item.source ?? item.mediaType.defaultSource,
-          );
-          final TvShow? show = await api.getShow(item.externalId);
-          if (show == null) return _RefreshOutcome.notFound();
-          await db.tvShowDao.upsertTvShow(show);
-        case MediaType.anime:
-          final Anime? anime;
-          switch (item.source) {
-            case DataSource.kitsu:
-              anime = await ref
-                  .read(kitsuApiProvider)
-                  .getAnimeById(item.externalId);
-            default:
-              anime = await ref
-                  .read(aniListApiProvider)
-                  .getAnimeById(item.externalId);
-          }
-          if (anime == null) return _RefreshOutcome.notFound();
-          await db.animeDao.upsertAnime(anime);
-        case MediaType.manga:
-          final Manga? manga;
-          switch (item.source) {
-            case DataSource.mangabaka:
-              manga =
-                  await ref.read(mangaBakaApiProvider).getById(item.externalId);
-            case DataSource.kitsu:
-              manga = await ref
-                  .read(kitsuApiProvider)
-                  .getMangaById(item.externalId);
-            case DataSource.mangadex:
-              final String? uuid = item.manga?.mangaDexUuid;
-              manga = uuid != null
-                  ? await ref.read(mangaDexApiProvider).getByUuid(uuid)
-                  : null;
-            default:
-              manga = await ref
-                  .read(aniListApiProvider)
-                  .getMangaById(item.externalId);
-          }
-          if (manga == null) return _RefreshOutcome.notFound();
-          await db.mangaDao.upsertManga(manga);
-        case MediaType.visualNovel:
-          final VisualNovel? vn = await ref
-              .read(vndbApiProvider)
-              .getVnById(item.externalId.toString());
-          if (vn == null) return _RefreshOutcome.notFound();
-          await db.visualNovelDao.upsertVisualNovel(vn);
-        case MediaType.audio:
-          final AudioItem? cached = item.audioItem;
-          if (cached == null) return _RefreshOutcome.unsupported();
-          final AudioItem? full = cached.isPodcast
-              ? await ref.read(podcastIndexApiProvider).getPodcast(cached.id)
-              : await ref
-                  .read(musicBrainzApiProvider)
-                  .getReleaseGroup(cached.nativeId);
-          if (full == null) return _RefreshOutcome.notFound();
-          // Overlay so the picked release (label, format, track list totals)
-          // survives; the DAO's preserving upsert backs this up.
-          await db.audioDao.upsertAudioItem(cached.withLookupDetails(full));
-        case MediaType.book:
-          final Book? cached = item.book;
-          if (cached == null) return _RefreshOutcome.unsupported();
-          if (item.source == DataSource.openLibrary) {
-            final Book? full = await ref
-                .read(openLibraryApiProvider)
-                .getWork(cached.nativeId);
-            if (full == null) return _RefreshOutcome.notFound();
-            // OpenLibrary search rows carry year / pages the work lacks, so
-            // overlay rather than replace.
-            await db.bookDao.upsertBook(cached.withWorkDetails(full));
-          } else if (item.source == DataSource.fantlab) {
-            final FantlabApi api = ref.read(fantlabApiProvider);
-            final Book? full = await api.getWork(cached.nativeId);
-            if (full == null) return _RefreshOutcome.notFound();
-            // A freshly picked edition wins; otherwise keep the previously
-            // picked one instead of resetting to the default first edition.
-            final Book updated = pickedFantlabEdition != null
-                ? applyFantlabEdition(full, pickedFantlabEdition)
-                : await reapplyFantlabEdition(api, cached: cached, fresh: full);
-            await db.bookDao.upsertBook(updated);
-          } else if (item.source == DataSource.comicVine) {
-            final Book? full = await ref
-                .read(comicVineApiProvider)
-                .getVolume(cached.nativeId);
-            if (full == null) return _RefreshOutcome.notFound();
-            await db.bookDao.upsertBook(full);
-          } else if (item.source == DataSource.googleBooks) {
-            final Book? full = await ref
-                .read(googleBooksApiProvider)
-                .getVolume(cached.nativeId);
-            if (full == null) return _RefreshOutcome.notFound();
-            await db.bookDao.upsertBook(full);
-          } else if (item.source == DataSource.hardcover) {
-            final HardcoverApi api = ref.read(hardcoverApiProvider);
-            final Book? full = await api.getBook(cached.nativeId);
-            if (full == null) return _RefreshOutcome.notFound();
-            // A freshly picked edition wins; otherwise keep the previously
-            // picked one instead of resetting to the canonical fields.
-            final Book updated = pickedHardcoverEdition != null
-                ? applyHardcoverEdition(full, pickedHardcoverEdition)
-                : await reapplyHardcoverEdition(
-                    api,
-                    cached: cached,
-                    fresh: full,
-                  );
-            await db.bookDao.upsertBook(updated);
-          } else {
-            return _RefreshOutcome.unsupported();
-          }
-        case MediaType.custom:
-          return _RefreshOutcome.unsupported();
-      }
-
-      return _RefreshOutcome.success();
-    } catch (e) {
-      return _RefreshOutcome.failed(e.toString());
-    }
-  }
-}
-
-enum _RefreshMessage { success, notFound, unsupported, failed }
-
-class _RefreshOutcome {
-  const _RefreshOutcome._(this.message, this.success, [this.error]);
-
-  factory _RefreshOutcome.success() =>
-      const _RefreshOutcome._(_RefreshMessage.success, true);
-  factory _RefreshOutcome.notFound() =>
-      const _RefreshOutcome._(_RefreshMessage.notFound, false);
-  factory _RefreshOutcome.unsupported() =>
-      const _RefreshOutcome._(_RefreshMessage.unsupported, false);
-  factory _RefreshOutcome.failed(String error) =>
-      _RefreshOutcome._(_RefreshMessage.failed, false, error);
-
-  final _RefreshMessage message;
-  final bool success;
-  final String? error;
 }

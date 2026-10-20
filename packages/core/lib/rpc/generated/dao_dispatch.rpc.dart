@@ -8,6 +8,7 @@ import 'book_dao.dispatch.rpc.dart';
 import 'calendar_entry_dao.dispatch.rpc.dart';
 import 'canvas_dao.dispatch.rpc.dart';
 import 'collection_dao.dispatch.rpc.dart';
+import 'collection_import_dao.dispatch.rpc.dart';
 import 'custom_media_dao.dispatch.rpc.dart';
 import 'game_dao.dispatch.rpc.dart';
 import 'global_tag_dao.dispatch.rpc.dart';
@@ -25,6 +26,7 @@ import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/calendar_entry_dao.dart';
 import 'package:core/database/dao/canvas_dao.dart';
 import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/database/dao/collection_import_dao.dart';
 import 'package:core/database/dao/custom_media_dao.dart';
 import 'package:core/database/dao/game_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
@@ -57,6 +59,7 @@ export 'package:core/database/dao/book_dao.dart';
 export 'package:core/database/dao/calendar_entry_dao.dart';
 export 'package:core/database/dao/canvas_dao.dart';
 export 'package:core/database/dao/collection_dao.dart';
+export 'package:core/database/dao/collection_import_dao.dart';
 export 'package:core/database/dao/custom_media_dao.dart';
 export 'package:core/database/dao/game_dao.dart';
 export 'package:core/database/dao/global_tag_dao.dart';
@@ -86,6 +89,7 @@ Map<String, DaoDispatch> buildDaoDispatchTable({
   required CalendarEntryDao calendarEntryDao,
   required CanvasDao canvasDao,
   required CollectionDao collectionDao,
+  required CollectionImportDao collectionImportDao,
   required CustomMediaDao customMediaDao,
   required GameDao gameDao,
   required GlobalTagDao globalTagDao,
@@ -119,6 +123,8 @@ Map<String, DaoDispatch> buildDaoDispatchTable({
         dispatchCanvasDao(canvasDao, m, a),
     'CollectionDao': (String m, Map<String, Object?> a) =>
         dispatchCollectionDao(collectionDao, m, a),
+    'CollectionImportDao': (String m, Map<String, Object?> a) =>
+        dispatchCollectionImportDao(collectionImportDao, m, a),
     'CustomMediaDao': (String m, Map<String, Object?> a) =>
         dispatchCustomMediaDao(customMediaDao, m, a),
     'GameDao': (String m, Map<String, Object?> a) =>

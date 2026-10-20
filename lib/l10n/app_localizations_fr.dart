@@ -547,16 +547,6 @@ class SFr extends S {
       'Ajoutez une clé API SteamGridDB pour accéder aux outils.';
 
   @override
-  String get settingsLaboratory => 'Laboratoire';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Designs des bannières';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Mises en pages expérimentales des affiches';
-
-  @override
   String get settingsHelp => 'Aide';
 
   @override
@@ -639,6 +629,12 @@ class SFr extends S {
 
   @override
   String get settingsThemeSakura => 'Sakura';
+
+  @override
+  String get settingsThemePs1 => 'PS1 Rétro';
+
+  @override
+  String get settingsThemeEva => 'Eva Azur';
 
   @override
   String get settingsAppLanguageSubtitle => 'Langue de l\'interface';
@@ -1827,6 +1823,30 @@ class SFr extends S {
 
   @override
   String get customItemGenresHint => 'ex : RPG, Action, Puzzle';
+
+  @override
+  String get customItemAuthors => 'Auteurs';
+
+  @override
+  String get customItemAuthorsHint => 'ex : Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Réalisateur';
+
+  @override
+  String get creatorCreator => 'Créateur';
+
+  @override
+  String get creatorDeveloper => 'Développeur';
+
+  @override
+  String get creatorPublisher => 'Éditeur';
+
+  @override
+  String get creatorStudio => 'Studio';
+
+  @override
+  String get creatorAuthor => 'Auteur';
 
   @override
   String get platform => 'Plateforme';
@@ -3693,6 +3713,13 @@ class SFr extends S {
       'Taille du texte de l’interface, en plus du réglage système';
 
   @override
+  String get settingsUiScale => 'Échelle de l\'interface';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Agrandit toute l\'application, comme un navigateur. Ctrl+molette ou Ctrl+plus / moins, Ctrl+0 réinitialise';
+
+  @override
   String get collectionEditHeroImage => 'Bannière';
 
   @override
@@ -4240,6 +4267,11 @@ class SFr extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Ajoutés à la liste de souhaits : $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Cartes perso ignorées : $count';
   }
 
   @override
@@ -5719,6 +5751,15 @@ class SFr extends S {
   String get shortcutThisHelp => 'Peut aider';
 
   @override
+  String get shortcutZoomIn => 'Zoom avant';
+
+  @override
+  String get shortcutZoomOut => 'Zoom arrière';
+
+  @override
+  String get shortcutZoomReset => 'Réinitialiser le zoom';
+
+  @override
   String get shortcutCreateCollection => 'Créer une collection';
 
   @override
@@ -5792,12 +5833,6 @@ class SFr extends S {
 
   @override
   String get shortcutFocusSearchField => 'Focus sur la barre de recherche';
-
-  @override
-  String get shortcutClearOrBack => 'Effacer / précédent';
-
-  @override
-  String get shortcutRunSearch => 'Lancer la recherche';
 
   @override
   String get debugKeyEvents => 'Événements des touches/boutons';
@@ -6188,6 +6223,46 @@ class SFr extends S {
   }
 
   @override
+  String get importStageFetchingAudio => 'Récupération des données audio...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Rafraîchis $updated · Introuvables $notFound · Erreurs $failed · Ignorés $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Rafraîchir $count titres depuis leurs sources ?',
+      one: 'Rafraîchir 1 titre depuis sa source ?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count titres sélectionnés n\'ont pas de source et seront ignorés.',
+      one: '1 titre sélectionné n\'a pas de source et sera ignoré.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Rafraîchir';
+
+  @override
+  String get bulkRefreshProblems => 'Non rafraîchis';
+
+  @override
+  String get stop => 'Arrêter';
+
+  @override
   String get customImportResolveTitle =>
       'Rechercher les cartes dans les sources';
 
@@ -6201,4 +6276,33 @@ class SFr extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Titres copiés';
+
+  @override
+  String get collectionImportPickSource => 'Importer dans la collection';
+
+  @override
+  String get collectionImportFromFile => 'Depuis un fichier de collection';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Dernière exécution $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Relancer l\'import depuis $source ?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Les nouveaux éléments de $source seront ajoutés à « $collection » avec les mêmes réglages que la dernière fois.';
+  }
+
+  @override
+  String get collectionImportRun => 'Lancer';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source synchronisé : $count nouveaux';
+  }
 }

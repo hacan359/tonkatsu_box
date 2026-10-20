@@ -18,6 +18,9 @@ class ImportProgress {
     this.source,
     this.customCards = 0,
     this.ambiguous = 0,
+    this.notFound = 0,
+    this.failed = 0,
+    this.skipped = 0,
     this.retryWaitSeconds,
     this.retryAttempt,
     this.retryMaxAttempts,
@@ -47,6 +50,12 @@ class ImportProgress {
   final int customCards;
   final int ambiguous;
 
+  /// Bulk-refresh tallies: rows the source no longer has, rows whose request
+  /// threw, and rows that have no source to ask.
+  final int notFound;
+  final int failed;
+  final int skipped;
+
   /// Rate-limit back-off info, set only while a source waits out a 429 window.
   final int? retryWaitSeconds;
   final int? retryAttempt;
@@ -73,6 +82,8 @@ enum ImportStage {
   fetchingAnime('Fetching anime data...'),
 
   fetchingBooks('Fetching book data...'),
+
+  fetchingAudio('Fetching audio data...'),
 
   cachingMedia('Caching media...'),
 

@@ -217,6 +217,8 @@ class ImageCacheService {
 
   /// Tolerates files locked by another process on Windows.
   Future<void> deleteImage(ImageType type, String imageId) async {
+    // A refresh deletes before re-downloading; a stale mark would skip it.
+    _failedDownloads.remove('${type.folder}/$imageId');
     // On web the file lives in the server's cache, where a stale copy would
     // outrank the URL for every client, not just this tab.
     if (kIsWebBuild) {
@@ -298,28 +300,18 @@ class ImageCacheService {
       final Uint8List header = raf.readSync(12);
 
       // JPEG: starts FF D8 FF, ends FF D9
-      if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF) {
+      if (_isJpeg(header)) {
         return _tailContains(raf, length, _jpegEnd);
       }
 
       // PNG: starts 89 50 4E 47, ends with IEND (49 45 4E 44 AE 42 60 82)
-      if (header[0] == 0x89 &&
-          header[1] == 0x50 &&
-          header[2] == 0x4E &&
-          header[3] == 0x47) {
+      if (_isPng(header)) {
         if (length < 20) return false;
         return _tailContains(raf, length, _pngEnd);
       }
 
       // WebP: RIFF....WEBP — verify the declared size
-      if (header[0] == 0x52 &&
-          header[1] == 0x49 &&
-          header[2] == 0x46 &&
-          header[3] == 0x46 &&
-          header[8] == 0x57 &&
-          header[9] == 0x45 &&
-          header[10] == 0x42 &&
-          header[11] == 0x50) {
+      if (_isWebp(header)) {
         // RIFF header stores the data size in bytes 4-7 (little-endian)
         final int declaredSize =
             header[4] | header[5] << 8 | header[6] << 16 | header[7] << 24;
@@ -332,6 +324,33 @@ class ImageCacheService {
       raf.closeSync();
     }
   }
+
+  bool _hasImageSignature(File file) {
+    if (!file.existsSync() || file.lengthSync() < 12) return false;
+    final RandomAccessFile raf = file.openSync();
+    try {
+      final Uint8List h = raf.readSync(12);
+      return _isJpeg(h) || _isPng(h) || _isWebp(h);
+    } finally {
+      raf.closeSync();
+    }
+  }
+
+  static bool _isJpeg(Uint8List h) =>
+      h[0] == 0xFF && h[1] == 0xD8 && h[2] == 0xFF;
+
+  static bool _isPng(Uint8List h) =>
+      h[0] == 0x89 && h[1] == 0x50 && h[2] == 0x4E && h[3] == 0x47;
+
+  static bool _isWebp(Uint8List h) =>
+      h[0] == 0x52 &&
+      h[1] == 0x49 &&
+      h[2] == 0x46 &&
+      h[3] == 0x46 &&
+      h[8] == 0x57 &&
+      h[9] == 0x45 &&
+      h[10] == 0x42 &&
+      h[11] == 0x50;
 
   /// Deletes the file, ignoring Windows file-lock errors.
   Future<void> _tryDelete(File file) async {
@@ -396,8 +415,10 @@ class ImageCacheService {
       await _dio.download(remoteUrl, localPath);
 
       if (!_isValidImageFile(file)) {
+        // A cut-off transfer keeps its signature and stays retryable; only a
+        // body that is no image at all would fail the same way every time.
+        if (!_hasImageSignature(file)) _markPermanentlyFailed(failKey);
         await _tryDelete(file);
-        _markPermanentlyFailed(failKey);
         return false;
       }
 

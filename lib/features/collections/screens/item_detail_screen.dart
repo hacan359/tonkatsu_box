@@ -38,6 +38,7 @@ import '../../../core/database/database_service.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../releases/widgets/add_to_calendar_dialog.dart';
 import '../../../shared/widgets/media_detail_view.dart';
+import '../../../shared/widgets/media_detail/media_cover_image.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
@@ -80,6 +81,7 @@ import '../widgets/rename_item_dialog.dart';
 import '../widgets/screenscraper_gallery_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
+import '../widgets/status_list.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/constants/collection_item_ui.dart';
@@ -313,15 +315,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _refreshFromApi(CollectionItem item) async {
-    final bool ok = await CollectionActions.refreshItemFromApi(
+    // Success invalidates every item list, this screen's included.
+    await CollectionActions.refreshItemFromApi(
       context: context,
       ref: ref,
       item: item,
     );
-    if (!ok || !mounted) return;
-    // The detail screen reads from the cache tables; nudging the items
-    // provider makes sure the refreshed row reaches the open view.
-    ref.invalidate(collectionItemsNotifierProvider(widget.collectionId));
   }
 
   void _addAnimeMangaSuggestions(
@@ -659,28 +658,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       await cache.evictDecodedImage(ImageType.customCover, previousCoverId);
     }
 
-    final bool clearDisplayType = data.mediaType == MediaType.custom;
-    final CustomMedia updated = item.customMedia!.copyWith(
-      title: data.title,
-      altTitle: data.altTitle,
-      description: data.description,
-      coverUrl: newCoverUrl,
-      year: data.year,
-      genres: data.genres,
-      platformName: data.platform,
-      clearPlatformName: data.platform == null,
-      platformId: data.platformId,
-      clearPlatformId: data.platformId == null,
-      format: data.format,
-      clearFormat: data.format == null,
-      unitTotal: data.unitTotal,
-      clearUnitTotal: data.unitTotal == null,
-      unitGroupTotal: data.unitGroupTotal,
-      clearUnitGroupTotal: data.unitGroupTotal == null,
-      externalUrl: data.externalUrl,
-      displayType: clearDisplayType ? null : data.mediaType,
-      clearDisplayType: clearDisplayType,
-    );
+    final CustomMedia updated =
+        data.applyTo(item.customMedia!, coverUrl: newCoverUrl);
 
     final DatabaseService db = ref.read(databaseServiceProvider);
     await db.customMediaDao.update(updated);
@@ -837,6 +816,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         onChanged: (ItemStatus status) =>
             _updateStatus(item.id, status, item.mediaType),
       ),
+      statusListWidget: StatusList(
+        status: item.status,
+        mediaType: item.mediaType,
+        onChanged: (ItemStatus status) =>
+            _updateStatus(item.id, status, item.mediaType),
+      ),
       addedAt: item.addedAt,
       startedAt: item.startedAt,
       completedAt: item.completedAt,
@@ -882,6 +867,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             source: item.dataSource,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
+            fallbackCover: MediaCoverImage(
+              coverUrl: config.coverUrl,
+              placeholderIcon: config.placeholderIcon,
+              cacheImageType: config.cacheImageType,
+              cacheImageId: config.cacheImageId,
+            ),
           ),
         if (config.hasEpisodeTracker && widget.collectionId == null)
           SeasonsInfo(

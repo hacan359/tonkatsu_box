@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:core/models/universal_import_result.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +16,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/providers/global_tags_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
@@ -113,13 +117,11 @@ class _CustomCardsPreviewScreenState
                 spacing: AppSpacing.sm,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: <Widget>[
+                  TextButton(onPressed: _selectAll, child: Text(l.selectAll)),
                   TextButton(
-                    onPressed: _selectAll,
-                    child: Text(l.selectAll),
-                  ),
-                  TextButton(
-                    onPressed:
-                        _checked.isEmpty ? null : () => setState(_checked.clear),
+                    onPressed: _checked.isEmpty
+                        ? null
+                        : () => setState(_checked.clear),
                     child: Text(l.customImportSelectNone),
                   ),
                   Text(
@@ -156,16 +158,12 @@ class _CustomCardsPreviewScreenState
 
   Widget _buildRow(BuildContext context, CustomCardRow row) {
     final S l = S.of(context);
-    final String title =
-        row.sourceTitle ?? l.customImportRowLabel(row.index);
+    final String title = row.sourceTitle ?? l.customImportRowLabel(row.index);
 
     if (!row.isValid) {
       return ListTile(
         dense: true,
-        leading: Icon(
-          Icons.error_outline,
-          color: AppColors.statusDropped,
-        ),
+        leading: Icon(Icons.error_outline, color: AppColors.statusDropped),
         title: Text(title, overflow: TextOverflow.ellipsis),
         subtitle: Text(
           row.issues
@@ -210,7 +208,9 @@ class _CustomCardsPreviewScreenState
     }
     if (row.issues.isNotEmpty) {
       return Text(
-        row.issues.map((CustomCardIssue issue) => _issueText(l, issue)).join(' · '),
+        row.issues
+            .map((CustomCardIssue issue) => _issueText(l, issue))
+            .join(' · '),
         style: AppTypography.bodySmall.copyWith(color: AppColors.warning),
       );
     }
@@ -221,10 +221,10 @@ class _CustomCardsPreviewScreenState
   }
 
   void _selectAll() => setState(() {
-        for (final CustomCardRow row in widget.rows) {
-          if (row.isValid) _checked.add(row.index);
-        }
-      });
+    for (final CustomCardRow row in widget.rows) {
+      if (row.isValid) _checked.add(row.index);
+    }
+  });
 
   String _issueText(S l, CustomCardIssue issue) {
     switch (issue.code) {
@@ -250,15 +250,19 @@ class _CustomCardsPreviewScreenState
       case CustomCardIssueCode.invalidCoverUrl:
         return l.customImportIssueInvalidCover;
       case CustomCardIssueCode.invalidDate:
-        return l.customImportIssueInvalidDate(issue.field ?? '', issue.value ?? '');
+        return l.customImportIssueInvalidDate(
+          issue.field ?? '',
+          issue.value ?? '',
+        );
       case CustomCardIssueCode.invalidBool:
         return l.customImportIssueInvalidBool(issue.value ?? '');
     }
   }
 
   Future<void> _startImport() async {
-    final CustomCardsImportService service =
-        ref.read(customCardsImportServiceProvider);
+    final CustomCardsImportService service = ref.read(
+      customCardsImportServiceProvider,
+    );
     final List<CustomCardEntry> entries = <CustomCardEntry>[
       for (final CustomCardRow row in widget.rows)
         if (row.entry != null && _checked.contains(row.index)) row.entry!,
@@ -270,18 +274,18 @@ class _CustomCardsPreviewScreenState
 
     final Future<UniversalImportResult> importFuture = service
         .importSelected(
-      collectionId: widget.collectionId,
-      author: widget.author,
-      entries: entries,
-      resolveFromSources: widget.resolveFromSources,
-      onProgress: (ImportProgress progress) {
-        progressNotifier.value = progress;
-      },
-    )
+          collectionId: widget.collectionId,
+          author: widget.author,
+          entries: entries,
+          resolveFromSources: widget.resolveFromSources,
+          onProgress: (ImportProgress progress) {
+            progressNotifier.value = progress;
+          },
+        )
         .then((UniversalImportResult result) {
-      importResult = result;
-      return result;
-    });
+          importResult = result;
+          return result;
+        });
 
     try {
       await showDialog<bool>(
@@ -289,10 +293,10 @@ class _CustomCardsPreviewScreenState
         barrierDismissible: false,
         builder: (BuildContext dialogContext) =>
             ImportProgressDialog<UniversalImportResult>(
-          title: S.of(context).customImportImporting,
-          progressNotifier: progressNotifier,
-          importFuture: importFuture,
-        ),
+              title: S.of(context).customImportImporting,
+              progressNotifier: progressNotifier,
+              importFuture: importFuture,
+            ),
       );
     } finally {
       progressNotifier.dispose();
@@ -303,6 +307,13 @@ class _CustomCardsPreviewScreenState
     if (result.success) {
       ref.invalidate(collectionsProvider);
       final int? cid = result.effectiveCollectionId;
+      unawaited(
+        recordCollectionImport(
+          ref,
+          source: ImportSourceKind.customCards,
+          collectionId: cid,
+        ),
+      );
       if (cid != null) {
         ref.invalidate(collectionStatsProvider(cid));
         ref.invalidate(collectionCoversProvider(cid));

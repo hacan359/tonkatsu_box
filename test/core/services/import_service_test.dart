@@ -4038,7 +4038,21 @@ void main() {
         ));
 
         expect(result.itemsImported, 1);
+        expect(result.customSkipped, 1);
         expect(addedExternalIds, <int>[42]);
+      });
+
+      test('should report no skipped cards when every item has its card',
+          () async {
+        when(() => mockCustomDao.importAll(any()))
+            .thenAnswer((_) async => <int>[42]);
+
+        final ImportResult result = await sutCustom.importFromXcoll(xcoll(
+          items: <Map<String, dynamic>>[customItem(7)],
+          cards: <Map<String, dynamic>>[card(7, 'Seven')],
+        ));
+
+        expect(result.customSkipped, 0);
       });
 
       test('writes a card already imported in this session only once',

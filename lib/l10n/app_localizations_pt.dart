@@ -546,16 +546,6 @@ class SPt extends S {
       'Configure a chave do SteamGridDB primeiro para algumas ferramentas';
 
   @override
-  String get settingsLaboratory => 'Laboratório';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Designs de banner dos cards';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Layouts experimentais de cards de pôster';
-
-  @override
   String get settingsHelp => 'Ajuda';
 
   @override
@@ -638,6 +628,12 @@ class SPt extends S {
 
   @override
   String get settingsThemeSakura => 'Sakura';
+
+  @override
+  String get settingsThemePs1 => 'PS1 Retrô';
+
+  @override
+  String get settingsThemeEva => 'Eva Azul';
 
   @override
   String get settingsAppLanguageSubtitle => 'Idioma da interface';
@@ -1822,6 +1818,30 @@ class SPt extends S {
 
   @override
   String get customItemGenresHint => 'ex.: RPG, Ação, Puzzle';
+
+  @override
+  String get customItemAuthors => 'Autores';
+
+  @override
+  String get customItemAuthorsHint => 'ex.: Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Diretor';
+
+  @override
+  String get creatorCreator => 'Criador';
+
+  @override
+  String get creatorDeveloper => 'Desenvolvedora';
+
+  @override
+  String get creatorPublisher => 'Publicadora';
+
+  @override
+  String get creatorStudio => 'Estúdio';
+
+  @override
+  String get creatorAuthor => 'Autor';
 
   @override
   String get platform => 'Plataforma';
@@ -3672,6 +3692,13 @@ class SPt extends S {
       'Tamanho do texto da interface, além da configuração do sistema';
 
   @override
+  String get settingsUiScale => 'Escala da interface';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Amplia o aplicativo inteiro, como um navegador. Ctrl+roda ou Ctrl+mais / menos, Ctrl+0 redefine';
+
+  @override
   String get collectionEditHeroImage => 'Imagem de capa';
 
   @override
@@ -4218,6 +4245,11 @@ class SPt extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Adicionados à lista de desejos: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Cartões próprios ignorados: $count';
   }
 
   @override
@@ -5683,6 +5715,15 @@ class SPt extends S {
   String get shortcutThisHelp => 'Esta ajuda';
 
   @override
+  String get shortcutZoomIn => 'Aumentar zoom';
+
+  @override
+  String get shortcutZoomOut => 'Diminuir zoom';
+
+  @override
+  String get shortcutZoomReset => 'Redefinir zoom';
+
+  @override
   String get shortcutCreateCollection => 'Criar coleção';
 
   @override
@@ -5756,12 +5797,6 @@ class SPt extends S {
 
   @override
   String get shortcutFocusSearchField => 'Focar campo de busca';
-
-  @override
-  String get shortcutClearOrBack => 'Limpar / voltar';
-
-  @override
-  String get shortcutRunSearch => 'Executar busca';
 
   @override
   String get debugKeyEvents => 'Eventos de teclas do botão';
@@ -6146,6 +6181,45 @@ class SPt extends S {
   }
 
   @override
+  String get importStageFetchingAudio => 'Buscando dados de áudio...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Atualizados $updated · Não encontrados $notFound · Erros $failed · Ignorados $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Atualizar $count itens a partir das fontes?',
+      one: 'Atualizar 1 item a partir da fonte?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count itens selecionados não têm fonte e serão ignorados.',
+      one: '1 item selecionado não tem fonte e será ignorado.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Atualizar';
+
+  @override
+  String get bulkRefreshProblems => 'Não atualizados';
+
+  @override
+  String get stop => 'Parar';
+
+  @override
   String get customImportResolveTitle => 'Procurar cartões nas fontes';
 
   @override
@@ -6158,4 +6232,33 @@ class SPt extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Títulos copiados';
+
+  @override
+  String get collectionImportPickSource => 'Importar para a coleção';
+
+  @override
+  String get collectionImportFromFile => 'De um arquivo de coleção';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Última execução $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Repetir a importação de $source?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Os itens novos de $source serão adicionados a «$collection» com as mesmas configurações da última vez.';
+  }
+
+  @override
+  String get collectionImportRun => 'Executar';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source sincronizado: $count novos';
+  }
 }

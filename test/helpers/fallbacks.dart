@@ -4,6 +4,8 @@ import 'package:core/database/dao/global_tag_dao.dart';
 import 'package:core/models/anime.dart';
 import 'package:core/models/canvas_viewport.dart';
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/game.dart';
@@ -32,6 +34,14 @@ void registerAllFallbacks() {
   registerFallbackValue(DataSource.tmdb);
   registerFallbackValue(ItemStatus.notStarted);
   registerFallbackValue(CollectionType.own);
+  registerFallbackValue(ImportSourceKind.steam);
+  registerFallbackValue(
+    CollectionImport(
+      collectionId: 0,
+      source: ImportSourceKind.steam,
+      lastRunAt: DateTime.fromMillisecondsSinceEpoch(0),
+    ),
+  );
   registerFallbackValue(ImageType.gameCover);
 
   registerFallbackValue(<int>{});

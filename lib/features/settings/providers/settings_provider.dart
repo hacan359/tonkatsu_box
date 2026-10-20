@@ -167,6 +167,18 @@ abstract class SettingsKeys {
 
   /// Slider step; 0.85 / 1.0 / 1.15 / 1.3 are the intended stops.
   static const double textScaleStep = 0.15;
+
+  /// Whole-interface zoom, browser-style: layout reflows as if the window
+  /// were smaller or larger.
+  static const String uiScale = 'ui_scale';
+
+  static const double uiScaleDefault = 1.0;
+
+  static const double uiScaleMin = 0.5;
+
+  static const double uiScaleMax = 2.0;
+
+  static const double uiScaleStep = 0.1;
 }
 
 class SettingsState {
@@ -208,6 +220,7 @@ class SettingsState {
     this.animeMangaTitleLanguage = SettingsKeys.animeMangaTitleLanguageDefault,
     this.cardScale = SettingsKeys.cardScaleDefault,
     this.textScale = SettingsKeys.textScaleDefault,
+    this.uiScale = SettingsKeys.uiScaleDefault,
     this.appTheme = AppThemeId.dark,
   });
 
@@ -312,6 +325,9 @@ class SettingsState {
 
   /// UI text multiplier on top of the system scale (1.0 = system only).
   final double textScale;
+
+  /// Whole-interface zoom (1.0 = none).
+  final double uiScale;
 
   /// Selected app theme.
   final AppThemeId appTheme;
@@ -436,6 +452,7 @@ class SettingsState {
     String? animeMangaTitleLanguage,
     double? cardScale,
     double? textScale,
+    double? uiScale,
     AppThemeId? appTheme,
   }) {
     return SettingsState(
@@ -483,6 +500,7 @@ class SettingsState {
           animeMangaTitleLanguage ?? this.animeMangaTitleLanguage,
       cardScale: cardScale ?? this.cardScale,
       textScale: textScale ?? this.textScale,
+      uiScale: uiScale ?? this.uiScale,
       appTheme: appTheme ?? this.appTheme,
     );
   }
@@ -672,6 +690,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final double textScale = (_prefs.getDouble(SettingsKeys.textScale) ??
             SettingsKeys.textScaleDefault)
         .clamp(SettingsKeys.textScaleMin, SettingsKeys.textScaleMax);
+    final double uiScale = (_prefs.getDouble(SettingsKeys.uiScale) ??
+            SettingsKeys.uiScaleDefault)
+        .clamp(SettingsKeys.uiScaleMin, SettingsKeys.uiScaleMax);
     final AppThemeId appTheme =
         AppThemeId.fromId(_prefs.getString(SettingsKeys.appTheme));
 
@@ -719,6 +740,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       animeMangaTitleLanguage: animeMangaTitleLanguage,
       cardScale: cardScale,
       textScale: textScale,
+      uiScale: uiScale,
       appTheme: appTheme,
     );
 
@@ -1144,6 +1166,29 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
+  /// Set [persist] to false for live slider preview; the final value must be
+  /// saved with a persisting call.
+  Future<void> setUiScale(double scale, {bool persist = true}) async {
+    // Two decimals: wheel steps accumulate float noise and would otherwise
+    // miss the 1.0 fast path in the app root.
+    final double clamped = (scale.clamp(
+              SettingsKeys.uiScaleMin,
+              SettingsKeys.uiScaleMax,
+            ) *
+            100)
+        .roundToDouble() /
+        100;
+    if (clamped == state.uiScale) return;
+    state = state.copyWith(uiScale: clamped);
+    if (persist) {
+      await _prefs.setDouble(SettingsKeys.uiScale, clamped);
+    }
+  }
+
+  /// Ctrl+wheel / Ctrl+plus / Ctrl+minus: one notch per call.
+  Future<void> stepUiScale(int steps) =>
+      setUiScale(state.uiScale + steps * SettingsKeys.uiScaleStep);
+
   /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetTmdbApiKeyToDefault() async {
     await _writeCredential(SettingsKeys.tmdbApiKey, '');
@@ -1311,6 +1356,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.animeMangaTitleLanguage);
     await _prefs.remove(SettingsKeys.cardScale);
     await _prefs.remove(SettingsKeys.textScale);
+    await _prefs.remove(SettingsKeys.uiScale);
     await _prefs.remove(SettingsKeys.appTheme);
     await _writeCredential(SettingsKeys.raUsername, '');
     await _writeCredential(SettingsKeys.raApiKey, '');
