@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/constants/platform_features.dart';
+import 'server_auth_token.dart';
 import 'server_origin.dart';
 
 /// The exported config spells its keys the way SharedPreferences does; the
@@ -38,11 +39,12 @@ final Map<String, String> kCredentialToConfigKey = <String, String>{
 
 Dio _client(Dio? override) =>
     override ??
-    Dio(BaseOptions(
+    (Dio(BaseOptions(
       baseUrl: serverBaseUrl(),
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
-    ));
+    ))
+      ..interceptors.add(ServerAuthInterceptor()));
 
 /// The keys the server holds. An unreachable server yields an empty map, so the
 /// app boots with search disabled rather than not at all.

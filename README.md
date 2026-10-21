@@ -306,10 +306,36 @@ you need. Without a `.env` everything uses defaults.
 | `TONKATSU_PORT` | `8080` | Port the web UI answers on |
 | `PUID` / `PGID` | `1000` / `1000` | Owner of the files in the data folder |
 | `TONKATSU_KEY_*` | — | API keys (e.g. `TONKATSU_KEY_TMDB`) |
+| `TONKATSU_AUTH` | `off` | `token` makes the web UI ask for an access token |
+| `TONKATSU_AUTH_TOKEN` | generated | Your own token instead of the generated one |
+| `TONKATSU_BIND` | `0.0.0.0` | Host interface the port is published on |
+| `TONKATSU_IMAGE_HOSTS` | any | Hosts covers may be fetched from, comma-separated |
 
 API keys can also be entered in the app itself (**Settings → API Keys**) —
 they are stored on the server in `data/keys.json`. Keys set via `.env`
 override `keys.json`.
+
+### Access token (optional)
+
+By default the server has no login: anyone who can reach the port can use the
+library. For a server that other devices can reach, set `TONKATSU_AUTH=token`
+in `.env`. The server then prints a sign-in link on every start:
+
+```bash
+docker compose logs tonkatsu | grep "Sign in"
+# Sign in: http://localhost:8080/?token=…
+```
+
+Open that link with the server's address instead of `localhost`: the browser
+stores the token and removes it from the address bar. A browser without the
+token is shown a screen to paste it into, and **Settings → API Keys** lets you
+change it later. The token is kept in `data/auth_token`; delete the file and
+restart to issue a new one, or set your own with `TONKATSU_AUTH_TOKEN`.
+
+`TONKATSU_BIND=127.0.0.1` publishes the port on this machine only.
+`TONKATSU_IMAGE_HOSTS` limits which hosts the server fetches covers from, as a
+comma-separated list of domains (subdomains included). Leave it empty unless
+you need it: a cover host missing from the list shows as a broken image.
 
 ### Files
 
@@ -318,6 +344,7 @@ override `keys.json`.
 | `.env` | Your local configuration (not committed) |
 | `data/tonkatsu_box.db` | The database |
 | `data/keys.json` | API keys entered in the app |
+| `data/auth_token` | The access token, when `TONKATSU_AUTH=token` |
 | `data/images/` | Cover cache |
 | `data/snapshots/` | Automatic DB snapshots taken before migrations |
 
@@ -358,7 +385,8 @@ requirement.
 
 ### Notes
 
-- The web build has no accounts or passwords — expose it to your LAN only.
+- The web build has no accounts; `TONKATSU_AUTH=token` makes it ask for a
+  single access token. Keep it on your LAN or behind HTTPS.
 - Desktop-only features (VGMaps, Discord Rich Presence, Kodi, gamepad, LAN
   sync) are hidden in the browser.
 

@@ -597,6 +597,32 @@ class SRu extends S {
   String get settingsApiKeys => 'API ключи';
 
   @override
+  String get credentialsServerTokenLabel => 'Токен доступа к серверу';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Нужен только если сервер запущен с TONKATSU_AUTH=token. Сохранение перезапускает приложение.';
+
+  @override
+  String get credentialsServerTokenSaved => 'Токен сервера сохранён';
+
+  @override
+  String get serverTokenTitle => 'Токен доступа к серверу';
+
+  @override
+  String get serverTokenBody =>
+      'Этот сервер требует токен доступа. Он печатается в логе сервера в виде ссылки для входа при каждом запуске и хранится в файле auth_token в папке данных.';
+
+  @override
+  String get serverTokenFieldLabel => 'Токен';
+
+  @override
+  String get serverTokenConnect => 'Подключиться';
+
+  @override
+  String get serverTokenRejected => 'Сервер отклонил этот токен';
+
+  @override
   String get credentialsServerManagedTitle => 'Ключи хранятся на сервере';
 
   @override
