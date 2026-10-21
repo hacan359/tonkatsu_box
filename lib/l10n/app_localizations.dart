@@ -1116,14 +1116,44 @@ abstract class S {
   /// No description provided for @credentialsServerTokenHint.
   ///
   /// In en, this message translates to:
-  /// **'Paste the token the server printed at startup. Only needed when the server listens beyond this machine.'**
+  /// **'Needed only when the server runs with TONKATSU_AUTH=token. Saving restarts the app.'**
   String get credentialsServerTokenHint;
 
-  /// No description provided for @credentialsServerTokenSave.
+  /// No description provided for @credentialsServerTokenSaved.
   ///
   /// In en, this message translates to:
-  /// **'Save token'**
-  String get credentialsServerTokenSave;
+  /// **'Server token saved'**
+  String get credentialsServerTokenSaved;
+
+  /// No description provided for @serverTokenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Server access token'**
+  String get serverTokenTitle;
+
+  /// No description provided for @serverTokenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This server asks for an access token. It is printed in the server log as a sign-in link on every start and kept in the auth_token file in the data folder.'**
+  String get serverTokenBody;
+
+  /// No description provided for @serverTokenFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Token'**
+  String get serverTokenFieldLabel;
+
+  /// No description provided for @serverTokenConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get serverTokenConnect;
+
+  /// No description provided for @serverTokenRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The server rejected this token'**
+  String get serverTokenRejected;
 
   /// No description provided for @credentialsServerManagedTitle.
   ///

@@ -30,12 +30,7 @@ Dio createApiDio({
       receiveTimeout: kIsWebBuild ? _atLeastFloor(receiveTimeout) : receiveTimeout,
       // The browser refuses to let a page set User-Agent and logs an error for
       // every request; on web the proxy is the one that sends it anyway.
-      headers: kIsWebBuild
-          ? ServerAuthToken.withToken(
-              _withoutUserAgent(headers) ?? const <String, String>{},
-              ServerAuthToken.current,
-            )
-          : headers,
+      headers: kIsWebBuild ? _withoutUserAgent(headers) : headers,
       responseType: responseType,
     ),
   );
@@ -43,7 +38,10 @@ Dio createApiDio({
   dio.interceptors.add(HostRateLimitInterceptor());
   // Rewriting the resolved URI covers both shapes in the codebase: a client
   // with a baseUrl and one that builds a full URL per request.
-  if (kIsWebBuild) dio.interceptors.add(ProxyRewriteInterceptor());
+  if (kIsWebBuild) {
+    dio.interceptors.add(ProxyRewriteInterceptor());
+    dio.interceptors.add(ServerAuthInterceptor());
+  }
   return dio;
 }
 

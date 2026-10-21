@@ -1,6 +1,7 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
@@ -846,7 +847,15 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<void> _loadPlatformCount() async {
-    final int count = await _dbService.gameDao.getPlatformCount();
+    final int count;
+    try {
+      count = await _dbService.gameDao.getPlatformCount();
+    } on Object catch (e) {
+      // Fired unawaited from build(): a server that is not answering yet (web
+      // before the token is entered) must not escalate to the fatal overlay.
+      Logger('SettingsNotifier').fine('Platform count unavailable', e);
+      return;
+    }
     if (count != state.platformCount) {
       state = state.copyWith(platformCount: count);
     }

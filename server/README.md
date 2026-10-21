@@ -17,35 +17,45 @@ dart run server/bin/server.dart --data-dir ./data --web-root ./build/web
 
 | Option | Env | Default |
 |--------|-----|---------|
-| `--address` | `TONKATSU_ADDRESS` | `127.0.0.1` |
+| `--address` | `TONKATSU_ADDRESS` | `0.0.0.0` |
 | `--port` | `TONKATSU_PORT` | `8080` |
 | `--data-dir` | `TONKATSU_DATA_DIR` | `data` |
 | `--web-root` | `TONKATSU_WEB_ROOT` | `web` |
+| `--auth` | `TONKATSU_AUTH` | `off` |
+| `--auth-token` | `TONKATSU_AUTH_TOKEN` | generated |
+| `--image-hosts` | `TONKATSU_IMAGE_HOSTS` | any |
 
 Command line wins over the environment. A missing or unbuilt `--web-root` is not
 fatal — the server then answers `/health` only.
 
-## Auth token
+## Access token
 
-The default address is loopback, and a loopback install is **tokenless**: anyone
-who can reach a 127.0.0.1 socket already owns the machine the database lives on,
-and the browser is loaded from that same server.
+By default (`--auth off`) the server is open to anyone who can reach the port,
+which is fine on a machine of your own. `--auth token` makes `/rpc`,
+`/proxy/*` and writes to `/img` answer **401** unless the request carries
+`Authorization: Bearer <token>`. `/health`, the static bundle and `GET /img`
+stay public: a browser's native `Image` request cannot carry a header, so
+covers must be fetchable anonymously.
 
-Listening **beyond loopback** (`--address 0.0.0.0`, or a LAN IP) makes the server
-demand `Authorization: Bearer <token>` on every data endpoint — `/rpc` and
-`/proxy/*` answer **401** without it. `/health`, the static bundle and `/img`
-stay public: a browser's native `Image` request cannot carry a header, so covers
-must be fetchable anonymously.
+The token comes from `--auth-token` / `TONKATSU_AUTH_TOKEN`, or, when unset, is
+generated on first boot (32 random bytes, base64url) and kept at
+`<data-dir>/auth_token` so a restart does not sign every browser out. The
+server prints a sign-in link on every start:
 
-The token is generated on first boot (32 random bytes, base64url), printed as
-`Auth token: …`, and persisted at `<data-dir>/auth_token` so a restart does not
-invalidate every browser. Paste it into the web client's **Settings → Credentials
-→ "Keys stored on the server"**; it is kept in the browser's storage.
+```
+Sign in: http://localhost:8080/?token=…
+```
+
+Open it in the browser (with the host's address instead of `localhost` from
+another device): the web client stores the token and drops it from the URL. A
+browser without a token is shown a screen to paste it into, and
+**Settings → Credentials → "Keys stored on the server"** lets you change it
+later. `GET /health` reports `"auth": true` while the token is required.
 
 ## Docker
 
 ```bash
-cp .env.example .env   # optional — data folder, bind address, port, PUID/PGID
+cp .env.example .env   # optional — data folder, port, access token, PUID/PGID
 docker compose up --build
 ```
 
@@ -64,11 +74,25 @@ than a WSL-native path like `/home/<user>/tonkatsu-data`. Either way, never
 open the live database in another tool — locking across the Windows boundary
 is not to be trusted.
 
-`GET /health` → `{"status":"ok","schemaVersion":N,"protocolVersion":1}`.
+`GET /health` → `{"status":"ok","schemaVersion":N,"protocolVersion":1,"auth":false}`.
 
 `POST /rpc` → `{protocol, dao, method, args}`; answers `{ok:true, result}` or
 `{ok:false, error:{kind, message}}`. A DAO-level failure still answers 200 —
 only a malformed request is a 4xx.
+
+## Cover hosts
+
+`GET /img/<folder>/<id>?src=<url>` fetches a cover the browser cannot load
+itself and caches it under `<data-dir>/images`. By default any https host is
+allowed. `--image-hosts` / `TONKATSU_IMAGE_HOSTS` restricts that to a
+comma-separated list of domain roots, subdomains included (`doubanio.com`
+covers `img3.doubanio.com`); any other host answers **403** before a request
+leaves the machine. With a list set, redirects are not followed blindly: every
+hop is checked against the same list, so a redirect target (Cover Art Archive
+hands its covers off to `archive.org`) has to be listed as well.
+
+`TONKATSU_BIND` in `.env` picks the host interface `docker compose` publishes
+the port on; `127.0.0.1` keeps the UI reachable from the host machine only.
 
 ## API proxy
 

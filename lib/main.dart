@@ -65,9 +65,9 @@ Future<void> main() async {
 
 Future<void> _loadAppState() async {
   _prefs = await SharedPreferences.getInstance();
-  // The selfhost server's bearer token, if any, must be in memory before any
-  // request goes out — /proxy and /rpc carry it on every call.
-  await ServerAuthToken.init();
+  // Before the first request: the /proxy/keys read below already needs it.
+  await ServerAuthToken.init(_prefs);
+  if (kIsWebBuild) await ServerAuthToken.consumeFromUrl(Uri.base);
   // Web keeps the same prefs-backed reads as desktop; the server is where the
   // values live, so they are copied in before anything reads them.
   if (kIsWebBuild) {

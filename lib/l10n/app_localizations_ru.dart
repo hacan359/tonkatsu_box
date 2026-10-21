@@ -601,10 +601,26 @@ class SRu extends S {
 
   @override
   String get credentialsServerTokenHint =>
-      'Вставьте токен, который сервер напечатал при запуске. Требуется только если сервер слушает не только локальную машину.';
+      'Нужен только если сервер запущен с TONKATSU_AUTH=token. Сохранение перезапускает приложение.';
 
   @override
-  String get credentialsServerTokenSave => 'Сохранить токен';
+  String get credentialsServerTokenSaved => 'Токен сервера сохранён';
+
+  @override
+  String get serverTokenTitle => 'Токен доступа к серверу';
+
+  @override
+  String get serverTokenBody =>
+      'Этот сервер требует токен доступа. Он печатается в логе сервера в виде ссылки для входа при каждом запуске и хранится в файле auth_token в папке данных.';
+
+  @override
+  String get serverTokenFieldLabel => 'Токен';
+
+  @override
+  String get serverTokenConnect => 'Подключиться';
+
+  @override
+  String get serverTokenRejected => 'Сервер отклонил этот токен';
 
   @override
   String get credentialsServerManagedTitle => 'Ключи хранятся на сервере';

@@ -18,8 +18,14 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  final ServerConfig config =
-      ServerConfig.parse(args, env: Platform.environment);
+  final ServerConfig config;
+  try {
+    config = ServerConfig.parse(args, env: Platform.environment);
+  } on FormatException catch (e) {
+    stderr.writeln(e.message);
+    exitCode = 2;
+    return;
+  }
 
   sqfliteFfiInit();
 
@@ -59,19 +65,9 @@ Future<void> main(List<String> args) async {
         : 'API credentials: ${configured.join(', ')}',
   );
 
-  // Beyond loopback every data endpoint demands this token; loopback installs
-  // stay tokenless so the existing one-line setup keeps working.
-  final AuthToken token = AuthToken.load(
-    dataDir: config.dataDir,
-    generate: config.requiresAuth,
-  );
-  if (config.requiresAuth) {
-    stdout.writeln('Auth token: ${token.raw}');
-    stdout.writeln(
-      'Paste it into the web client\'s Settings → Credentials → "Keys stored '
-      'on the server" section; the browser remembers it from then on.',
-    );
-  }
+  final AuthToken? token = config.requiresAuth
+      ? AuthToken.load(dataDir: config.dataDir, explicit: config.authToken)
+      : null;
 
   final HttpServer server = await shelf_io.serve(
     buildAppHandler(
@@ -83,9 +79,10 @@ Future<void> main(List<String> args) async {
       images: ImageCache(
         dataDir: config.dataDir,
         upstream: HttpUpstreamClient(deadline: const Duration(seconds: 8)),
+        allowedHosts: config.imageHosts,
       ),
       webRoot: config.webRoot,
-      authToken: config.requiresAuth ? token : null,
+      authToken: token,
     ),
     config.address,
     config.port,
@@ -93,4 +90,22 @@ Future<void> main(List<String> args) async {
   server.autoCompress = true;
 
   stdout.writeln('Listening on http://${server.address.host}:${server.port}');
+  if (token == null) {
+    stdout.writeln(
+      'Auth: off — set TONKATSU_AUTH=token (or --auth token) to require one',
+    );
+  } else {
+    // The link form is what Jupyter prints: one click signs the browser in,
+    // nothing to paste. The host is the operator's to fill in from a LAN.
+    stdout.writeln(
+      'Auth: token required on /rpc, /proxy and /img writes '
+      '(stored in ${config.dataDir}/$kAuthTokenFileName)',
+    );
+    stdout.writeln(
+      'Sign in: http://localhost:${server.port}/?token=${token.raw}',
+    );
+  }
+  if (config.imageHosts.isNotEmpty) {
+    stdout.writeln('Image hosts: ${config.imageHosts.join(', ')}');
+  }
 }

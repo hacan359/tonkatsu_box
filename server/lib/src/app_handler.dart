@@ -20,10 +20,6 @@ const String _kRpcPath = '/rpc';
 
 /// Builds the request pipeline: `/health`, then the web client if one is built.
 /// A missing or unbuilt [webRoot] is not fatal — the API answers regardless.
-///
-/// When [authToken] carries a non-empty token, every data-bearing endpoint
-/// (`/rpc`, `/proxy/*`) demands `Authorization: Bearer <token>`. Static assets,
-/// `/health` and `/img` stay open — see [_isDataPath] for why covers are exempt.
 Handler buildAppHandler({
   required int schemaVersion,
   DaoRegistry? daos,
@@ -40,6 +36,8 @@ Handler buildAppHandler({
           'status': 'ok',
           'schemaVersion': schemaVersion,
           'protocolVersion': kProtocolVersion,
+          // Lets a browser ask for the token before its first 401.
+          'auth': authToken != null,
         }),
         headers: <String, String>{
           HttpHeaders.contentTypeHeader: 'application/json',
@@ -89,32 +87,26 @@ Handler buildAppHandler({
   final Handler? web = _webHandler(webRoot);
   final Handler handler = web == null ? api.call : _withWebFallback(api, web);
 
-  final Handler authorized =
-      _requireAuth(authToken, handler);
-
   return const Pipeline()
       .addMiddleware(logger ?? sanitizedLogRequests())
-      .addHandler(authorized);
+      .addHandler(_requireToken(authToken, handler));
 }
 
-/// Wraps the API so data endpoints answer 401 unless the request carries the
-/// bearer token. The browser loads anonymous static assets first, then needs
-/// the token for every byte of data — which is exactly what a token is for.
-Handler _requireAuth(AuthToken? authToken, Handler handler) {
-  // Loopback installs (authToken.raw empty) skip auth entirely — see the
-  // comment on [AuthToken].
-  final String token = authToken?.raw ?? '';
-  if (token.isEmpty) return handler;
+/// Static files and `/health` stay open so a fresh browser can load the shell
+/// that asks for the token; everything that reads or writes data answers 401.
+Handler _requireToken(AuthToken? token, Handler handler) {
+  if (token == null) return handler;
 
   return (Request request) async {
-    if (!_isDataPath(request.url.path)) return handler(request);
-    if (authToken?.matches(AuthToken.bearerOf(request)) ?? false) {
-      return handler(request);
-    }
+    if (!_needsToken(request)) return handler(request);
+    if (token.matches(AuthToken.bearerOf(request))) return handler(request);
     return Response.unauthorized(
       jsonEncode(<String, Object?>{
         'ok': false,
-        'error': <String, String>{'kind': 'auth', 'message': 'Missing token'},
+        'error': <String, String>{
+          'kind': kRpcErrorKindAuth,
+          'message': 'Missing or wrong token',
+        },
       }),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
@@ -123,25 +115,16 @@ Handler _requireAuth(AuthToken? authToken, Handler handler) {
   };
 }
 
-/// The paths that carry data and demand a token. Anything else — static
-/// assets, the SPA fallback, `/health` — stays public so a fresh browser can
-/// load the shell that asks for the token in the first place.
-///
-/// `/img` is deliberately public: covers are immutable public resources, and
-/// `Image.network` in the browser cannot carry an Authorization header anyway.
-/// Its attack surface is capped by the host allowlist and the body limit.
-///
-/// [path] arrives from `Request.url.path`, which shelf strips the leading
-/// slash from (`rpc`, not `/rpc`). Normalising here rather than at the call
-/// site keeps the comparisons reading like the routes do: comparing the raw
-/// value against `/rpc` matched nothing, so the gate never fired no matter how
-/// the token was set.
-bool _isDataPath(String path) {
-  final String route = path.startsWith('/') ? path : '/$path';
-  if (route == _kHealthPath) return false;
-  return route == _kRpcPath ||
-      route == '$_kRpcPath/' ||
-      route.startsWith('$kProxyPathPrefix/');
+/// `GET /img` stays public: `Image.network` cannot send a header, and a cover
+/// is only served to whoever already knows its id. Writes to it are gated.
+bool _needsToken(Request request) {
+  // shelf strips the leading slash from `Request.url.path`.
+  final String path = '/${request.url.path}';
+  if (path == _kRpcPath || path.startsWith('$kProxyPathPrefix/')) return true;
+  if (path.startsWith('$kImagePathPrefix/')) {
+    return request.method != 'GET' && request.method != 'HEAD';
+  }
+  return false;
 }
 
 /// A plain `Cascade` would answer "unknown upstream" with index.html and a 200,

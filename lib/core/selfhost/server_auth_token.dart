@@ -1,51 +1,83 @@
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Where the browser remembers the selfhost server's bearer token.
-///
-/// The server only demands a token when it listens beyond loopback; loopback
-/// installs skip it entirely and this value simply stays empty. The token is
-/// stored in [SharedPreferences] — the same store the rest of the web build
-/// uses — and copied into [_cached] at boot so every request can read it
-/// synchronously while building its headers.
+import 'browser_url_io.dart'
+    if (dart.library.js_interop) 'browser_url_web.dart';
+import 'server_origin.dart';
+
+/// The query parameter of the sign-in link the server prints on start.
+const String kServerTokenQueryParam = 'token';
+
+/// The selfhost server's bearer token, kept in this browser's storage. One
+/// global value, not per profile: the web build talks to exactly one server.
 class ServerAuthToken {
   ServerAuthToken._();
 
   static const String _prefKey = 'server_auth_token';
 
-  /// In-memory copy for synchronous reads while constructing requests.
-  static String? _cached;
+  static SharedPreferences? _prefs;
+  static String? _current;
 
-  /// Loads the remembered token into [_cached]. Call once at boot, before any
-  /// request goes out.
-  static Future<void> init() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? value = prefs.getString(_prefKey);
-    _cached = (value == null || value.isEmpty) ? null : value;
+  static Future<void> init(SharedPreferences prefs) async {
+    _prefs = prefs;
+    _current = _nonEmpty(prefs.getString(_prefKey));
   }
 
-  /// The token requests carry, or null when none is stored.
-  static String? get current => _cached;
+  /// Null until a token was saved; requests then go out without a header.
+  static String? get current => _current;
 
-  /// Saves the token the operator pasted in. Empty clears it.
   static Future<void> write(String token) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    _cached = token.isEmpty ? null : token;
-    if (token.isEmpty) {
+    final SharedPreferences prefs = _prefs ??=
+        await SharedPreferences.getInstance();
+    final String? value = _nonEmpty(token);
+    _current = value;
+    if (value == null) {
       await prefs.remove(_prefKey);
     } else {
-      await prefs.setString(_prefKey, token);
+      await prefs.setString(_prefKey, value);
     }
   }
 
-  /// Adds `Authorization: Bearer <token>` to [headers] when a token is held.
-  /// The literal key (not `HttpHeaders.authorizationHeader`) keeps this file
-  /// free of `dart:io`, which the web build must not import.
-  static Map<String, String> withToken(
-      Map<String, String> headers, String? token) {
-    if (token == null || token.isEmpty) return headers;
-    return <String, String>{
-      ...headers,
-      'authorization': 'Bearer $token',
-    };
+  /// Stores the token a sign-in link carries and rewrites the address bar
+  /// without it, so history and bookmarks do not keep the secret.
+  static Future<bool> consumeFromUrl(Uri location) async {
+    final String? token = _nonEmpty(
+      location.queryParameters[kServerTokenQueryParam],
+    );
+    if (token == null) return false;
+    await write(token);
+    final Map<String, String> rest = Map<String, String>.of(
+      location.queryParameters,
+    )..remove(kServerTokenQueryParam);
+    replaceBrowserUrl(
+      Uri(
+        path: location.path.isEmpty ? '/' : location.path,
+        queryParameters: rest.isEmpty ? null : rest,
+      ).toString(),
+    );
+    return true;
+  }
+
+  static String? _nonEmpty(String? value) =>
+      value == null || value.trim().isEmpty ? null : value.trim();
+}
+
+/// Reads the token per request, so one saved in Settings or on the token
+/// screen applies at once instead of after every Dio in the app is rebuilt.
+class ServerAuthInterceptor extends Interceptor {
+  ServerAuthInterceptor({String? serverOrigin}) : _origin = serverOrigin;
+
+  final String? _origin;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final String? token = ServerAuthToken.current;
+    // Only our own server gets the secret; the proxy rewrite ran first, so
+    // an upstream call already points at it and a stray host never will.
+    if (token != null && options.uri.origin == (_origin ?? serverBaseUrl())) {
+      // A literal rather than HttpHeaders: dart:io must stay out of web code.
+      options.headers['authorization'] = 'Bearer $token';
+    }
+    handler.next(options);
   }
 }

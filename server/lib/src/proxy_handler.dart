@@ -347,9 +347,8 @@ Future<List<int>> _collect(Request request) async {
   return builder.takeBytes();
 }
 
-/// Upstreams occasionally need a few MB (a cover, an export), but a request
-/// body is never an upload target here — anything past this is an abuser, not
-/// a caller.
+/// A request body is never an upload target here; anything past a few MB is
+/// an abuser, not a caller.
 const int kMaxRequestBodyBytes = 20 * 1024 * 1024;
 
 /// See [kMaxRequestBodyBytes]. Callers turn this into a 413.

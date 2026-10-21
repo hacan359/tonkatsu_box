@@ -3,11 +3,8 @@ services:
     build: .
     image: tonkatsu-box:local
     ports:
-      # Bound to the host loopback by default. The server demands a bearer
-      # token as soon as it listens beyond 127.0.0.1, so reaching it from
-      # another device is a deliberate opt-in (TONKATSU_BIND=0.0.0.0 in .env) —
-      # the token is then required, not optional.
-      - "${TONKATSU_BIND:-127.0.0.1}:${TONKATSU_PORT:-8080}:8080"
+      # TONKATSU_BIND=127.0.0.1 keeps the UI reachable from this host only.
+      - "${TONKATSU_BIND:-0.0.0.0}:${TONKATSU_PORT:-8080}:8080"
     volumes:
       # Database, covers cache, snapshots and keys.json — back up by copying
       # this one folder. Configure the host side in .env (see .env.example).
@@ -16,6 +13,12 @@ services:
       # Everything under the data folder is chowned to this host user.
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
+      # "token" makes the web UI ask for the bearer token the server prints
+      # on start; off keeps it open to anyone who can reach the port.
+      TONKATSU_AUTH: ${TONKATSU_AUTH:-off}
+      TONKATSU_AUTH_TOKEN: ${TONKATSU_AUTH_TOKEN:-}
+      # Comma-separated hosts covers may be fetched from; empty allows any.
+      TONKATSU_IMAGE_HOSTS: ${TONKATSU_IMAGE_HOSTS:-}
       # API keys from .env; an empty value reads as absent, and a set one
       # overrides the same key in keys.json.
       TONKATSU_KEY_TMDB: ${TONKATSU_KEY_TMDB:-}

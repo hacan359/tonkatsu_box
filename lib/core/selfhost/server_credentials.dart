@@ -39,15 +39,12 @@ final Map<String, String> kCredentialToConfigKey = <String, String>{
 
 Dio _client(Dio? override) =>
     override ??
-    Dio(BaseOptions(
+    (Dio(BaseOptions(
       baseUrl: serverBaseUrl(),
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
-      headers: ServerAuthToken.withToken(
-        const <String, String>{},
-        ServerAuthToken.current,
-      ),
-    ));
+    ))
+      ..interceptors.add(ServerAuthInterceptor()));
 
 /// The keys the server holds. An unreachable server yields an empty map, so the
 /// app boots with search disabled rather than not at all.

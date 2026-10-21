@@ -589,10 +589,26 @@ class SEn extends S {
 
   @override
   String get credentialsServerTokenHint =>
-      'Paste the token the server printed at startup. Only needed when the server listens beyond this machine.';
+      'Needed only when the server runs with TONKATSU_AUTH=token. Saving restarts the app.';
 
   @override
-  String get credentialsServerTokenSave => 'Save token';
+  String get credentialsServerTokenSaved => 'Server token saved';
+
+  @override
+  String get serverTokenTitle => 'Server access token';
+
+  @override
+  String get serverTokenBody =>
+      'This server asks for an access token. It is printed in the server log as a sign-in link on every start and kept in the auth_token file in the data folder.';
+
+  @override
+  String get serverTokenFieldLabel => 'Token';
+
+  @override
+  String get serverTokenConnect => 'Connect';
+
+  @override
+  String get serverTokenRejected => 'The server rejected this token';
 
   @override
   String get credentialsServerManagedTitle => 'Keys are stored on the server';

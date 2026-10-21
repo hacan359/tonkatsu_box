@@ -9,6 +9,72 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Optional access token for the selfhost server**
+
+  `TONKATSU_AUTH=token` (or `--auth token`) makes the server answer 401 on
+  `/rpc`, `/proxy/*` and writes to `/img` unless the request carries
+  `Authorization: Bearer <token>`. The token comes from `TONKATSU_AUTH_TOKEN`
+  or is generated on first start and kept in `<data-dir>/auth_token`; the
+  server prints a sign-in link `http://localhost:8080/?token=…` on every
+  start. The web client stores the token from that link and drops it from
+  the address bar, shows a token screen instead of the fatal error when the
+  server asks for one, and lets you change it in Settings → Credentials.
+  `GET /health` reports `"auth": true|false`. The default stays open.
+  `TONKATSU_IMAGE_HOSTS` (or `--image-hosts`) restricts the hosts `/img?src=`
+  may fetch covers from to a comma-separated list of domain roots, subdomains
+  included, with every redirect hop checked against the same list; empty
+  allows any host. `TONKATSU_BIND` in `.env` picks the host interface
+  `docker compose` publishes the port on. Also caps proxy and image bodies at
+  20 MB and redacts PSN tokens from the request log. Based on PR #459 by
+  shingo110.
+
+  * server/lib/src/server_config.dart (AuthMode, ServerConfig.authMode,
+    ServerConfig.authToken, ServerConfig.requiresAuth,
+    ServerConfig.imageHosts): `--auth`, `--auth-token`, `--image-hosts`,
+    `TONKATSU_AUTH`, `TONKATSU_AUTH_TOKEN`, `TONKATSU_IMAGE_HOSTS`.
+  * server/lib/src/image_handler.dart (ImageCache.allowedHosts,
+    ImageCache._fetch, ImageCache._isAllowedHost): Host allowlist checked on
+    every redirect hop.
+  * server/lib/src/upstream_client.dart (UpstreamResponse.location,
+    UpstreamResponse.isRedirect, UpstreamClient.send): `followRedirects`.
+  * server/lib/src/auth_token.dart (AuthToken.load, AuthToken.generate,
+    AuthToken.matches, AuthToken.bearerOf): New.
+  * server/lib/src/app_handler.dart (buildAppHandler, _requireToken,
+    _needsToken): 401 gate; `auth` field on `/health`.
+  * server/bin/server.dart (main): Load the token, print the sign-in link.
+  * server/lib/src/proxy_handler.dart (_collect, kMaxRequestBodyBytes,
+    ProxyRequestBodyTooLarge), server/lib/src/upstream_client.dart
+    (HttpUpstreamClient.send, kUpstreamMaxBodyBytes, UpstreamBodyTooLarge):
+    Body caps.
+  * server/lib/src/request_log.dart (_redactKeys): `npsso`, `x_access_token`.
+  * packages/core/lib/rpc/protocol.dart (kRpcErrorKindAuth): New.
+  * lib/core/selfhost/server_auth_token.dart (ServerAuthToken,
+    ServerAuthInterceptor), lib/core/selfhost/browser_url_io.dart,
+    lib/core/selfhost/browser_url_web.dart (replaceBrowserUrl): New.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier._loadPlatformCount): A failed count no longer reaches
+    the fatal overlay.
+  * server/bin/server.dart (main): A bad option answers with a message, not a
+    stack trace.
+  * pubspec.yaml: `web` as a direct dependency.
+  * lib/core/api/api_dio.dart (createApiDio),
+    lib/core/selfhost/server_credentials.dart (_client): Attach the token on
+    web.
+  * lib/main.dart (_loadAppState): Load the token, consume `?token=`.
+  * lib/features/splash/screens/server_token_screen.dart (ServerTokenScreen):
+    New.
+  * lib/features/splash/screens/splash_screen.dart
+    (_SplashScreenState._navigateToServerToken): Route a 401 to the token
+    screen.
+  * lib/features/settings/content/credentials_content.dart
+    (_CredentialsContentState._saveServerToken): Token field on web.
+  * lib/l10n/app_*.arb (credentialsServerTokenLabel,
+    credentialsServerTokenHint, credentialsServerTokenSaved, serverTokenTitle,
+    serverTokenBody, serverTokenFieldLabel, serverTokenConnect,
+    serverTokenRejected): New strings.
+  * docker-compose.yml, .env.example, server/README.md, server/PROTOCOL.md:
+    Document the mode.
+
 - **Two new themes: PS1 Retro and Eva Azure**
 
   PS1 Retro is the grey PlayStation shell with the four logo colours; Eva

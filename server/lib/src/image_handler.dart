@@ -21,63 +21,6 @@ const Map<String, Duration> _hostMinGap = <String, Duration>{
   'coverartarchive.org': Duration(milliseconds: 300),
 };
 
-/// The only hosts `/img?src=` may reach. The server is a convenience cache,
-/// not an open relay — a stranger must not be able to turn the selfhost box
-/// into a two-hop SSRF into the user's LAN. It mirrors the cover providers the
-/// app actually embeds; add a host here when a new provider starts serving
-/// remote cover URLs.
-///
-/// Every entry is a suffix root: the `.`-guarded match in
-/// [_isAllowedImageHost] lets a sharded CDN (`img3.doubanio.com`) or a regional
-/// mirror (`cdn2.steamgriddb.com`) through, so one entry covers a provider.
-///
-/// An omission is not a soft failure. The browser asks `/img?src=` for every
-/// cover it cannot decode itself, so an unregistered host answers 403 where
-/// bytes were expected and `Image.network` paints its broken-image placeholder
-/// instead of the cover. Register the host in the same change that adds the
-/// source.
-const Set<String> _allowedImageHosts = <String>{
-  // Hosts several providers share, or that carry the app's own artwork.
-  'coverartarchive.org',
-  'image.tmdb.org',
-  'm.media-amazon.com',
-  'images-na.ssl-images-amazon.com',
-  'i.imgur.com',
-  'images.unsplash.com',
-  'media.tenor.com',
-  'media.tenor.co',
-  'res.cloudinary.com',
-  'static.wikia.nocookie.net',
-  'screenscraper.fr',
-  // International sources.
-  'anilist.co',
-  'cdn.myanimelist.net',
-  'igdb.com',
-  'kitsu.io',
-  'kitsu.app',
-  'openlibrary.org',
-  'hardcover.app',
-  'thetvdb.com',
-  'steamgriddb.com',
-  'vndb.org',
-  'retroachievements.org',
-  'fantlab.ru',
-  'books.google.com',
-  // ComicVine serves its image variants off the same host as its API.
-  'comicvine.gamespot.com',
-  // Mainland-China sources, which are the reason this fork exists.
-  'doubanio.com',
-  'bgm.tv',
-  'tapimg.com',
-  'xmcdn.com',
-  'weread.qq.com',
-  'myqcloud.com',
-  'neodb.social',
-  'mangabaka.org',
-  'mangabaka.dev',
-  'uploads.mangadex.org',
-};
-
 final Map<String, UpstreamThrottle> _hostThrottles =
     <String, UpstreamThrottle>{};
 
@@ -95,10 +38,14 @@ class ImageCache {
   ImageCache({
     required this.dataDir,
     UpstreamClient? upstream,
+    this.allowedHosts = const <String>[],
   }) : _upstream = upstream ?? HttpUpstreamClient();
 
   final String dataDir;
   final UpstreamClient _upstream;
+
+  /// Domain roots `?src=` may point at, subdomains included; empty = any.
+  final List<String> allowedHosts;
 
   Handler get handler => (Request request) async {
         final (ImageType, String)? target = _target(request);
@@ -125,28 +72,12 @@ class ImageCache {
         if (sourceUri == null || !sourceUri.isScheme('https')) {
           return _error(HttpStatus.badRequest, 'Source must be an https URL');
         }
-        // The host gate makes `/img` a cache, not a relay: a random `src` must
-        // not reach the user's LAN. Subdomains of a provider (e.g. a regional
-        // CDN) are allowed by suffix match.
-        if (!_isAllowedImageHost(sourceUri.host)) {
-          return _error(
-            HttpStatus.forbidden,
-            'Source host ${sourceUri.host} is not an allowed cover host',
-          );
-        }
 
         final UpstreamResponse response;
         try {
-          await _throttleHost(sourceUri.host);
-          response = await _upstream.send(
-            method: 'GET',
-            url: sourceUri,
-            // Cover hosts (Cover Art Archive among them) rate-limit or refuse
-            // agent-less clients; identify like the API proxy does.
-            headers: <String, String>{
-              HttpHeaders.userAgentHeader: kProxyUserAgent,
-            },
-          );
+          response = await _fetch(sourceUri);
+        } on _HostNotAllowed catch (e) {
+          return _error(HttpStatus.forbidden, e.message);
         } on Object catch (e) {
           return _error(HttpStatus.badGateway, '$e');
         }
@@ -175,6 +106,44 @@ class ImageCache {
           response.contentType ?? _contentTypeOf(imageId),
         );
       };
+
+  /// With an allowlist every redirect hop is checked too: following them
+  /// blindly would let one listed host with an open redirect reach anything.
+  Future<UpstreamResponse> _fetch(Uri source) async {
+    Uri url = source;
+    for (int hop = 0;; hop++) {
+      if (!_isAllowedHost(url.host)) throw _HostNotAllowed(url.host);
+      await _throttleHost(url.host);
+      final UpstreamResponse response = await _upstream.send(
+        method: 'GET',
+        url: url,
+        // Cover hosts (Cover Art Archive among them) rate-limit or refuse
+        // agent-less clients; identify like the API proxy does.
+        headers: <String, String>{
+          HttpHeaders.userAgentHeader: kProxyUserAgent,
+        },
+        followRedirects: allowedHosts.isEmpty,
+      );
+      final String? location = response.location;
+      if (!response.isRedirect || location == null) return response;
+      if (hop >= _kMaxRedirects) {
+        throw StateError('Too many redirects from ${source.host}');
+      }
+      url = url.resolve(location);
+      if (!url.isScheme('https')) {
+        throw StateError('Redirected to a non-https URL');
+      }
+    }
+  }
+
+  bool _isAllowedHost(String host) {
+    if (allowedHosts.isEmpty) return true;
+    final String lower = host.toLowerCase();
+    for (final String allowed in allowedHosts) {
+      if (lower == allowed || lower.endsWith('.$allowed')) return true;
+    }
+    return false;
+  }
 
   /// The web build's stand-in for the desktop local-cache write: a user-picked
   /// cover has no upstream URL the GET route could fetch.
@@ -289,17 +258,6 @@ Response _image(List<int> bytes, String contentType) => Response.ok(
       },
     );
 
-/// Host gate for `?src=`: exact match, or a suffix of an allowed host so a
-/// provider's subdomains (regional CDNs, tenant buckets) still work. The
-/// separator matters — `evil-coverartarchive.org` must not pass.
-bool _isAllowedImageHost(String host) {
-  final String lower = host.toLowerCase();
-  for (final String allowed in _allowedImageHosts) {
-    if (lower == allowed || lower.endsWith('.$allowed')) return true;
-  }
-  return false;
-}
-
 Response _error(int status, String message) => Response(
       status,
       body: jsonEncode(<String, Object?>{
@@ -310,3 +268,14 @@ Response _error(int status, String message) => Response(
         HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
+
+/// Browsers stop at 20; covers never need more than a CDN hand-off or two.
+const int _kMaxRedirects = 5;
+
+class _HostNotAllowed implements Exception {
+  const _HostNotAllowed(this.host);
+
+  final String host;
+
+  String get message => 'Source host $host is not an allowed cover host';
+}
