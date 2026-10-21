@@ -1,7 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../shared/constants/platform_features.dart';
-
 /// Where the browser remembers the selfhost server's bearer token.
 ///
 /// The server only demands a token when it listens beyond loopback; loopback

@@ -914,7 +914,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     setState(() => _savingToken = true);
     try {
       await ServerAuthToken.write(_serverTokenController.text.trim());
-      if (mounted) context.showSnack(S.of(context).credentialsServerTokenSave);
+      if (!mounted) return;
+      context.showSnack(S.of(context).credentialsServerTokenSave);
       // The token guards /proxy and /rpc; a freshly saved one only matters
       // from the next request on, which the restart makes immediate.
       await AppRestartScope.restart(context);

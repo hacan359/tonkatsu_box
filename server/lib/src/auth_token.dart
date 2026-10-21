@@ -17,12 +17,6 @@ import 'package:shelf/shelf.dart';
 class AuthToken {
   AuthToken._(this.raw, {required this.dataDir});
 
-  /// The token in plain text, for the operator to copy into the browser.
-  final String raw;
-
-  /// Where the token persists, so a restart does not invalidate every browser.
-  final String? dataDir;
-
   /// Loads `<dataDir>/auth_token`, generating and persisting one when the
   /// file is absent but [generate] is requested. A missing [dataDir] yields
   /// an in-memory token that rotates on every boot — acceptable for tests.
@@ -50,6 +44,12 @@ class AuthToken {
     }
     return AuthToken._(raw, dataDir: dataDir);
   }
+
+  /// The token in plain text, for the operator to copy into the browser.
+  final String raw;
+
+  /// Where the token persists, so a restart does not invalidate every browser.
+  final String? dataDir;
 
   /// Constant-time re-check against a client-supplied value, so a timing side
   /// channel cannot tell a wrong token from a shorter one.
