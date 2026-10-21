@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/constants/platform_features.dart';
+import 'server_auth_token.dart';
 import 'server_origin.dart';
 
 /// The exported config spells its keys the way SharedPreferences does; the
@@ -42,6 +43,10 @@ Dio _client(Dio? override) =>
       baseUrl: serverBaseUrl(),
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
+      headers: ServerAuthToken.withToken(
+        const <String, String>{},
+        ServerAuthToken.current,
+      ),
     ));
 
 /// The keys the server holds. An unreachable server yields an empty map, so the

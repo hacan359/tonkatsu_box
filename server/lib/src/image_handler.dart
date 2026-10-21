@@ -21,6 +21,63 @@ const Map<String, Duration> _hostMinGap = <String, Duration>{
   'coverartarchive.org': Duration(milliseconds: 300),
 };
 
+/// The only hosts `/img?src=` may reach. The server is a convenience cache,
+/// not an open relay — a stranger must not be able to turn the selfhost box
+/// into a two-hop SSRF into the user's LAN. It mirrors the cover providers the
+/// app actually embeds; add a host here when a new provider starts serving
+/// remote cover URLs.
+///
+/// Every entry is a suffix root: the `.`-guarded match in
+/// [_isAllowedImageHost] lets a sharded CDN (`img3.doubanio.com`) or a regional
+/// mirror (`cdn2.steamgriddb.com`) through, so one entry covers a provider.
+///
+/// An omission is not a soft failure. The browser asks `/img?src=` for every
+/// cover it cannot decode itself, so an unregistered host answers 403 where
+/// bytes were expected and `Image.network` paints its broken-image placeholder
+/// instead of the cover. Register the host in the same change that adds the
+/// source.
+const Set<String> _allowedImageHosts = <String>{
+  // Hosts several providers share, or that carry the app's own artwork.
+  'coverartarchive.org',
+  'image.tmdb.org',
+  'm.media-amazon.com',
+  'images-na.ssl-images-amazon.com',
+  'i.imgur.com',
+  'images.unsplash.com',
+  'media.tenor.com',
+  'media.tenor.co',
+  'res.cloudinary.com',
+  'static.wikia.nocookie.net',
+  'screenscraper.fr',
+  // International sources.
+  'anilist.co',
+  'cdn.myanimelist.net',
+  'igdb.com',
+  'kitsu.io',
+  'kitsu.app',
+  'openlibrary.org',
+  'hardcover.app',
+  'thetvdb.com',
+  'steamgriddb.com',
+  'vndb.org',
+  'retroachievements.org',
+  'fantlab.ru',
+  'books.google.com',
+  // ComicVine serves its image variants off the same host as its API.
+  'comicvine.gamespot.com',
+  // Mainland-China sources, which are the reason this fork exists.
+  'doubanio.com',
+  'bgm.tv',
+  'tapimg.com',
+  'xmcdn.com',
+  'weread.qq.com',
+  'myqcloud.com',
+  'neodb.social',
+  'mangabaka.org',
+  'mangabaka.dev',
+  'uploads.mangadex.org',
+};
+
 final Map<String, UpstreamThrottle> _hostThrottles =
     <String, UpstreamThrottle>{};
 
@@ -67,6 +124,15 @@ class ImageCache {
         final Uri? sourceUri = Uri.tryParse(source);
         if (sourceUri == null || !sourceUri.isScheme('https')) {
           return _error(HttpStatus.badRequest, 'Source must be an https URL');
+        }
+        // The host gate makes `/img` a cache, not a relay: a random `src` must
+        // not reach the user's LAN. Subdomains of a provider (e.g. a regional
+        // CDN) are allowed by suffix match.
+        if (!_isAllowedImageHost(sourceUri.host)) {
+          return _error(
+            HttpStatus.forbidden,
+            'Source host ${sourceUri.host} is not an allowed cover host',
+          );
         }
 
         final UpstreamResponse response;
@@ -222,6 +288,17 @@ Response _image(List<int> bytes, String contentType) => Response.ok(
         HttpHeaders.cacheControlHeader: _kImmutable,
       },
     );
+
+/// Host gate for `?src=`: exact match, or a suffix of an allowed host so a
+/// provider's subdomains (regional CDNs, tenant buckets) still work. The
+/// separator matters — `evil-coverartarchive.org` must not pass.
+bool _isAllowedImageHost(String host) {
+  final String lower = host.toLowerCase();
+  for (final String allowed in _allowedImageHosts) {
+    if (lower == allowed || lower.endsWith('.$allowed')) return true;
+  }
+  return false;
+}
 
 Response _error(int status, String message) => Response(
       status,

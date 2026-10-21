@@ -538,6 +538,15 @@ class SZh extends S {
   String get settingsApiKeys => 'API 密钥';
 
   @override
+  String get credentialsServerTokenLabel => '服务器访问令牌';
+
+  @override
+  String get credentialsServerTokenHint => '粘贴服务器启动时打印的令牌。仅当服务器监听地址不限于本机时需要。';
+
+  @override
+  String get credentialsServerTokenSave => '保存令牌';
+
+  @override
   String get credentialsServerManagedTitle => '密钥保存在服务器上';
 
   @override

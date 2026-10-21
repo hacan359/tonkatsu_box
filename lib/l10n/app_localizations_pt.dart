@@ -587,6 +587,16 @@ class SPt extends S {
   String get settingsApiKeys => 'Chaves de API';
 
   @override
+  String get credentialsServerTokenLabel => 'Token de acesso ao servidor';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Cole o token que o servidor imprimiu na inicialização. Necessário apenas se o servidor escutar além desta máquina.';
+
+  @override
+  String get credentialsServerTokenSave => 'Salvar token';
+
+  @override
   String get credentialsServerManagedTitle =>
       'As chaves ficam guardadas no servidor';
 

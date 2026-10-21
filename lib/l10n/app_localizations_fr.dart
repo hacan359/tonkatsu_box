@@ -588,6 +588,16 @@ class SFr extends S {
   String get settingsApiKeys => 'Clés API';
 
   @override
+  String get credentialsServerTokenLabel => 'Jeton d\'accès du serveur';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Collez le jeton imprimé par le serveur au démarrage. Requis uniquement si le serveur écoute au-delà de cette machine.';
+
+  @override
+  String get credentialsServerTokenSave => 'Enregistrer le jeton';
+
+  @override
   String get credentialsServerManagedTitle =>
       'Les clés sont stockées sur le serveur';
 

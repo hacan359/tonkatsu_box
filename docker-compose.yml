@@ -3,7 +3,11 @@ services:
     build: .
     image: tonkatsu-box:local
     ports:
-      - "${TONKATSU_PORT:-8080}:8080"
+      # Bound to the host loopback by default. The server demands a bearer
+      # token as soon as it listens beyond 127.0.0.1, so reaching it from
+      # another device is a deliberate opt-in (TONKATSU_BIND=0.0.0.0 in .env) —
+      # the token is then required, not optional.
+      - "${TONKATSU_BIND:-127.0.0.1}:${TONKATSU_PORT:-8080}:8080"
     volumes:
       # Database, covers cache, snapshots and keys.json — back up by copying
       # this one folder. Configure the host side in .env (see .env.example).

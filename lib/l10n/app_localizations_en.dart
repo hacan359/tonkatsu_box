@@ -585,6 +585,16 @@ class SEn extends S {
   String get settingsApiKeys => 'API Keys';
 
   @override
+  String get credentialsServerTokenLabel => 'Server access token';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Paste the token the server printed at startup. Only needed when the server listens beyond this machine.';
+
+  @override
+  String get credentialsServerTokenSave => 'Save token';
+
+  @override
   String get credentialsServerManagedTitle => 'Keys are stored on the server';
 
   @override

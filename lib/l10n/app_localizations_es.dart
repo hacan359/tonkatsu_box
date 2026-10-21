@@ -587,6 +587,16 @@ class SEs extends S {
   String get settingsApiKeys => 'Claves API';
 
   @override
+  String get credentialsServerTokenLabel => 'Token de acceso al servidor';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Pega el token que imprimió el servidor al iniciar. Solo se necesita si el servidor escucha más allá de esta máquina.';
+
+  @override
+  String get credentialsServerTokenSave => 'Guardar token';
+
+  @override
   String get credentialsServerManagedTitle =>
       'Las claves se guardan en el servidor';
 

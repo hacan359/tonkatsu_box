@@ -43,6 +43,10 @@ COPY --from=web /src/build/web /srv/web
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# 0.0.0.0 rather than loopback: the container must listen on its eth0 for the
+# host port mapping to reach it. Listening beyond loopback makes the server
+# demand a bearer token — generated on first boot, printed to the log, and kept
+# at $TONKATSU_DATA_DIR/auth_token.
 ENV TONKATSU_DATA_DIR=/data \
     TONKATSU_WEB_ROOT=/srv/web \
     TONKATSU_ADDRESS=0.0.0.0 \
