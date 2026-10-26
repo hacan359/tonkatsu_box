@@ -20,6 +20,10 @@ class _FakeUpstream implements UpstreamClient {
   final int status;
   final String? contentType;
   final List<Uri> sent = <Uri>[];
+  final List<bool> followed = <bool>[];
+
+  /// Host → Location: answers that host with a 302 instead of the payload.
+  Map<String, String> redirects = <String, String>{};
 
   @override
   Future<UpstreamResponse> send({
@@ -27,8 +31,19 @@ class _FakeUpstream implements UpstreamClient {
     required Uri url,
     required Map<String, String> headers,
     List<int>? body,
+    bool followRedirects = true,
   }) async {
     sent.add(url);
+    followed.add(followRedirects);
+    final String? location = redirects[url.host];
+    if (location != null) {
+      return UpstreamResponse(
+        status: HttpStatus.found,
+        contentType: null,
+        body: const <int>[],
+        location: location,
+      );
+    }
     return UpstreamResponse(
       status: status,
       contentType: contentType,
@@ -269,6 +284,103 @@ void main() {
       final Response response = await delete('/img/custom_covers/C:evil');
 
       expect(response.statusCode, HttpStatus.badRequest);
+    });
+  });
+
+  group('ImageCache host allowlist', () {
+    Future<Response> getWith(List<String> hosts, String src) async {
+      final Handler handler = buildAppHandler(
+        schemaVersion: 1,
+        images: ImageCache(
+          dataDir: dataDir.path,
+          upstream: upstream,
+          allowedHosts: hosts,
+        ),
+        logger: (Handler inner) => inner,
+      );
+      final String query = Uri.encodeQueryComponent(src);
+      return handler(Request(
+        'GET',
+        Uri.parse('http://localhost/img/anime_covers/anilist_9?src=$query'),
+      ));
+    }
+
+    test('should refuse a host outside the list before any request', () async {
+      final Response response =
+          await getWith(<String>['bgm.tv'], 'https://evil.test/a.jpg');
+
+      expect(response.statusCode, HttpStatus.forbidden);
+      expect(upstream.sent, isEmpty);
+    });
+
+    test('should refuse a lookalike suffix', () async {
+      final Response response =
+          await getWith(<String>['bgm.tv'], 'https://evilbgm.tv/a.jpg');
+
+      expect(response.statusCode, HttpStatus.forbidden);
+      expect(upstream.sent, isEmpty);
+    });
+
+    test('should accept the host, its subdomains and any case', () async {
+      final Response response = await getWith(
+        <String>['doubanio.com'],
+        'https://Img3.Doubanio.com/a.jpg',
+      );
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(upstream.sent.single.host, 'img3.doubanio.com');
+      // The cache walks the hops itself so each one can be checked.
+      expect(upstream.followed, <bool>[false]);
+    });
+
+    test('should follow a redirect to a listed host hop by hop', () async {
+      upstream.redirects = <String, String>{
+        'coverartarchive.org': 'https://ia800.us.archive.org/x.jpg',
+      };
+
+      final Response response = await getWith(
+        <String>['coverartarchive.org', 'archive.org'],
+        'https://coverartarchive.org/release/1/front',
+      );
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(
+        upstream.sent.map((Uri u) => u.host).toList(),
+        <String>['coverartarchive.org', 'ia800.us.archive.org'],
+      );
+    });
+
+    test('should refuse a redirect to an unlisted host', () async {
+      upstream.redirects = <String, String>{
+        'listed.test': 'https://evil.test/x.jpg',
+      };
+
+      final Response response =
+          await getWith(<String>['listed.test'], 'https://listed.test/a.jpg');
+
+      expect(response.statusCode, HttpStatus.forbidden);
+      expect(upstream.sent.single.host, 'listed.test');
+    });
+
+    test('should stop a redirect loop', () async {
+      upstream.redirects = <String, String>{
+        'loop.test': 'https://loop.test/again',
+      };
+
+      final Response response =
+          await getWith(<String>['loop.test'], 'https://loop.test/a.jpg');
+
+      expect(response.statusCode, HttpStatus.badGateway);
+      expect(upstream.sent.length, lessThanOrEqualTo(6));
+    });
+
+    test('should let the client follow redirects when no list is set',
+        () async {
+      final Response response =
+          await getWith(const <String>[], 'https://anything.test/a.jpg');
+
+      expect(response.statusCode, HttpStatus.ok);
+      expect(upstream.followed, <bool>[true]);
     });
   });
 }

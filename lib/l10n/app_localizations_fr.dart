@@ -588,6 +588,32 @@ class SFr extends S {
   String get settingsApiKeys => 'Clés API';
 
   @override
+  String get credentialsServerTokenLabel => 'Jeton d\'accès du serveur';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Nécessaire seulement si le serveur tourne avec TONKATSU_AUTH=token. L\'enregistrement redémarre l\'application.';
+
+  @override
+  String get credentialsServerTokenSaved => 'Jeton du serveur enregistré';
+
+  @override
+  String get serverTokenTitle => 'Jeton d\'accès au serveur';
+
+  @override
+  String get serverTokenBody =>
+      'Ce serveur demande un jeton d\'accès. Il est affiché dans le journal du serveur sous forme de lien de connexion à chaque démarrage et conservé dans le fichier auth_token du dossier de données.';
+
+  @override
+  String get serverTokenFieldLabel => 'Jeton';
+
+  @override
+  String get serverTokenConnect => 'Se connecter';
+
+  @override
+  String get serverTokenRejected => 'Le serveur a refusé ce jeton';
+
+  @override
   String get credentialsServerManagedTitle =>
       'Les clés sont stockées sur le serveur';
 

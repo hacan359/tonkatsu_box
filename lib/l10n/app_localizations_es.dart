@@ -587,6 +587,32 @@ class SEs extends S {
   String get settingsApiKeys => 'Claves API';
 
   @override
+  String get credentialsServerTokenLabel => 'Token de acceso al servidor';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Solo necesario si el servidor se ejecuta con TONKATSU_AUTH=token. Guardar reinicia la aplicación.';
+
+  @override
+  String get credentialsServerTokenSaved => 'Token del servidor guardado';
+
+  @override
+  String get serverTokenTitle => 'Token de acceso al servidor';
+
+  @override
+  String get serverTokenBody =>
+      'Este servidor pide un token de acceso. Se imprime en el registro del servidor como enlace de inicio de sesión en cada arranque y se guarda en el archivo auth_token de la carpeta de datos.';
+
+  @override
+  String get serverTokenFieldLabel => 'Token';
+
+  @override
+  String get serverTokenConnect => 'Conectar';
+
+  @override
+  String get serverTokenRejected => 'El servidor rechazó este token';
+
+  @override
   String get credentialsServerManagedTitle =>
       'Las claves se guardan en el servidor';
 

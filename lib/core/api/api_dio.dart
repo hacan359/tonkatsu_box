@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../shared/constants/platform_features.dart';
+import '../selfhost/server_auth_token.dart';
 import 'host_rate_limiter.dart';
 import 'proxy_rewrite_interceptor.dart';
 
@@ -37,7 +38,10 @@ Dio createApiDio({
   dio.interceptors.add(HostRateLimitInterceptor());
   // Rewriting the resolved URI covers both shapes in the codebase: a client
   // with a baseUrl and one that builds a full URL per request.
-  if (kIsWebBuild) dio.interceptors.add(ProxyRewriteInterceptor());
+  if (kIsWebBuild) {
+    dio.interceptors.add(ProxyRewriteInterceptor());
+    dio.interceptors.add(ServerAuthInterceptor());
+  }
   return dio;
 }
 

@@ -587,6 +587,32 @@ class SPt extends S {
   String get settingsApiKeys => 'Chaves de API';
 
   @override
+  String get credentialsServerTokenLabel => 'Token de acesso ao servidor';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Necessário apenas se o servidor corre com TONKATSU_AUTH=token. Guardar reinicia a aplicação.';
+
+  @override
+  String get credentialsServerTokenSaved => 'Token do servidor guardado';
+
+  @override
+  String get serverTokenTitle => 'Token de acesso ao servidor';
+
+  @override
+  String get serverTokenBody =>
+      'Este servidor pede um token de acesso. É impresso no registo do servidor como uma ligação de início de sessão em cada arranque e guardado no ficheiro auth_token da pasta de dados.';
+
+  @override
+  String get serverTokenFieldLabel => 'Token';
+
+  @override
+  String get serverTokenConnect => 'Ligar';
+
+  @override
+  String get serverTokenRejected => 'O servidor rejeitou este token';
+
+  @override
   String get credentialsServerManagedTitle =>
       'As chaves ficam guardadas no servidor';
 

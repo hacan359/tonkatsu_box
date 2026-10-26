@@ -538,6 +538,32 @@ class SZh extends S {
   String get settingsApiKeys => 'API 密钥';
 
   @override
+  String get credentialsServerTokenLabel => '服务器访问令牌';
+
+  @override
+  String get credentialsServerTokenHint =>
+      '仅当服务器以 TONKATSU_AUTH=token 运行时需要。保存后应用会重启。';
+
+  @override
+  String get credentialsServerTokenSaved => '服务器令牌已保存';
+
+  @override
+  String get serverTokenTitle => '服务器访问令牌';
+
+  @override
+  String get serverTokenBody =>
+      '此服务器需要访问令牌。每次启动时它会以登录链接的形式打印在服务器日志中，并保存在数据文件夹的 auth_token 文件里。';
+
+  @override
+  String get serverTokenFieldLabel => '令牌';
+
+  @override
+  String get serverTokenConnect => '连接';
+
+  @override
+  String get serverTokenRejected => '服务器拒绝了此令牌';
+
+  @override
   String get credentialsServerManagedTitle => '密钥保存在服务器上';
 
   @override

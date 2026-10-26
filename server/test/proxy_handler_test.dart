@@ -23,6 +23,7 @@ class _FakeUpstream implements UpstreamClient {
     required Uri url,
     required Map<String, String> headers,
     List<int>? body,
+    bool followRedirects = true,
   }) async {
     sent.add((
       method: method,
