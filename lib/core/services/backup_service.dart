@@ -654,9 +654,8 @@ class BackupService {
             jsonDecode(manifestContent) as Map<String, dynamic>,
           ).hiddenCollections,
       };
-      final Map<String, dynamic> importsByFile = importsContent == null
-          ? <String, dynamic>{}
-          : jsonDecode(importsContent) as Map<String, dynamic>;
+      final Map<String, dynamic> importsByFile =
+          _decodeImportsByFile(importsContent);
       final List<String> sortedKeys = collectionFiles.keys.toList()..sort();
       // One map for the whole archive: a card held by two collections is
       // exported twice and must still come back as a single row.
@@ -871,6 +870,19 @@ class BackupService {
     }
 
     return restored;
+  }
+
+  /// Import sources are bookkeeping: a damaged entry must not cost the user
+  /// the rest of the restore.
+  Map<String, dynamic> _decodeImportsByFile(String? content) {
+    if (content == null) return <String, dynamic>{};
+    try {
+      final Object? decoded = jsonDecode(content);
+      if (decoded is Map<String, dynamic>) return decoded;
+    } on FormatException catch (e) {
+      _log.warning('Unreadable collection_imports.json, skipped', e);
+    }
+    return <String, dynamic>{};
   }
 
   /// Re-attaches the import records of one restored collection; an unknown

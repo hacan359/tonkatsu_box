@@ -131,9 +131,13 @@ class IgdbGamesApi {
     if (queries.isEmpty) return <int, List<Game>>{};
     _client.ensureCredentials();
 
+    // Matches games are upserted with REPLACE, so a field left out here would
+    // wipe what a detail fetch cached; companies included for that reason.
     const String fields =
         'fields id,name,summary,rating,rating_count,first_release_date,'
-        'cover.image_id,genres.name,platforms,url;';
+        'cover.image_id,genres.name,platforms,url,'
+        'involved_companies.company.name,involved_companies.developer,'
+        'involved_companies.publisher;';
 
     try {
       final StringBuffer body = StringBuffer();

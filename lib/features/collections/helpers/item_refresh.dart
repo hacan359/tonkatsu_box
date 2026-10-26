@@ -86,32 +86,32 @@ Future<RefreshOutcome> refreshItemFromSource(
   HardcoverEdition? pickedHardcoverEdition,
   bool bulk = false,
 }) async {
-  final DatabaseService db = ref.read(databaseServiceProvider);
-  final ImageCacheService cache = ref.read(imageCacheServiceProvider);
-
-  final RefreshOutcome outcome;
+  // Never throws: a bulk run counts this item as failed and moves on.
   try {
-    outcome = await _refetch(
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+    final RefreshOutcome outcome = await _refetch(
       ref,
       db,
       item,
       pickedFantlabEdition: pickedFantlabEdition,
       pickedHardcoverEdition: pickedHardcoverEdition,
     );
+    if (!outcome.isSuccess) return outcome;
+
+    // Only after the source answered, or a failed request costs a re-download.
+    // The cached getters bypass a user's override file, which must survive.
+    if (!(bulk && _keepsCoverOnBulkRefresh(item))) {
+      await cache.deleteImage(item.cachedImageType, item.cachedCoverImageId);
+      // The refetched cover lands on the same path, which also keys Flutter's
+      // decoded-image cache — without this the old art renders until restart.
+      await cache.evictDecodedImage(
+          item.cachedImageType, item.cachedCoverImageId);
+    }
+    return outcome;
   } catch (e) {
     return RefreshOutcome.failed(e.toString());
   }
-  if (!outcome.isSuccess) return outcome;
-
-  // Only after the source answered, or a failed request costs a re-download.
-  // The cached getters bypass a user's override file, which must survive.
-  if (!(bulk && _keepsCoverOnBulkRefresh(item))) {
-    await cache.deleteImage(item.cachedImageType, item.cachedCoverImageId);
-    // The refetched cover lands on the same path, which also keys Flutter's
-    // decoded-image cache — without this the old art renders until restart.
-    await cache.evictDecodedImage(item.cachedImageType, item.cachedCoverImageId);
-  }
-  return outcome;
 }
 
 Future<RefreshOutcome> _refetch(

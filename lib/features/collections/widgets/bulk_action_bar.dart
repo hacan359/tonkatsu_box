@@ -390,6 +390,7 @@ class BulkActionBar extends ConsumerWidget {
     // The dialog cannot be dismissed before the run settles.
     final BulkRefreshResult result = await run;
     progress.dispose();
+    if (!context.mounted) return;
     if (result.updated > 0) {
       // One invalidation for the whole run, not one per item.
       ref.invalidate(collectionsProvider);
@@ -442,9 +443,10 @@ class _RefreshProblemList extends StatelessWidget {
       children: <Widget>[
         Text(l.bulkRefreshProblems, style: theme.textTheme.bodyMedium),
         const SizedBox(height: AppSpacing.xs),
-        for (final BulkRefreshProblem p in problems)
+        // Two selected copies of one title share a name, so keys go by index.
+        for (final (int i, BulkRefreshProblem p) in problems.indexed)
           Padding(
-            key: ValueKey<String>('${p.kind.name}:${p.title}'),
+            key: ValueKey<int>(i),
             padding: const EdgeInsets.only(bottom: AppSpacing.xs),
             child: Text(
               '${p.title} — ${switch (p.kind) {

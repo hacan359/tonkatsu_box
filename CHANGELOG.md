@@ -129,9 +129,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     (ItemSearch.creatorsOf): Search by the names.
   * packages/core/lib/rpc/generated/*.rpc.dart: Regenerated.
   * lib/core/api/tmdb/tmdb_movies_api.dart (TmdbMoviesApi.getMovie): Append
-    credits. lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi._gameFields):
-    Request involved companies. lib/core/api/tvmaze/tvmaze_show_api.dart
-    (TvMazeShowApi.getShow): Embed crew.
+    credits. lib/core/api/igdb/igdb_games_api.dart (IgdbGamesApi._gameFields,
+    IgdbGamesApi.multiSearchGamesByName): Request involved companies, so an
+    import that rewrites a game row keeps them.
+    lib/core/api/tvmaze/tvmaze_show_api.dart (TvMazeShowApi.getShow): Embed
+    crew.
   * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
     (_creatorChips): New, at most four chips per role.
   * lib/shared/widgets/media_detail/media_detail_chip.dart
@@ -227,6 +229,33 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     shortcutZoomIn, shortcutZoomOut, shortcutZoomReset): New strings.
 
 ### Changed
+
+- **Item card in two columns on wide windows**
+
+  Poster, rating, status list and dates sit on the left; title, credits,
+  description, notes and sections on the right. Narrow windows and phones
+  keep one column. Seasons show as posters in rows, and the season picked
+  opens its episodes right under its row. Marking episodes keeps that season
+  open.
+
+  * lib/shared/widgets/media_detail/desktop_detail_layout.dart
+    (DesktopDetailLayout), lib/shared/widgets/media_detail/mobile_detail_layout.dart
+    (MobileDetailLayout), lib/shared/widgets/media_detail/detail_sections.dart
+    (DetailSections): New; the two layouts over one set of sections.
+  * lib/shared/widgets/media_detail/detail_note_section.dart,
+    lib/shared/widgets/media_detail/progress_tiles.dart,
+    lib/features/collections/widgets/status_list.dart: New blocks of the
+    left column.
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView): Pick the
+    layout by width.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (seasonPostersPerRow, SeasonsListWidget, SeasonPanel, _SeasonPosterTile):
+    Season posters in rows with the panel under the picked row; a mark holds
+    the open season.
+  * lib/features/collections/widgets/ra_achievements_section.dart,
+    lib/features/collections/widgets/recommendations_section.dart,
+    lib/shared/widgets/media_detail/identity_header.dart: Fit the new
+    columns.
 
 - **Kitsu is reached at kitsu.app**
 
@@ -359,6 +388,14 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     collectionImportSynced): New strings.
 
 ### Fixed
+
+- **A database from a newer version is left untouched**
+
+  Opening the data folder of a newer build stops with an error that asks to
+  update the app, and the file keeps its schema.
+
+  * packages/core/lib/database/database_opener.dart (DatabaseTooNewException,
+    openAppDatabase): Refuse a downgrade.
 
 - **Ctrl+F puts the cursor in the search field**
 

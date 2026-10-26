@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/collection_item.dart';
@@ -190,6 +192,20 @@ void main() {
       expect(outcome.kind, RefreshOutcomeKind.failed);
       expect(outcome.error, contains('boom'));
       verifyNever(() => cache.deleteImage(any(), any()));
+    });
+
+    testWidgets('should report a failing cover cleanup as failed, not throw',
+        (WidgetTester tester) async {
+      final WidgetRef ref = await pumpRef(tester);
+      when(() => igdb.getGameById(100))
+          .thenAnswer((_) async => createTestGame());
+      when(() => cache.deleteImage(any(), any()))
+          .thenThrow(const FileSystemException('locked'));
+
+      final RefreshOutcome outcome =
+          await refreshItemFromSource(ref, createTestCollectionItem());
+
+      expect(outcome.kind, RefreshOutcomeKind.failed);
     });
 
     testWidgets('should refuse a custom card without any request',

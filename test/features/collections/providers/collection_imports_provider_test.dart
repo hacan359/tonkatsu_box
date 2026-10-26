@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection_import.dart';
 import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +84,33 @@ void main() {
       await record(tester, collectionId: 4);
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('should still save when the caller left the screen mid-write', (
+      WidgetTester tester,
+    ) async {
+      final Completer<void> write = Completer<void>();
+      when(() => importDao.upsert(any())).thenAnswer((_) => write.future);
+      late WidgetRef capturedRef;
+      await tester.pumpApp(
+        Consumer(
+          builder: (BuildContext _, WidgetRef ref, Widget? _) {
+            capturedRef = ref;
+            return const SizedBox.shrink();
+          },
+        ),
+        overrides: <Override>[databaseServiceProvider.overrideWithValue(db)],
+      );
+      final Future<void> pending = recordCollectionImport(
+        capturedRef,
+        source: ImportSourceKind.trakt,
+        collectionId: 4,
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      write.complete();
+
+      await expectLater(pending, completes);
+      verify(() => importDao.upsert(any())).called(1);
     });
   });
 }

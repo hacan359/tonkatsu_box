@@ -100,11 +100,11 @@ class DesktopDetailLayout extends StatelessWidget {
         DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            boxShadow: const <BoxShadow>[
+            boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black54,
+                color: AppColors.shadow,
                 blurRadius: 30,
-                offset: Offset(0, 10),
+                offset: const Offset(0, 10),
                 spreadRadius: -10,
               ),
             ],

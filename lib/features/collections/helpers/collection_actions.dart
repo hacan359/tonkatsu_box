@@ -566,6 +566,8 @@ class CollectionActions {
       pickedFantlabEdition: pickedFantlab,
       pickedHardcoverEdition: pickedHardcover,
     );
+    // A ref whose widget left the screen mid-request throws on use.
+    if (!context.mounted) return outcome.isSuccess;
     if (outcome.isSuccess) {
       ref.invalidate(collectionsProvider);
       // The refetched cache row backs this title in every collection and in
@@ -573,7 +575,6 @@ class CollectionActions {
       ref.invalidate(collectionItemsNotifierProvider);
       ref.invalidate(allItemsNotifierProvider);
     }
-    if (!context.mounted) return outcome.isSuccess;
 
     switch (outcome.kind) {
       case RefreshOutcomeKind.success:

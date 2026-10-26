@@ -42,5 +42,7 @@ Future<void> recordCollectionImport(
     _log.warning('Failed to record ${source.key} import', e);
     return;
   }
+  // Fire-and-forget callers may have left the screen by now.
+  if (!ref.context.mounted) return;
   ref.invalidate(collectionImportsProvider(collectionId));
 }

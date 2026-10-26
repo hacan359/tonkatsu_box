@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:core/models/collection_item.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:core/models/tv_episode.dart';
@@ -10,7 +13,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
+import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
+import 'package:tonkatsu_box/data/repositories/game_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/episode_tracker_section.dart';
 import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
 
@@ -69,11 +75,17 @@ void main() {
 
   Future<void> pumpSeasonsList(
     WidgetTester tester,
-    List<TvSeason> seasons,
-  ) async {
+    List<TvSeason> seasons, {
+    List<Override> extraOverrides = const <Override>[],
+  }) async {
     when(() =>
             mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, testShowId))
         .thenAnswer((_) async => seasons);
+    // Auto-status reads the collection list after a mark; still loading, it
+    // bails before touching anything else.
+    final MockCollectionRepository repository = MockCollectionRepository();
+    when(() => repository.getItemsWithData(any()))
+        .thenAnswer((_) => Completer<List<CollectionItem>>().future);
 
     await tester.pumpApp(
       const SingleChildScrollView(
@@ -88,10 +100,21 @@ void main() {
       overrides: <Override>[
         databaseServiceProvider.overrideWithValue(mockDb),
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
+        collectionRepositoryProvider.overrideWithValue(repository),
+        gameRepositoryProvider.overrideWithValue(MockGameRepository()),
+        ...extraOverrides,
       ],
       wrapInScaffold: true,
     );
   }
+
+  EpisodeTrackerNotifier trackerOf(WidgetTester tester) =>
+      ProviderScope.containerOf(tester.element(find.byType(SeasonsListWidget)))
+          .read(episodeTrackerNotifierProvider((
+            collectionId: testCollectionId,
+            showId: testShowId,
+            source: DataSource.tmdb,
+          )).notifier);
 
   group('EpisodeTrackerSection', () {
     testWidgets('should render the header without overflow when narrow',
@@ -305,6 +328,21 @@ void main() {
     });
   });
 
+  group('seasonPostersPerRow', () {
+    test('should never drop below one poster', () {
+      expect(seasonPostersPerRow(0), 1);
+      expect(seasonPostersPerRow(50), 1);
+      expect(seasonPostersPerRow(double.infinity), 1);
+    });
+
+    test('should count the gap only between posters', () {
+      // 92 px posters with 8 px gaps: 3 posters take 292 px.
+      expect(seasonPostersPerRow(291), 2);
+      expect(seasonPostersPerRow(292), 3);
+      expect(seasonPostersPerRow(400), 4);
+    });
+  });
+
   group('SeasonsListWidget', () {
     testWidgets('показывает Specials (season 0) в списке сезонов',
         (WidgetTester tester) async {
@@ -407,6 +445,220 @@ void main() {
       await pumpSeasonsList(tester, <TvSeason>[verboseSeason]);
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('should open the episode panel under the tapped row',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final List<TvSeason> seasons = <TvSeason>[
+        for (int n = 1; n <= 8; n++)
+          TvSeason(
+            tmdbShowId: testShowId,
+            seasonNumber: n,
+            name: 'Season $n',
+            episodeCount: 10,
+          ),
+      ];
+      await pumpSeasonsList(tester, seasons);
+      await tester.pumpAndSettle();
+
+      // Nothing watched: the first unfinished season opens on its own, under
+      // the first row and above the second.
+      final Finder firstPanel =
+          find.byKey(const ValueKey<String>('season-panel-1'));
+      expect(firstPanel, findsOneWidget);
+      final double lastSeasonTop =
+          tester.getTopLeft(find.byKey(const ValueKey<int>(8))).dy;
+      expect(tester.getTopLeft(firstPanel).dy,
+          lessThan(lastSeasonTop));
+
+      await tester.tap(find.byKey(const ValueKey<int>(8)));
+      await tester.pumpAndSettle();
+
+      final Finder lastPanel =
+          find.byKey(const ValueKey<String>('season-panel-8'));
+      expect(firstPanel, findsNothing);
+      expect(lastPanel, findsOneWidget);
+      expect(tester.getTopLeft(lastPanel).dy,
+          greaterThan(tester.getBottomLeft(find.byKey(const ValueKey<int>(8))).dy));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('should wrap many seasons inside a desktop card column',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      const int seasonCount = 25;
+      when(() =>
+              mockTvShowDao.getTvSeasonsByShowId(DataSource.tmdb, testShowId))
+          .thenAnswer((_) async => <TvSeason>[
+                for (int n = 1; n <= seasonCount; n++)
+                  TvSeason(
+                    tmdbShowId: testShowId,
+                    seasonNumber: n,
+                    name: 'Season $n',
+                    episodeCount: 10,
+                  ),
+              ]);
+
+      // Same shape as the desktop card: an aside, then the main column.
+      await tester.pumpApp(
+        const SingleChildScrollView(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(width: 300),
+              Expanded(
+                child: SeasonsListWidget(
+                  showId: testShowId,
+                  source: DataSource.tmdb,
+                  collectionId: testCollectionId,
+                  itemId: testItemId,
+                  accentColor: Colors.blue,
+                ),
+              ),
+            ],
+          ),
+        ),
+        overrides: <Override>[
+          databaseServiceProvider.overrideWithValue(mockDb),
+          tmdbApiProvider.overrideWithValue(mockTmdbApi),
+        ],
+        wrapInScaffold: true,
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      for (int n = 1; n <= seasonCount; n++) {
+        expect(
+          tester.getTopRight(find.byKey(ValueKey<int>(n))).dx,
+          lessThanOrEqualTo(1280),
+          reason: 'season $n',
+        );
+      }
+      expect(
+        tester.getTopLeft(find.byKey(const ValueKey<int>(seasonCount))).dy,
+        greaterThan(tester.getTopLeft(find.byKey(const ValueKey<int>(1))).dy),
+      );
+    });
+
+    testWidgets('should keep every season poster mounted when a mark changes',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final MockImageCacheService mockImageCache = MockImageCacheService();
+      when(() => mockImageCache.getImageUri(
+            type: any(named: 'type'),
+            imageId: any(named: 'imageId'),
+            remoteUrl: any(named: 'remoteUrl'),
+          )).thenAnswer((Invocation invocation) async => ImageResult(
+            uri: invocation.namedArguments[#remoteUrl] as String?,
+            isLocal: false,
+            isMissing: false,
+          ));
+      when(() => mockImageCache.localPathIfCached(any(), any()))
+          .thenReturn(null);
+      when(() => mockTvShowDao.markEpisodeWatched(
+          any(), any(), any(), any(), any())).thenAnswer((_) async {});
+
+      await pumpSeasonsList(
+        tester,
+        <TvSeason>[
+          for (int n = 1; n <= 6; n++)
+            TvSeason(
+              tmdbShowId: testShowId,
+              seasonNumber: n,
+              name: 'Season $n',
+              episodeCount: 10,
+              posterUrl: 'https://image.tmdb.org/t/p/w342/s$n.jpg',
+            ),
+        ],
+        extraOverrides: <Override>[
+          imageCacheServiceProvider.overrideWithValue(mockImageCache),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      Map<int, State<StatefulWidget>> posterStates() =>
+          <int, State<StatefulWidget>>{
+            for (int n = 1; n <= 6; n++)
+              n: tester.state(find.descendant(
+                of: find.byKey(ValueKey<int>(n)),
+                matching: find.byType(CachedImage),
+              )),
+          };
+      final Map<int, State<StatefulWidget>> before = posterStates();
+
+      await trackerOf(tester).toggleEpisode(1, 1);
+      await tester.pumpAndSettle();
+
+      final Map<int, State<StatefulWidget>> after = posterStates();
+      for (int n = 1; n <= 6; n++) {
+        expect(identical(before[n], after[n]), isTrue, reason: 'season $n');
+      }
+    });
+
+    testWidgets(
+        'should keep the open season after marking it all watched instead of '
+        'jumping to the next one', (WidgetTester tester) async {
+      when(() => mockTvShowDao.getEpisodesByShowAndSeason(
+              DataSource.tmdb, testShowId, 1))
+          .thenAnswer((_) async => <TvEpisode>[
+                for (int e = 1; e <= 2; e++)
+                  TvEpisode(
+                    tmdbShowId: testShowId,
+                    seasonNumber: 1,
+                    episodeNumber: e,
+                    name: 'Episode $e',
+                  ),
+              ]);
+      when(() => mockTvShowDao.markSeasonWatched(
+          any(), any(), any(), any(), any())).thenAnswer((_) async {});
+      await pumpSeasonsList(tester, <TvSeason>[
+        for (int n = 1; n <= 2; n++)
+          TvSeason(
+            tmdbShowId: testShowId,
+            seasonNumber: n,
+            name: 'Season $n',
+            episodeCount: 2,
+          ),
+      ]);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey<String>('season-panel-1')),
+          findsOneWidget);
+
+      await tester.tap(find.descendant(
+        of: find.byKey(const ValueKey<String>('season-panel-1')),
+        matching: find.byIcon(Icons.done_all),
+      ));
+      await tester.pumpAndSettle();
+
+      verify(() => mockTvShowDao.markSeasonWatched(
+          testCollectionId, DataSource.tmdb, testShowId, 1, <int>[1, 2]))
+          .called(1);
+      expect(find.byKey(const ValueKey<String>('season-panel-1')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey<String>('season-panel-2')),
+          findsNothing);
+    });
+
+    testWidgets('should collapse the panel when the open season is tapped',
+        (WidgetTester tester) async {
+      await pumpSeasonsList(tester, <TvSeason>[season1]);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey<String>('season-panel-1')),
+          findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey<String>('season-panel-1')),
+          findsNothing);
     });
 
     testWidgets('рендерится без Specials, если season 0 нет',

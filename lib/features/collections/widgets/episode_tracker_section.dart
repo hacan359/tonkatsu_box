@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:core/models/tv_episode.dart';
@@ -24,6 +26,19 @@ import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../helpers/episode_undo.dart';
 
 enum _EpisodeMarkFilter { all, liked, commented }
+
+/// Bubbles up from a mark the user makes in the open season, so the list can
+/// stop the panel from hopping to the next unfinished season under them.
+class _SeasonMarkedNotification extends Notification {
+  const _SeasonMarkedNotification();
+}
+
+/// How many season posters fit side by side in [maxWidth]; never below one.
+int seasonPostersPerRow(double maxWidth) {
+  const double step = _SeasonPosterTile._width + AppSpacing.sm;
+  if (!maxWidth.isFinite) return 1;
+  return math.max(1, ((maxWidth + AppSpacing.sm) / step).floor());
+}
 
 class EpisodeTrackerSection extends ConsumerWidget {
   const EpisodeTrackerSection({
@@ -167,6 +182,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   /// season; a pick of `null` collapses it.
   bool _picked = false;
   int? _pickedSeason;
+  int? _shownSeason;
 
   @override
   void initState() {
@@ -303,6 +319,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
 
     final TvSeason? selected =
         _selectedSeason(orderedSeasons, trackerState);
+    _shownSeason = selected?.seasonNumber;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -310,38 +327,83 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         _buildMarksBar(marks),
         if (_filter != _EpisodeMarkFilter.all)
           _buildFilteredList(marks, trackerState)
-        else ...<Widget>[
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: <Widget>[
-              for (final TvSeason season in orderedSeasons)
-                _SeasonPosterTile(
-                  key: ValueKey<int>(season.seasonNumber),
-                  season: season,
-                  source: widget.source,
-                  watchedCount: trackerState
-                      .watchedCountForSeason(season.seasonNumber),
-                  selected: season.seasonNumber == selected?.seasonNumber,
-                  accentColor: widget.accentColor,
-                  fallbackCover: widget.fallbackCover,
-                  onTap: () => _pick(season.seasonNumber, selected),
-                ),
-            ],
+        else
+          NotificationListener<_SeasonMarkedNotification>(
+            onNotification: (_SeasonMarkedNotification _) {
+              _holdSelection();
+              return true;
+            },
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) =>
+                  _buildSeasonGrid(
+                orderedSeasons,
+                selected,
+                trackerState,
+                seasonPostersPerRow(constraints.maxWidth),
+              ),
+            ),
           ),
-          if (selected != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            SeasonPanel(
-              key: ValueKey<String>('season-panel-${selected.seasonNumber}'),
-              season: selected,
-              trackerState: trackerState,
-              trackerArg: _trackerArg,
-              itemId: widget.itemId,
+      ],
+    );
+  }
+
+  /// Rows are laid out by hand rather than a `Wrap` so the episode panel can
+  /// open right under the tapped poster's row instead of after every season.
+  Widget _buildSeasonGrid(
+    List<TvSeason> ordered,
+    TvSeason? selected,
+    EpisodeTrackerState trackerState,
+    int perRow,
+  ) {
+    final List<Widget> children = <Widget>[];
+    bool panelAbove = false;
+    for (int start = 0; start < ordered.length; start += perRow) {
+      final List<TvSeason> row =
+          ordered.sublist(start, math.min(start + perRow, ordered.length));
+      if (start > 0) {
+        children.add(
+            SizedBox(height: panelAbove ? AppSpacing.md : AppSpacing.sm));
+      }
+      panelAbove = false;
+      children.add(Row(
+        // Keyed so a panel moving between rows does not remount the posters.
+        key: ValueKey<String>('season-row-${row.first.seasonNumber}'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          for (int i = 0; i < row.length; i++) ...<Widget>[
+            if (i > 0) const SizedBox(width: AppSpacing.sm),
+            _SeasonPosterTile(
+              key: ValueKey<int>(row[i].seasonNumber),
+              season: row[i],
+              source: widget.source,
+              watchedCount:
+                  trackerState.watchedCountForSeason(row[i].seasonNumber),
+              selected: row[i].seasonNumber == selected?.seasonNumber,
               accentColor: widget.accentColor,
+              fallbackCover: widget.fallbackCover,
+              onTap: () => _pick(row[i].seasonNumber, selected),
             ),
           ],
         ],
-      ],
+      ));
+      if (selected != null &&
+          row.any((TvSeason s) => s.seasonNumber == selected.seasonNumber)) {
+        panelAbove = true;
+        children
+          ..add(const SizedBox(height: AppSpacing.md))
+          ..add(SeasonPanel(
+            key: ValueKey<String>('season-panel-${selected.seasonNumber}'),
+            season: selected,
+            trackerState: trackerState,
+            trackerArg: _trackerArg,
+            itemId: widget.itemId,
+            accentColor: widget.accentColor,
+          ));
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
     );
   }
 
@@ -363,6 +425,14 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
       }
     }
     return ordered.isEmpty ? null : ordered.first;
+  }
+
+  /// Turns the auto-picked season into a pick; the selection on screen does
+  /// not change, so no rebuild is needed.
+  void _holdSelection() {
+    if (_picked) return;
+    _picked = true;
+    _pickedSeason = _shownSeason;
   }
 
   void _pick(int seasonNumber, TvSeason? current) {
@@ -656,6 +726,7 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
   /// Marks the season's first not-yet-watched episode, loading the season
   /// from the source first if its episodes aren't in memory.
   Future<void> _markNextWatched() async {
+    const _SeasonMarkedNotification().dispatch(context);
     final int seasonNum = widget.season.seasonNumber;
     final EpisodeTrackerNotifier notifier =
         ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
@@ -684,6 +755,7 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
   }
 
   Future<void> _toggleSeason(List<TvEpisode>? episodes) async {
+    const _SeasonMarkedNotification().dispatch(context);
     final int seasonNum = widget.season.seasonNumber;
     final EpisodeTrackerNotifier tracker =
         ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
@@ -925,6 +997,7 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     final double stillHeight = kIsMobile ? 40 : 54;
 
     Future<void> toggle() async {
+      const _SeasonMarkedNotification().dispatch(context);
       final EpisodeTrackerNotifier tracker =
           ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
       final String message = S.of(context).episodeUnmarkedSnack;
@@ -1161,6 +1234,13 @@ class _SeasonPosterTile extends StatelessWidget {
     0, 0, 0, 1, 0,
   ]);
 
+  static const ColorFilter _identity = ColorFilter.matrix(<double>[
+    1, 0, 0, 0, 0, //
+    0, 1, 0, 0, 0, //
+    0, 0, 1, 0, 0, //
+    0, 0, 0, 1, 0,
+  ]);
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -1169,10 +1249,12 @@ class _SeasonPosterTile extends StatelessWidget {
     final bool inProgress = watchedCount > 0 && !allWatched;
     final String title = season.name ?? l.seasonName(season.seasonNumber);
 
-    Widget poster = _buildPoster();
-    if (watchedCount == 0) {
-      poster = ColorFiltered(colorFilter: _greyscale, child: poster);
-    }
+    // The filter always wraps the image, so the first mark swaps the matrix
+    // instead of remounting the poster and re-fetching it.
+    final Widget poster = ColorFiltered(
+      colorFilter: watchedCount == 0 ? _greyscale : _identity,
+      child: _buildPoster(),
+    );
 
     return SizedBox(
       width: _width,
