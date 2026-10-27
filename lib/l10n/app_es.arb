@@ -2445,6 +2445,8 @@
   },
   "itemMarkLike": "Me gusta",
   "itemMarkNote": "Nota",
+  "seasonRate": "Valorar temporada",
+  "seasonRatingLabel": "Valoración de la temporada",
   "itemMarkNoteHint": "Escribe una nota…",
   "itemMarkSectionTitle": "Notas y me gusta",
   "itemMarkAdd": "Añadir marca",

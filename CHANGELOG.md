@@ -228,15 +228,53 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_*.arb (settingsUiScale, settingsUiScaleSubtitle,
     shortcutZoomIn, shortcutZoomOut, shortcutZoomReset): New strings.
 
+- **Season rating**
+
+  A season of a series, an animated series or a Kitsu anime takes its own
+  rating on the title's scale, 1.0 to 10.0 in steps of 0.1. A star in the
+  open season's header opens the picker; the value shows next to the star
+  and as a badge on the season poster. The rating lives on the season's mark
+  next to its note, so it rides along in backups, in `.xcoll` / `.xcollx`
+  exports with user data and in the Likes page row of that season.
+
+  * packages/core/lib/database/migrations/migration_v69.dart (MigrationV69):
+    New; adds `item_marks.user_rating`.
+  * packages/core/lib/database/migrations/migration_registry.dart
+    (MigrationRegistry.all): Register it.
+  * packages/core/lib/models/item_mark.dart (ItemMark.userRating,
+    ItemMark.isValidRating, ItemMark.minRating, ItemMark.maxRating,
+    ItemMark.hasContent, ItemMark.fromDb, ItemMark.toDb, ItemMark.fromExport,
+    ItemMark.toExport, ItemMark.copyWith): The field; a mark with only a
+    rating is kept.
+  * packages/core/lib/database/dao/item_mark_dao.dart (ItemMarkDao.setRating):
+    New; range-checked, rounded to a tenth. (ItemMarkDao.setFavorite,
+    ItemMarkDao.setComment): Keep the rating of the existing row.
+  * packages/core/lib/rpc/generated/item_mark_dao.dispatch.rpc.dart,
+    packages/core/lib/rpc/generated/item_mark_dao.remote.rpc.dart:
+    Regenerated.
+  * lib/features/collections/providers/item_marks_provider.dart
+    (ItemMarksState.ratingFor, ItemMarksNotifier.setRating): New.
+  * lib/shared/widgets/rating_popup.dart (showRatingPopup, RatingPopupItem):
+    New; the star picker in a menu, moved out of the table cell.
+  * lib/features/collections/widgets/collection_table/cells/rating_cell.dart
+    (RatingCell): Use the shared popup.
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (_SeasonRatingButton, SeasonPanel, _SeasonPosterTile.rating): The star
+    in the header and the badge on the poster.
+  * lib/features/likes/widgets/marked_group_tile.dart (_MarkRow.rating):
+    Show the rating after the unit label.
+  * docs/RCOLL_FORMAT.md: `user_rating` on a mark.
+  * lib/l10n/app_*.arb (seasonRate, seasonRatingLabel): New strings.
+
 ### Changed
 
 - **Item card in two columns on wide windows**
 
   Poster, rating, status list and dates sit on the left; title, credits,
   description, notes and sections on the right. Narrow windows and phones
-  keep one column. Seasons show as posters in rows, and the season picked
-  opens its episodes right under its row. Marking episodes keeps that season
-  open.
+  keep one column. Seasons show as posters in rows; none opens on its own.
+  Tapping a poster opens its episodes right under that row, tapping it
+  again closes them.
 
   * lib/shared/widgets/media_detail/desktop_detail_layout.dart
     (DesktopDetailLayout), lib/shared/widgets/media_detail/mobile_detail_layout.dart
@@ -250,8 +288,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     layout by width.
   * lib/features/collections/widgets/episode_tracker_section.dart
     (seasonPostersPerRow, SeasonsListWidget, SeasonPanel, _SeasonPosterTile):
-    Season posters in rows with the panel under the picked row; a mark holds
-    the open season.
+    Season posters in rows with the panel under the tapped row only.
   * lib/features/collections/widgets/ra_achievements_section.dart,
     lib/features/collections/widgets/recommendations_section.dart,
     lib/shared/widgets/media_detail/identity_header.dart: Fit the new

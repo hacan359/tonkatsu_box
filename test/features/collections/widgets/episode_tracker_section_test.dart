@@ -17,8 +17,11 @@ import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/data/repositories/game_repository.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/episode_tracker_provider.dart';
+import 'package:tonkatsu_box/features/collections/providers/item_marks_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/episode_tracker_section.dart';
 import 'package:tonkatsu_box/shared/widgets/cached_image.dart';
+import 'package:tonkatsu_box/shared/widgets/fractional_star_rating.dart';
+import 'package:tonkatsu_box/shared/widgets/rating_badge.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -179,9 +182,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The overall bar (from tracker totals) plus the per-season bar on the
-      // single loaded season.
-      expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
+      // Only the overall bar from the tracker totals: no season is open, so
+      // no per-season bar yet.
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
   });
 
@@ -465,15 +468,19 @@ void main() {
       await pumpSeasonsList(tester, seasons);
       await tester.pumpAndSettle();
 
-      // Nothing watched: the first unfinished season opens on its own, under
-      // the first row and above the second.
+      // Nothing opens on its own.
+      expect(find.byType(SeasonPanel), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
+
+      // Season 1 sits in the first row: its panel lands above the last row.
       final Finder firstPanel =
           find.byKey(const ValueKey<String>('season-panel-1'));
       expect(firstPanel, findsOneWidget);
       final double lastSeasonTop =
           tester.getTopLeft(find.byKey(const ValueKey<int>(8))).dy;
-      expect(tester.getTopLeft(firstPanel).dy,
-          lessThan(lastSeasonTop));
+      expect(tester.getTopLeft(firstPanel).dy, lessThan(lastSeasonTop));
 
       await tester.tap(find.byKey(const ValueKey<int>(8)));
       await tester.pumpAndSettle();
@@ -629,6 +636,8 @@ void main() {
           ),
       ]);
       await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey<String>('season-panel-1')),
           findsOneWidget);
 
@@ -647,9 +656,21 @@ void main() {
           findsNothing);
     });
 
+    testWidgets('should open no panel until a season is tapped',
+        (WidgetTester tester) async {
+      await pumpSeasonsList(tester, <TvSeason>[season1, specialsSeason]);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SeasonPanel), findsNothing);
+      verifyNever(() =>
+          mockTvShowDao.getEpisodesByShowAndSeason(any(), any(), any()));
+    });
+
     testWidgets('should collapse the panel when the open season is tapped',
         (WidgetTester tester) async {
       await pumpSeasonsList(tester, <TvSeason>[season1]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey<String>('season-panel-1')),
           findsOneWidget);
@@ -668,6 +689,161 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byKey(const ValueKey<int>(0)), findsNothing);
       expect(find.byKey(const ValueKey<int>(1)), findsOneWidget);
+    });
+  });
+
+  group('season rating', () {
+    ItemMark seasonMark(int season, double rating) => ItemMark(
+          id: 1,
+          itemId: testItemId,
+          unitType: kUnitSeason,
+          parentNumber: season,
+          unitNumber: 0,
+          isFavorite: false,
+          updatedAt: DateTime.fromMillisecondsSinceEpoch(1700000000000),
+          userRating: rating,
+        );
+
+    testWidgets('should show the badge on the poster and the value in the '
+        'header of a rated season', (WidgetTester tester) async {
+      when(() => mockItemMarkDao.getMarksForItem(testItemId))
+          .thenAnswer((_) async => <ItemMark>[seasonMark(1, 8.5)]);
+
+      await pumpSeasonsList(tester, <TvSeason>[season1]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<int>(1)),
+          matching: find.byType(RatingBadge),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<String>('season-panel-1')),
+          matching: find.text('8.5'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should show no badge and an outlined star when unrated',
+        (WidgetTester tester) async {
+      await pumpSeasonsList(tester, <TvSeason>[season1]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RatingBadge), findsNothing);
+      expect(find.byIcon(Icons.star_outline), findsOneWidget);
+      expect(find.byIcon(Icons.star), findsNothing);
+    });
+
+    testWidgets('should open the picker and write the picked rating',
+        (WidgetTester tester) async {
+      when(() => mockItemMarkDao.setRating(any(), any(), any(), any(), any()))
+          .thenAnswer((Invocation i) async =>
+              seasonMark(1, i.positionalArguments[4] as double));
+
+      await pumpSeasonsList(tester, <TvSeason>[season1]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.star_outline));
+      await tester.pumpAndSettle();
+      expect(find.byType(FractionalStarRating), findsOneWidget);
+
+      await tester.tap(find.byType(FractionalStarRating));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      final double written = verify(() => mockItemMarkDao.setRating(
+            testItemId,
+            kUnitSeason,
+            1,
+            0,
+            captureAny(),
+          )).captured.single as double;
+      expect(written, inInclusiveRange(1.0, 10.0));
+      expect(find.byType(FractionalStarRating), findsNothing);
+      expect(find.byType(RatingBadge), findsOneWidget);
+    });
+
+    testWidgets('should keep the picker on screen at phone width',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await pumpSeasonsList(tester, <TvSeason>[season1]);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey<int>(1)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.star_outline));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final Rect picker =
+          tester.getRect(find.byType(FractionalStarRating));
+      expect(picker.left, greaterThanOrEqualTo(0));
+      expect(picker.right, lessThanOrEqualTo(360));
+    });
+
+    testWidgets('should keep the posters mounted when a rating is set',
+        (WidgetTester tester) async {
+      final MockImageCacheService mockImageCache = MockImageCacheService();
+      when(() => mockImageCache.getImageUri(
+            type: any(named: 'type'),
+            imageId: any(named: 'imageId'),
+            remoteUrl: any(named: 'remoteUrl'),
+          )).thenAnswer((Invocation invocation) async => ImageResult(
+            uri: invocation.namedArguments[#remoteUrl] as String?,
+            isLocal: false,
+            isMissing: false,
+          ));
+      when(() => mockImageCache.localPathIfCached(any(), any()))
+          .thenReturn(null);
+      when(() => mockItemMarkDao.setRating(any(), any(), any(), any(), any()))
+          .thenAnswer((_) async => seasonMark(1, 7.0));
+
+      await pumpSeasonsList(
+        tester,
+        <TvSeason>[
+          const TvSeason(
+            tmdbShowId: testShowId,
+            seasonNumber: 1,
+            name: 'Season 1',
+            episodeCount: 13,
+            posterUrl: 'https://image.tmdb.org/t/p/w342/s1.jpg',
+          ),
+        ],
+        extraOverrides: <Override>[
+          imageCacheServiceProvider.overrideWithValue(mockImageCache),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      Finder poster() => find.descendant(
+            of: find.byKey(const ValueKey<int>(1)),
+            matching: find.byType(CachedImage),
+          );
+      final State<StatefulWidget> before = tester.state(poster());
+
+      await ProviderScope.containerOf(
+              tester.element(find.byType(SeasonsListWidget)))
+          .read(itemMarksProvider(testItemId).notifier)
+          .setRating(kUnitSeason, 1, 0, 7.0);
+      await tester.pumpAndSettle();
+
+      expect(identical(before, tester.state(poster())), isTrue);
+      expect(find.byType(RatingBadge), findsOneWidget);
     });
   });
 }

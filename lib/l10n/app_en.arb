@@ -2524,6 +2524,8 @@
   },
   "itemMarkLike": "Like",
   "itemMarkNote": "Note",
+  "seasonRate": "Rate season",
+  "seasonRatingLabel": "Season rating",
   "itemMarkNoteHint": "Write a note…",
   "itemMarkSectionTitle": "Notes & likes",
   "itemMarkAdd": "Add mark",

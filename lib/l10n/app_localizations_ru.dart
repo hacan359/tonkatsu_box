@@ -5693,6 +5693,12 @@ class SRu extends S {
   String get itemMarkNote => 'Заметка';
 
   @override
+  String get seasonRate => 'Оценить сезон';
+
+  @override
+  String get seasonRatingLabel => 'Оценка сезона';
+
+  @override
   String get itemMarkNoteHint => 'Напишите заметку…';
 
   @override

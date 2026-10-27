@@ -2440,6 +2440,8 @@
   },
   "itemMarkLike": "喜欢",
   "itemMarkNote": "备注",
+  "seasonRate": "评价本季",
+  "seasonRatingLabel": "本季评分",
   "itemMarkNoteHint": "写备注…",
   "itemMarkSectionTitle": "备注和喜欢",
   "itemMarkAdd": "添加标记",

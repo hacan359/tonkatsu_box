@@ -9860,6 +9860,18 @@ abstract class S {
   /// **'Note'**
   String get itemMarkNote;
 
+  /// No description provided for @seasonRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate season'**
+  String get seasonRate;
+
+  /// No description provided for @seasonRatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Season rating'**
+  String get seasonRatingLabel;
+
   /// No description provided for @itemMarkNoteHint.
   ///
   /// In en, this message translates to:

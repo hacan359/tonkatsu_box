@@ -2106,6 +2106,8 @@
   },
   "itemMarkLike": "Нравится",
   "itemMarkNote": "Заметка",
+  "seasonRate": "Оценить сезон",
+  "seasonRatingLabel": "Оценка сезона",
   "itemMarkNoteHint": "Напишите заметку…",
   "itemMarkSectionTitle": "Заметки и лайки",
   "itemMarkAdd": "Добавить пометку",

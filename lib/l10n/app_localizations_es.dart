@@ -5665,6 +5665,12 @@ class SEs extends S {
   String get itemMarkNote => 'Nota';
 
   @override
+  String get seasonRate => 'Valorar temporada';
+
+  @override
+  String get seasonRatingLabel => 'Valoración de la temporada';
+
+  @override
   String get itemMarkNoteHint => 'Escribe una nota…';
 
   @override
