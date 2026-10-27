@@ -2445,6 +2445,8 @@
   },
   "itemMarkLike": "J'aime",
   "itemMarkNote": "Commentaire",
+  "seasonRate": "Noter la saison",
+  "seasonRatingLabel": "Note de la saison",
   "itemMarkNoteHint": "Écrire un commentaire…",
   "itemMarkSectionTitle": "Commentaires et mentions J'aime",
   "itemMarkAdd": "Ajouter un signe",

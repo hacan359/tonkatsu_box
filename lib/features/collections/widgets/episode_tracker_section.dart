@@ -19,6 +19,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/rating_badge.dart';
+import '../../../shared/widgets/rating_popup.dart';
 import '../providers/episode_tracker_provider.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
@@ -26,12 +28,6 @@ import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../helpers/episode_undo.dart';
 
 enum _EpisodeMarkFilter { all, liked, commented }
-
-/// Bubbles up from a mark the user makes in the open season, so the list can
-/// stop the panel from hopping to the next unfinished season under them.
-class _SeasonMarkedNotification extends Notification {
-  const _SeasonMarkedNotification();
-}
 
 /// How many season posters fit side by side in [maxWidth]; never below one.
 int seasonPostersPerRow(double maxWidth) {
@@ -178,11 +174,9 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   bool _refreshing = false;
   _EpisodeMarkFilter _filter = _EpisodeMarkFilter.all;
 
-  /// Until the user picks a poster the panel follows the first unfinished
-  /// season; a pick of `null` collapses it.
-  bool _picked = false;
+  /// Nothing opens on its own: the panel shows only the season the user
+  /// tapped, and tapping it again collapses it.
   int? _pickedSeason;
-  int? _shownSeason;
 
   @override
   void initState() {
@@ -317,9 +311,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         if (s.seasonNumber == 0) s,
     ];
 
-    final TvSeason? selected =
-        _selectedSeason(orderedSeasons, trackerState);
-    _shownSeason = selected?.seasonNumber;
+    final TvSeason? selected = _selectedSeason(orderedSeasons);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -328,19 +320,14 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         if (_filter != _EpisodeMarkFilter.all)
           _buildFilteredList(marks, trackerState)
         else
-          NotificationListener<_SeasonMarkedNotification>(
-            onNotification: (_SeasonMarkedNotification _) {
-              _holdSelection();
-              return true;
-            },
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) =>
-                  _buildSeasonGrid(
-                orderedSeasons,
-                selected,
-                trackerState,
-                seasonPostersPerRow(constraints.maxWidth),
-              ),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) =>
+                _buildSeasonGrid(
+              orderedSeasons,
+              selected,
+              trackerState,
+              marks,
+              seasonPostersPerRow(constraints.maxWidth),
             ),
           ),
       ],
@@ -353,6 +340,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     List<TvSeason> ordered,
     TvSeason? selected,
     EpisodeTrackerState trackerState,
+    ItemMarksState marks,
     int perRow,
   ) {
     final List<Widget> children = <Widget>[];
@@ -378,6 +366,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
               source: widget.source,
               watchedCount:
                   trackerState.watchedCountForSeason(row[i].seasonNumber),
+              rating: marks.ratingFor(kUnitSeason, row[i].seasonNumber, 0),
               selected: row[i].seasonNumber == selected?.seasonNumber,
               accentColor: widget.accentColor,
               fallbackCover: widget.fallbackCover,
@@ -407,37 +396,15 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     );
   }
 
-  TvSeason? _selectedSeason(
-    List<TvSeason> ordered,
-    EpisodeTrackerState trackerState,
-  ) {
-    if (_picked) {
-      for (final TvSeason s in ordered) {
-        if (s.seasonNumber == _pickedSeason) return s;
-      }
-      return null;
-    }
+  TvSeason? _selectedSeason(List<TvSeason> ordered) {
     for (final TvSeason s in ordered) {
-      final int count = s.episodeCount ?? 0;
-      if (count > 0 &&
-          trackerState.watchedCountForSeason(s.seasonNumber) < count) {
-        return s;
-      }
+      if (s.seasonNumber == _pickedSeason) return s;
     }
-    return ordered.isEmpty ? null : ordered.first;
-  }
-
-  /// Turns the auto-picked season into a pick; the selection on screen does
-  /// not change, so no rebuild is needed.
-  void _holdSelection() {
-    if (_picked) return;
-    _picked = true;
-    _pickedSeason = _shownSeason;
+    return null;
   }
 
   void _pick(int seasonNumber, TvSeason? current) {
     setState(() {
-      _picked = true;
       _pickedSeason =
           current?.seasonNumber == seasonNumber ? null : seasonNumber;
     });
@@ -726,7 +693,6 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
   /// Marks the season's first not-yet-watched episode, loading the season
   /// from the source first if its episodes aren't in memory.
   Future<void> _markNextWatched() async {
-    const _SeasonMarkedNotification().dispatch(context);
     final int seasonNum = widget.season.seasonNumber;
     final EpisodeTrackerNotifier notifier =
         ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
@@ -755,7 +721,6 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
   }
 
   Future<void> _toggleSeason(List<TvEpisode>? episodes) async {
-    const _SeasonMarkedNotification().dispatch(context);
     final int seasonNum = widget.season.seasonNumber;
     final EpisodeTrackerNotifier tracker =
         ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
@@ -818,6 +783,7 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
                 ),
               ),
             ),
+            _SeasonRatingButton(itemId: itemId, seasonNumber: seasonNum),
             ItemMarkControls(
               itemId: itemId,
               unitType: kUnitSeason,
@@ -997,7 +963,6 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     final double stillHeight = kIsMobile ? 40 : 54;
 
     Future<void> toggle() async {
-      const _SeasonMarkedNotification().dispatch(context);
       final EpisodeTrackerNotifier tracker =
           ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
       final String message = S.of(context).episodeUnmarkedSnack;
@@ -1210,6 +1175,7 @@ class _SeasonPosterTile extends StatelessWidget {
     required this.selected,
     required this.accentColor,
     required this.onTap,
+    this.rating,
     this.fallbackCover,
     super.key,
   });
@@ -1217,6 +1183,9 @@ class _SeasonPosterTile extends StatelessWidget {
   final TvSeason season;
   final DataSource source;
   final int watchedCount;
+
+  /// The user's season rating, shown over the poster when set.
+  final double? rating;
   final bool selected;
   final Color accentColor;
   final VoidCallback onTap;
@@ -1248,6 +1217,7 @@ class _SeasonPosterTile extends StatelessWidget {
     final bool allWatched = episodeCount > 0 && watchedCount >= episodeCount;
     final bool inProgress = watchedCount > 0 && !allWatched;
     final String title = season.name ?? l.seasonName(season.seasonNumber);
+    final double? rating = this.rating;
 
     // The filter always wraps the image, so the first mark swaps the matrix
     // instead of remounting the poster and re-fetching it.
@@ -1283,6 +1253,12 @@ class _SeasonPosterTile extends StatelessWidget {
                       fit: StackFit.expand,
                       children: <Widget>[
                         poster,
+                        if (rating != null)
+                          Positioned(
+                            left: 4,
+                            top: 4,
+                            child: RatingBadge(rating: rating, compact: true),
+                          ),
                         if (allWatched)
                           Positioned(
                             right: 4,
@@ -1391,6 +1367,72 @@ class _SeasonPosterTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Star button in the season header: the picker opens under it, the value
+/// lands on the season's mark next to its note.
+class _SeasonRatingButton extends ConsumerWidget {
+  const _SeasonRatingButton({
+    required this.itemId,
+    required this.seasonNumber,
+  });
+
+  final int itemId;
+  final int seasonNumber;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Select only this season's rating so a mark elsewhere on the item does
+    // not rebuild the header.
+    final double? rating = ref.watch(
+      itemMarksProvider(itemId).select(
+        (ItemMarksState s) => s.ratingFor(kUnitSeason, seasonNumber, 0),
+      ),
+    );
+    final S l = S.of(context);
+    final Color color =
+        rating == null ? AppColors.textTertiary : AppColors.ratingStar;
+    return Semantics(
+      label: l.seasonRatingLabel,
+      value: rating?.toStringAsFixed(1),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        onTap: () => showRatingPopup(
+          context,
+          initial: rating,
+          onCommit: (double? value) => ref
+              .read(itemMarksProvider(itemId).notifier)
+              .setRating(kUnitSeason, seasonNumber, 0, value),
+        ),
+        child: Tooltip(
+          message: l.seasonRate,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  rating == null ? Icons.star_outline : Icons.star,
+                  size: 18,
+                  color: color,
+                ),
+                if (rating != null) ...<Widget>[
+                  const SizedBox(width: 2),
+                  Text(
+                    rating.toStringAsFixed(1),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

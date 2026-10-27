@@ -37,6 +37,7 @@ Future<Object?> dispatchItemMarkDao(
                 'updatedAt': encodeDateTime(e.mark.updatedAt),
                 'userComment': e.mark.userComment,
                 'likedAt': encodeDateTimeOrNull(e.mark.likedAt),
+                'userRating': e.mark.userRating,
               },
               'unitTitle': e.unitTitle,
             },
@@ -59,6 +60,7 @@ Future<Object?> dispatchItemMarkDao(
               'updatedAt': encodeDateTime(e.updatedAt),
               'userComment': e.userComment,
               'likedAt': encodeDateTimeOrNull(e.likedAt),
+              'userRating': e.userRating,
             },
           )
           .toList();
@@ -79,6 +81,7 @@ Future<Object?> dispatchItemMarkDao(
               'updatedAt': encodeDateTime(e.updatedAt),
               'userComment': e.userComment,
               'likedAt': encodeDateTimeOrNull(e.likedAt),
+              'userRating': e.userRating,
             },
           )
           .toList();
@@ -97,6 +100,7 @@ Future<Object?> dispatchItemMarkDao(
                 updatedAt: decodeDateTime(asObject(e)['updatedAt']),
                 userComment: asObject(e)['userComment'] as String?,
                 likedAt: decodeDateTimeOrNull(asObject(e)['likedAt']),
+                userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
               ),
             )
             .toList(),
@@ -123,6 +127,7 @@ Future<Object?> dispatchItemMarkDao(
           'updatedAt': encodeDateTime(v.updatedAt),
           'userComment': v.userComment,
           'likedAt': encodeDateTimeOrNull(v.likedAt),
+          'userRating': v.userRating,
         },
       );
 
@@ -146,6 +151,31 @@ Future<Object?> dispatchItemMarkDao(
           'updatedAt': encodeDateTime(v.updatedAt),
           'userComment': v.userComment,
           'likedAt': encodeDateTimeOrNull(v.likedAt),
+          'userRating': v.userRating,
+        },
+      );
+
+    case 'setRating':
+      final ItemMark? value = await dao.setRating(
+        decodeInt(args['itemId']),
+        args['unitType'] as String,
+        decodeInt(args['parent']),
+        decodeInt(args['unit']),
+        (args['rating'] as num?)?.toDouble(),
+      );
+      return encodeNullable<ItemMark>(
+        value,
+        (ItemMark v) => <String, Object?>{
+          'id': encodeInt(v.id),
+          'itemId': encodeInt(v.itemId),
+          'unitType': v.unitType,
+          'parentNumber': encodeInt(v.parentNumber),
+          'unitNumber': encodeInt(v.unitNumber),
+          'isFavorite': v.isFavorite,
+          'updatedAt': encodeDateTime(v.updatedAt),
+          'userComment': v.userComment,
+          'likedAt': encodeDateTimeOrNull(v.likedAt),
+          'userRating': v.userRating,
         },
       );
 

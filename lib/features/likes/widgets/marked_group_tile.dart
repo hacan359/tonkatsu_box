@@ -104,6 +104,7 @@ class MarkedGroupTile extends ConsumerWidget {
               icons: _unitIcons(unit),
               label: markedUnitLabel(l, unit),
               note: unit.mark.note,
+              rating: unit.mark.userRating,
               onTap: onOpen,
             ),
           const SizedBox(height: AppSpacing.xs),
@@ -166,11 +167,15 @@ class _MarkRow extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.note,
+    this.rating,
   });
 
   final List<_MarkIcon> icons;
   final String label;
   final String? note;
+
+  /// Shown after the label; a rating alone never lists a unit here.
+  final double? rating;
   final VoidCallback onTap;
 
   /// Fixed slot for the mark icons so labels line up across rows.
@@ -181,6 +186,7 @@ class _MarkRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? note = this.note;
+    final double? rating = this.rating;
     final TextStyle labelStyle =
         AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w500);
     // The slot is exactly one label line tall so the icons sit centred on
@@ -216,11 +222,32 @@ class _MarkRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    label,
-                    style: labelStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          label,
+                          style: labelStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (rating != null) ...<Widget>[
+                        const SizedBox(width: AppSpacing.xs),
+                        Icon(
+                          Icons.star,
+                          size: _iconSize,
+                          color: AppColors.ratingStar,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          rating.toStringAsFixed(1),
+                          style: labelStyle.copyWith(
+                            color: AppColors.ratingStar,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   if (note != null)
                     Padding(

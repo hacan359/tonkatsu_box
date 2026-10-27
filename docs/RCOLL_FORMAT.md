@@ -199,7 +199,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | override_cover_url | string | no | The user's replacement cover (full only): a link as is, or `local://cover/<token>` for an uploaded picture that travels as `cover_overrides/<token>` in `images`. Restored on import with or without `user_data`; a light `.xcoll` never writes it and its reader ignores it |
 | tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
-| _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
+| _marks | array | no | Per-unit likes/notes/ratings. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
 | _watched_episodes | array | no | Watched-episode marks of a TV/animation item (full + `user_data` only). Each entry: `{season, episode, watched_at}` with `watched_at` in Unix seconds or `null`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 | _listened_tracks | array | no | Listened-track marks of an audio item (full + `user_data` only). Each entry: `{disc, track, listened_at}` with `listened_at` in Unix seconds or `null`; podcast episodes store `disc = 0` and the Podcast Index episode id as `track`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 
@@ -308,10 +308,10 @@ examples above:
 
 ### Item Marks
 
-Each element of an item's `_marks` array is one like and/or note on a single
-unit of that title. Marks carry no item id — they are nested inside their item
-and re-anchored to the freshly assigned `collection_item_id` on import. Empty
-marks (no like and no note) are never exported. Timestamps are Unix seconds.
+Each element of an item's `_marks` array is one like, note and/or rating on a
+single unit of that title. Marks carry no item id — they are nested inside
+their item and re-anchored to the freshly assigned `collection_item_id` on
+import. Empty marks (no like, no note, no rating) are never exported. Timestamps are Unix seconds.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -320,6 +320,7 @@ marks (no like and no note) are never exported. Timestamps are Unix seconds.
 | unit_number | number | yes | Episode / chapter / page number, or `0` for a season/volume-level mark |
 | is_favorite | number | yes | `1` if liked, else `0` |
 | user_comment | string | no | Free-text note |
+| user_rating | number | no | Personal rating of the unit, 1.0–10.0 (one decimal); absent when not rated. Older builds ignore it |
 | liked_at | number | no | When the like was set |
 | updated_at | number | yes | Last modification time |
 

@@ -5683,6 +5683,12 @@ class SFr extends S {
   String get itemMarkNote => 'Commentaire';
 
   @override
+  String get seasonRate => 'Noter la saison';
+
+  @override
+  String get seasonRatingLabel => 'Note de la saison';
+
+  @override
   String get itemMarkNoteHint => 'Écrire un commentaire…';
 
   @override

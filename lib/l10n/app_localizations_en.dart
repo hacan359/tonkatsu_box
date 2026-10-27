@@ -5594,6 +5594,12 @@ class SEn extends S {
   String get itemMarkNote => 'Note';
 
   @override
+  String get seasonRate => 'Rate season';
+
+  @override
+  String get seasonRatingLabel => 'Season rating';
+
+  @override
   String get itemMarkNoteHint => 'Write a note…';
 
   @override

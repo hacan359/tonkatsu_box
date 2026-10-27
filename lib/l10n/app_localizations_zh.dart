@@ -5305,6 +5305,12 @@ class SZh extends S {
   String get itemMarkNote => '备注';
 
   @override
+  String get seasonRate => '评价本季';
+
+  @override
+  String get seasonRatingLabel => '本季评分';
+
+  @override
   String get itemMarkNoteHint => '写备注…';
 
   @override

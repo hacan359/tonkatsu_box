@@ -5647,6 +5647,12 @@ class SPt extends S {
   String get itemMarkNote => 'Nota';
 
   @override
+  String get seasonRate => 'Avaliar temporada';
+
+  @override
+  String get seasonRatingLabel => 'Avaliação da temporada';
+
+  @override
   String get itemMarkNoteHint => 'Escreva uma nota…';
 
   @override
