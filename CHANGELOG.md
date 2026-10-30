@@ -152,8 +152,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     packages/core/lib/utils/tvmaze_json.dart (tvMazeCreators,
     tvMazeNetworks): New.
   * packages/core/lib/database/dao/movie_dao.dart (MovieDao._movieUpsert),
-    packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao._showUpsert):
-    A list hit keeps the cached names.
+    packages/core/lib/database/dao/tv_show_dao.dart (TvShowDao._showUpsert),
+    packages/core/lib/database/dao/game_dao.dart (GameDao._gameUpsert): A
+    list hit or a file from an earlier version keeps the cached names.
   * packages/core/lib/models/collection_item.dart
     (CollectionItem.searchableMeta), packages/core/lib/utils/item_search.dart
     (ItemSearch.creatorsOf): Search by the names.
@@ -550,15 +551,6 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     success.
   * lib/features/collections/screens/item_detail_screen.dart
     (_ItemDetailScreenState._refreshFromApi): Drop its own reload.
-
-### Removed
-
-- **Laboratory section in Settings**
-
-  * lib/features/settings/screens/card_banner_debug_screen.dart: Removed.
-  * lib/features/settings/screens/settings_screen.dart: Drop the group.
-  * lib/l10n/app_*.arb (settingsLaboratory, settingsLaboratoryCardDesigns,
-    settingsLaboratoryCardDesignsSubtitle): Removed.
 
 ## [0.45.0] - 2026-10-03
 
