@@ -198,11 +198,19 @@ jobs:
           cd build/linux/x64/release/bundle
           tar czf "$GITHUB_WORKSPACE/tonkatsu-box-${VERSION}-linux.tar.gz" .
 
+      - name: Build AppImage
+        run: |
+          VERSION="${{ github.ref_name }}"
+          tool/build_appimage.sh build/linux/x64/release/bundle "$VERSION" \
+            "tonkatsu-box-${VERSION}-linux-x86_64.AppImage"
+
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: tonkatsu-box-${{ github.ref_name }}-linux.tar.gz
+          path: |
+            tonkatsu-box-${{ github.ref_name }}-linux.tar.gz
+            tonkatsu-box-${{ github.ref_name }}-linux-x86_64.AppImage
           retention-days: 1
 
   build-macos:
@@ -310,4 +318,5 @@ jobs:
             "tonkatsu-box-${VERSION}-android-armeabi-v7a.apk" \
             "tonkatsu-box-${VERSION}-android-x86_64.apk" \
             "tonkatsu-box-${VERSION}-linux.tar.gz" \
+            "tonkatsu-box-${VERSION}-linux-x86_64.AppImage" \
             "tonkatsu-box-${VERSION}-macos-experimental.dmg"

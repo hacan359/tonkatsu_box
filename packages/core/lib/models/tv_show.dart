@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'data_source.dart';
 import '../utils/html_text.dart';
+import '../utils/json_list.dart';
 import '../utils/tvdb_json.dart';
 import '../utils/tvmaze_json.dart';
 
@@ -20,6 +21,8 @@ class TvShow {
     this.totalEpisodes,
     this.rating,
     this.status,
+    this.creators,
+    this.studios,
     this.externalUrl,
     this.cachedAt,
     this.source = DataSource.tmdb,
@@ -72,6 +75,11 @@ class TvShow {
       totalEpisodes: json['number_of_episodes'] as int?,
       rating: (json['vote_average'] as num?)?.toDouble(),
       status: json['status'] as String?,
+      creators: distinctEntryNames(json['created_by']),
+      studios: distinctNames(<String>[
+        ...?distinctEntryNames(json['networks']),
+        ...?distinctEntryNames(json['production_companies']),
+      ]),
       externalUrl: 'https://www.themoviedb.org/tv/$tmdbId',
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
@@ -124,6 +132,8 @@ class TvShow {
       totalEpisodes: totalEpisodes,
       rating: tvMazeRating(json['rating']),
       status: json['status'] as String?,
+      creators: tvMazeCreators(json),
+      studios: tvMazeNetworks(json),
       externalUrl: json['url'] as String?,
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       source: DataSource.tvmaze,
@@ -173,6 +183,12 @@ class TvShow {
               tvdbYear(json['first_air_time']),
       totalSeasons: totalSeasons,
       status: status,
+      creators: tvdbPeople(json['characters'], 'Creator'),
+      studios: distinctNames(<Object?>[
+        (json['originalNetwork'] as Map<String, dynamic>?)?['name'],
+        (json['latestNetwork'] as Map<String, dynamic>?)?['name'],
+        ...?tvdbCompanies(json['companies'], 'Studio'),
+      ]),
       externalUrl: tvdbRecordUrl('series', json['slug'], id),
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       source: DataSource.tvdb,
@@ -201,6 +217,8 @@ class TvShow {
       totalEpisodes: row['total_episodes'] as int?,
       rating: row['rating'] as double?,
       status: row['status'] as String?,
+      creators: decodeJsonStringListOrNull(row['creators']),
+      studios: decodeJsonStringListOrNull(row['studios']),
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
       source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
@@ -233,6 +251,11 @@ class TvShow {
 
   /// TMDB value: "Returning Series", "Ended", "Canceled".
   final String? status;
+
+  final List<String>? creators;
+
+  /// Networks first, then production companies.
+  final List<String>? studios;
 
   final String? externalUrl;
 
@@ -274,6 +297,8 @@ class TvShow {
       'total_episodes': totalEpisodes,
       'rating': rating,
       'status': status,
+      'creators': encodeJsonStringList(creators),
+      'studios': encodeJsonStringList(studios),
       'external_url': externalUrl,
       'cached_at': cachedAt,
       'source': source.name,
@@ -293,6 +318,8 @@ class TvShow {
     int? totalEpisodes,
     double? rating,
     String? status,
+    List<String>? creators,
+    List<String>? studios,
     String? externalUrl,
     int? cachedAt,
     DataSource? source,
@@ -310,6 +337,8 @@ class TvShow {
       totalEpisodes: totalEpisodes ?? this.totalEpisodes,
       rating: rating ?? this.rating,
       status: status ?? this.status,
+      creators: creators ?? this.creators,
+      studios: studios ?? this.studios,
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
       source: source ?? this.source,

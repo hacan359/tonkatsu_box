@@ -12,6 +12,7 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/api/screenscraper_api.dart';
+import '../../../core/selfhost/server_auth_token.dart';
 import '../../../core/selfhost/server_credentials.dart';
 import '../../../main.dart' show AppRestartScope;
 import '../../../shared/constants/api_defaults.dart';
@@ -861,6 +862,14 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                     AppTypography.body.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.md),
+              InlineTextField(
+                value: ServerAuthToken.current ?? '',
+                onChanged: _saveServerToken,
+                label: l.credentialsServerTokenLabel,
+                placeholder: l.credentialsServerTokenHint,
+                obscureText: true,
+              ),
+              const SizedBox(height: AppSpacing.md),
               OutlinedButton.icon(
                 onPressed: _uploading ? null : _uploadKeysFromConfig,
                 icon: const Icon(Icons.upload_file, size: 18),
@@ -874,6 +883,15 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   }
 
   bool _uploading = false;
+
+  Future<void> _saveServerToken(String value) async {
+    await ServerAuthToken.write(value);
+    if (!mounted) return;
+    context.showSnack(S.of(context).credentialsServerTokenSaved);
+    // The boot copied the server-held keys with the old token; the restart
+    // re-reads them and rebuilds every provider on the new one.
+    await AppRestartScope.restart(context);
+  }
 
   /// Reads the exported config in the tab and hands only its credentials to
   /// the server — nothing is written to this browser.

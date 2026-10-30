@@ -28,6 +28,7 @@ class RemoteCustomMediaDao implements CustomMediaDao {
           'coverUrl': item.coverUrl,
           'year': encodeIntOrNull(item.year),
           'genres': item.genres,
+          'authors': item.authors?.map((String e) => e).toList(),
           'platformName': item.platformName,
           'platformId': encodeIntOrNull(item.platformId),
           'format': item.format,
@@ -58,6 +59,7 @@ class RemoteCustomMediaDao implements CustomMediaDao {
                 'coverUrl': e.coverUrl,
                 'year': encodeIntOrNull(e.year),
                 'genres': e.genres,
+                'authors': e.authors?.map((String e) => e).toList(),
                 'platformName': e.platformName,
                 'platformId': encodeIntOrNull(e.platformId),
                 'format': e.format,
@@ -82,6 +84,44 @@ class RemoteCustomMediaDao implements CustomMediaDao {
   }
 
   @override
+  Future<List<CustomMedia>> getAll() async {
+    final Object? result = await _transport.call(
+      'CustomMediaDao',
+      'getAll',
+      <String, Object?>{},
+    );
+    return asList(result)
+        .map(
+          (Object? e) => CustomMedia(
+            id: decodeInt(asObject(e)['id']),
+            title: asObject(e)['title'] as String,
+            displayType: decodeEnumOrNull<MediaType>(
+              asObject(e)['displayType'],
+              MediaType.values,
+            ),
+            altTitle: asObject(e)['altTitle'] as String?,
+            description: asObject(e)['description'] as String?,
+            coverUrl: asObject(e)['coverUrl'] as String?,
+            year: decodeIntOrNull(asObject(e)['year']),
+            genres: asObject(e)['genres'] as String?,
+            authors: asObject(e)['authors'] == null
+                ? null
+                : asList(
+                    asObject(e)['authors'],
+                  ).map((Object? e) => e as String).toList(),
+            platformName: asObject(e)['platformName'] as String?,
+            platformId: decodeIntOrNull(asObject(e)['platformId']),
+            format: asObject(e)['format'] as String?,
+            unitTotal: decodeIntOrNull(asObject(e)['unitTotal']),
+            unitGroupTotal: decodeIntOrNull(asObject(e)['unitGroupTotal']),
+            externalUrl: asObject(e)['externalUrl'] as String?,
+            cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
+          ),
+        )
+        .toList();
+  }
+
+  @override
   Future<CustomMedia?> getById(int id) async {
     final Object? result = await _transport.call(
       'CustomMediaDao',
@@ -102,6 +142,11 @@ class RemoteCustomMediaDao implements CustomMediaDao {
         coverUrl: asObject(v)['coverUrl'] as String?,
         year: decodeIntOrNull(asObject(v)['year']),
         genres: asObject(v)['genres'] as String?,
+        authors: asObject(v)['authors'] == null
+            ? null
+            : asList(
+                asObject(v)['authors'],
+              ).map((Object? e) => e as String).toList(),
         platformName: asObject(v)['platformName'] as String?,
         platformId: decodeIntOrNull(asObject(v)['platformId']),
         format: asObject(v)['format'] as String?,
@@ -134,6 +179,11 @@ class RemoteCustomMediaDao implements CustomMediaDao {
             coverUrl: asObject(e)['coverUrl'] as String?,
             year: decodeIntOrNull(asObject(e)['year']),
             genres: asObject(e)['genres'] as String?,
+            authors: asObject(e)['authors'] == null
+                ? null
+                : asList(
+                    asObject(e)['authors'],
+                  ).map((Object? e) => e as String).toList(),
             platformName: asObject(e)['platformName'] as String?,
             platformId: decodeIntOrNull(asObject(e)['platformId']),
             format: asObject(e)['format'] as String?,
@@ -163,6 +213,7 @@ class RemoteCustomMediaDao implements CustomMediaDao {
                 'coverUrl': e.coverUrl,
                 'year': encodeIntOrNull(e.year),
                 'genres': e.genres,
+                'authors': e.authors?.map((String e) => e).toList(),
                 'platformName': e.platformName,
                 'platformId': encodeIntOrNull(e.platformId),
                 'format': e.format,
@@ -190,6 +241,7 @@ class RemoteCustomMediaDao implements CustomMediaDao {
         'coverUrl': item.coverUrl,
         'year': encodeIntOrNull(item.year),
         'genres': item.genres,
+        'authors': item.authors?.map((String e) => e).toList(),
         'platformName': item.platformName,
         'platformId': encodeIntOrNull(item.platformId),
         'format': item.format,
@@ -214,6 +266,7 @@ class RemoteCustomMediaDao implements CustomMediaDao {
         'coverUrl': item.coverUrl,
         'year': encodeIntOrNull(item.year),
         'genres': item.genres,
+        'authors': item.authors?.map((String e) => e).toList(),
         'platformName': item.platformName,
         'platformId': encodeIntOrNull(item.platformId),
         'format': item.format,

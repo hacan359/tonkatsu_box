@@ -329,4 +329,61 @@ void main() {
       expect(game.toString(), 'Game(id: 1942, name: The Witcher 3)');
     });
   });
+
+  group('Game companies', () {
+    test('fromJson splits involved_companies by role', () {
+      final Game game = Game.fromJson(<String, dynamic>{
+        'id': 1,
+        'name': 'Hollow Knight',
+        'involved_companies': <dynamic>[
+          <String, dynamic>{
+            'company': <String, dynamic>{'name': 'Team Cherry'},
+            'developer': true,
+            'publisher': true,
+          },
+          <String, dynamic>{
+            'company': <String, dynamic>{'name': 'Fangamer'},
+            'developer': false,
+            'publisher': true,
+          },
+          <String, dynamic>{
+            'company': <String, dynamic>{'name': 'Porter'},
+            'developer': false,
+            'publisher': false,
+          },
+        ],
+      });
+      expect(game.developers, <String>['Team Cherry']);
+      expect(game.publishers, <String>['Team Cherry', 'Fangamer']);
+    });
+
+    test('fromJson leaves both null without involved_companies', () {
+      final Game game =
+          Game.fromJson(<String, dynamic>{'id': 1, 'name': 'X'});
+      expect(game.developers, isNull);
+      expect(game.publishers, isNull);
+    });
+
+    test('toDb and fromDb round-trip companies', () {
+      const Game game = Game(
+        id: 1,
+        name: 'X',
+        developers: <String>['D'],
+        publishers: <String>['P'],
+      );
+      final Game restored = Game.fromDb(game.toDb());
+      expect(restored.developers, <String>['D']);
+      expect(restored.publishers, <String>['P']);
+      expect(const Game(id: 1, name: 'X').toDb()['developers'], isNull);
+    });
+
+    test('copyWith keeps and replaces companies', () {
+      const Game game = Game(id: 1, name: 'X', developers: <String>['D']);
+      expect(game.copyWith(name: 'Y').developers, <String>['D']);
+      expect(
+        game.copyWith(publishers: <String>['P']).publishers,
+        <String>['P'],
+      );
+    });
+  });
 }

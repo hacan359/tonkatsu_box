@@ -174,6 +174,16 @@ class RemoteTvShowDao implements TvShowDao {
         totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
         rating: (asObject(v)['rating'] as num?)?.toDouble(),
         status: asObject(v)['status'] as String?,
+        creators: asObject(v)['creators'] == null
+            ? null
+            : asList(
+                asObject(v)['creators'],
+              ).map((Object? e) => e as String).toList(),
+        studios: asObject(v)['studios'] == null
+            ? null
+            : asList(
+                asObject(v)['studios'],
+              ).map((Object? e) => e as String).toList(),
         externalUrl: asObject(v)['externalUrl'] as String?,
         cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
         source: decodeEnum<DataSource>(
@@ -212,6 +222,16 @@ class RemoteTvShowDao implements TvShowDao {
             totalEpisodes: decodeIntOrNull(asObject(e)['totalEpisodes']),
             rating: (asObject(e)['rating'] as num?)?.toDouble(),
             status: asObject(e)['status'] as String?,
+            creators: asObject(e)['creators'] == null
+                ? null
+                : asList(
+                    asObject(e)['creators'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(e)['studios'] == null
+                ? null
+                : asList(
+                    asObject(e)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(e)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -494,6 +514,8 @@ class RemoteTvShowDao implements TvShowDao {
         'totalEpisodes': encodeIntOrNull(tvShow.totalEpisodes),
         'rating': tvShow.rating,
         'status': tvShow.status,
+        'creators': tvShow.creators?.map((String e) => e).toList(),
+        'studios': tvShow.studios?.map((String e) => e).toList(),
         'externalUrl': tvShow.externalUrl,
         'cachedAt': encodeIntOrNull(tvShow.cachedAt),
         'source': encodeEnum(tvShow.source),
@@ -520,6 +542,8 @@ class RemoteTvShowDao implements TvShowDao {
               'totalEpisodes': encodeIntOrNull(e.totalEpisodes),
               'rating': e.rating,
               'status': e.status,
+              'creators': e.creators?.map((String e) => e).toList(),
+              'studios': e.studios?.map((String e) => e).toList(),
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'source': encodeEnum(e.source),

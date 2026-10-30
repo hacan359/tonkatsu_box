@@ -76,6 +76,16 @@ class RemoteGameDao implements GameDao {
         externalUrl: asObject(v)['externalUrl'] as String?,
         cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
         artworkUrl: asObject(v)['artworkUrl'] as String?,
+        developers: asObject(v)['developers'] == null
+            ? null
+            : asList(
+                asObject(v)['developers'],
+              ).map((Object? e) => e as String).toList(),
+        publishers: asObject(v)['publishers'] == null
+            ? null
+            : asList(
+                asObject(v)['publishers'],
+              ).map((Object? e) => e as String).toList(),
         timeToBeat: decodeNullable<GameTimeToBeat>(
           asObject(v)['timeToBeat'],
           (Object? v) => GameTimeToBeat(
@@ -129,6 +139,16 @@ class RemoteGameDao implements GameDao {
             externalUrl: asObject(e)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
             artworkUrl: asObject(e)['artworkUrl'] as String?,
+            developers: asObject(e)['developers'] == null
+                ? null
+                : asList(
+                    asObject(e)['developers'],
+                  ).map((Object? e) => e as String).toList(),
+            publishers: asObject(e)['publishers'] == null
+                ? null
+                : asList(
+                    asObject(e)['publishers'],
+                  ).map((Object? e) => e as String).toList(),
             timeToBeat: decodeNullable<GameTimeToBeat>(
               asObject(e)['timeToBeat'],
               (Object? v) => GameTimeToBeat(
@@ -228,6 +248,16 @@ class RemoteGameDao implements GameDao {
             externalUrl: asObject(e)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
             artworkUrl: asObject(e)['artworkUrl'] as String?,
+            developers: asObject(e)['developers'] == null
+                ? null
+                : asList(
+                    asObject(e)['developers'],
+                  ).map((Object? e) => e as String).toList(),
+            publishers: asObject(e)['publishers'] == null
+                ? null
+                : asList(
+                    asObject(e)['publishers'],
+                  ).map((Object? e) => e as String).toList(),
             timeToBeat: decodeNullable<GameTimeToBeat>(
               asObject(e)['timeToBeat'],
               (Object? v) => GameTimeToBeat(
@@ -258,6 +288,8 @@ class RemoteGameDao implements GameDao {
         'externalUrl': game.externalUrl,
         'cachedAt': encodeIntOrNull(game.cachedAt),
         'artworkUrl': game.artworkUrl,
+        'developers': game.developers?.map((String e) => e).toList(),
+        'publishers': game.publishers?.map((String e) => e).toList(),
         'timeToBeat': encodeNullable<GameTimeToBeat>(
           game.timeToBeat,
           (GameTimeToBeat v) => <String, Object?>{
@@ -292,6 +324,8 @@ class RemoteGameDao implements GameDao {
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'artworkUrl': e.artworkUrl,
+              'developers': e.developers?.map((String e) => e).toList(),
+              'publishers': e.publishers?.map((String e) => e).toList(),
               'timeToBeat': encodeNullable<GameTimeToBeat>(
                 e.timeToBeat,
                 (GameTimeToBeat v) => <String, Object?>{

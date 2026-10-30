@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +20,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/settings_provider.dart';
@@ -26,7 +29,9 @@ import '../widgets/settings_group.dart';
 
 /// Form + progress UI for importing an AniList user's public anime/manga lists.
 class AniListImportContent extends ConsumerStatefulWidget {
-  const AniListImportContent({super.key});
+  const AniListImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<AniListImportContent> createState() =>
@@ -44,8 +49,8 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
   bool _includeManga = true;
   ImportMode _mode = ImportMode.newOnly;
 
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
 
   @override
   void initState() {
@@ -470,6 +475,16 @@ class _AniListImportContentState extends ConsumerState<AniListImportContent> {
 
       final int? collectionId = result.effectiveCollectionId;
       ref.invalidate(collectionsProvider);
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.aniList,
+        collectionId: collectionId,
+        options: <String, Object?>{
+          CollectionImportOption.mode: _mode.name,
+          CollectionImportOption.includeAnime: _includeAnime,
+          CollectionImportOption.includeManga: _includeManga,
+        },
+      ));
       if (collectionId != null) {
         ref.invalidate(collectionStatsProvider(collectionId));
         ref.invalidate(collectionCoversProvider(collectionId));

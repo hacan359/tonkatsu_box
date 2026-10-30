@@ -199,7 +199,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | override_cover_url | string | no | The user's replacement cover (full only): a link as is, or `local://cover/<token>` for an uploaded picture that travels as `cover_overrides/<token>` in `images`. Restored on import with or without `user_data`; a light `.xcoll` never writes it and its reader ignores it |
 | tag_names | array | no | Names of all assigned tags in the item's display order — manual per-item order when set, global tag order otherwise (full only, resolved into the global tag set on import) |
 | tag_name | string | no | First assigned tag name (full only). Legacy single-tag field kept for older app versions; readers prefer `tag_names` |
-| _marks | array | no | Per-unit likes/notes. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
+| _marks | array | no | Per-unit likes/notes/ratings. Present only when `user_data` is `true`; re-anchored to the new item id on import (see Item Marks) |
 | _watched_episodes | array | no | Watched-episode marks of a TV/animation item (full + `user_data` only). Each entry: `{season, episode, watched_at}` with `watched_at` in Unix seconds or `null`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 | _listened_tracks | array | no | Listened-track marks of an audio item (full + `user_data` only). Each entry: `{disc, track, listened_at}` with `listened_at` in Unix seconds or `null`; podcast episodes store `disc = 0` and the Podcast Index episode id as `track`. Re-scoped to the target collection on import; conflict-ignoring, so re-import merges. Absent in older files |
 
@@ -308,10 +308,10 @@ examples above:
 
 ### Item Marks
 
-Each element of an item's `_marks` array is one like and/or note on a single
-unit of that title. Marks carry no item id — they are nested inside their item
-and re-anchored to the freshly assigned `collection_item_id` on import. Empty
-marks (no like and no note) are never exported. Timestamps are Unix seconds.
+Each element of an item's `_marks` array is one like, note and/or rating on a
+single unit of that title. Marks carry no item id — they are nested inside
+their item and re-anchored to the freshly assigned `collection_item_id` on
+import. Empty marks (no like, no note, no rating) are never exported. Timestamps are Unix seconds.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -320,6 +320,7 @@ marks (no like and no note) are never exported. Timestamps are Unix seconds.
 | unit_number | number | yes | Episode / chapter / page number, or `0` for a season/volume-level mark |
 | is_favorite | number | yes | `1` if liked, else `0` |
 | user_comment | string | no | Free-text note |
+| user_rating | number | no | Personal rating of the unit, 1.0–10.0 (one decimal); absent when not rated. Older builds ignore it |
 | liked_at | number | no | When the like was set |
 | updated_at | number | yes | Last modification time |
 
@@ -361,16 +362,16 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 
 | Field | Type | Description |
 |-------|------|-------------|
-| games | array | Game objects from IGDB (id, name, summary, cover_url, genres, rating, external_url, ...) |
-| movies | array | Movie objects from TMDB (tmdb_id, title, overview, poster_url, genres, runtime, external_url, ...) |
-| tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, external_url, ...) |
+| games | array | Game objects from IGDB (id, name, summary, cover_url, genres, rating, developers, publishers, external_url, ...) |
+| movies | array | Movie objects from TMDB (tmdb_id, title, overview, poster_url, genres, runtime, directors, studios, external_url, ...) |
+| tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, creators, studios, external_url, ...) |
 | visual_novels | array | VisualNovel objects from VNDB (id, numeric_id, title, alt_title, description, image_url, rating, vote_count, released, length_minutes, length, tags, developers, platforms, external_url) |
 | mangas | array | Manga objects from AniList (id, title, title_english, title_native, cover_url, cover_medium_url, description, genres, average_score, mean_score, popularity, status, start_year, chapters, volumes, format, country_of_origin, staff) |
 | tv_seasons | array | TvSeason objects of series, animated series and Kitsu anime (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
 | tv_episodes | array | TvEpisode objects of series, animated series and Kitsu anime (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
 | audio_items | array | AudioItem objects (id, source, kind, native_id, title, artists, description, language, primary_type, release_year, genres, rating, release_mbid, track_count, disc_count, cover_url, external_url, ...); albums hash the release-group MBID into `id` (fnv1a53 — 53 bits, so a JS double holds it exactly), podcasts store the Podcast Index feed id as-is — both stable across devices |
 | audio_tracks | array | AudioTrack objects (source, audio_id, disc_number, position, title, native_id, length_ms, artists, date_published); album tracks of the picked release or podcast episodes — lets an offline import restore the list without a provider round-trip |
-| custom_items | array | CustomMedia objects (id, title, display_type, alt_title, description, cover_url, year, genres, platform_name, platform_id, format, unit_total, unit_group_total, external_url); `id` is local to the exporting database, items of type `custom` point at it through `external_id` |
+| custom_items | array | CustomMedia objects (id, title, display_type, alt_title, description, cover_url, year, genres, authors, platform_name, platform_id, format, unit_total, unit_group_total, external_url); `id` is local to the exporting database, items of type `custom` point at it through `external_id` |
 
 All arrays are optional — only non-empty categories are included.
 

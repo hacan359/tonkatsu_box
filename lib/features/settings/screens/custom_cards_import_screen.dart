@@ -1,13 +1,18 @@
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/custom_cards_import_content.dart';
+import '../widgets/remembered_import_collection.dart';
 
 /// Thin [Scaffold]/title-bar wrapper around [CustomCardsImportContent].
 class CustomCardsImportScreen extends StatelessWidget {
-  const CustomCardsImportScreen({super.key});
+  const CustomCardsImportScreen({this.initialCollectionId, super.key});
+
+  /// Preselects "existing collection" when opened from a collection.
+  final int? initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +34,13 @@ class CustomCardsImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: const CustomCardsImportContent(),
+                child: RememberedImportCollection(
+                  source: ImportSourceKind.customCards,
+                  initialCollectionId: initialCollectionId,
+                  builder: (int? collectionId) => CustomCardsImportContent(
+                    initialCollectionId: collectionId,
+                  ),
+                ),
               ),
             ),
           ),

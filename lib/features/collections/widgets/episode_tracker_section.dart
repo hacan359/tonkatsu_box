@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:core/models/tv_episode.dart';
@@ -17,6 +19,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/rating_badge.dart';
+import '../../../shared/widgets/rating_popup.dart';
 import '../providers/episode_tracker_provider.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
@@ -24,6 +28,13 @@ import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../helpers/episode_undo.dart';
 
 enum _EpisodeMarkFilter { all, liked, commented }
+
+/// How many season posters fit side by side in [maxWidth]; never below one.
+int seasonPostersPerRow(double maxWidth) {
+  const double step = _SeasonPosterTile._width + AppSpacing.sm;
+  if (!maxWidth.isFinite) return 1;
+  return math.max(1, ((maxWidth + AppSpacing.sm) / step).floor());
+}
 
 class EpisodeTrackerSection extends ConsumerWidget {
   const EpisodeTrackerSection({
@@ -33,6 +44,7 @@ class EpisodeTrackerSection extends ConsumerWidget {
     required this.source,
     required this.tvShow,
     required this.accentColor,
+    this.fallbackCover,
     super.key,
   });
 
@@ -48,6 +60,10 @@ class EpisodeTrackerSection extends ConsumerWidget {
   final DataSource source;
 
   final TvShow? tvShow;
+
+  /// The item's own cover, standing in for seasons the source has no
+  /// poster for.
+  final Widget? fallbackCover;
 
   /// Accent color (AppColors.brand for tvShow, AppColors.animationAccent
   /// for animation).
@@ -114,6 +130,7 @@ class EpisodeTrackerSection extends ConsumerWidget {
           collectionId: collectionId,
           itemId: itemId,
           accentColor: accentColor,
+          fallbackCover: fallbackCover,
         ),
       ],
     );
@@ -127,6 +144,7 @@ class SeasonsListWidget extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.itemId,
     required this.accentColor,
+    this.fallbackCover,
     super.key,
   });
 
@@ -144,6 +162,8 @@ class SeasonsListWidget extends ConsumerStatefulWidget {
   /// Accent color for the "all watched" indicator.
   final Color accentColor;
 
+  final Widget? fallbackCover;
+
   @override
   ConsumerState<SeasonsListWidget> createState() => _SeasonsListWidgetState();
 }
@@ -153,6 +173,10 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   bool _loading = true;
   bool _refreshing = false;
   _EpisodeMarkFilter _filter = _EpisodeMarkFilter.all;
+
+  /// Nothing opens on its own: the panel shows only the season the user
+  /// tapped, and tapping it again collapses it.
+  int? _pickedSeason;
 
   @override
   void initState() {
@@ -287,24 +311,103 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         if (s.seasonNumber == 0) s,
     ];
 
+    final TvSeason? selected = _selectedSeason(orderedSeasons);
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         _buildMarksBar(marks),
         if (_filter != _EpisodeMarkFilter.all)
           _buildFilteredList(marks, trackerState)
-        else ...<Widget>[
-          for (final TvSeason season in orderedSeasons)
-            SeasonExpansionTile(
-              key: ValueKey<int>(season.seasonNumber),
-              season: season,
-              trackerState: trackerState,
-              trackerArg: _trackerArg,
-              itemId: widget.itemId,
-              accentColor: widget.accentColor,
+        else
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) =>
+                _buildSeasonGrid(
+              orderedSeasons,
+              selected,
+              trackerState,
+              marks,
+              seasonPostersPerRow(constraints.maxWidth),
             ),
-        ],
+          ),
       ],
     );
+  }
+
+  /// Rows are laid out by hand rather than a `Wrap` so the episode panel can
+  /// open right under the tapped poster's row instead of after every season.
+  Widget _buildSeasonGrid(
+    List<TvSeason> ordered,
+    TvSeason? selected,
+    EpisodeTrackerState trackerState,
+    ItemMarksState marks,
+    int perRow,
+  ) {
+    final List<Widget> children = <Widget>[];
+    bool panelAbove = false;
+    for (int start = 0; start < ordered.length; start += perRow) {
+      final List<TvSeason> row =
+          ordered.sublist(start, math.min(start + perRow, ordered.length));
+      if (start > 0) {
+        children.add(
+            SizedBox(height: panelAbove ? AppSpacing.md : AppSpacing.sm));
+      }
+      panelAbove = false;
+      children.add(Row(
+        // Keyed so a panel moving between rows does not remount the posters.
+        key: ValueKey<String>('season-row-${row.first.seasonNumber}'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          for (int i = 0; i < row.length; i++) ...<Widget>[
+            if (i > 0) const SizedBox(width: AppSpacing.sm),
+            _SeasonPosterTile(
+              key: ValueKey<int>(row[i].seasonNumber),
+              season: row[i],
+              source: widget.source,
+              watchedCount:
+                  trackerState.watchedCountForSeason(row[i].seasonNumber),
+              rating: marks.ratingFor(kUnitSeason, row[i].seasonNumber, 0),
+              selected: row[i].seasonNumber == selected?.seasonNumber,
+              accentColor: widget.accentColor,
+              fallbackCover: widget.fallbackCover,
+              onTap: () => _pick(row[i].seasonNumber, selected),
+            ),
+          ],
+        ],
+      ));
+      if (selected != null &&
+          row.any((TvSeason s) => s.seasonNumber == selected.seasonNumber)) {
+        panelAbove = true;
+        children
+          ..add(const SizedBox(height: AppSpacing.md))
+          ..add(SeasonPanel(
+            key: ValueKey<String>('season-panel-${selected.seasonNumber}'),
+            season: selected,
+            trackerState: trackerState,
+            trackerArg: _trackerArg,
+            itemId: widget.itemId,
+            accentColor: widget.accentColor,
+          ));
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    );
+  }
+
+  TvSeason? _selectedSeason(List<TvSeason> ordered) {
+    for (final TvSeason s in ordered) {
+      if (s.seasonNumber == _pickedSeason) return s;
+    }
+    return null;
+  }
+
+  void _pick(int seasonNumber, TvSeason? current) {
+    setState(() {
+      _pickedSeason =
+          current?.seasonNumber == seasonNumber ? null : seasonNumber;
+    });
   }
 
   /// Summary (`❤ N · 💬 M`, episode marks only) plus filter chips.
@@ -548,8 +651,10 @@ class _FilteredEpisodeRowState extends State<_FilteredEpisodeRow> {
   }
 }
 
-class SeasonExpansionTile extends ConsumerStatefulWidget {
-  const SeasonExpansionTile({
+/// The picked season's header — progress, note, bulk marks — over its
+/// episodes. Loads the episodes when it appears.
+class SeasonPanel extends ConsumerStatefulWidget {
+  const SeasonPanel({
     required this.season,
     required this.trackerState,
     required this.trackerArg,
@@ -571,12 +676,19 @@ class SeasonExpansionTile extends ConsumerStatefulWidget {
   final Color accentColor;
 
   @override
-  ConsumerState<SeasonExpansionTile> createState() =>
-      _SeasonExpansionTileState();
+  ConsumerState<SeasonPanel> createState() => _SeasonPanelState();
 }
 
-class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
+class _SeasonPanelState extends ConsumerState<SeasonPanel> {
   bool _editingNote = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.microtask(() => ref
+        .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
+        .loadSeason(widget.season.seasonNumber));
+  }
 
   /// Marks the season's first not-yet-watched episode, loading the season
   /// from the source first if its episodes aren't in memory.
@@ -656,104 +768,79 @@ class _SeasonExpansionTileState extends ConsumerState<SeasonExpansionTile> {
       ),
     );
 
-    return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      leading: _SeasonLeading(
-        season: season,
-        source: trackerArg.source,
-        allWatched: allWatched,
-        accentColor: accentColor,
-      ),
-      title: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              seasonTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTypography.body.copyWith(
-                fontWeight: FontWeight.w600,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                seasonTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.body.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-          ItemMarkControls(
-            itemId: itemId,
-            unitType: kUnitSeason,
-            parentNumber: seasonNum,
-            unitNumber: 0,
-            showLike: false,
-            onNotePressed: () =>
-                setState(() => _editingNote = !_editingNote),
-          ),
-        ],
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          if (episodeCount > 0) ...<Widget>[
-            const SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: (watchedCount / episodeCount).clamp(0.0, 1.0),
-                minHeight: 4,
-                backgroundColor: AppColors.surfaceLight,
-                valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-              ),
-            ),
-          ],
-          if (_editingNote)
-            ItemMarkNoteEditor(
+            _SeasonRatingButton(itemId: itemId, seasonNumber: seasonNum),
+            ItemMarkControls(
               itemId: itemId,
               unitType: kUnitSeason,
               parentNumber: seasonNum,
               unitNumber: 0,
-              accentColor: accentColor,
-              onDone: () => setState(() => _editingNote = false),
-            )
-          else if (note != null)
-            MarkNoteText(note: note, accentColor: accentColor),
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (!allWatched && episodeCount > 0)
+              showLike: false,
+              onNotePressed: () =>
+                  setState(() => _editingNote = !_editingNote),
+            ),
+            if (!allWatched && episodeCount > 0)
+              IconButton(
+                icon: const Icon(Icons.playlist_add_check, size: 20),
+                tooltip: l.markNextWatched,
+                onPressed: _markNextWatched,
+              ),
             IconButton(
-              icon: const Icon(Icons.playlist_add_check, size: 20),
-              tooltip: l.markNextWatched,
-              onPressed: _markNextWatched,
+              icon: Icon(
+                allWatched ? Icons.remove_done : Icons.done_all,
+                size: 20,
+              ),
+              tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
+              onPressed: () => _toggleSeason(episodes),
             ),
-          IconButton(
-            icon: Icon(
-              allWatched
-                  ? Icons.remove_done
-                  : Icons.done_all,
-              size: 20,
-            ),
-            tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
-            onPressed: () => _toggleSeason(episodes),
+          ],
+        ),
+        Text(
+          subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
           ),
-          const Icon(Icons.expand_more, size: 20),
+        ),
+        if (episodeCount > 0) ...<Widget>[
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: (watchedCount / episodeCount).clamp(0.0, 1.0),
+              minHeight: 4,
+              backgroundColor: AppColors.surfaceLight,
+              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+            ),
+          ),
         ],
-      ),
-      onExpansionChanged: (bool expanded) {
-        if (expanded) {
-          ref
-              .read(episodeTrackerNotifierProvider(trackerArg).notifier)
-              .loadSeason(seasonNum);
-        }
-      },
-      children: <Widget>[
+        if (_editingNote)
+          ItemMarkNoteEditor(
+            itemId: itemId,
+            unitType: kUnitSeason,
+            parentNumber: seasonNum,
+            unitNumber: 0,
+            accentColor: accentColor,
+            onDone: () => setState(() => _editingNote = false),
+          )
+        else if (note != null)
+          MarkNoteText(note: note, accentColor: accentColor),
+        const SizedBox(height: AppSpacing.sm),
         if (isLoading)
           const Padding(
             padding: EdgeInsets.all(16),
@@ -1078,55 +1165,273 @@ class _WatchedDateButton extends ConsumerWidget {
 
 /// Season poster thumbnail with an "all watched" badge; falls back to the
 /// plain check indicator when the source has no poster for the season.
-class _SeasonLeading extends StatelessWidget {
-  const _SeasonLeading({
+/// Season as a poster chip: full colour once started, greyscale before the
+/// first episode, a progress strip while in between.
+class _SeasonPosterTile extends StatelessWidget {
+  const _SeasonPosterTile({
     required this.season,
     required this.source,
-    required this.allWatched,
+    required this.watchedCount,
+    required this.selected,
     required this.accentColor,
+    required this.onTap,
+    this.rating,
+    this.fallbackCover,
+    super.key,
   });
 
   final TvSeason season;
   final DataSource source;
-  final bool allWatched;
+  final int watchedCount;
+
+  /// The user's season rating, shown over the poster when set.
+  final double? rating;
+  final bool selected;
   final Color accentColor;
+  final VoidCallback onTap;
+  final Widget? fallbackCover;
+
+  static const double _width = 92;
+  static const double _frame = 2;
+  static const double _progressHeight = 4;
+
+  // Rec. 709 luma weights.
+  static const ColorFilter _greyscale = ColorFilter.matrix(<double>[
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0.2126, 0.7152, 0.0722, 0, 0, //
+    0, 0, 0, 1, 0,
+  ]);
+
+  static const ColorFilter _identity = ColorFilter.matrix(<double>[
+    1, 0, 0, 0, 0, //
+    0, 1, 0, 0, 0, //
+    0, 0, 1, 0, 0, //
+    0, 0, 0, 1, 0,
+  ]);
 
   @override
   Widget build(BuildContext context) {
-    final String? posterUrl = season.posterUrl;
-    if (posterUrl == null) {
-      return Icon(
-        allWatched ? Icons.check_circle : Icons.circle_outlined,
-        color: allWatched ? accentColor : AppColors.surfaceBorder,
-        size: 20,
-      );
-    }
+    final S l = S.of(context);
+    final int episodeCount = season.episodeCount ?? 0;
+    final bool allWatched = episodeCount > 0 && watchedCount >= episodeCount;
+    final bool inProgress = watchedCount > 0 && !allWatched;
+    final String title = season.name ?? l.seasonName(season.seasonNumber);
+    final double? rating = this.rating;
+
+    // The filter always wraps the image, so the first mark swaps the matrix
+    // instead of remounting the poster and re-fetching it.
+    final Widget poster = ColorFiltered(
+      colorFilter: watchedCount == 0 ? _greyscale : _identity,
+      child: _buildPoster(),
+    );
+
     return SizedBox(
-      width: 40,
-      height: 60,
-      child: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-            child: CachedImage(
-              imageType: ImageType.tvSeasonPoster,
-              imageId: '${source.name}_${season.tmdbShowId}_'
-                  's${season.seasonNumber}',
-              remoteUrl: posterUrl,
-              fit: BoxFit.cover,
-              memCacheWidth: 120,
-              placeholder: ColoredBox(color: AppColors.surfaceLight),
-              errorWidget: ColoredBox(color: AppColors.surfaceLight),
+      width: _width,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.all(_frame),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(
+                    color: selected ? accentColor : Colors.transparent,
+                    width: _frame,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+                  child: AspectRatio(
+                    aspectRatio: AppSpacing.posterAspectRatio,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        poster,
+                        if (rating != null)
+                          Positioned(
+                            left: 4,
+                            top: 4,
+                            child: RatingBadge(rating: rating, compact: true),
+                          ),
+                        if (allWatched)
+                          Positioned(
+                            right: 4,
+                            top: 4,
+                            child: _WatchedBadge(
+                              accentColor: accentColor,
+                              size: 18,
+                            ),
+                          ),
+                        if (inProgress)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: LinearProgressIndicator(
+                              value: watchedCount / episodeCount,
+                              minHeight: _progressHeight,
+                              backgroundColor:
+                                  AppColors.background.withAlpha(160),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(accentColor),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.caption.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: selected
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  episodeCount > 0
+                      ? '$watchedCount/$episodeCount'
+                      : '$watchedCount',
+                  style: AppTypography.caption.copyWith(
+                    color: allWatched ? accentColor : AppColors.textTertiary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPoster() {
+    final String? posterUrl = season.posterUrl;
+    if (posterUrl == null) return _buildFallback();
+    return CachedImage(
+      imageType: ImageType.tvSeasonPoster,
+      imageId: '${source.name}_${season.tmdbShowId}_s${season.seasonNumber}',
+      remoteUrl: posterUrl,
+      fit: BoxFit.cover,
+      memCacheWidth: kPosterDecodeWidth,
+      placeholder: ColoredBox(color: AppColors.surfaceLight),
+      errorWidget: _buildFallback(),
+    );
+  }
+
+  /// The item's cover with the season number on top, so seasons sharing
+  /// it still tell apart.
+  Widget _buildFallback() {
+    final Widget? cover = fallbackCover;
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        cover ?? ColoredBox(color: AppColors.surfaceLight),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                Colors.transparent,
+                AppColors.background.withAlpha(200),
+              ],
             ),
           ),
-          if (allWatched)
-            Positioned(
-              right: 2,
-              bottom: 2,
-              child: _WatchedBadge(accentColor: accentColor, size: 14),
+        ),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+            child: Text(
+              '${season.seasonNumber}',
+              style: AppTypography.h1.copyWith(
+                fontWeight: FontWeight.w800,
+                height: 1,
+              ),
             ),
-        ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Star button in the season header: the picker opens under it, the value
+/// lands on the season's mark next to its note.
+class _SeasonRatingButton extends ConsumerWidget {
+  const _SeasonRatingButton({
+    required this.itemId,
+    required this.seasonNumber,
+  });
+
+  final int itemId;
+  final int seasonNumber;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Select only this season's rating so a mark elsewhere on the item does
+    // not rebuild the header.
+    final double? rating = ref.watch(
+      itemMarksProvider(itemId).select(
+        (ItemMarksState s) => s.ratingFor(kUnitSeason, seasonNumber, 0),
+      ),
+    );
+    final S l = S.of(context);
+    final Color color =
+        rating == null ? AppColors.textTertiary : AppColors.ratingStar;
+    return Semantics(
+      label: l.seasonRatingLabel,
+      value: rating?.toStringAsFixed(1),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        onTap: () => showRatingPopup(
+          context,
+          initial: rating,
+          onCommit: (double? value) => ref
+              .read(itemMarksProvider(itemId).notifier)
+              .setRating(kUnitSeason, seasonNumber, 0, value),
+        ),
+        child: Tooltip(
+          message: l.seasonRate,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  rating == null ? Icons.star_outline : Icons.star,
+                  size: 18,
+                  color: color,
+                ),
+                if (rating != null) ...<Widget>[
+                  const SizedBox(width: 2),
+                  Text(
+                    rating.toStringAsFixed(1),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

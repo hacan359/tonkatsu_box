@@ -373,6 +373,7 @@ class CustomCardsImportService {
       coverUrl: entry.coverUrl,
       year: entry.year,
       genres: entry.genres,
+      authors: entry.authors,
       platformName: matched?.displayName ?? entry.platform,
       platformId: isGame ? matched?.id : null,
       format: entry.format,

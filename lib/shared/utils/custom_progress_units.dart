@@ -14,6 +14,21 @@ abstract final class CustomProgressUnits {
         _ => l.customUnitParts,
       };
 
+  /// Singular noun for one fine unit ("Page"), for a position readout.
+  static String fineUnit(MediaType type, S l) => switch (type) {
+        MediaType.tvShow || MediaType.animation || MediaType.anime =>
+          l.unitEpisode,
+        MediaType.manga => l.unitChapter,
+        MediaType.book => l.unitPage,
+        _ => l.unitPart,
+      };
+
+  /// Singular noun for one coarse unit, or `null` when [type] has none.
+  static String? groupUnit(MediaType type, S l) {
+    if (!hasGroupAxis(type)) return null;
+    return type == MediaType.manga ? l.unitVolume : l.unitSeason;
+  }
+
   /// Label for the coarse progress axis, or `null` when [type] has none.
   static String? groupLabel(MediaType type, S l) {
     if (!hasGroupAxis(type)) return null;

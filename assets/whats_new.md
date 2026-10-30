@@ -1,19 +1,23 @@
-# 0.45.0
+# 0.46.0
 
-**Midnight Shinigami 0.45**
+**めんどくせ 0.46**
 
-**Any card can get its own cover.** A file, a link, an IGDB or SteamGridDB cover for games, or a ScreenScraper picture. The original comes back with one tap.
+**Cards show who made them.** Directors, creators, studios, developers and publishers, right on the card. Tap a name to see the rest of their work in your collection.
 
-- Duplicate any card as your own custom card, with its cover and tags.
-- The button for a new custom card now sits next to "+" in a collection instead of the ⋮ menu. <3
-- Custom cards import can look your rows up in the catalogs: TMDB, IGDB, AniList, Kitsu, VNDB, book sources and more. A row with exactly one match by title, year and platform becomes a real card and keeps your status, rating, notes, dates and tags. The rest stay custom cards.
-- All imports share one progress dialog with the current row, the source being asked and running counts.
-- Completed marks every episode of a series; leaving it clears the marks, with Undo.
-- The watched date of an episode can be edited, and unmarked episodes come back with Undo.
-- Statistics count anime and animated films and show time to the minute.
-- Sort by release date.
-- New setting: show every tag on grid cards. Otherwise the "+N" count of other tags is always visible.
-- Backup restore keeps time spent, custom cards and Kitsu episodes.
+**Refresh many cards at once.** Select them and press "Refresh from source".
+
+**Zoom the whole app.** Ctrl + wheel on desktop, a slider in Settings on the phone.
+
+**A new card layout.** Two columns on wide windows, a floating glass bar, seasons as posters.
+
+**Rate a season.** Each season of a series gets its own rating.
+
+**"Stopped at" on the card.** The page, the chapter, the episode or the track you are on, right in the progress block.
+
+- Import straight from a collection.
+- Two new themes: PS1 Retro and Eva Azure, by shingo110.
+- Search finds movies by director and games by developer.
+- Bigger badges on cards for phones.
 
 A friendly reminder: our cozy [Discord](https://discord.gg/JZVNPF7cS2) server is where you can directly influence
 which features get built. And if you use the app but have not starred it on

@@ -1,3 +1,4 @@
+import 'package:core/models/import_source_kind.dart';
 import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
@@ -16,6 +17,8 @@ import 'package:tonkatsu_box/features/settings/screens/import_result_screen.dart
 import 'package:tonkatsu_box/features/settings/screens/kinorium_import_screen.dart';
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+
+import 'package:tonkatsu_box/core/database/database_service.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -61,7 +64,8 @@ class _StubFilePicker extends FilePicker {
 
 class _FakeTraktImportOptions extends Fake implements TraktImportOptions {}
 
-class _FakeKinoriumImportOptions extends Fake implements KinoriumImportOptions {}
+class _FakeKinoriumImportOptions extends Fake
+    implements KinoriumImportOptions {}
 
 /// Settings with a non-built-in TMDB key so the import buttons (which require
 /// `hasTmdbKey && !isTmdbKeyBuiltIn`) are enabled.
@@ -82,7 +86,10 @@ class _TestCollectionsNotifier extends CollectionsNotifier {
 }
 
 void main() {
+  late MockDatabaseService db;
+
   setUpAll(() {
+    registerAllFallbacks();
     registerFallbackValue(_FakeTraktImportOptions());
     registerFallbackValue(_FakeKinoriumImportOptions());
     // validateZip takes the picked bytes now.
@@ -93,6 +100,15 @@ void main() {
   late GlobalKey<NavigatorState> hostKey;
 
   setUp(() {
+    db = MockDatabaseService();
+    final MockCollectionImportDao importDao = MockCollectionImportDao();
+    when(() => db.collectionImportDao).thenReturn(importDao);
+    for (final ImportSourceKind kind in ImportSourceKind.values) {
+      when(
+        () => importDao.getLatestForSource(kind),
+      ).thenAnswer((_) async => null);
+    }
+    when(() => importDao.upsert(any())).thenAnswer((_) async {});
     hostKey = GlobalKey<NavigatorState>();
     // FilePicker.platform is `late` and unset in the unit-test VM (no real
     // platform impl), so only capture it if it was already set.
@@ -183,8 +199,9 @@ void main() {
 
       setUp(() {
         service = MockTraktImportService();
-        when(() => service.validateZip(any()))
-            .thenAnswer((_) async => validZip);
+        when(
+          () => service.validateZip(any()),
+        ).thenAnswer((_) async => validZip);
       });
 
       UniversalImportResult successResult() {
@@ -198,10 +215,7 @@ void main() {
 
       Future<void> driveToResultScreen(WidgetTester tester) async {
         when(
-          () => service.import(
-            any(),
-            onProgress: any(named: 'onProgress'),
-          ),
+          () => service.import(any(), onProgress: any(named: 'onProgress')),
         ).thenAnswer((_) async => successResult());
 
         useTallView(tester);
@@ -209,6 +223,7 @@ void main() {
           hostWithRoot(
             child: const TraktImportScreen(),
             overrides: <Override>[
+              databaseServiceProvider.overrideWithValue(db),
               traktImportServiceProvider.overrideWithValue(service),
               collectionsProvider.overrideWith(
                 () => _TestCollectionsNotifier(const <Collection>[]),
@@ -291,10 +306,7 @@ void main() {
 
       Future<void> driveToResultScreen(WidgetTester tester) async {
         when(
-          () => service.import(
-            any(),
-            onProgress: any(named: 'onProgress'),
-          ),
+          () => service.import(any(), onProgress: any(named: 'onProgress')),
         ).thenAnswer((_) async => successResult());
 
         useTallView(tester);
@@ -302,6 +314,7 @@ void main() {
           hostWithRoot(
             child: const KinoriumImportScreen(),
             overrides: <Override>[
+              databaseServiceProvider.overrideWithValue(db),
               kinoriumImportServiceProvider.overrideWithValue(service),
               collectionsProvider.overrideWith(
                 () => _TestCollectionsNotifier(const <Collection>[]),
