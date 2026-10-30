@@ -63,6 +63,7 @@ import '../../../shared/widgets/import_progress_dialog.dart';
 import '../../../shared/constants/import_source_kind_ui.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
   const CollectionScreen({
@@ -218,6 +219,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         children: <Widget>[
           Column(
             children: <Widget>[
+              SizedBox(height: MediaQuery.paddingOf(context).top),
               if (!_isCanvasMode)
                 _buildFilterBar(itemsAsync, statsAsync, searchQuery, tags),
               if (!heroCarriesTitle)
@@ -486,12 +488,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ? ref.watch(collectionHeroServiceProvider).resolve(heroFile)
         : null;
 
+    // The hero styles anchor their chrome to the left edge, so the banner
+    // takes the rail inset as a whole instead of bleeding under it.
     Widget? heroHeader(List<CollectionItem> items) => isRich
-        ? RichCollectionHero(
-            collection: _collection!,
-            items: items,
-            heroAbsolutePath: heroAbsPath,
-            onBack: () => Navigator.of(context).pop(),
+        ? Padding(
+            padding: context.leftInset,
+            child: RichCollectionHero(
+              collection: _collection!,
+              items: items,
+              heroAbsolutePath: heroAbsPath,
+              onBack: () => Navigator.of(context).pop(),
+            ),
           )
         : null;
 

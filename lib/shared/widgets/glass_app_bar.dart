@@ -61,23 +61,43 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// Frosted capsule: the backdrop blurs through a translucent surface tint.
 class GlassPill extends StatelessWidget {
-  const GlassPill({required this.child, super.key});
+  const GlassPill({
+    required this.child,
+    this.height = _pillHeight,
+    this.padding = const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+    this.borderRadius,
+    this.bordered = true,
+    super.key,
+  });
 
   final Widget child;
 
+  /// `null` lets the child decide (a frame zone sized by its parent).
+  final double? height;
+  final EdgeInsetsGeometry padding;
+
+  /// Defaults to a full capsule; a zone grown out of the frame rounds only
+  /// the corners that face the content.
+  final BorderRadius? borderRadius;
+  final bool bordered;
+
   @override
   Widget build(BuildContext context) {
+    final BorderRadius radius =
+        borderRadius ?? BorderRadius.circular((height ?? _pillHeight) / 2);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(_pillHeight / 2),
+      borderRadius: radius,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: _blurSigma, sigmaY: _blurSigma),
         child: Container(
-          height: _pillHeight,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+          height: height,
+          padding: padding,
           decoration: BoxDecoration(
             color: AppColors.surface.withAlpha(150),
-            borderRadius: BorderRadius.circular(_pillHeight / 2),
-            border: Border.all(color: AppColors.surfaceBorder.withAlpha(110)),
+            borderRadius: radius,
+            border: bordered
+                ? Border.all(color: AppColors.surfaceBorder.withAlpha(110))
+                : null,
           ),
           child: child,
         ),

@@ -23,6 +23,7 @@ import '../providers/item_tags_provider.dart';
 import 'bulk_export/bulk_poster_export_dialog.dart';
 import 'tag_picker_dialog.dart';
 import '../../../shared/constants/item_status_ui.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
 
 /// Below this width the counter and the actions stop fitting on one line.
 const double _kTwoRowBreakpoint = 620;
@@ -67,42 +68,45 @@ class BulkActionBar extends ConsumerWidget {
         sortMode == CollectionSortMode.manual;
     final int count = items.length;
 
-    return Material(
-      color: AppColors.brand.withAlpha(28),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.brand.withAlpha(60)),
-            bottom: BorderSide(color: AppColors.brand.withAlpha(60)),
+    return Padding(
+      padding: context.leftInset,
+      child: Material(
+        color: AppColors.brand.withAlpha(28),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: AppColors.brand.withAlpha(60)),
+              bottom: BorderSide(color: AppColors.brand.withAlpha(60)),
+            ),
           ),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            // On a phone the counter wins the width and the actions scroll
-            // away; below the threshold they get a row of their own.
-            if (constraints.maxWidth < _kTwoRowBreakpoint) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              // On a phone the counter wins the width and the actions scroll
+              // away; below the threshold they get a row of their own.
+              if (constraints.maxWidth < _kTwoRowBreakpoint) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Row(children: _buildSelectionControls(l, count)),
+                    _buildActionStrip(context, ref, l, isManualSort),
+                  ],
+                );
+              }
+              return Row(
                 children: <Widget>[
-                  Row(children: _buildSelectionControls(l, count)),
-                  _buildActionStrip(context, ref, l, isManualSort),
+                  ..._buildSelectionControls(l, count),
+                  Expanded(
+                    child: _buildActionStrip(context, ref, l, isManualSort),
+                  ),
                 ],
               );
-            }
-            return Row(
-              children: <Widget>[
-                ..._buildSelectionControls(l, count),
-                Expanded(
-                  child: _buildActionStrip(context, ref, l, isManualSort),
-                ),
-              ],
-            );
-          },
+            },
+          ),
         ),
       ),
     );

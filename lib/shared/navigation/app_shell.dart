@@ -30,6 +30,9 @@ import '../keyboard/keyboard_shortcuts_dialog.dart';
 import '../widgets/min_height_body.dart';
 import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
+import 'app_frame.dart';
+import '../widgets/frame_inset.dart';
+import 'frame_chrome.dart';
 import 'app_sidebar.dart';
 import 'app_top_bar.dart';
 import 'nav_destinations.dart';
@@ -63,6 +66,7 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
+  final FrameChromeController _frameChrome = FrameChromeController();
   late int _selectedIndex = widget.initialTab?.index ?? NavTab.home.index;
 
   /// FocusScopeNode per tab.
@@ -91,6 +95,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   void dispose() {
+    _frameChrome.dispose();
     for (final FocusScopeNode node in _tabFocusScopeNodes) {
       node.dispose();
     }
@@ -209,46 +214,39 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget _buildScaffold(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final NavTab activeTab = NavTab.values[_selectedIndex];
-    final PreferredSizeWidget topBar = PreferredSize(
-      preferredSize: Size.fromHeight(
-        kAppTopBarHeight + MediaQuery.paddingOf(context).top,
-      ),
-      child: AppTopBar(
-        activeTab: activeTab,
-        personalizationOpen: _personalizationOpen,
-        onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
-      ),
-    );
 
     void onTabSelected(NavTab tab) => _onDestinationSelected(tab.index);
 
-    if (compact) {
-      return Scaffold(
-        appBar: topBar,
-        body: _buildContent(),
-        bottomNavigationBar: AppBottomBar(
-          selectedTab: activeTab,
-          onDestinationSelected: onTabSelected,
-          onCenterTap: _openPreferenceCloud,
-          centerActive: _personalizationOpen,
-        ),
-      );
-    }
+    final Widget menuZone = compact
+        ? AppBottomBar(
+            selectedTab: activeTab,
+            onDestinationSelected: onTabSelected,
+            onCenterTap: _openPreferenceCloud,
+            centerActive: _personalizationOpen,
+          )
+        : AppSidebar(
+            selectedTab: activeTab,
+            onDestinationSelected: onTabSelected,
+            onCenterTap: _openPreferenceCloud,
+            centerActive: _personalizationOpen,
+          );
+
     return Scaffold(
-      appBar: topBar,
       // A landscape phone with the keyboard up leaves the body a few dozen
       // pixels; the sidebar's rail of buttons cannot shrink that far.
       body: MinHeightBody(
-        child: Row(
-          children: <Widget>[
-            AppSidebar(
-              selectedTab: activeTab,
-              onDestinationSelected: onTabSelected,
-              onCenterTap: _openPreferenceCloud,
-              centerActive: _personalizationOpen,
+        child: FrameChromeScope(
+          controller: _frameChrome,
+          child: AppFrame(
+            compact: compact,
+            topZone: AppTopBar(
+              activeTab: activeTab,
+              personalizationOpen: _personalizationOpen,
+              onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
             ),
-            Expanded(child: _buildContent()),
-          ],
+            menuZone: menuZone,
+            child: _buildContent(),
+          ),
         ),
       ),
     );
@@ -341,18 +339,30 @@ class _AppShellState extends ConsumerState<AppShell> {
           TickerMode(
             enabled: !_personalizationOpen && index == _selectedIndex,
             child: _initializedTabs.contains(index)
-                ? _buildTabNavigator(index)
+                ? _frameAware(NavTab.values[index], _buildTabNavigator(index))
                 : const SizedBox.shrink(),
           ),
         // An extra IndexedStack child, not a tab route — switching tabs hides
         // it. Not kept alive: the subtree is heavy, providers carry the state.
         if (_personalizationOpen)
-          PersonalizationScreen(navigatorKey: _personalizationNavKey)
+          FrameInset(
+            child: PersonalizationScreen(navigatorKey: _personalizationNavKey),
+          )
         else
           const SizedBox.shrink(),
       ],
     );
   }
+
+  /// Spike: only these tabs are laid out for the frame; the rest are kept
+  /// clear of it until they move to the shared page layout.
+  static const Set<NavTab> _frameReadyTabs = <NavTab>{
+    NavTab.home,
+    NavTab.collections,
+  };
+
+  Widget _frameAware(NavTab tab, Widget child) =>
+      _frameReadyTabs.contains(tab) ? child : FrameInset(child: child);
 
   Widget _buildTabNavigator(int tabIndex) {
     _navigatorWidgets[tabIndex] ??= Navigator(

@@ -73,11 +73,13 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
       kIsMobile ? label : '$label ($shortcut)';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => GlassAppBar(actions: buildActions(context));
+
+  /// The same buttons the frame's top zone shows when the card is inside it.
+  List<Widget> buildActions(BuildContext context) {
     final S l = S.of(context);
     final ThemeData theme = Theme.of(context);
-    return GlassAppBar(
-      actions: <Widget>[
+    return <Widget>[
         if (isEditable && onToggleFavorite != null)
           _action(
             iconData: item.isFavorite ? Icons.favorite : Icons.heart_broken,
@@ -197,8 +199,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               ],
             ],
           ),
-      ],
-    );
+    ];
   }
 
   /// Smaller and tighter than Material defaults: with up to six actions the

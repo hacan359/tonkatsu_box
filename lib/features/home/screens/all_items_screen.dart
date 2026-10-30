@@ -42,6 +42,10 @@ import '../providers/all_items_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
 import '../../../shared/constants/platform_ui.dart';
 import '../../collections/helpers/episode_undo.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
+import '../../../shared/widgets/glass_app_bar.dart';
+import '../../../shared/navigation/frame_chrome.dart';
+import '../../../shared/navigation/app_frame.dart';
 
 /// Grid of all items across all collections (Home tab). The platforms
 /// filter row appears only while Games is selected.
@@ -88,12 +92,40 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final List<CollectionItem> visibleItems =
         _applyFilter(allItems, filterStatuses, favoriteOnly, search);
 
-    return MinHeightBody(
+    // Spike: on desktop the chevrons either move into the middle of the
+    // frame's top zone (1) or stay as a glass band under it (2); the phone
+    // zone has no room for them, so it always takes the band.
+    final bool chevronsInZone = kChevronSpike == 1 && !isCompactScreen(context);
+    final Widget page = MinHeightBody(
       child: Column(
         children: <Widget>[
-          _buildMediaTypeBar(itemsAsync, filterStatuses, favoriteOnly, search),
-          SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-          _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
+          SizedBox(height: MediaQuery.paddingOf(context).top),
+          if (!chevronsInZone)
+            GlassPill(
+              height: 40,
+              bordered: false,
+              borderRadius: BorderRadius.zero,
+              padding: EdgeInsets.zero,
+              child: _buildMediaTypeBar(
+                itemsAsync,
+                filterStatuses,
+                favoriteOnly,
+                search,
+                inGlass: true,
+              ),
+            ),
+          Padding(
+            padding: context.leftInset,
+            child: Column(
+              children: <Widget>[
+                SubfilterBar(groups: _subfilterGroups(itemsAsync)),
+                _AllItemsBulkBar(
+                  allItems: allItems,
+                  visibleItems: visibleItems,
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: itemsAsync.when(
               data: (List<CollectionItem> items) {
@@ -110,6 +142,19 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           ),
         ],
       ),
+    );
+    if (!chevronsInZone) return page;
+    return FrameChromeBinding(
+      chrome: FrameChrome(
+        center: _buildMediaTypeBar(
+          itemsAsync,
+          filterStatuses,
+          favoriteOnly,
+          search,
+          inGlass: true,
+        ),
+      ),
+      child: page,
     );
   }
 
@@ -154,8 +199,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     AsyncValue<List<CollectionItem>> itemsAsync,
     Set<ItemStatus> filterStatuses,
     bool favoriteOnly,
-    ItemSearch search,
-  ) {
+    ItemSearch search, {
+    bool inGlass = false,
+  }) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     final Map<MediaType, int> counts =
         _countByMediaType(items, filterStatuses, favoriteOnly, search);
@@ -231,8 +277,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 .toList()
             : entries;
 
+    // Inside a glass zone the strip has no backing of its own.
     return ColoredBox(
-      color: AppColors.surface,
+      color: inGlass ? Colors.transparent : AppColors.surface,
       child: SizedBox(
         height: 40,
         child: Row(
@@ -441,11 +488,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
-                gridPadding,
-                AppSpacing.sm,
-                gridPadding,
-                0,
-              ),
+                    gridPadding,
+                    AppSpacing.sm,
+                    gridPadding,
+                    0,
+                  ) +
+                  context.leftInset,
               sliver: SliverGrid(
                 gridDelegate: gridDelegate,
                 delegate: SliverChildBuilderDelegate(
@@ -475,8 +523,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 child: SizedBox(height: AppSpacing.sm),
               ),
           ],
-          const SliverToBoxAdapter(
-            child: SizedBox(height: AppSpacing.md),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: AppSpacing.md + context.bottomInset.bottom,
+            ),
           ),
         ],
       ),
@@ -532,11 +582,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     // narrow window — the name ellipsizes and the chips flow to the next line.
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        isFirst ? AppSpacing.sm : AppSpacing.lg,
-        AppSpacing.md,
-        0,
-      ),
+            AppSpacing.md,
+            isFirst ? AppSpacing.sm : AppSpacing.lg,
+            AppSpacing.md,
+            0,
+          ) +
+          context.leftInset,
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         runSpacing: AppSpacing.xs,

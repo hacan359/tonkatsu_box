@@ -75,10 +75,15 @@ class DesktopDetailLayout extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final _Metrics m = _Metrics.of(constraints.maxWidth);
-        // The floating app bar reports its height through the query.
-        final double topInset = MediaQuery.paddingOf(context).top;
+        // Floating bars report their height through the query: the card's
+        // own at the top, the nav capsule at the bottom.
+        final EdgeInsets inset = MediaQuery.paddingOf(context);
         return SingleChildScrollView(
-          padding: m.padding.copyWith(top: m.padding.top + topInset),
+          padding: m.padding.copyWith(
+            left: m.padding.left + inset.left,
+            top: m.padding.top + inset.top,
+            bottom: m.padding.bottom + inset.bottom,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[

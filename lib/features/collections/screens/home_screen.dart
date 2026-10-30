@@ -35,6 +35,7 @@ import 'collection_screen.dart';
 import '../../../shared/constants/collection_list_sort_mode_ui.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
 import '../../../shared/widgets/import_progress_dialog.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -235,7 +236,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onLongPressStart: (LongPressStartDetails details) =>
               _showEmptyAreaContextMenu(context, ref, details.globalPosition),
           child: GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md) + context.navInset + context.topInset,
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 273,
               crossAxisSpacing: 8,
@@ -268,7 +269,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onLongPressStart: (LongPressStartDetails details) =>
             _showEmptyAreaContextMenu(context, ref, details.globalPosition),
         child: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm) +
+              context.navInset + context.topInset,
           itemCount: collections.length + offset,
           itemBuilder: (BuildContext context, int index) {
             if (index == 0 && offset == 1) {

@@ -26,7 +26,7 @@ class MobileDetailLayout extends StatelessWidget {
     // Under a floating app bar the body starts at the top edge, and the
     // query carries the bar's height — the title sits just below it.
     return ListView(
-      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+      padding: MediaQuery.paddingOf(context).copyWith(right: 0),
       children: <Widget>[
         // Descendant ListTile/ExpansionTile need a Material ancestor for ink —
         // Flutter 3.44 asserts when a coloured DecoratedBox sits between.

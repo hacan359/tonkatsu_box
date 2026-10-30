@@ -29,6 +29,7 @@ import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_chrome.dart';
 import '../../../shared/utils/stopped_at_progress.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -733,61 +734,72 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final ItemDetailMediaConfig config =
         ItemDetailMediaConfig.from(item, context);
 
+    final ItemDetailAppBar bar = ItemDetailAppBar(
+      item: item,
+      isEditable: widget.isEditable,
+      hasCanvas: _hasCanvas,
+      showCanvas: _showCanvas,
+      isViewModeLocked: _isViewModeLocked,
+      onToggleLock: _toggleLock,
+      onEditCustom: () => _editCustomItem(item),
+      onMenuSelected: (ItemDetailMenuAction action) =>
+          _handleMenuAction(action, item),
+      onToggleFavorite: () => ref
+          .read(
+            collectionItemsNotifierProvider(widget.collectionId).notifier,
+          )
+          .toggleFavorite(item.id),
+      canTrackReleases: true,
+      isTracked: _isEpisodeType(item)
+          ? ref
+                  .watch(isReleaseTrackedProvider((
+                    externalId: item.externalId,
+                    source: item.dataSource,
+                    mediaType: item.mediaType,
+                  )))
+                  .valueOrNull ??
+              false
+          : ref
+                  .watch(isCalendarEntryProvider((
+                    externalId: item.externalId,
+                    source: item.dataSource,
+                    mediaType: item.mediaType,
+                  )))
+                  .valueOrNull ??
+              false,
+      onToggleTracked: () => _isEpisodeType(item)
+          ? _toggleTracked(item)
+          : _toggleCalendarEntry(item),
+      trackTooltip: _isEpisodeType(item) ? null : S.of(context).calendarAdd,
+      untrackTooltip:
+          _isEpisodeType(item) ? null : S.of(context).calendarRemove,
+    );
+    // Inside the app frame the card lends its buttons to the top zone and
+    // keeps no bar of its own; standalone it floats the glass bar.
+    final bool inFrame = FrameChromeScope.maybeOf(context) != null;
+    final Widget screen = Scaffold(
+      extendBodyBehindAppBar: !(_showCanvas && _hasCanvas),
+      appBar: inFrame ? null : bar,
+      body: _showCanvas && _hasCanvas
+          ? ItemDetailCanvasView(
+              collectionId: widget.collectionId,
+              itemId: widget.itemId,
+              isEditable: widget.isEditable && !_isViewModeLocked,
+              currentItemName: _currentItemName ?? '',
+            )
+          : _buildDetailView(item, config, displayName),
+    );
     return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(item),
-      child: Scaffold(
-        // The card scrolls under the floating pills; the board keeps its
-        // toolbar clear of them.
-        extendBodyBehindAppBar: !(_showCanvas && _hasCanvas),
-        appBar: ItemDetailAppBar(
-          item: item,
-          isEditable: widget.isEditable,
-          hasCanvas: _hasCanvas,
-          showCanvas: _showCanvas,
-          isViewModeLocked: _isViewModeLocked,
-          onToggleLock: _toggleLock,
-          onEditCustom: () => _editCustomItem(item),
-          onMenuSelected: (ItemDetailMenuAction action) =>
-              _handleMenuAction(action, item),
-          onToggleFavorite: () => ref
-              .read(
-                collectionItemsNotifierProvider(widget.collectionId).notifier,
-              )
-              .toggleFavorite(item.id),
-          canTrackReleases: true,
-          isTracked: _isEpisodeType(item)
-              ? ref
-                      .watch(isReleaseTrackedProvider((
-                        externalId: item.externalId,
-                        source: item.dataSource,
-                        mediaType: item.mediaType,
-                      )))
-                      .valueOrNull ??
-                  false
-              : ref
-                      .watch(isCalendarEntryProvider((
-                        externalId: item.externalId,
-                        source: item.dataSource,
-                        mediaType: item.mediaType,
-                      )))
-                      .valueOrNull ??
-                  false,
-          onToggleTracked: () => _isEpisodeType(item)
-              ? _toggleTracked(item)
-              : _toggleCalendarEntry(item),
-          trackTooltip: _isEpisodeType(item) ? null : S.of(context).calendarAdd,
-          untrackTooltip:
-              _isEpisodeType(item) ? null : S.of(context).calendarRemove,
-        ),
-        body: _showCanvas && _hasCanvas
-            ? ItemDetailCanvasView(
-                collectionId: widget.collectionId,
-                itemId: widget.itemId,
-                isEditable: widget.isEditable && !_isViewModeLocked,
-                currentItemName: _currentItemName ?? '',
-              )
-            : _buildDetailView(item, config, displayName),
-      ),
+      child: inFrame
+          ? FrameChromeBinding(
+              chrome: FrameChrome(
+                onBack: () => Navigator.of(context).pop(),
+                actions: bar.buildActions(context),
+              ),
+              child: screen,
+            )
+          : screen,
     );
   }
 
