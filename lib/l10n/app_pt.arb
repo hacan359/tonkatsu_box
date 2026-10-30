@@ -2906,6 +2906,8 @@
   "unitPage": "Página",
   "unitPart": "Parte",
   "unitTrack": "Faixa",
+  "unitIssue": "Edição",
+  "progressStoppedAt": "Parei em",
   "cardLinkCopy": "Copiar link do card",
   "cardLinkCopied": "Link do card copiado",
   "cardLinkNotFound": "Card não encontrado",

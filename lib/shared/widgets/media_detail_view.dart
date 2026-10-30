@@ -15,6 +15,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../utils/date_format_preset.dart';
 import '../utils/duration_formatter.dart';
+import '../utils/stopped_at_progress.dart';
 import 'card_link_picker.dart';
 import 'dual_date_picker_dialog.dart';
 import 'media_detail/desktop_detail_layout.dart';
@@ -61,6 +62,7 @@ class MediaDetailView extends ConsumerStatefulWidget {
     this.tagWidget,
     this.raBadge,
     this.trackerSection,
+    this.stoppedAt,
     this.timeSpentMinutes = 0,
     this.onTimeSpentTap,
     this.rewatchCount,
@@ -111,6 +113,9 @@ class MediaDetailView extends ConsumerStatefulWidget {
   final Widget? trackerSection;
 
   /// 0 means not set.
+  /// The "stopped at" line; `null` hides it for types without progress.
+  final StoppedAtProgress? stoppedAt;
+
   final int timeSpentMinutes;
   final VoidCallback? onTimeSpentTap;
 
@@ -413,8 +418,17 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     final bool editableDates = widget.onActivityDateChanged != null;
     final int hours = widget.timeSpentMinutes ~/ 60;
     final int minutes = widget.timeSpentMinutes % 60;
+    final StoppedAtProgress? stoppedAt = widget.stoppedAt;
 
     return <ProgressFact>[
+      if (stoppedAt != null)
+        ProgressFact(
+          icon: Icons.bookmark_outline,
+          label: l.progressStoppedAt,
+          value: stoppedAt.value ?? '—',
+          hasValue: stoppedAt.value != null,
+          tooltip: stoppedAt.tooltip,
+        ),
       ProgressFact(
         icon: Icons.play_circle_outline,
         label: l.activityDatesStarted,

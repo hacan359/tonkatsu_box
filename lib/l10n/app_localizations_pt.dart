@@ -5714,6 +5714,12 @@ class SPt extends S {
   String get unitTrack => 'Faixa';
 
   @override
+  String get unitIssue => 'Edição';
+
+  @override
+  String get progressStoppedAt => 'Parei em';
+
+  @override
   String get cardLinkCopy => 'Copiar link do card';
 
   @override

@@ -2478,6 +2478,8 @@
   "unitPage": "Page",
   "unitPart": "Partie",
   "unitTrack": "Piste",
+  "unitIssue": "Numéro",
+  "progressStoppedAt": "Arrêté à",
   "cardLinkCopy": "Copier le lien de la carte",
   "cardLinkCopied": "Lien de la carte copié",
   "cardLinkNotFound": "Carte introuvable",

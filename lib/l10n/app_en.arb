@@ -2557,6 +2557,8 @@
   "unitPage": "Page",
   "unitPart": "Part",
   "unitTrack": "Track",
+  "unitIssue": "Issue",
+  "progressStoppedAt": "Stopped at",
   "cardLinkCopy": "Copy card link",
   "cardLinkCopied": "Card link copied",
   "cardLinkNotFound": "Card not found",

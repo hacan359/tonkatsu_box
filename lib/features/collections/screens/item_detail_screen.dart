@@ -10,6 +10,7 @@ import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/anime.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/models/item_status.dart';
@@ -28,6 +29,7 @@ import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/utils/stopped_at_progress.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
@@ -67,6 +69,8 @@ import '../widgets/google_books_similars_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
 import '../widgets/dialogs/rewatch_count_dialog.dart';
+import '../providers/episode_tracker_provider.dart';
+import '../providers/listened_tracks_provider.dart';
 import '../providers/tracker_provider.dart';
 import '../widgets/ra_achievements_section.dart';
 import '../widgets/item_detail/item_detail_app_bar.dart';
@@ -203,6 +207,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   void _handleMenuAction(ItemDetailMenuAction action, CollectionItem item) {
     switch (action) {
+      case ItemDetailMenuAction.toggleCanvas:
+        setState(() => _showCanvas = !_showCanvas);
       case ItemDetailMenuAction.refresh:
         _refreshFromApi(item);
       case ItemDetailMenuAction.rename:
@@ -730,15 +736,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(item),
       child: Scaffold(
+        // The card scrolls under the floating pills; the board keeps its
+        // toolbar clear of them.
+        extendBodyBehindAppBar: !(_showCanvas && _hasCanvas),
         appBar: ItemDetailAppBar(
           item: item,
-          displayName: displayName,
           isEditable: widget.isEditable,
           hasCanvas: _hasCanvas,
           showCanvas: _showCanvas,
           isViewModeLocked: _isViewModeLocked,
           onToggleLock: _toggleLock,
-          onToggleCanvas: () => setState(() => _showCanvas = !_showCanvas),
           onEditCustom: () => _editCustomItem(item),
           onMenuSelected: (ItemDetailMenuAction action) =>
               _handleMenuAction(action, item),
@@ -841,6 +848,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           ? ItemDetailRaBadge(item: item, onLink: () => _linkRa(item))
           : null,
       trackerSection: _buildTrackerSection(item),
+      stoppedAt: widget.collectionId != null ? _stoppedAt(item) : null,
       timeSpentMinutes: item.timeSpentMinutes,
       onTimeSpentTap: widget.collectionId != null && widget.isEditable
           ? () => _showTimeSpentDialog(item)
@@ -1118,6 +1126,37 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     await ref
         .read(collectionItemsNotifierProvider(collId).notifier)
         .setRewatchCount(item.id, result.count);
+  }
+
+  /// Uncategorized items have no tracker rows, so the caller skips them.
+  StoppedAtProgress? _stoppedAt(CollectionItem item) {
+    final int? collectionId = widget.collectionId;
+    final (int, int)? lastWatched = item.usesEpisodeTracker
+        ? ref.watch(
+            episodeTrackerNotifierProvider((
+              collectionId: collectionId,
+              showId: item.externalId,
+              source: item.dataSource,
+            )).select((EpisodeTrackerState s) => s.lastWatchedEpisode),
+          )
+        : null;
+    final AudioItem? album = item.audioItem;
+    final (int, int)? lastListened =
+        album != null && !album.isPodcast && collectionId != null
+            ? ref
+                .watch(lastListenedTrackProvider((
+                  collectionId: collectionId,
+                  source: album.source,
+                  audioId: album.id,
+                )))
+                .valueOrNull
+            : null;
+    return StoppedAtProgress.forItem(
+      item,
+      S.of(context),
+      lastWatchedEpisode: lastWatched,
+      lastListenedTrack: lastListened,
+    );
   }
 
   Widget? _buildTrackerSection(CollectionItem item) {

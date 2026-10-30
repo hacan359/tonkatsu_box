@@ -5661,6 +5661,12 @@ class SEn extends S {
   String get unitTrack => 'Track';
 
   @override
+  String get unitIssue => 'Issue';
+
+  @override
+  String get progressStoppedAt => 'Stopped at';
+
+  @override
   String get cardLinkCopy => 'Copy card link';
 
   @override

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/utils/stopped_at_progress.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
 import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
 import 'package:tonkatsu_box/shared/widgets/source_badge.dart';
@@ -50,6 +51,7 @@ void main() {
     Duration? completionTime,
     OnActivityDateChanged? onActivityDateChanged,
     Widget? statusListWidget,
+    StoppedAtProgress? stoppedAt,
     double width = _phoneWidth,
   }) {
     return ProviderScope(
@@ -93,6 +95,7 @@ void main() {
         lastActivityAt: lastActivityAt,
         completionTime: completionTime,
         onActivityDateChanged: onActivityDateChanged,
+        stoppedAt: stoppedAt,
           ),
         ),
       ),
@@ -118,7 +121,13 @@ void main() {
         await tester.pumpWidget(buildTestWidget(title: 'Chrono Trigger'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Chrono Trigger'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.text('Chrono Trigger'),
+          ),
+          findsOneWidget,
+        );
       });
     });
 
@@ -857,7 +866,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Full Test'), findsOneWidget);
+        // Standalone AppBar title plus the phone layout's own heading.
+        expect(find.text('Full Test'), findsNWidgets(2));
         expect(find.text('Platform'), findsOneWidget);
         expect(find.text('9.0'), findsOneWidget);
         expect(find.text('Test description'), findsOneWidget);

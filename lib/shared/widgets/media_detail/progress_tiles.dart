@@ -203,12 +203,16 @@ class ProgressFactRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            fact.value,
-            style: base.copyWith(
-              color: fact.hasValue
-                  ? AppColors.textPrimary
-                  : AppColors.textTertiary,
+          Flexible(
+            child: Text(
+              fact.value,
+              style: base.copyWith(
+                color: fact.hasValue
+                    ? AppColors.textPrimary
+                    : AppColors.textTertiary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           if (fact.onTap != null) ...<Widget>[

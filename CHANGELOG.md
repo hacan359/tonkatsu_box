@@ -9,6 +9,36 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **"Stopped at" line on the card**
+
+  The progress block shows where you are: the page of a book (the issue of a
+  comic), the chapter and volume of a manga, the episode of an anime, the last
+  watched episode of a series as S2·E5, the last listened track of an album,
+  or a custom item's own units with their totals. A dash until something is
+  marked. Games, movies, visual novels and podcasts have no line.
+
+  * lib/shared/utils/stopped_at_progress.dart (StoppedAtProgress.forItem): New.
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView.stoppedAt,
+    MediaDetailView._progressFacts): The fact, first in the block.
+  * lib/shared/widgets/media_detail/progress_tiles.dart (ProgressFactRow):
+    A long value ellipsizes instead of overflowing the side column.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerState.lastWatchedEpisode): New, specials excluded.
+  * lib/features/collections/providers/listened_tracks_provider.dart
+    (lastListenedTrackProvider): New.
+  * lib/features/collections/widgets/audio_tracker_section.dart
+    (_AudioTrackerSectionState._refreshLastListened): Invalidates the
+    provider after every mark.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._stoppedAt): Collects the tracker marks and
+    feeds the view.
+  * lib/shared/utils/custom_progress_units.dart
+    (CustomProgressUnits.fineUnit, CustomProgressUnits.groupUnit): Singular
+    unit names.
+  * lib/shared/utils/highest_pair.dart (highestPair): New.
+  * lib/l10n/app_en.arb, app_ru.arb, app_es.arb, app_fr.arb, app_pt.arb,
+    app_zh.arb: `progressStoppedAt`, `unitIssue`.
+
 - **Optional access token for the selfhost server**
 
   `TONKATSU_AUTH=token` (or `--auth token`) makes the server answer 401 on
@@ -267,6 +297,29 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_*.arb (seasonRate, seasonRatingLabel): New strings.
 
 ### Changed
+
+- **Floating glass bar on the card, board toggle in the menu, title on the phone card**
+
+  The card's bar is two frosted pills over the backdrop, back on the left and
+  actions on the right, and the card scrolls under them. The board toggle
+  moved into the ⋮ menu (Ctrl+B still works); a read-only card with a board
+  gets the menu with that entry alone. The title left the bar: on phones and
+  narrow windows it heads the card's backing above the cover, up to three
+  lines, copied on tap.
+
+  * lib/shared/widgets/glass_app_bar.dart (GlassAppBar, GlassPill,
+    kGlassAppBarHeight): New.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailAppBar, ItemDetailMenuAction.toggleCanvas): Built on
+    GlassAppBar; `displayName` and `onToggleCanvas` dropped.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._buildContent,
+    _ItemDetailScreenState._handleMenuAction): `extendBodyBehindAppBar`
+    outside board mode; the menu entry toggles the board.
+  * lib/shared/widgets/media_detail/mobile_detail_layout.dart
+    (MobileDetailLayout._buildBody): Title heading; top inset under the bar.
+  * lib/shared/widgets/media_detail/desktop_detail_layout.dart
+    (DesktopDetailLayout.build): Top inset under the bar.
 
 - **Item card in two columns on wide windows**
 

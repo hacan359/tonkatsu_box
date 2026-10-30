@@ -9986,6 +9986,18 @@ abstract class S {
   /// **'Track'**
   String get unitTrack;
 
+  /// No description provided for @unitIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue'**
+  String get unitIssue;
+
+  /// No description provided for @progressStoppedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped at'**
+  String get progressStoppedAt;
+
   /// No description provided for @cardLinkCopy.
   ///
   /// In en, this message translates to:

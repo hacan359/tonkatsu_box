@@ -5760,6 +5760,12 @@ class SRu extends S {
   String get unitTrack => 'Трек';
 
   @override
+  String get unitIssue => 'Выпуск';
+
+  @override
+  String get progressStoppedAt => 'Остановился на';
+
+  @override
   String get cardLinkCopy => 'Скопировать ссылку на карточку';
 
   @override

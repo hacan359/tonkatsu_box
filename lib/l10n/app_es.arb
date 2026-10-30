@@ -2478,6 +2478,8 @@
   "unitPage": "Página",
   "unitPart": "Parte",
   "unitTrack": "Pista",
+  "unitIssue": "Número",
+  "progressStoppedAt": "Me quedé en",
   "cardLinkCopy": "Copiar enlace de la tarjeta",
   "cardLinkCopied": "Enlace de la tarjeta copiado",
   "cardLinkNotFound": "Tarjeta no encontrada",

@@ -5750,6 +5750,12 @@ class SFr extends S {
   String get unitTrack => 'Piste';
 
   @override
+  String get unitIssue => 'Numéro';
+
+  @override
+  String get progressStoppedAt => 'Arrêté à';
+
+  @override
   String get cardLinkCopy => 'Copier le lien de la carte';
 
   @override

@@ -2139,6 +2139,8 @@
   "unitPage": "Страница",
   "unitPart": "Часть",
   "unitTrack": "Трек",
+  "unitIssue": "Выпуск",
+  "progressStoppedAt": "Остановился на",
   "cardLinkCopy": "Скопировать ссылку на карточку",
   "cardLinkCopied": "Ссылка на карточку скопирована",
   "cardLinkNotFound": "Карточка не найдена",

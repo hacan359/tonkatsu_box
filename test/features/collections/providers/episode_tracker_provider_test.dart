@@ -303,6 +303,34 @@ void main() {
       });
     });
 
+    group('lastWatchedEpisode', () {
+      test('returns null while nothing is watched', () {
+        const EpisodeTrackerState state = EpisodeTrackerState();
+
+        expect(state.lastWatchedEpisode, isNull);
+      });
+
+      test('picks the highest season, then the highest episode', () {
+        const EpisodeTrackerState state = EpisodeTrackerState(
+          watchedEpisodes: <(int, int), DateTime?>{
+            (1, 9): null,
+            (2, 3): null,
+            (2, 1): null,
+          },
+        );
+
+        expect(state.lastWatchedEpisode, (2, 3));
+      });
+
+      test('ignores specials', () {
+        const EpisodeTrackerState state = EpisodeTrackerState(
+          watchedEpisodes: <(int, int), DateTime?>{(0, 4): null},
+        );
+
+        expect(state.lastWatchedEpisode, isNull);
+      });
+    });
+
     group('totalWatchedCount', () {
       test('should return общее количество просмотренных эпизодов', () {
         const EpisodeTrackerState state = EpisodeTrackerState(

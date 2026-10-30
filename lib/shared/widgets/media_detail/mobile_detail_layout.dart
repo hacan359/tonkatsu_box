@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../copyable_text.dart';
 import 'detail_sections.dart';
 import 'expandable_description.dart';
 import 'identity_header.dart';
@@ -21,8 +23,10 @@ class MobileDetailLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     // The backing's own padding is the only outer inset, so narrow screens
     // don't lose width to a doubled-up margin.
+    // Under a floating app bar the body starts at the top edge, and the
+    // query carries the bar's height — the title sits just below it.
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
       children: <Widget>[
         // Descendant ListTile/ExpansionTile need a Material ancestor for ink —
         // Flutter 3.44 asserts when a coloured DecoratedBox sits between.
@@ -50,6 +54,21 @@ class MobileDetailLayout extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        // The bar carries no title, so the heading opens the backing itself.
+        CopyableText(
+          text: s.title,
+          child: Text(
+            s.title,
+            style: AppTypography.h1.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              height: 1.15,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
         IdentityHeader(cover: s.cover, badges: s.badges, infoChips: s.chips),
         if (description != null && description.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),

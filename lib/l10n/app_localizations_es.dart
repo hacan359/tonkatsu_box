@@ -5732,6 +5732,12 @@ class SEs extends S {
   String get unitTrack => 'Pista';
 
   @override
+  String get unitIssue => 'Número';
+
+  @override
+  String get progressStoppedAt => 'Me quedé en';
+
+  @override
   String get cardLinkCopy => 'Copiar enlace de la tarjeta';
 
   @override

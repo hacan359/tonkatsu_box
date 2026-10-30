@@ -5372,6 +5372,12 @@ class SZh extends S {
   String get unitTrack => '曲目';
 
   @override
+  String get unitIssue => '期';
+
+  @override
+  String get progressStoppedAt => '停在';
+
+  @override
   String get cardLinkCopy => '复制卡片链接';
 
   @override
