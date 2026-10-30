@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../navigation/frame_chrome.dart';
 import '../theme/app_typography.dart';
 
 /// Stands in for [AppBar] inside a tab Navigator, where a real app bar would
@@ -20,6 +21,17 @@ class SubScreenTitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inside the frame the back button and title move into the top zone;
+    // the bar itself takes no room.
+    if (FrameChromeScope.maybeOf(context) != null) {
+      return FrameChromeBinding(
+        chrome: FrameChrome(
+          title: title,
+          onBack: onBack ?? () => Navigator.of(context).pop(),
+        ),
+        child: const SizedBox.shrink(),
+      );
+    }
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),

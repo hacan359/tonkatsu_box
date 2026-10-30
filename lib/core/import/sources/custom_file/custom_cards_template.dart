@@ -36,6 +36,9 @@ abstract final class CustomCardsTemplate {
     "_genres": "Comma-separated genre list.",
     "genres": "RPG, Adventure",
 
+    "_authors": "Comma-separated authors, directors or developers; a JSON array also works.",
+    "authors": "Square, Hironobu Sakaguchi",
+
     "_link": "External page URL opened from the card.",
     "link": "https://example.com/games/chrono-trigger",
 
@@ -82,6 +85,7 @@ abstract final class CustomCardsTemplate {
     "description": "Two brothers search for the Philosopher's Stone.",
     "year": 2009,
     "genres": "Action, Adventure, Drama",
+    "authors": ["Hiromu Arakawa"],
     "link": "https://example.com/anime/fmab",
     "cover": "https://example.com/covers/fmab.jpg",
 

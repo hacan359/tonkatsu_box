@@ -8,6 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/focusable_surface.dart';
 import 'welcome_hero.dart';
 import 'welcome_reveal.dart';
 
@@ -217,13 +218,9 @@ class _ContentLanguageDropdown extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        Container(
+        FocusableSurface(
+          borderRadius: AppSpacing.radiusMd,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.surfaceBorder),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,

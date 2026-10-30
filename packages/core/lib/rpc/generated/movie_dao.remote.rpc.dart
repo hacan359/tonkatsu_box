@@ -49,6 +49,16 @@ class RemoteMovieDao implements MovieDao {
         releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
         rating: (asObject(v)['rating'] as num?)?.toDouble(),
         runtime: decodeIntOrNull(asObject(v)['runtime']),
+        directors: asObject(v)['directors'] == null
+            ? null
+            : asList(
+                asObject(v)['directors'],
+              ).map((Object? e) => e as String).toList(),
+        studios: asObject(v)['studios'] == null
+            ? null
+            : asList(
+                asObject(v)['studios'],
+              ).map((Object? e) => e as String).toList(),
         externalUrl: asObject(v)['externalUrl'] as String?,
         cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
         source: decodeEnum<DataSource>(
@@ -85,6 +95,16 @@ class RemoteMovieDao implements MovieDao {
             releaseYear: decodeIntOrNull(asObject(e)['releaseYear']),
             rating: (asObject(e)['rating'] as num?)?.toDouble(),
             runtime: decodeIntOrNull(asObject(e)['runtime']),
+            directors: asObject(e)['directors'] == null
+                ? null
+                : asList(
+                    asObject(e)['directors'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(e)['studios'] == null
+                ? null
+                : asList(
+                    asObject(e)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(e)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -125,6 +145,8 @@ class RemoteMovieDao implements MovieDao {
         'releaseYear': encodeIntOrNull(movie.releaseYear),
         'rating': movie.rating,
         'runtime': encodeIntOrNull(movie.runtime),
+        'directors': movie.directors?.map((String e) => e).toList(),
+        'studios': movie.studios?.map((String e) => e).toList(),
         'externalUrl': movie.externalUrl,
         'cachedAt': encodeIntOrNull(movie.cachedAt),
         'source': encodeEnum(movie.source),
@@ -149,6 +171,8 @@ class RemoteMovieDao implements MovieDao {
               'releaseYear': encodeIntOrNull(e.releaseYear),
               'rating': e.rating,
               'runtime': encodeIntOrNull(e.runtime),
+              'directors': e.directors?.map((String e) => e).toList(),
+              'studios': e.studios?.map((String e) => e).toList(),
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'source': encodeEnum(e.source),

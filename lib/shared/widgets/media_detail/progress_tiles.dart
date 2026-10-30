@@ -145,3 +145,91 @@ class ProgressTileGrid extends StatelessWidget {
     );
   }
 }
+
+/// One user-set progress fact, rendered as a [ProgressTile] or a
+/// [ProgressFactRow] depending on the layout.
+class ProgressFact {
+  const ProgressFact({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.hasValue,
+    this.tooltip,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool hasValue;
+  final String? tooltip;
+  final VoidCallback? onTap;
+
+  ProgressTile toTile() => ProgressTile(
+        icon: icon,
+        label: label,
+        value: value,
+        hasValue: hasValue,
+        tooltip: tooltip,
+        onTap: onTap,
+      );
+}
+
+/// Label on the left, value on the right, a hairline below — the list form
+/// of [ProgressTile] for narrow side columns.
+class ProgressFactRow extends StatelessWidget {
+  const ProgressFactRow({required this.fact, super.key});
+
+  final ProgressFact fact;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle base = AppTypography.bodySmall;
+    final Widget row = Container(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.surfaceBorder)),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(fact.icon, size: 15, color: AppColors.textTertiary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              fact.label,
+              style: base.copyWith(color: AppColors.textTertiary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: Text(
+              fact.value,
+              style: base.copyWith(
+                color: fact.hasValue
+                    ? AppColors.textPrimary
+                    : AppColors.textTertiary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (fact.onTap != null) ...<Widget>[
+            const SizedBox(width: 4),
+            Icon(Icons.edit_outlined, size: 13, color: AppColors.brand),
+          ],
+        ],
+      ),
+    );
+    Widget result = fact.onTap == null
+        ? row
+        : Material(
+            type: MaterialType.transparency,
+            child: InkWell(onTap: fact.onTap, child: row),
+          );
+    final String? tooltip = fact.tooltip;
+    if (tooltip != null) result = Tooltip(message: tooltip, child: result);
+    return result;
+  }
+}

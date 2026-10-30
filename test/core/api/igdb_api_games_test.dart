@@ -326,6 +326,50 @@ void main() {
         expect(capturedData, contains('name ~ *"Mario"*'));
       });
 
+      test('should ask for companies so an upsert keeps the creators',
+          () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'name': 'q_0',
+                  'result': <Map<String, dynamic>>[
+                    <String, dynamic>{
+                      'id': 100,
+                      'name': 'Hollow Knight',
+                      'involved_companies': <Map<String, dynamic>>[
+                        <String, dynamic>{
+                          'company': <String, dynamic>{'name': 'Team Cherry'},
+                          'developer': true,
+                          'publisher': true,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            ));
+
+        final Map<int, List<Game>> result =
+            await api.multiSearchGamesByName(<({String name, int? platformId})>[
+          (name: 'Hollow Knight', platformId: null),
+        ]);
+
+        final String body = verify(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: captureAny(named: 'data'),
+            )).captured.single as String;
+        expect(body, contains('involved_companies.company.name'));
+        expect(result[0]!.first.developers, <String>['Team Cherry']);
+        expect(result[0]!.first.publishers, <String>['Team Cherry']);
+      });
+
       test('omits platform filter when platformId is null', () async {
         String? capturedData;
 

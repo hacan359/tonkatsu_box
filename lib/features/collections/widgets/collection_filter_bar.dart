@@ -22,6 +22,10 @@ import '../providers/collections_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'collection_filter_sheet.dart';
 import '../../../shared/constants/collection_sort_mode_ui.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
+import '../../../shared/navigation/app_frame.dart';
+import '../../../shared/navigation/frame_chrome.dart';
+import '../../../shared/widgets/glass_app_bar.dart';
 
 class CollectionFilterBar extends ConsumerStatefulWidget {
   const CollectionFilterBar({
@@ -131,13 +135,34 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       ),
     );
 
+    // Spike: on desktop the chevrons move into the frame's top zone; the
+    // phone keeps them as a glass band. Chips below stay clear of the rail.
+    final bool chevronsInZone = kChevronSpike == 1 &&
+        !isCompactScreen(context) &&
+        FrameChromeScope.maybeOf(context) != null;
+    final Widget chips = Padding(
+      padding: context.leftInset,
+      child: SubfilterBar(
+        groups: _subfilterGroups(alwaysShow: alwaysShowSubcategories),
+      ),
+    );
+    if (chevronsInZone) {
+      return FrameChromeBinding(
+        chrome: FrameChrome(center: _buildTypeChevronBar(l, stats, inGlass: true)),
+        child: chips,
+      );
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        _buildTypeChevronBar(l, stats),
-        SubfilterBar(
-          groups: _subfilterGroups(alwaysShow: alwaysShowSubcategories),
+        GlassPill(
+          height: 40,
+          bordered: false,
+          borderRadius: BorderRadius.zero,
+          padding: EdgeInsets.zero,
+          child: _buildTypeChevronBar(l, stats, inGlass: true),
         ),
+        chips,
       ],
     );
   }
@@ -191,7 +216,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     ];
   }
 
-  Widget _buildTypeChevronBar(S l, CollectionStats? stats) {
+  Widget _buildTypeChevronBar(S l, CollectionStats? stats, {bool inGlass = false}) {
     final List<_TypeEntry> entries = _typeEntries(l, stats);
     final bool hideEmpty = ref.watch(
       settingsNotifierProvider.select(
@@ -220,7 +245,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final bool useTagSheetButton = isCompactScreen(context);
 
     return ColoredBox(
-      color: AppColors.surface,
+      color: inGlass ? Colors.transparent : AppColors.surface,
       child: SizedBox(
         height: 40,
         child: Row(

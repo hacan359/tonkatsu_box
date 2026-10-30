@@ -10,6 +10,7 @@ import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/anime.dart';
+import 'package:core/models/audio_item.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/models/item_status.dart';
@@ -28,6 +29,8 @@ import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/tv_show_cache_warmer.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_chrome.dart';
+import '../../../shared/utils/stopped_at_progress.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
@@ -38,6 +41,7 @@ import '../../../core/database/database_service.dart';
 import '../../releases/providers/releases_provider.dart';
 import '../../releases/widgets/add_to_calendar_dialog.dart';
 import '../../../shared/widgets/media_detail_view.dart';
+import '../../../shared/widgets/media_detail/media_cover_image.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
@@ -66,6 +70,8 @@ import '../widgets/google_books_similars_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
 import '../widgets/dialogs/rewatch_count_dialog.dart';
+import '../providers/episode_tracker_provider.dart';
+import '../providers/listened_tracks_provider.dart';
 import '../providers/tracker_provider.dart';
 import '../widgets/ra_achievements_section.dart';
 import '../widgets/item_detail/item_detail_app_bar.dart';
@@ -80,6 +86,7 @@ import '../widgets/rename_item_dialog.dart';
 import '../widgets/screenscraper_gallery_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
+import '../widgets/status_list.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/constants/collection_item_ui.dart';
@@ -201,6 +208,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   void _handleMenuAction(ItemDetailMenuAction action, CollectionItem item) {
     switch (action) {
+      case ItemDetailMenuAction.toggleCanvas:
+        setState(() => _showCanvas = !_showCanvas);
       case ItemDetailMenuAction.refresh:
         _refreshFromApi(item);
       case ItemDetailMenuAction.rename:
@@ -313,15 +322,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _refreshFromApi(CollectionItem item) async {
-    final bool ok = await CollectionActions.refreshItemFromApi(
+    // Success invalidates every item list, this screen's included.
+    await CollectionActions.refreshItemFromApi(
       context: context,
       ref: ref,
       item: item,
     );
-    if (!ok || !mounted) return;
-    // The detail screen reads from the cache tables; nudging the items
-    // provider makes sure the refreshed row reaches the open view.
-    ref.invalidate(collectionItemsNotifierProvider(widget.collectionId));
   }
 
   void _addAnimeMangaSuggestions(
@@ -659,28 +665,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       await cache.evictDecodedImage(ImageType.customCover, previousCoverId);
     }
 
-    final bool clearDisplayType = data.mediaType == MediaType.custom;
-    final CustomMedia updated = item.customMedia!.copyWith(
-      title: data.title,
-      altTitle: data.altTitle,
-      description: data.description,
-      coverUrl: newCoverUrl,
-      year: data.year,
-      genres: data.genres,
-      platformName: data.platform,
-      clearPlatformName: data.platform == null,
-      platformId: data.platformId,
-      clearPlatformId: data.platformId == null,
-      format: data.format,
-      clearFormat: data.format == null,
-      unitTotal: data.unitTotal,
-      clearUnitTotal: data.unitTotal == null,
-      unitGroupTotal: data.unitGroupTotal,
-      clearUnitGroupTotal: data.unitGroupTotal == null,
-      externalUrl: data.externalUrl,
-      displayType: clearDisplayType ? null : data.mediaType,
-      clearDisplayType: clearDisplayType,
-    );
+    final CustomMedia updated =
+        data.applyTo(item.customMedia!, coverUrl: newCoverUrl);
 
     final DatabaseService db = ref.read(databaseServiceProvider);
     await db.customMediaDao.update(updated);
@@ -748,60 +734,72 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final ItemDetailMediaConfig config =
         ItemDetailMediaConfig.from(item, context);
 
+    final ItemDetailAppBar bar = ItemDetailAppBar(
+      item: item,
+      isEditable: widget.isEditable,
+      hasCanvas: _hasCanvas,
+      showCanvas: _showCanvas,
+      isViewModeLocked: _isViewModeLocked,
+      onToggleLock: _toggleLock,
+      onEditCustom: () => _editCustomItem(item),
+      onMenuSelected: (ItemDetailMenuAction action) =>
+          _handleMenuAction(action, item),
+      onToggleFavorite: () => ref
+          .read(
+            collectionItemsNotifierProvider(widget.collectionId).notifier,
+          )
+          .toggleFavorite(item.id),
+      canTrackReleases: true,
+      isTracked: _isEpisodeType(item)
+          ? ref
+                  .watch(isReleaseTrackedProvider((
+                    externalId: item.externalId,
+                    source: item.dataSource,
+                    mediaType: item.mediaType,
+                  )))
+                  .valueOrNull ??
+              false
+          : ref
+                  .watch(isCalendarEntryProvider((
+                    externalId: item.externalId,
+                    source: item.dataSource,
+                    mediaType: item.mediaType,
+                  )))
+                  .valueOrNull ??
+              false,
+      onToggleTracked: () => _isEpisodeType(item)
+          ? _toggleTracked(item)
+          : _toggleCalendarEntry(item),
+      trackTooltip: _isEpisodeType(item) ? null : S.of(context).calendarAdd,
+      untrackTooltip:
+          _isEpisodeType(item) ? null : S.of(context).calendarRemove,
+    );
+    // Inside the app frame the card lends its buttons to the top zone and
+    // keeps no bar of its own; standalone it floats the glass bar.
+    final bool inFrame = FrameChromeScope.maybeOf(context) != null;
+    final Widget screen = Scaffold(
+      extendBodyBehindAppBar: !(_showCanvas && _hasCanvas),
+      appBar: inFrame ? null : bar,
+      body: _showCanvas && _hasCanvas
+          ? ItemDetailCanvasView(
+              collectionId: widget.collectionId,
+              itemId: widget.itemId,
+              isEditable: widget.isEditable && !_isViewModeLocked,
+              currentItemName: _currentItemName ?? '',
+            )
+          : _buildDetailView(item, config, displayName),
+    );
     return wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(item),
-      child: Scaffold(
-        appBar: ItemDetailAppBar(
-          item: item,
-          displayName: displayName,
-          isEditable: widget.isEditable,
-          hasCanvas: _hasCanvas,
-          showCanvas: _showCanvas,
-          isViewModeLocked: _isViewModeLocked,
-          onToggleLock: _toggleLock,
-          onToggleCanvas: () => setState(() => _showCanvas = !_showCanvas),
-          onEditCustom: () => _editCustomItem(item),
-          onMenuSelected: (ItemDetailMenuAction action) =>
-              _handleMenuAction(action, item),
-          onToggleFavorite: () => ref
-              .read(
-                collectionItemsNotifierProvider(widget.collectionId).notifier,
-              )
-              .toggleFavorite(item.id),
-          canTrackReleases: true,
-          isTracked: _isEpisodeType(item)
-              ? ref
-                      .watch(isReleaseTrackedProvider((
-                        externalId: item.externalId,
-                        source: item.dataSource,
-                        mediaType: item.mediaType,
-                      )))
-                      .valueOrNull ??
-                  false
-              : ref
-                      .watch(isCalendarEntryProvider((
-                        externalId: item.externalId,
-                        source: item.dataSource,
-                        mediaType: item.mediaType,
-                      )))
-                      .valueOrNull ??
-                  false,
-          onToggleTracked: () => _isEpisodeType(item)
-              ? _toggleTracked(item)
-              : _toggleCalendarEntry(item),
-          trackTooltip: _isEpisodeType(item) ? null : S.of(context).calendarAdd,
-          untrackTooltip:
-              _isEpisodeType(item) ? null : S.of(context).calendarRemove,
-        ),
-        body: _showCanvas && _hasCanvas
-            ? ItemDetailCanvasView(
-                collectionId: widget.collectionId,
-                itemId: widget.itemId,
-                isEditable: widget.isEditable && !_isViewModeLocked,
-                currentItemName: _currentItemName ?? '',
-              )
-            : _buildDetailView(item, config, displayName),
-      ),
+      child: inFrame
+          ? FrameChromeBinding(
+              chrome: FrameChrome(
+                onBack: () => Navigator.of(context).pop(),
+                actions: bar.buildActions(context),
+              ),
+              child: screen,
+            )
+          : screen,
     );
   }
 
@@ -837,6 +835,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         onChanged: (ItemStatus status) =>
             _updateStatus(item.id, status, item.mediaType),
       ),
+      statusListWidget: StatusList(
+        status: item.status,
+        mediaType: item.mediaType,
+        onChanged: (ItemStatus status) =>
+            _updateStatus(item.id, status, item.mediaType),
+      ),
       addedAt: item.addedAt,
       startedAt: item.startedAt,
       completedAt: item.completedAt,
@@ -856,6 +860,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           ? ItemDetailRaBadge(item: item, onLink: () => _linkRa(item))
           : null,
       trackerSection: _buildTrackerSection(item),
+      stoppedAt: widget.collectionId != null ? _stoppedAt(item) : null,
       timeSpentMinutes: item.timeSpentMinutes,
       onTimeSpentTap: widget.collectionId != null && widget.isEditable
           ? () => _showTimeSpentDialog(item)
@@ -882,6 +887,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             source: item.dataSource,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
+            fallbackCover: MediaCoverImage(
+              coverUrl: config.coverUrl,
+              placeholderIcon: config.placeholderIcon,
+              cacheImageType: config.cacheImageType,
+              cacheImageId: config.cacheImageId,
+            ),
           ),
         if (config.hasEpisodeTracker && widget.collectionId == null)
           SeasonsInfo(
@@ -1127,6 +1138,37 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     await ref
         .read(collectionItemsNotifierProvider(collId).notifier)
         .setRewatchCount(item.id, result.count);
+  }
+
+  /// Uncategorized items have no tracker rows, so the caller skips them.
+  StoppedAtProgress? _stoppedAt(CollectionItem item) {
+    final int? collectionId = widget.collectionId;
+    final (int, int)? lastWatched = item.usesEpisodeTracker
+        ? ref.watch(
+            episodeTrackerNotifierProvider((
+              collectionId: collectionId,
+              showId: item.externalId,
+              source: item.dataSource,
+            )).select((EpisodeTrackerState s) => s.lastWatchedEpisode),
+          )
+        : null;
+    final AudioItem? album = item.audioItem;
+    final (int, int)? lastListened =
+        album != null && !album.isPodcast && collectionId != null
+            ? ref
+                .watch(lastListenedTrackProvider((
+                  collectionId: collectionId,
+                  source: album.source,
+                  audioId: album.id,
+                )))
+                .valueOrNull
+            : null;
+    return StoppedAtProgress.forItem(
+      item,
+      S.of(context),
+      lastWatchedEpisode: lastWatched,
+      lastListenedTrack: lastListened,
+    );
   }
 
   Widget? _buildTrackerSection(CollectionItem item) {

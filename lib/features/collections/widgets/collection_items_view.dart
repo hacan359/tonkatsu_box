@@ -34,6 +34,7 @@ import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 import '../../../shared/constants/platform_ui.dart';
 import '../helpers/episode_undo.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
 
 /// Grid or table view picked by [isTableMode]; in table mode a manual sort
 /// enables drag-to-reorder rows.
@@ -255,7 +256,7 @@ class CollectionItemsView extends ConsumerWidget {
           .refresh(),
       child: header == null
           ? GridView.builder(
-              padding: EdgeInsets.all(gridPadding),
+              padding: EdgeInsets.all(gridPadding) + context.navInset,
               gridDelegate: gridDelegate,
               itemCount: sorted.length,
               itemBuilder: (BuildContext context, int index) {
@@ -273,7 +274,7 @@ class CollectionItemsView extends ConsumerWidget {
               slivers: <Widget>[
                 SliverToBoxAdapter(child: header),
                 SliverPadding(
-                  padding: EdgeInsets.all(gridPadding),
+                  padding: EdgeInsets.all(gridPadding) + context.navInset,
                   sliver: SliverGrid.builder(
                     gridDelegate: gridDelegate,
                     itemCount: sorted.length,
@@ -308,7 +309,7 @@ class CollectionItemsView extends ConsumerWidget {
           .refresh(),
       child: header == null
           ? GridView.builder(
-              padding: EdgeInsets.all(gridPadding),
+              padding: EdgeInsets.all(gridPadding) + context.navInset,
               gridDelegate: gridDelegate,
               itemCount: items.length,
               itemBuilder: (BuildContext context, int index) {
@@ -562,7 +563,7 @@ class CollectionItemsView extends ConsumerWidget {
     final S l = S.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.xl) + context.navInset,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

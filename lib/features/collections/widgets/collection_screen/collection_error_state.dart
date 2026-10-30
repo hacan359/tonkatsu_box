@@ -4,6 +4,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/extensions/bottom_inset_extension.dart';
 
 class CollectionErrorState extends StatelessWidget {
   const CollectionErrorState({
@@ -20,7 +21,7 @@ class CollectionErrorState extends StatelessWidget {
     final S l = S.of(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.xl) + context.navInset,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

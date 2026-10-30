@@ -6,9 +6,11 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/platform_features.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/widgets/glass_app_bar.dart';
 import '../../../../shared/widgets/screen_app_bar.dart';
 
 enum ItemDetailMenuAction {
+  toggleCanvas,
   refresh,
   rename,
   changeCover,
@@ -23,13 +25,11 @@ enum ItemDetailMenuAction {
 class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ItemDetailAppBar({
     required this.item,
-    required this.displayName,
     required this.isEditable,
     required this.hasCanvas,
     required this.showCanvas,
     required this.isViewModeLocked,
     required this.onToggleLock,
-    required this.onToggleCanvas,
     required this.onEditCustom,
     required this.onMenuSelected,
     this.onToggleFavorite,
@@ -42,13 +42,11 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   final CollectionItem item;
-  final String displayName;
   final bool isEditable;
   final bool hasCanvas;
   final bool showCanvas;
   final bool isViewModeLocked;
   final VoidCallback onToggleLock;
-  final VoidCallback onToggleCanvas;
   final VoidCallback onEditCustom;
   final ValueChanged<ItemDetailMenuAction> onMenuSelected;
 
@@ -69,18 +67,19 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? untrackTooltip;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kScreenAppBarHeight);
+  Size get preferredSize => const Size.fromHeight(kGlassAppBarHeight);
 
   String _withShortcut(String label, String shortcut) =>
       kIsMobile ? label : '$label ($shortcut)';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => GlassAppBar(actions: buildActions(context));
+
+  /// The same buttons the frame's top zone shows when the card is inside it.
+  List<Widget> buildActions(BuildContext context) {
     final S l = S.of(context);
     final ThemeData theme = Theme.of(context);
-    return ScreenAppBar(
-      title: displayName,
-      actions: <Widget>[
+    return <Widget>[
         if (isEditable && onToggleFavorite != null)
           _action(
             iconData: item.isFavorite ? Icons.favorite : Icons.heart_broken,
@@ -117,13 +116,6 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             onPressed: onToggleLock,
           ),
-        if (hasCanvas)
-          _action(
-            iconData: showCanvas ? Icons.dashboard : Icons.dashboard_outlined,
-            color: showCanvas ? AppColors.brand : AppColors.textSecondary,
-            tooltip: _withShortcut(l.boardTab, 'Ctrl+B'),
-            onPressed: onToggleCanvas,
-          ),
         if (isEditable && item.mediaType == MediaType.custom)
           _action(
             iconData: Icons.edit_outlined,
@@ -131,7 +123,9 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             tooltip: l.customItemEdit,
             onPressed: onEditCustom,
           ),
-        if (isEditable)
+        // The board toggle lives in the menu, so a read-only card with a
+        // board still gets one; the editing entries stay gated below.
+        if (isEditable || hasCanvas)
           PopupMenuButton<ItemDetailMenuAction>(
             iconSize: kScreenAppBarIconSize - 2,
             padding: const EdgeInsets.all(AppSpacing.xs),
@@ -139,63 +133,73 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             onSelected: onMenuSelected,
             itemBuilder: (BuildContext context) =>
                 <PopupMenuEntry<ItemDetailMenuAction>>[
-              if (item.mediaType != MediaType.custom)
+              if (hasCanvas)
+                _menuItem(
+                  ItemDetailMenuAction.toggleCanvas,
+                  showCanvas ? Icons.dashboard : Icons.dashboard_outlined,
+                  _withShortcut(l.boardTab, 'Ctrl+B'),
+                  color: showCanvas ? AppColors.brand : null,
+                ),
+              if (hasCanvas && isEditable) const PopupMenuDivider(),
+              if (isEditable && item.mediaType != MediaType.custom)
                 _menuItem(
                   ItemDetailMenuAction.refresh,
                   Icons.refresh,
                   l.refreshItemFromApi,
                 ),
-              if (item.mediaType != MediaType.custom)
+              if (isEditable && item.mediaType != MediaType.custom)
                 _menuItem(
                   ItemDetailMenuAction.rename,
                   Icons.drive_file_rename_outline,
                   l.rename,
                 ),
-              if (item.mediaType != MediaType.custom)
+              if (isEditable && item.mediaType != MediaType.custom)
                 _menuItem(
                   ItemDetailMenuAction.changeCover,
                   Icons.image_outlined,
                   l.coverOverrideChange,
                 ),
-              if (item.mediaType != MediaType.custom &&
+              if (isEditable &&
+                  item.mediaType != MediaType.custom &&
                   item.overrideCoverUrl != null)
                 _menuItem(
                   ItemDetailMenuAction.resetCover,
                   Icons.settings_backup_restore,
                   l.coverOverrideReset,
                 ),
-              _menuItem(
-                ItemDetailMenuAction.move,
-                Icons.drive_file_move_outlined,
-                l.collectionMoveToCollection,
-              ),
-              _menuItem(
-                ItemDetailMenuAction.clone,
-                Icons.copy_outlined,
-                l.collectionCopyToCollection,
-              ),
-              if (item.mediaType != MediaType.custom)
+              if (isEditable) ...<PopupMenuEntry<ItemDetailMenuAction>>[
                 _menuItem(
-                  ItemDetailMenuAction.duplicateAsCustom,
-                  Icons.control_point_duplicate,
-                  l.duplicateAsCustom,
+                  ItemDetailMenuAction.move,
+                  Icons.drive_file_move_outlined,
+                  l.collectionMoveToCollection,
                 ),
-              _menuItem(
-                ItemDetailMenuAction.copyLink,
-                Icons.link,
-                l.cardLinkCopy,
-              ),
-              const PopupMenuDivider(),
-              _menuItem(
-                ItemDetailMenuAction.remove,
-                Icons.delete_outline,
-                l.remove,
-                color: theme.colorScheme.error,
-              ),
+                _menuItem(
+                  ItemDetailMenuAction.clone,
+                  Icons.copy_outlined,
+                  l.collectionCopyToCollection,
+                ),
+                if (item.mediaType != MediaType.custom)
+                  _menuItem(
+                    ItemDetailMenuAction.duplicateAsCustom,
+                    Icons.control_point_duplicate,
+                    l.duplicateAsCustom,
+                  ),
+                _menuItem(
+                  ItemDetailMenuAction.copyLink,
+                  Icons.link,
+                  l.cardLinkCopy,
+                ),
+                const PopupMenuDivider(),
+                _menuItem(
+                  ItemDetailMenuAction.remove,
+                  Icons.delete_outline,
+                  l.remove,
+                  color: theme.colorScheme.error,
+                ),
+              ],
             ],
           ),
-      ],
-    );
+    ];
   }
 
   /// Smaller and tighter than Material defaults: with up to six actions the

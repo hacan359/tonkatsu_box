@@ -6,6 +6,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/extensions/bottom_inset_extension.dart';
 
 /// Wide-screen tag filter: one horizontal chip row above the items view.
 /// Supports multi-select: a click toggles a tag, the reset chip clears all.
@@ -52,63 +53,66 @@ class _TagTopBarState extends State<TagTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: TagTopBar.height,
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
-        ),
-      ),
-      // Same affordance as the genre-cloud legend row: edge-fade arrows on
-      // desktop, wheel remap and touch/mouse drag come with the widget.
-      child: ScrollableRowWithArrows(
-        controller: _controller,
+    return Padding(
+      padding: context.leftInset,
+      child: Container(
         height: TagTopBar.height,
-        child: ListView(
-          controller: _controller,
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: 6,
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
           ),
-          children: <Widget>[
-            _TagBarChip(
-              key: const ValueKey<String>('tagTopBarGroup'),
-              label: S.of(context).tagSidebarGroup,
-              icon: Icons.workspaces_outlined,
-              color: AppColors.brand,
-              selected: widget.groupByTags,
-              onTap: widget.onGroupToggled,
+        ),
+        // Same affordance as the genre-cloud legend row: edge-fade arrows on
+        // desktop, wheel remap and touch/mouse drag come with the widget.
+        child: ScrollableRowWithArrows(
+          controller: _controller,
+          height: TagTopBar.height,
+          child: ListView(
+            controller: _controller,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: 6,
             ),
-            if (widget.selectedTagIds.isNotEmpty)
+            children: <Widget>[
               _TagBarChip(
-                key: const ValueKey<String>('tagTopBarReset'),
-                label: '${widget.selectedTagIds.length}',
-                icon: Icons.filter_alt_off_outlined,
-                color: AppColors.textSecondary,
-                selected: true,
-                onTap: () => widget.onTagToggled(null),
+                key: const ValueKey<String>('tagTopBarGroup'),
+                label: S.of(context).tagSidebarGroup,
+                icon: Icons.workspaces_outlined,
+                color: AppColors.brand,
+                selected: widget.groupByTags,
+                onTap: widget.onGroupToggled,
               ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              width: 1,
-              color: AppColors.surfaceBorder,
-            ),
-            for (final Tag tag in widget.tags)
-              _TagBarChip(
-                key: ValueKey<int>(tag.id),
-                label: tag.name,
-                count: widget.counts[tag.id] ?? 0,
-                color: tag.color != null
-                    ? Color(tag.color!)
-                    : AppColors.textSecondary,
-                labelColor: tag.textColor != null
-                    ? Color(tag.textColor!)
-                    : null,
-                selected: widget.selectedTagIds.contains(tag.id),
-                onTap: () => widget.onTagToggled(tag.id),
+              if (widget.selectedTagIds.isNotEmpty)
+                _TagBarChip(
+                  key: const ValueKey<String>('tagTopBarReset'),
+                  label: '${widget.selectedTagIds.length}',
+                  icon: Icons.filter_alt_off_outlined,
+                  color: AppColors.textSecondary,
+                  selected: true,
+                  onTap: () => widget.onTagToggled(null),
+                ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                width: 1,
+                color: AppColors.surfaceBorder,
               ),
-          ],
+              for (final Tag tag in widget.tags)
+                _TagBarChip(
+                  key: ValueKey<int>(tag.id),
+                  label: tag.name,
+                  count: widget.counts[tag.id] ?? 0,
+                  color: tag.color != null
+                      ? Color(tag.color!)
+                      : AppColors.textSecondary,
+                  labelColor: tag.textColor != null
+                      ? Color(tag.textColor!)
+                      : null,
+                  selected: widget.selectedTagIds.contains(tag.id),
+                  onTap: () => widget.onTagToggled(tag.id),
+                ),
+            ],
+          ),
         ),
       ),
     );

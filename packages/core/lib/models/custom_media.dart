@@ -1,3 +1,4 @@
+import '../utils/json_list.dart';
 import 'media_type.dart';
 
 /// A user-created item with no API behind it — the [MediaType.custom]
@@ -12,6 +13,7 @@ class CustomMedia {
     this.coverUrl,
     this.year,
     this.genres,
+    this.authors,
     this.platformName,
     this.platformId,
     this.format,
@@ -34,6 +36,7 @@ class CustomMedia {
       coverUrl: row['cover_url'] as String?,
       year: row['year'] as int?,
       genres: row['genres'] as String?,
+      authors: decodeJsonStringListOrNull(row['authors']),
       platformName: row['platform_name'] as String?,
       platformId: row['platform_id'] as int?,
       format: row['format'] as String?,
@@ -86,6 +89,9 @@ class CustomMedia {
   /// Comma-separated, e.g. `RPG, Action, Puzzle`.
   final String? genres;
 
+  /// Author, director or developer, by the card's display type.
+  final List<String>? authors;
+
   /// Free text, not an FK — a fallback for platforms absent from the catalog.
   /// Mirrored here on a catalog pick so the card renders without a join.
   final String? platformName;
@@ -124,6 +130,7 @@ class CustomMedia {
       'cover_url': coverUrl,
       'year': year,
       'genres': genres,
+      'authors': encodeJsonStringList(authors),
       'platform_name': platformName,
       'platform_id': platformId,
       'format': format,
@@ -155,6 +162,8 @@ class CustomMedia {
     bool clearYear = false,
     String? genres,
     bool clearGenres = false,
+    List<String>? authors,
+    bool clearAuthors = false,
     String? platformName,
     bool clearPlatformName = false,
     int? platformId,
@@ -179,6 +188,7 @@ class CustomMedia {
       coverUrl: clearCoverUrl ? null : (coverUrl ?? this.coverUrl),
       year: clearYear ? null : (year ?? this.year),
       genres: clearGenres ? null : (genres ?? this.genres),
+      authors: clearAuthors ? null : (authors ?? this.authors),
       platformName:
           clearPlatformName ? null : (platformName ?? this.platformName),
       platformId: clearPlatformId ? null : (platformId ?? this.platformId),

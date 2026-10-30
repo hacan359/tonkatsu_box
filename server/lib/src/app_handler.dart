@@ -9,6 +9,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
+import 'auth_token.dart';
 import 'image_handler.dart';
 import 'proxy_handler.dart';
 import 'request_log.dart';
@@ -26,6 +27,7 @@ Handler buildAppHandler({
   ImageCache? images,
   String? webRoot,
   Middleware? logger,
+  AuthToken? authToken,
 }) {
   final Router api = Router()
     ..get(_kHealthPath, (Request request) {
@@ -34,6 +36,8 @@ Handler buildAppHandler({
           'status': 'ok',
           'schemaVersion': schemaVersion,
           'protocolVersion': kProtocolVersion,
+          // Lets a browser ask for the token before its first 401.
+          'auth': authToken != null,
         }),
         headers: <String, String>{
           HttpHeaders.contentTypeHeader: 'application/json',
@@ -85,7 +89,42 @@ Handler buildAppHandler({
 
   return const Pipeline()
       .addMiddleware(logger ?? sanitizedLogRequests())
-      .addHandler(handler);
+      .addHandler(_requireToken(authToken, handler));
+}
+
+/// Static files and `/health` stay open so a fresh browser can load the shell
+/// that asks for the token; everything that reads or writes data answers 401.
+Handler _requireToken(AuthToken? token, Handler handler) {
+  if (token == null) return handler;
+
+  return (Request request) async {
+    if (!_needsToken(request)) return handler(request);
+    if (token.matches(AuthToken.bearerOf(request))) return handler(request);
+    return Response.unauthorized(
+      jsonEncode(<String, Object?>{
+        'ok': false,
+        'error': <String, String>{
+          'kind': kRpcErrorKindAuth,
+          'message': 'Missing or wrong token',
+        },
+      }),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+  };
+}
+
+/// `GET /img` stays public: `Image.network` cannot send a header, and a cover
+/// is only served to whoever already knows its id. Writes to it are gated.
+bool _needsToken(Request request) {
+  // shelf strips the leading slash from `Request.url.path`.
+  final String path = '/${request.url.path}';
+  if (path == _kRpcPath || path.startsWith('$kProxyPathPrefix/')) return true;
+  if (path.startsWith('$kImagePathPrefix/')) {
+    return request.method != 'GET' && request.method != 'HEAD';
+  }
+  return false;
 }
 
 /// A plain `Cascade` would answer "unknown upstream" with index.html and a 200,

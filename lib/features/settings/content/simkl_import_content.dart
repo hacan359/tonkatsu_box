@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +25,7 @@ import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
@@ -34,7 +37,9 @@ import '../widgets/settings_group.dart';
 /// Auth is the Simkl PIN flow — the screen polls until the token arrives, and
 /// keeps it in memory only unless the user opts into persisting it.
 class SimklImportContent extends ConsumerStatefulWidget {
-  const SimklImportContent({super.key});
+  const SimklImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<SimklImportContent> createState() =>
@@ -62,8 +67,8 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
   bool _isImporting = false;
   ImportProgress? _progress;
   ImportMode _mode = ImportMode.newOnly;
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
 
   @override
   void initState() {
@@ -881,6 +886,12 @@ class _SimklImportContentState extends ConsumerState<SimklImportContent> {
 
       final int? collectionId = result.effectiveCollectionId;
       _invalidateAfterImport();
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.simkl,
+        collectionId: collectionId,
+        options: <String, Object?>{CollectionImportOption.mode: _mode.name},
+      ));
       if (collectionId != null) {
         ref.invalidate(collectionStatsProvider(collectionId));
         ref.invalidate(collectionCoversProvider(collectionId));

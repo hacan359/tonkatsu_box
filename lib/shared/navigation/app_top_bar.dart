@@ -10,6 +10,9 @@ import '../constants/search_mode_ui.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/glass_app_bar.dart';
+import 'app_frame.dart';
+import 'frame_chrome.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 import 'nav_tour_keys.dart';
@@ -18,10 +21,12 @@ import 'service_badges.dart';
 
 const double kAppTopBarHeight = 56;
 
-const double _kIdleSearchMaxWidth = 280;
+/// Desktop capsule height; the zone keeps [kAppTopBarHeight] around it.
+const double _kFloatingZoneHeight = 48;
 
-  /// Wrap in [PreferredSize] with `kAppTopBarHeight + MediaQuery.paddingOf(context).top`
-  /// so Scaffold reserves room for the Android status bar.
+
+/// The frame's top zone: two glass bulges grown out of the contour. Placed
+/// by [AppFrame] below the status bar, so it carries no safe-area padding.
 class AppTopBar extends ConsumerStatefulWidget {
   const AppTopBar({
     required this.activeTab,
@@ -45,6 +50,9 @@ class AppTopBar extends ConsumerStatefulWidget {
 
 class _AppTopBarState extends ConsumerState<AppTopBar> {
   final TextEditingController _controller = TextEditingController();
+
+  /// Opened by the magnifier; the field also opens itself on focus.
+  bool _expanded = false;
   ProviderSubscription<String>? _querySub;
   StateProvider<String>? _subscribedProvider;
   FocusNode? _watchedFocusNode;
@@ -98,7 +106,12 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
 
   void _onFocusChanged() {
     if (!mounted) return;
-    setState(() {});
+    setState(() {
+      // Losing focus with nothing typed folds the field back into the icon.
+      if (!(_watchedFocusNode?.hasFocus ?? false) && _controller.text.isEmpty) {
+        _expanded = false;
+      }
+    });
     // On focus (type-to-search) the caret goes to the end so the next letter
     // appends instead of replacing.
     if (_watchedFocusNode?.hasFocus ?? false) {
@@ -128,8 +141,8 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
         ref.watch(updateCheckProvider).valueOrNull?.hasUpdate ?? false;
     final bool settingsActive = widget.activeTab == NavTab.settings;
 
-    final bool isIdle =
-        !focusNode.hasFocus && _controller.text.isEmpty;
+    final bool collapsed =
+        !_expanded && !focusNode.hasFocus && _controller.text.isEmpty;
     final bool metaSearchAvailable = ctx?.supportsMetaSearch ?? false;
     final SearchMode mode = metaSearchAvailable
         ? ref.watch(searchModeProvider)
@@ -137,69 +150,219 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
     final String hint = mode == SearchMode.meta
         ? S.of(context).appBarMetaSearchHint
         : ctx?.hint ?? '';
-    final double statusBarHeight = MediaQuery.paddingOf(context).top;
+    final FrameChrome? chrome = FrameChromeScope.maybeOf(context)?.current;
+    final VoidCallback? onBack = chrome?.onBack;
+    final String? title = chrome?.title;
+    final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
+    final bool tourActive = ref.watch(menuTourControllerProvider);
 
-    return Container(
-      height: kAppTopBarHeight + statusBarHeight,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
-        ),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm + statusBarHeight,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
+    final Widget searchField = _SearchField(
+      controller: _controller,
+      focusNode: focusNode,
+      enabled: enabled,
+      hint: hint,
+      mode: mode,
+      onModeChanged: metaSearchAvailable
+          ? (SearchMode value) =>
+              ref.read(searchModeProvider.notifier).state = value
+          : null,
+      onChanged: (String value) {
+        if (ctx == null) return;
+        ref.read(ctx.queryProvider.notifier).state = value;
+      },
+      onClear: () {
+        if (ctx == null) return;
+        _controller.clear();
+        ref.read(ctx.queryProvider.notifier).state = '';
+        setState(() => _expanded = false);
+        focusNode.unfocus();
+      },
+    );
+
+    final Widget? center = collapsed ? chrome?.center : null;
+
+    // Left bulge: back, magnifier (or the open field), the sub-screen title.
+    final Widget leftZone = _TopZoneBulge(
+      side: _ZoneSide.left,
       child: Row(
+        mainAxisSize: collapsed ? MainAxisSize.min : MainAxisSize.max,
         children: <Widget>[
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: isIdle ? _kIdleSearchMaxWidth : double.infinity,
+          // The magnifier keeps its place; back appears next to it on
+          // sub-screens, so the search never jumps between screens.
+          if (collapsed)
+            _MagnifierButton(enabled: enabled, onTap: _openSearch)
+          else
+            Expanded(child: searchField),
+          if (onBack != null && collapsed)
+            _ZoneIconButton(icon: Icons.arrow_back, onTap: onBack),
+          if (collapsed && title != null)
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xs,
+                  0,
+                  AppSpacing.sm,
+                  0,
                 ),
-                child: _SearchField(
-                  controller: _controller,
-                  focusNode: focusNode,
-                  enabled: enabled,
-                  hint: hint,
-                  mode: mode,
-                  onModeChanged: metaSearchAvailable
-                      ? (SearchMode value) => ref
-                          .read(searchModeProvider.notifier)
-                          .state = value
-                      : null,
-                  onChanged: (String value) {
-                    if (ctx == null) return;
-                    ref.read(ctx.queryProvider.notifier).state = value;
-                  },
-                  onClear: () {
-                    if (ctx == null) return;
-                    _controller.clear();
-                    ref.read(ctx.queryProvider.notifier).state = '';
-                  },
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.body.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.md),
+        ],
+      ),
+    );
+
+    // Right bulge: the sub-screen's own actions, service badges, settings.
+    final Widget rightZone = _TopZoneBulge(
+      side: _ZoneSide.right,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          ...?chrome?.actions,
           const ServiceBadges(),
-          const SizedBox(width: AppSpacing.sm),
           _SettingsButton(
             // Tour key only while the menu tour runs — otherwise two shells
             // alive at once (DB-reset `pushReplacement`) reuse it and crash.
-            key: ref.watch(menuTourControllerProvider)
-                ? ref.watch(navTourKeysProvider).keyFor(NavTab.settings)
-                : null,
+            key: tourActive ? tourKeys.keyFor(NavTab.settings) : null,
             active: settingsActive,
             pulsing: hasUpdate,
             onTap: widget.onSettingsTap,
           ),
         ],
+      ),
+    );
+
+    return SizedBox(
+      height: kAppTopBarHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // One flex child only: a Flexible next to a Spacer would split the
+          // free width in half and park the right capsule mid-screen.
+          if (center != null) ...<Widget>[
+            leftZone,
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _TopZoneBulge(side: _ZoneSide.center, child: center),
+            ),
+          ] else
+            Expanded(
+              child: collapsed
+                  ? Align(alignment: Alignment.topLeft, child: leftZone)
+                  : leftZone,
+            ),
+          const SizedBox(width: AppSpacing.sm),
+          rightZone,
+        ],
+      ),
+    );
+  }
+
+  void _openSearch() {
+    setState(() => _expanded = true);
+    // The field mounts on the next frame; focus it once it exists.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(appTopBarFocusProvider).requestFocus();
+    });
+  }
+}
+
+/// A zone grown out of the top contour: flush with the edge, rounded only
+/// where it meets the content, no border of its own (the contour is drawn
+/// over it).
+enum _ZoneSide { left, center, right }
+
+class _TopZoneBulge extends StatelessWidget {
+  const _TopZoneBulge({required this.side, required this.child});
+
+  final _ZoneSide side;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    const Radius r = Radius.circular(kFrameRadius);
+    // Phone: grown out of the contour. Desktop: a capsule lying on it.
+    if (!isCompactScreen(context)) {
+      return GlassPill(
+        height: _kFloatingZoneHeight,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+        child: child,
+      );
+    }
+    return GlassPill(
+      height: kAppTopBarHeight,
+      bordered: false,
+      borderRadius: switch (side) {
+        _ZoneSide.left => const BorderRadius.only(topLeft: r, bottomRight: r),
+        _ZoneSide.right => const BorderRadius.only(topRight: r, bottomLeft: r),
+        _ZoneSide.center =>
+          const BorderRadius.only(bottomLeft: r, bottomRight: r),
+      },
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      child: child,
+    );
+  }
+}
+
+/// Round 40px button for the zone, same footprint as the magnifier.
+class _ZoneIconButton extends StatelessWidget {
+  const _ZoneIconButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 24,
+        containedInkWell: false,
+        highlightShape: BoxShape.circle,
+        child: Center(
+          child: Icon(icon, size: kTopBarIconSize, color: AppColors.textTertiary),
+        ),
+      ),
+    );
+  }
+}
+
+/// The folded search: one icon, dimmed on tabs that have nothing to search.
+class _MagnifierButton extends StatelessWidget {
+  const _MagnifierButton({required this.enabled, required this.onTap});
+
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: InkResponse(
+        onTap: enabled ? onTap : null,
+        radius: 24,
+        containedInkWell: false,
+        highlightShape: BoxShape.circle,
+        child: Center(
+          child: Icon(
+            Icons.search,
+            size: kTopBarIconSize,
+            color: enabled
+                ? AppColors.textTertiary
+                : AppColors.textTertiary.withAlpha(120),
+          ),
+        ),
       ),
     );
   }

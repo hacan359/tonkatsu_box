@@ -5,6 +5,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/focusable_surface.dart';
 
 /// Comparison used by a table filter rule.
 enum TableFilterCondition {
@@ -339,13 +340,9 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
     required List<DropdownMenuItem<T>> items,
     required ValueChanged<T?> onChanged,
   }) {
-    return Container(
+    return FocusableSurface(
+      color: AppColors.surfaceLight,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
       child: DropdownButton<T>(
         value: value,
         items: items,

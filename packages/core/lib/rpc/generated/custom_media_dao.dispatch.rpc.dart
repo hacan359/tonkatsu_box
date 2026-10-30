@@ -27,6 +27,11 @@ Future<Object?> dispatchCustomMediaDao(
           coverUrl: asObject(args['item'])['coverUrl'] as String?,
           year: decodeIntOrNull(asObject(args['item'])['year']),
           genres: asObject(args['item'])['genres'] as String?,
+          authors: asObject(args['item'])['authors'] == null
+              ? null
+              : asList(
+                  asObject(args['item'])['authors'],
+                ).map((Object? e) => e as String).toList(),
           platformName: asObject(args['item'])['platformName'] as String?,
           platformId: decodeIntOrNull(asObject(args['item'])['platformId']),
           format: asObject(args['item'])['format'] as String?,
@@ -56,6 +61,11 @@ Future<Object?> dispatchCustomMediaDao(
                 coverUrl: asObject(e)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(e)['year']),
                 genres: asObject(e)['genres'] as String?,
+                authors: asObject(e)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(e)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(e)['platformId']),
                 format: asObject(e)['format'] as String?,
@@ -73,6 +83,31 @@ Future<Object?> dispatchCustomMediaDao(
       await dao.delete(decodeInt(args['id']));
       return null;
 
+    case 'getAll':
+      final List<CustomMedia> value = await dao.getAll();
+      return value
+          .map(
+            (CustomMedia e) => <String, Object?>{
+              'id': encodeInt(e.id),
+              'title': e.title,
+              'displayType': e.displayType?.name,
+              'altTitle': e.altTitle,
+              'description': e.description,
+              'coverUrl': e.coverUrl,
+              'year': encodeIntOrNull(e.year),
+              'genres': e.genres,
+              'authors': e.authors?.map((String e) => e).toList(),
+              'platformName': e.platformName,
+              'platformId': encodeIntOrNull(e.platformId),
+              'format': e.format,
+              'unitTotal': encodeIntOrNull(e.unitTotal),
+              'unitGroupTotal': encodeIntOrNull(e.unitGroupTotal),
+              'externalUrl': e.externalUrl,
+              'cachedAt': encodeIntOrNull(e.cachedAt),
+            },
+          )
+          .toList();
+
     case 'getById':
       final CustomMedia? value = await dao.getById(decodeInt(args['id']));
       return encodeNullable<CustomMedia>(
@@ -86,6 +121,7 @@ Future<Object?> dispatchCustomMediaDao(
           'coverUrl': v.coverUrl,
           'year': encodeIntOrNull(v.year),
           'genres': v.genres,
+          'authors': v.authors?.map((String e) => e).toList(),
           'platformName': v.platformName,
           'platformId': encodeIntOrNull(v.platformId),
           'format': v.format,
@@ -111,6 +147,7 @@ Future<Object?> dispatchCustomMediaDao(
               'coverUrl': e.coverUrl,
               'year': encodeIntOrNull(e.year),
               'genres': e.genres,
+              'authors': e.authors?.map((String e) => e).toList(),
               'platformName': e.platformName,
               'platformId': encodeIntOrNull(e.platformId),
               'format': e.format,
@@ -138,6 +175,11 @@ Future<Object?> dispatchCustomMediaDao(
                 coverUrl: asObject(e)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(e)['year']),
                 genres: asObject(e)['genres'] as String?,
+                authors: asObject(e)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(e)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(e)['platformId']),
                 format: asObject(e)['format'] as String?,
@@ -165,6 +207,11 @@ Future<Object?> dispatchCustomMediaDao(
           coverUrl: asObject(args['item'])['coverUrl'] as String?,
           year: decodeIntOrNull(asObject(args['item'])['year']),
           genres: asObject(args['item'])['genres'] as String?,
+          authors: asObject(args['item'])['authors'] == null
+              ? null
+              : asList(
+                  asObject(args['item'])['authors'],
+                ).map((Object? e) => e as String).toList(),
           platformName: asObject(args['item'])['platformName'] as String?,
           platformId: decodeIntOrNull(asObject(args['item'])['platformId']),
           format: asObject(args['item'])['format'] as String?,
@@ -192,6 +239,11 @@ Future<Object?> dispatchCustomMediaDao(
           coverUrl: asObject(args['item'])['coverUrl'] as String?,
           year: decodeIntOrNull(asObject(args['item'])['year']),
           genres: asObject(args['item'])['genres'] as String?,
+          authors: asObject(args['item'])['authors'] == null
+              ? null
+              : asList(
+                  asObject(args['item'])['authors'],
+                ).map((Object? e) => e as String).toList(),
           platformName: asObject(args['item'])['platformName'] as String?,
           platformId: decodeIntOrNull(asObject(args['item'])['platformId']),
           format: asObject(args['item'])['format'] as String?,

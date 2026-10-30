@@ -46,6 +46,7 @@ MarkedUnit _unit({
   bool fav = true,
   String? note,
   String? title,
+  double? rating,
 }) {
   return MarkedUnit(
     mark: ItemMark(
@@ -58,6 +59,7 @@ MarkedUnit _unit({
       userComment: note,
       likedAt: fav ? DateTime.fromMillisecondsSinceEpoch(1000) : null,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(1000),
+      userRating: rating,
     ),
     unitTitle: title,
   );
@@ -120,6 +122,31 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(MarkedGroupTile), findsNothing);
+    });
+
+    testWidgets('shows the rating of a rated unit', (
+      WidgetTester tester,
+    ) async {
+      final List<MarkedUnitGroup> rated = <MarkedUnitGroup>[
+        MarkedUnitGroup(
+          item: createTestCollectionItem(
+            id: 1,
+            collectionId: 1,
+            mediaType: MediaType.tvShow,
+            tvShow: createTestTvShow(title: 'Thrones'),
+          ),
+          units: <MarkedUnit>[
+            _unit(itemId: 1, unitType: kUnitSeason, parent: 2, unit: 0,
+                rating: 8.5),
+            _unit(itemId: 1, parent: 2, unit: 6, fav: false, note: 'sad one'),
+          ],
+        ),
+      ];
+      await tester.pumpApp(const LikesScreen(), overrides: overrides(rated));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('8.5'), findsOneWidget);
     });
 
     testWidgets('renders one tile per title with every unit', (

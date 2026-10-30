@@ -108,11 +108,11 @@ void main() {
             },
             'synopsis': 'For a thousand years...',
             'posterImage': <String, dynamic>{
-              'original': 'https://media.kitsu.io/original.jpg',
-              'medium': 'https://media.kitsu.io/medium.jpg',
+              'original': 'https://media.kitsu.app/original.jpg',
+              'medium': 'https://media.kitsu.app/medium.jpg',
             },
             'coverImage': <String, dynamic>{
-              'original': 'https://media.kitsu.io/banner.jpg',
+              'original': 'https://media.kitsu.app/banner.jpg',
             },
             'startDate': '2005-04-13',
             'averageRating': '82.55',
@@ -130,22 +130,22 @@ void main() {
       expect(m.source, DataSource.kitsu);
       expect(m.title, 'Vinland Saga');
       expect(m.titleNative, 'ヴィンランド・サガ');
-      expect(m.coverUrl, 'https://media.kitsu.io/original.jpg');
-      expect(m.coverUrlMedium, 'https://media.kitsu.io/medium.jpg');
-      expect(m.bannerUrl, 'https://media.kitsu.io/banner.jpg');
+      expect(m.coverUrl, 'https://media.kitsu.app/original.jpg');
+      expect(m.coverUrlMedium, 'https://media.kitsu.app/medium.jpg');
+      expect(m.bannerUrl, 'https://media.kitsu.app/banner.jpg');
       expect(m.startYear, 2005);
       expect(m.averageScore, 83); // 82.55 rounded
       expect(m.chapters, 199);
       expect(m.volumes, 27);
       expect(m.status, 'RELEASING');
       expect(m.format, 'MANGA');
-      expect(m.externalUrl, 'https://kitsu.io/manga/vinland-saga');
+      expect(m.externalUrl, 'https://kitsu.app/manga/vinland-saga');
     });
 
     test('falls back to id in the URL when slug is absent', () {
       final Map<String, dynamic> json = kitsuJson();
       (json['attributes'] as Map<String, dynamic>).remove('slug');
-      expect(Manga.fromKitsu(json).externalUrl, 'https://kitsu.io/manga/7442');
+      expect(Manga.fromKitsu(json).externalUrl, 'https://kitsu.app/manga/7442');
     });
   });
 }

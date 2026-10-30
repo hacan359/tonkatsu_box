@@ -146,7 +146,7 @@ void main() {
             data: <String, dynamic>{
               'data': rows,
               'links': <String, dynamic>{
-                if (hasNext) 'next': 'https://kitsu.io/api/edge/next',
+                if (hasNext) 'next': 'https://kitsu.app/api/edge/next',
               },
             },
             statusCode: 200,

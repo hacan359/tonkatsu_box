@@ -48,7 +48,6 @@ class RaAchievementsSection extends ConsumerStatefulWidget {
 
 class _RaAchievementsSectionState
     extends ConsumerState<RaAchievementsSection> {
-  bool _expanded = false;
   bool _isRefreshing = false;
   _AchievementFilter _filter = _AchievementFilter.all;
 
@@ -118,12 +117,6 @@ class _RaAchievementsSectionState
           _buildFilterChips(state.achievements!),
         ],
 
-        // Expand/collapse toggle + divider
-        if (state.achievements != null &&
-            !state.isLoadingAchievements &&
-            state.achievements!.length > 6)
-          _buildViewAllButton(state.achievements!.length),
-
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Divider(
@@ -132,7 +125,6 @@ class _RaAchievementsSectionState
           ),
         ),
 
-        // Achievements list
         if (state.isLoadingAchievements)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
@@ -144,14 +136,20 @@ class _RaAchievementsSectionState
               ),
             ),
           )
-        else if (state.achievements != null) ...<Widget>[
-          ..._filterAchievements(state.achievements!)
-              .take(_expanded ? state.achievements!.length : 6)
-              .map(_buildAchievementRow),
-
-          if (_expanded && state.achievements!.length > 6)
-            _buildViewAllButton(state.achievements!.length),
-        ],
+        else if (state.achievements != null)
+          Wrap(
+            spacing: _AchievementTile.gap,
+            runSpacing: _AchievementTile.gap,
+            children: <Widget>[
+              for (final TrackerAchievement a
+                  in _filterAchievements(state.achievements!))
+                _AchievementTile(
+                  key: ValueKey<String>(a.achievementId),
+                  achievement: a,
+                  tooltip: _buildTooltip(a),
+                ),
+            ],
+          ),
       ],
     );
   }
@@ -610,104 +608,42 @@ class _RaAchievementsSectionState
     );
   }
 
-  /// Achievement row — like RA: icon + title(pts) + type badge / description / date.
-  Widget _buildAchievementRow(TrackerAchievement achievement) {
-    final bool earned = achievement.earned;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Badge icon
-          _AchievementIcon(
-            badgeUrl: earned
-                ? achievement.badgeUrl
-                : achievement.lockedBadgeUrl,
-            earned: earned,
-          ),
-          const SizedBox(width: 8),
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // Title + (points) + type badge
-                Row(
-                  children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        achievement.title,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: earned
-                              ? const Color(0xFFCCB044)
-                              : AppColors.textSecondary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (achievement.points != null)
-                      Text(
-                        '  (${achievement.points})',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: earned
-                              ? AppColors.textTertiary
-                              : AppColors.textTertiary.withAlpha(120),
-                        ),
-                      ),
-                    if (achievement.type != null)
-                      _buildTypeBadge(achievement),
-                  ],
-                ),
-                // Description
-                if (achievement.description != null)
-                  Text(
-                    achievement.description!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textTertiary.withAlpha(earned ? 200 : 140),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                // Date for earned
-                if (earned && achievement.earnedDateTime != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 1),
-                    child: Text(
-                      'Unlocked ${_formatDate(achievement.earnedDateTime!)}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textTertiary.withAlpha(120),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  /// Hover card for a tile — the title, points, type, description and unlock
+  /// date the old list rows showed inline.
+  InlineSpan _buildTooltip(TrackerAchievement achievement) {
+    final S l = S.of(context);
+    final TextStyle base = AppTypography.caption.copyWith(
+      color: AppColors.textSecondary,
     );
-  }
-
-  Widget _buildViewAllButton(int total) {
-    return GestureDetector(
-      onTap: () => setState(() => _expanded = !_expanded),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        alignment: Alignment.center,
-        child: Text(
-          _expanded
-              ? S.of(context).showLess
-              : S.of(context).raViewAll(total),
-          style: const TextStyle(
-            fontSize: 12, fontWeight: FontWeight.w500, color: _raBlue),
+    final ({Color color, String label})? type =
+        _typeBadge(achievement);
+    final String? description = achievement.description;
+    final DateTime? earnedAt = achievement.earnedDateTime;
+    return TextSpan(
+      style: base,
+      children: <InlineSpan>[
+        TextSpan(
+          text: achievement.title,
+          style: base.copyWith(
+            fontWeight: FontWeight.w600,
+            color: achievement.earned ? _raGold : AppColors.textPrimary,
+          ),
         ),
-      ),
+        if (achievement.points != null)
+          TextSpan(text: '  ${achievement.points} ${l.raStatsPoints}'),
+        if (type != null)
+          TextSpan(
+            text: '\n${type.label}',
+            style: base.copyWith(color: type.color),
+          ),
+        if (description != null && description.isNotEmpty)
+          TextSpan(text: '\n$description'),
+        if (earnedAt != null)
+          TextSpan(
+            text: '\n${l.raStatsUnlocked} ${_formatDate(earnedAt)}',
+            style: base.copyWith(color: AppColors.textTertiary),
+          ),
+      ],
     );
   }
 
@@ -762,38 +698,29 @@ class _RaAchievementsSectionState
         .unlinkRaGame();
   }
 
-  Widget _buildTypeBadge(TrackerAchievement achievement) {
+  ({Color color, String label})? _typeBadge(
+    TrackerAchievement achievement,
+  ) {
     final S l = S.of(context);
-    final ({IconData icon, Color color, String tooltip}) badge;
     if (achievement.isMissable) {
-      badge = (
-        icon: Icons.error_outline,
+      return (
         color: AppColors.warning,
-        tooltip: l.raFilterMissable,
+        label: l.raFilterMissable,
       );
-    } else if (achievement.isProgression) {
-      badge = (
-        icon: Icons.check_circle_outline,
-        color: _raBlue,
-        tooltip: l.raFilterProgression,
-      );
-    } else if (achievement.isWinCondition) {
-      badge = (
-        icon: Icons.stars_outlined,
-        color: _raGold,
-        tooltip: l.raFilterWinCondition,
-      );
-    } else {
-      return const SizedBox.shrink();
     }
-
-    return Tooltip(
-      message: badge.tooltip,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Icon(badge.icon, size: 14, color: badge.color),
-      ),
-    );
+    if (achievement.isProgression) {
+      return (
+        color: _raBlue,
+        label: l.raFilterProgression,
+      );
+    }
+    if (achievement.isWinCondition) {
+      return (
+        color: _raGold,
+        label: l.raFilterWinCondition,
+      );
+    }
+    return null;
   }
 
   String _formatDate(DateTime date) {
@@ -813,45 +740,68 @@ class _RaAchievementsSectionState
   }
 }
 
-class _AchievementIcon extends StatelessWidget {
-  const _AchievementIcon({
-    required this.badgeUrl,
-    required this.earned,
+/// RA-site badge tile: earned in colour with a blue frame, locked as the
+/// grey badge RA serves for it. Details live in the tooltip.
+class _AchievementTile extends StatelessWidget {
+  const _AchievementTile({
+    required this.achievement,
+    required this.tooltip,
+    super.key,
   });
 
-  final String? badgeUrl;
-  final bool earned;
+  final TrackerAchievement achievement;
+  final InlineSpan tooltip;
 
-  static const double _size = 40;
+  static const double size = 56;
+  static const double gap = 6;
+  static const double _frame = 2;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-      child: SizedBox(
-        width: _size,
-        height: _size,
-        child: badgeUrl != null
-            ? CachedNetworkImage(
-                imageUrl: badgeUrl!,
-                width: _size,
-                height: _size,
-                fit: BoxFit.cover,
-                errorWidget:
-                    (BuildContext context, String url, Object error) =>
-                        _fallback(),
-              )
-            : _fallback(),
+    final bool earned = achievement.earned;
+    final String? url =
+        earned ? achievement.badgeUrl : achievement.lockedBadgeUrl;
+    return Tooltip(
+      richMessage: tooltip,
+      triggerMode: TooltipTriggerMode.tap,
+      preferBelow: false,
+      constraints: const BoxConstraints(maxWidth: 280),
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: AppColors.surfaceBorder),
+      ),
+      child: Container(
+        width: size,
+        height: size,
+        padding: const EdgeInsets.all(_frame),
+        decoration: BoxDecoration(
+          color: earned ? _raBlue : AppColors.surfaceBorder,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
+          child: url != null
+              ? CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.cover,
+                  errorWidget:
+                      (BuildContext context, String url, Object error) =>
+                          _fallback(earned),
+                )
+              : _fallback(earned),
+        ),
       ),
     );
   }
 
-  Widget _fallback() {
+  Widget _fallback(bool earned) {
     return Container(
       color: earned ? AppColors.success.withAlpha(20) : AppColors.surface,
       child: Icon(
         earned ? Icons.emoji_events : Icons.lock_outline,
-        size: 18,
+        size: 20,
         color: earned ? AppColors.success : AppColors.textTertiary,
       ),
     );
