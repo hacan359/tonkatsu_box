@@ -34,19 +34,19 @@ class _Metrics {
   final double titleSize;
 
   static const _Metrics wide = _Metrics(
-    asideWidth: 260,
+    asideWidth: 230,
     gap: 36,
     padding: EdgeInsets.fromLTRB(40, 32, 40, 48),
     titleSize: 34,
   );
   static const _Metrics medium = _Metrics(
-    asideWidth: 220,
+    asideWidth: 200,
     gap: 28,
     padding: EdgeInsets.fromLTRB(28, 28, 28, 40),
     titleSize: 28,
   );
   static const _Metrics narrow = _Metrics(
-    asideWidth: 170,
+    asideWidth: 160,
     gap: 20,
     padding: EdgeInsets.all(20),
     titleSize: 24,
