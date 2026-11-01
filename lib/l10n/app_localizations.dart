@@ -10790,6 +10790,54 @@ abstract class S {
   /// **'Mark all listened'**
   String get markAllListened;
 
+  /// No description provided for @settingsProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get settingsProxy;
+
+  /// No description provided for @settingsProxySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Route app traffic through a local proxy to reach blocked sources'**
+  String get settingsProxySubtitle;
+
+  /// No description provided for @settingsProxyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point this at the local port your VPN app exposes (Clash\'s mixed port is usually 7890 for HTTP, 7891 for SOCKS5). Off means a direct connection, same as before.'**
+  String get settingsProxyHint;
+
+  /// No description provided for @settingsProxyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable proxy'**
+  String get settingsProxyEnabled;
+
+  /// No description provided for @settingsProxyType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get settingsProxyType;
+
+  /// No description provided for @settingsProxyHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get settingsProxyHost;
+
+  /// No description provided for @settingsProxyPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get settingsProxyPort;
+
+  /// No description provided for @settingsProxyDesktopMobileOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This setting is only available on desktop and mobile.'**
+  String get settingsProxyDesktopMobileOnly;
+
   /// No description provided for @importStageReading.
   ///
   /// In en, this message translates to:

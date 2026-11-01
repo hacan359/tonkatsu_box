@@ -6104,6 +6104,33 @@ class SEn extends S {
   String get markAllListened => 'Mark all listened';
 
   @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Route app traffic through a local proxy to reach blocked sources';
+
+  @override
+  String get settingsProxyHint =>
+      'Point this at the local port your VPN app exposes (Clash\'s mixed port is usually 7890 for HTTP, 7891 for SOCKS5). Off means a direct connection, same as before.';
+
+  @override
+  String get settingsProxyEnabled => 'Enable proxy';
+
+  @override
+  String get settingsProxyType => 'Type';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Port';
+
+  @override
+  String get settingsProxyDesktopMobileOnly =>
+      'This setting is only available on desktop and mobile.';
+
+  @override
   String get importStageReading => 'Reading file...';
 
   @override

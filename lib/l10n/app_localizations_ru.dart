@@ -6205,6 +6205,33 @@ class SRu extends S {
   String get markAllListened => 'Отметить всё прослушанным';
 
   @override
+  String get settingsProxy => 'Прокси';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Направляет трафик приложения через локальный прокси для доступа к заблокированным источникам';
+
+  @override
+  String get settingsProxyHint =>
+      'Укажите локальный порт, который открывает ваш VPN (смешанный порт Clash обычно 7890 для HTTP, 7891 для SOCKS5). Выкл. = прямое соединение, как раньше.';
+
+  @override
+  String get settingsProxyEnabled => 'Включить прокси';
+
+  @override
+  String get settingsProxyType => 'Тип';
+
+  @override
+  String get settingsProxyHost => 'Хост';
+
+  @override
+  String get settingsProxyPort => 'Порт';
+
+  @override
+  String get settingsProxyDesktopMobileOnly =>
+      'Эта настройка доступна только на компьютере и мобильном устройстве.';
+
+  @override
   String get importStageReading => 'Чтение файла...';
 
   @override

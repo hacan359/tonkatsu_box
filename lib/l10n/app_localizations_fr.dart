@@ -6198,6 +6198,33 @@ class SFr extends S {
   String get markAllListened => 'Tout marquer comme écouté';
 
   @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Route le trafic de l\'application via un proxy local pour atteindre les sources bloquées';
+
+  @override
+  String get settingsProxyHint =>
+      'Indiquez le port local exposé par votre VPN (le port mixte de Clash est généralement 7890 en HTTP, 7891 en SOCKS5). Désactivé = connexion directe, comme avant.';
+
+  @override
+  String get settingsProxyEnabled => 'Activer le proxy';
+
+  @override
+  String get settingsProxyType => 'Type';
+
+  @override
+  String get settingsProxyHost => 'Hôte';
+
+  @override
+  String get settingsProxyPort => 'Port';
+
+  @override
+  String get settingsProxyDesktopMobileOnly =>
+      'Ce réglage n\'est disponible que sur ordinateur et mobile.';
+
+  @override
   String get importStageReading => 'Lecture du fichier...';
 
   @override
