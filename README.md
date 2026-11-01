@@ -18,7 +18,6 @@
 
 <p align="center">
   <a href="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml"><img src="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
-  <a href="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml"><img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/hacan359/7ed48e87a6bd59afeb08eaf656fd2adb/raw/tonkatsu-box-coverage.json" alt="Coverage"></a>
   <a href="https://github.com/hacan359/tonkatsu_box/releases"><img src="https://img.shields.io/github/downloads/hacan359/tonkatsu_box/total?label=Downloads" alt="Downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.38+"></a>
