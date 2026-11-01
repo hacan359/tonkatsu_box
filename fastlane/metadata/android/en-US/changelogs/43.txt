@@ -1,0 +1,7 @@
+v0.46.0
+
+* Cards show directors, creators, studios, developers and publishers.
+* "Stopped at" line: the page, chapter, episode or track you are on.
+* Rate each season of a series. Refresh many cards from their sources at once.
+* Interface scale, two new themes: PS1 Retro and Eva Azure.
+* Collections remember their import sources and rerun them.

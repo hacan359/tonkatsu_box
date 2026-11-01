@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-11-01
+
 ### Added
 
 - **"Stopped at" line on the card**
