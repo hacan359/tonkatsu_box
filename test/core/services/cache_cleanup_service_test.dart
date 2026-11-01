@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/profile.dart';
 import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -19,6 +20,7 @@ void main() {
   late ImageCacheService cache;
   late MockCollectionRepository repo;
   late MockCustomMediaDao customMedia;
+  late MockProfileService profiles;
   late CacheCleanupService cleanup;
 
   setUp(() async {
@@ -29,7 +31,10 @@ void main() {
     repo = MockCollectionRepository();
     customMedia = MockCustomMediaDao();
     when(() => customMedia.getAll()).thenAnswer((_) async => <CustomMedia>[]);
-    cleanup = CacheCleanupService(repo, cache, customMedia);
+    profiles = MockProfileService();
+    when(() => profiles.loadProfiles())
+        .thenAnswer((_) async => createTestProfilesData());
+    cleanup = CacheCleanupService(repo, cache, customMedia, profiles);
   });
 
   tearDown(() async {
@@ -215,6 +220,47 @@ void main() {
       await cleanup.removeOrphans();
 
       expect(cover.existsSync(), isTrue);
+    });
+
+    test(
+        'should leave uploads alone when the custom folder serves several '
+        'profiles', () async {
+      // setUp pointed the cache at a custom folder, so it is shared.
+      when(() => profiles.loadProfiles()).thenAnswer(
+        (_) async => createTestProfilesData(
+          profiles: <Profile>[
+            createTestProfile(id: 'a'),
+            createTestProfile(id: 'b'),
+          ],
+        ),
+      );
+      stubItems(<CollectionItem>[]);
+      final File otherProfileCard =
+          await writeCacheFile(ImageType.customCover, '99');
+      final File otherProfileOverride =
+          await writeCacheFile(ImageType.coverOverride, 'abc123');
+      final File gameCover = await writeCacheFile(ImageType.gameCover, '5');
+
+      final CacheCleanupResult result = await cleanup.removeOrphans();
+
+      expect(otherProfileCard.existsSync(), isTrue);
+      expect(otherProfileOverride.existsSync(), isTrue);
+      expect(gameCover.existsSync(), isFalse);
+      expect(result.deletedCount, 1);
+    });
+
+    test('should sweep uploads of a single profile in a custom folder',
+        () async {
+      stubItems(<CollectionItem>[]);
+      final File card = await writeCacheFile(ImageType.customCover, '99');
+      final File override =
+          await writeCacheFile(ImageType.coverOverride, 'abc123');
+
+      await cleanup.removeOrphans();
+
+      expect(card.existsSync(), isFalse);
+      expect(override.existsSync(), isFalse);
+      verify(() => profiles.loadProfiles()).called(1);
     });
   });
 }

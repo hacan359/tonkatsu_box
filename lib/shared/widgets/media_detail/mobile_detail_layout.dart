@@ -23,9 +23,9 @@ class MobileDetailLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     // The backing's own padding is the only outer inset, so narrow screens
     // don't lose width to a doubled-up margin.
-    // Under a floating app bar the body starts at the top edge, and the
-    // query carries the bar's height — the title sits just below it.
     return ListView(
+      // Under a floating app bar the body starts at the top edge; the query
+      // carries the bar's height, so the title sits just below it.
       padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
       children: <Widget>[
         // Descendant ListTile/ExpansionTile need a Material ancestor for ink —

@@ -519,9 +519,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Cache cleanup removes covers of deleted custom cards**
 
+  With a custom cache folder and more than one profile, uploaded pictures
+  (custom-card covers and cover overrides) are left alone: the folder is
+  shared, and the other profiles' uploads cannot be told from orphans.
+
   * lib/core/services/cache_cleanup_service.dart
-    (CacheCleanupService.removeOrphans): Sweep the custom cover folder,
-    keeping covers of every existing card.
+    (CacheCleanupService.removeOrphans,
+    CacheCleanupService._isSharedBetweenProfiles): Sweep the custom cover
+    folder, keeping covers of every existing card; skip the user-supplied
+    folders when the cache is shared between profiles.
+  * lib/core/services/image_cache_service.dart
+    (ImageCacheService.isCachePathShared): New.
   * packages/core/lib/database/dao/custom_media_dao.dart
     (CustomMediaDao.getAll): New.
   * packages/core/lib/rpc/generated/custom_media_dao.dispatch.rpc.dart,

@@ -342,6 +342,26 @@ void main() {
     });
   });
 
+  group('ImageCacheService.isCachePathShared', () {
+    test('should be false on the default per-profile path', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+
+      expect(await ImageCacheService().isCachePathShared(), isFalse);
+    });
+
+    test('should be true once a custom folder is set and false after reset',
+        () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final ImageCacheService service = ImageCacheService();
+
+      await service.setCachePath('/somewhere/shared');
+      expect(await service.isCachePathShared(), isTrue);
+
+      await service.resetCachePath();
+      expect(await service.isCachePathShared(), isFalse);
+    });
+  });
+
   group('ImageCacheService.fetchImageBytes', () {
     late MockDio dio;
     late ImageCacheService service;

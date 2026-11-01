@@ -102,6 +102,14 @@ class ImageCacheService {
     await prefs.remove(_CacheKeys.customCachePath);
   }
 
+  /// A custom folder is one global setting, so every profile shares it;
+  /// the default lives inside the profile folder.
+  Future<bool> isCachePathShared() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? customPath = prefs.getString(_CacheKeys.customCachePath);
+    return customPath != null && customPath.isNotEmpty;
+  }
+
   Future<bool> isCacheEnabled() async {
     // No filesystem on web — images always come from the network (phase 5
     // will route them through the server proxy/cache).
