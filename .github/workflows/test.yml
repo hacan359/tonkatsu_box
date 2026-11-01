@@ -39,12 +39,9 @@ jobs:
       - name: Analyze code
         run: flutter analyze --fatal-infos --fatal-warnings
 
-  test:
-    name: Test
+  test-packages:
+    name: Test core and server
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -55,92 +52,36 @@ jobs:
 
       - name: Install dependencies
         run: |
-          flutter pub get
           dart pub get --directory packages/core
           dart pub get --directory server
 
-      # Model tests live in the package now, so its lines only reach the report
-      # through this run. --base-directory makes the paths repo-relative so they
-      # merge with the app report below.
-      - name: Run core package tests with coverage
+      - name: Run core package tests
         working-directory: packages/core
-        run: |
-          dart test --coverage=coverage
-          dart pub global activate coverage
-          dart pub global run coverage:format_coverage \
-            --lcov --in=coverage --out=coverage/lcov.info \
-            --report-on=lib --base-directory=../.. \
-            --packages=.dart_tool/package_config.json
+        run: dart test
 
-      # --coverage-package defaults to the current package only, which silently
-      # dropped every packages/core line from the report after the extraction.
-      # App tests still exercise core (DAOs, migrations), so both reports carry
-      # core lines and have to be unioned, not concatenated.
-      - name: Run tests with coverage
-        run: flutter test --coverage --coverage-package='tonkatsu_box|core'
-
-      # The selfhost server ships separately from the app bundle, so its lines
-      # stay out of the app coverage report.
       - name: Run server tests
         working-directory: server
         run: dart test
 
-      - name: Merge core coverage into the app report
-        run: |
-          python3 tool/merge_lcov.py coverage/merged.info \
-            coverage/lcov.info packages/core/coverage/lcov.info
-          mv coverage/merged.info coverage/lcov.info
+  test-app:
+    name: Test app (shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
 
-      # Drop generated / non-product code so the percentage reflects real,
-      # testable code (l10n is pure generated strings, debug screens are tools,
-      # core/lib/testing holds the shared test builders).
-      - name: Strip generated code from coverage
-        run: |
-          sudo apt-get update && sudo apt-get install -y lcov
-          lcov --remove coverage/lcov.info \
-            'lib/l10n/*' '*.g.dart' '*.freezed.dart' '*_debug_screen.dart' \
-            'packages/core/lib/testing/*' \
-            -o coverage/lcov.info --ignore-errors unused
-
-      - name: Compute coverage summary
-        id: cov
-        run: |
-          LF=$(awk -F: '/^LF:/ {s+=$2} END {print s+0}' coverage/lcov.info)
-          LH=$(awk -F: '/^LH:/ {s+=$2} END {print s+0}' coverage/lcov.info)
-          PCT=$(awk "BEGIN { if ($LF>0) printf \"%.1f\", ($LH/$LF)*100; else print \"0.0\" }")
-          echo "Coverage: ${PCT}% of lines (${LH}/${LF})"
-          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
-          {
-            echo "## Coverage"
-            echo ""
-            echo "**${PCT}%** of lines covered (${LH}/${LF})."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
-        uses: romeovs/lcov-reporter-action@v0.4.0
+      - uses: subosito/flutter-action@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: coverage/lcov.info
+          channel: stable
+          cache: true
 
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-lcov
-          path: coverage/lcov.info
+      - name: Install dependencies
+        run: flutter pub get
 
-      # Writes the coverage % to a public Gist; shields.io renders the README
-      # badge from it. Requires repo secret GIST_TOKEN (PAT with `gist` scope)
-      # and the real Gist id below.
-      - name: Update coverage badge
-        if: github.event_name == 'push'
-        uses: schneegans/dynamic-badges-action@v1.7.0
-        with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gistID: 7ed48e87a6bd59afeb08eaf656fd2adb
-          filename: tonkatsu-box-coverage.json
-          label: coverage
-          message: ${{ steps.cov.outputs.pct }}%
-          valColorRange: ${{ steps.cov.outputs.pct }}
-          minColorRange: 50
-          maxColorRange: 90
+      # The app suite is the long pole, so it is spread over several runners;
+      # --shard-index is zero-based and the file split is deterministic.
+      - name: Run app tests
+        run: flutter test --total-shards 4 --shard-index ${{ matrix.shard }}
