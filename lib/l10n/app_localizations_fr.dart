@@ -6221,6 +6221,10 @@ class SFr extends S {
   String get settingsProxyPort => 'Port';
 
   @override
+  String get settingsProxyDesktopMobileOnly =>
+      'Ce réglage n\'est disponible que sur ordinateur et mobile.';
+
+  @override
   String get importStageReading => 'Lecture du fichier...';
 
   @override

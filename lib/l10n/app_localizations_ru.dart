@@ -6228,6 +6228,10 @@ class SRu extends S {
   String get settingsProxyPort => 'Порт';
 
   @override
+  String get settingsProxyDesktopMobileOnly =>
+      'Эта настройка доступна только на компьютере и мобильном устройстве.';
+
+  @override
   String get importStageReading => 'Чтение файла...';
 
   @override

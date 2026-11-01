@@ -10832,6 +10832,12 @@ abstract class S {
   /// **'Port'**
   String get settingsProxyPort;
 
+  /// No description provided for @settingsProxyDesktopMobileOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This setting is only available on desktop and mobile.'**
+  String get settingsProxyDesktopMobileOnly;
+
   /// No description provided for @importStageReading.
   ///
   /// In en, this message translates to:

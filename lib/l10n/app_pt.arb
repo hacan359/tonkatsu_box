@@ -3049,6 +3049,7 @@
   "settingsProxyType": "Tipo",
   "settingsProxyHost": "Host",
   "settingsProxyPort": "Porta",
+  "settingsProxyDesktopMobileOnly": "Esta opção só está disponível no desktop e no celular.",
   "importStageReading": "Lendo arquivo...",
   "importStageFetchingGames": "Buscando dados de jogos...",
   "importStageFetchingMovies": "Buscando dados de filmes...",

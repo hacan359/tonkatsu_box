@@ -6183,6 +6183,10 @@ class SPt extends S {
   String get settingsProxyPort => 'Porta';
 
   @override
+  String get settingsProxyDesktopMobileOnly =>
+      'Esta opção só está disponível no desktop e no celular.';
+
+  @override
   String get importStageReading => 'Lendo arquivo...';
 
   @override

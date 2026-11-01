@@ -5826,6 +5826,9 @@ class SZh extends S {
   String get settingsProxyPort => '端口';
 
   @override
+  String get settingsProxyDesktopMobileOnly => '此设置仅在桌面端与移动端可用。';
+
+  @override
   String get importStageReading => '正在读取文件...';
 
   @override

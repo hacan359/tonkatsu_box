@@ -6127,6 +6127,10 @@ class SEn extends S {
   String get settingsProxyPort => 'Port';
 
   @override
+  String get settingsProxyDesktopMobileOnly =>
+      'This setting is only available on desktop and mobile.';
+
+  @override
   String get importStageReading => 'Reading file...';
 
   @override

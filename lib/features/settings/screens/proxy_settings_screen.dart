@@ -62,7 +62,7 @@ class _ProxySettingsScreenState extends ConsumerState<ProxySettingsScreen> {
           ),
           if (kIsWebBuild)
             Text(
-              '此设置仅在桌面端与移动端可用。',
+              l.settingsProxyDesktopMobileOnly,
               style: AppTypography.body
                   .copyWith(color: AppColors.textSecondary),
             )

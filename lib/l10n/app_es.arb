@@ -2621,6 +2621,7 @@
   "settingsProxyType": "Tipo",
   "settingsProxyHost": "Host",
   "settingsProxyPort": "Puerto",
+  "settingsProxyDesktopMobileOnly": "Esta opción solo está disponible en escritorio y móvil.",
   "importStageReading": "Leyendo archivo...",
   "importStageFetchingGames": "Obteniendo datos de juegos...",
   "importStageFetchingMovies": "Obteniendo datos de películas...",

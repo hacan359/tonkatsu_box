@@ -2712,6 +2712,7 @@
   "settingsProxyType": "Type",
   "settingsProxyHost": "Host",
   "settingsProxyPort": "Port",
+  "settingsProxyDesktopMobileOnly": "This setting is only available on desktop and mobile.",
   "importStageReading": "Reading file...",
   "importStageFetchingGames": "Fetching game data...",
   "importStageFetchingMovies": "Fetching movie data...",

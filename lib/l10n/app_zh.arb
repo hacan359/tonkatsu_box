@@ -2616,6 +2616,7 @@
   "settingsProxyType": "类型",
   "settingsProxyHost": "主机",
   "settingsProxyPort": "端口",
+  "settingsProxyDesktopMobileOnly": "此设置仅在桌面端与移动端可用。",
   "importStageReading": "正在读取文件...",
   "importStageFetchingGames": "正在获取游戏数据...",
   "importStageFetchingMovies": "正在获取电影数据...",

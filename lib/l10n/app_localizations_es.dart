@@ -6203,6 +6203,10 @@ class SEs extends S {
   String get settingsProxyPort => 'Puerto';
 
   @override
+  String get settingsProxyDesktopMobileOnly =>
+      'Esta opción solo está disponible en escritorio y móvil.';
+
+  @override
   String get importStageReading => 'Leyendo archivo...';
 
   @override
