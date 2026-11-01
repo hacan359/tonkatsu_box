@@ -36,6 +36,9 @@ Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
   required VoidCallback onSearch,
   required VoidCallback onRefresh,
   required VoidCallback onShowHelp,
+  required VoidCallback onZoomIn,
+  required VoidCallback onZoomOut,
+  required VoidCallback onZoomReset,
 }) {
   if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
 
@@ -80,6 +83,23 @@ Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
 
     const SingleActivator(LogicalKeyboardKey.f1):
         onShowHelp,
+
+    // Browser-style zoom; `equal` is the unshifted key under `+` on most
+    // layouts, the shifted variant covers a literal `+`.
+    const SingleActivator(LogicalKeyboardKey.equal, control: true):
+        onZoomIn,
+    const SingleActivator(LogicalKeyboardKey.equal, control: true, shift: true):
+        onZoomIn,
+    const SingleActivator(LogicalKeyboardKey.numpadAdd, control: true):
+        onZoomIn,
+    const SingleActivator(LogicalKeyboardKey.minus, control: true):
+        onZoomOut,
+    const SingleActivator(LogicalKeyboardKey.numpadSubtract, control: true):
+        onZoomOut,
+    const SingleActivator(LogicalKeyboardKey.digit0, control: true):
+        onZoomReset,
+    const SingleActivator(LogicalKeyboardKey.numpad0, control: true):
+        onZoomReset,
   };
 }
 
@@ -115,5 +135,8 @@ ShortcutGroup globalShortcutGroup(S l) => ShortcutGroup(
         ShortcutEntry(keys: 'Ctrl+F', description: l.search),
         ShortcutEntry(keys: 'F5', description: l.refresh),
         ShortcutEntry(keys: 'F1', description: l.shortcutThisHelp),
+        ShortcutEntry(keys: 'Ctrl++ / Ctrl+Wheel', description: l.shortcutZoomIn),
+        ShortcutEntry(keys: 'Ctrl+- / Ctrl+Wheel', description: l.shortcutZoomOut),
+        ShortcutEntry(keys: 'Ctrl+0', description: l.shortcutZoomReset),
       ],
     );

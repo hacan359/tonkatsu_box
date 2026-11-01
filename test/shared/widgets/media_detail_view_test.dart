@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/utils/stopped_at_progress.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
 import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
 import 'package:tonkatsu_box/shared/widgets/source_badge.dart';
@@ -13,6 +14,9 @@ class _DefaultSettingsNotifier extends SettingsNotifier {
   @override
   SettingsState build() => const SettingsState();
 }
+
+const double _phoneWidth = 400;
+const double _desktopWidth = 1000;
 
 void main() {
   setUpAll(() {
@@ -46,6 +50,9 @@ void main() {
     DateTime? lastActivityAt,
     Duration? completionTime,
     OnActivityDateChanged? onActivityDateChanged,
+    Widget? statusListWidget,
+    StoppedAtProgress? stoppedAt,
+    double width = _phoneWidth,
   }) {
     return ProviderScope(
       overrides: <Override>[
@@ -55,7 +62,13 @@ void main() {
       child: MaterialApp(
             localizationsDelegates: S.localizationsDelegates,
             supportedLocales: S.supportedLocales,
-      home: MediaDetailView(
+      // The layout picks mobile or desktop from its own width.
+      home: Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: width,
+          child: MediaDetailView(
+        statusListWidget: statusListWidget,
         title: title,
         coverUrl: coverUrl,
         externalUrl: externalUrl,
@@ -82,6 +95,9 @@ void main() {
         lastActivityAt: lastActivityAt,
         completionTime: completionTime,
         onActivityDateChanged: onActivityDateChanged,
+        stoppedAt: stoppedAt,
+          ),
+        ),
       ),
       ),
     );
@@ -105,7 +121,13 @@ void main() {
         await tester.pumpWidget(buildTestWidget(title: 'Chrono Trigger'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Chrono Trigger'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.text('Chrono Trigger'),
+          ),
+          findsOneWidget,
+        );
       });
     });
 
@@ -844,7 +866,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Full Test'), findsOneWidget);
+        // Standalone AppBar title plus the phone layout's own heading.
+        expect(find.text('Full Test'), findsNWidgets(2));
         expect(find.text('Platform'), findsOneWidget);
         expect(find.text('9.0'), findsOneWidget);
         expect(find.text('Test description'), findsOneWidget);
@@ -863,6 +886,63 @@ void main() {
         expect(find.text('Extra'), findsOneWidget);
       });
     });
+
+    group('desktop layout', () {
+      Future<void> pumpDesktop(WidgetTester tester, Widget widget) async {
+        tester.view.physicalSize = const Size(_desktopWidth, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(widget);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('should render title and description without exceptions',
+          (WidgetTester tester) async {
+        await pumpDesktop(
+          tester,
+          buildTestWidget(
+            title: 'Desk Title',
+            description: 'Desk description',
+            width: _desktopWidth,
+          ),
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Desk Title'), findsWidgets);
+        expect(find.text('Desk description'), findsOneWidget);
+      });
+
+      testWidgets('should hide the author review but keep the notes',
+          (WidgetTester tester) async {
+        await pumpDesktop(
+          tester,
+          buildTestWidget(
+            authorComment: 'Author text',
+            hasAuthorComment: true,
+            userComment: 'User text',
+            hasUserComment: true,
+            width: _desktopWidth,
+          ),
+        );
+
+        expect(find.text('Author text'), findsNothing);
+        expect(find.text('User text'), findsOneWidget);
+      });
+
+      testWidgets('should prefer the status list over the chip row',
+          (WidgetTester tester) async {
+        await pumpDesktop(
+          tester,
+          buildTestWidget(
+            statusWidget: const Text('Status row'),
+            statusListWidget: const Text('Status list'),
+            width: _desktopWidth,
+          ),
+        );
+
+        expect(find.text('Status list'), findsOneWidget);
+        expect(find.text('Status row'), findsNothing);
+      });
+    });
   });
 }
-

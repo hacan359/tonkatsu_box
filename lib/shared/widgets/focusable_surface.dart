@@ -10,6 +10,7 @@ class FocusableSurface extends StatefulWidget {
     required this.child,
     this.onTap,
     this.color,
+    this.borderColor,
     this.borderRadius = AppSpacing.radiusSm,
     this.padding = EdgeInsets.zero,
     this.focusNode,
@@ -21,6 +22,9 @@ class FocusableSurface extends StatefulWidget {
 
   /// Falls back to [AppColors.surface].
   final Color? color;
+
+  /// Falls back to [AppColors.surfaceBorder].
+  final Color? borderColor;
 
   final double borderRadius;
   final EdgeInsetsGeometry padding;
@@ -52,7 +56,7 @@ class _FocusableSurfaceState extends State<FocusableSurface> {
       color: widget.color ?? AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: BorderSide(color: AppColors.surfaceBorder),
+        side: BorderSide(color: widget.borderColor ?? AppColors.surfaceBorder),
       ),
       clipBehavior: Clip.antiAlias,
       // Foreground, so the ring is drawn over the ink and never shifts the

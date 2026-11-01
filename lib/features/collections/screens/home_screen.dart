@@ -733,6 +733,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (result.itemsUpdated > 0) {
         message.write(', ${S.of(context).steamImportUpdated(result.itemsUpdated)}');
       }
+      if (result.customSkipped > 0) {
+        message.write(
+          ', ${S.of(context).importCustomSkipped(result.customSkipped)}',
+        );
+      }
 
       context.showSnack(message.toString(), type: SnackType.success);
       _navigateToCollection(context, result.collection!);

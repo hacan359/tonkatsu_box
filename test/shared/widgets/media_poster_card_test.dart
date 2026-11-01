@@ -611,6 +611,110 @@ void main() {
 
         expect(opened, isTrue);
       });
+
+      testWidgets('tap box is at least 32 px around the small circle',
+          (WidgetTester tester) async {
+        bool opened = false;
+        await tester.pumpWidget(buildCard(
+          isInCollection: true,
+          onOpenInCollection: () => opened = true,
+        ));
+        await tester.pumpAndSettle();
+
+        final Rect icon = tester.getRect(find.byIcon(Icons.open_in_new));
+        // Below and left of the visible circle, still inside the tap box.
+        await tester.tapAt(icon.bottomLeft + const Offset(-6, 8));
+        await tester.pumpAndSettle();
+
+        expect(opened, isTrue);
+      });
+    });
+
+    group('badge scale', () {
+      Widget sizedCard({
+        required double width,
+        CardVariant variant = CardVariant.grid,
+      }) {
+        return MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: width,
+                height: width / 0.55,
+                child: MediaPosterCard(
+                  variant: variant,
+                  title: 'Test',
+                  imageUrl: '',
+                  cacheImageType: ImageType.gameCover,
+                  cacheImageId: '1',
+                  userRating: 8,
+                  splitRatings: true,
+                  isInCollection: true,
+                  onOpenInCollection: () {},
+                  onToggleFavorite: () {},
+                  status: ItemStatus.inProgress,
+                  progress: const ItemCardProgress(label: '3/12', fraction: 0.25),
+                  tags: const <Tag>[
+                    Tag(id: 1, name: 'Weekend', color: 0xFF4CAF50, createdAt: 0),
+                    Tag(id: 2, name: 'Classics', createdAt: 0),
+                  ],
+                  onTagTap: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      double iconSize(WidgetTester tester, IconData icon) =>
+          tester.getSize(find.byIcon(icon)).width;
+
+      testWidgets('a wider card draws larger badges',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(sizedCard(width: 170));
+        await tester.pumpAndSettle();
+        final double base = iconSize(tester, Icons.open_in_new);
+
+        await tester.pumpWidget(sizedCard(width: 255));
+        await tester.pumpAndSettle();
+
+        expect(iconSize(tester, Icons.open_in_new), closeTo(base * 1.5, 0.01));
+      });
+
+      testWidgets('a narrow card keeps the base size',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(sizedCard(width: 170));
+        await tester.pumpAndSettle();
+        final double base = iconSize(tester, Icons.open_in_new);
+
+        await tester.pumpWidget(sizedCard(width: 110));
+        await tester.pumpAndSettle();
+
+        expect(iconSize(tester, Icons.open_in_new), equals(base));
+      });
+
+      for (final CardVariant variant in <CardVariant>[
+        CardVariant.grid,
+        CardVariant.compact,
+      ]) {
+        // Card widths of a 360 px phone at scales 0.7 (4 cols), 1.0 and 1.6.
+        for (final double width in <double>[78, 105, 165]) {
+          testWidgets('$variant at $width px renders without overflow',
+              (WidgetTester tester) async {
+            tester.view.physicalSize = const Size(360, 640);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.reset);
+
+            await tester.pumpWidget(sizedCard(width: width, variant: variant));
+            await tester.pumpAndSettle();
+
+            expect(tester.takeException(), isNull);
+          });
+        }
+      }
     });
 
     group('tags', () {

@@ -238,6 +238,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -266,6 +276,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -293,6 +313,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -536,6 +566,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,
@@ -660,6 +695,16 @@ class RemoteCollectionDao implements CollectionDao {
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             artworkUrl: asObject(v)['artworkUrl'] as String?,
+            developers: asObject(v)['developers'] == null
+                ? null
+                : asList(
+                    asObject(v)['developers'],
+                  ).map((Object? e) => e as String).toList(),
+            publishers: asObject(v)['publishers'] == null
+                ? null
+                : asList(
+                    asObject(v)['publishers'],
+                  ).map((Object? e) => e as String).toList(),
             timeToBeat: decodeNullable<GameTimeToBeat>(
               asObject(v)['timeToBeat'],
               (Object? v) => GameTimeToBeat(
@@ -688,6 +733,16 @@ class RemoteCollectionDao implements CollectionDao {
             releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
             rating: (asObject(v)['rating'] as num?)?.toDouble(),
             runtime: decodeIntOrNull(asObject(v)['runtime']),
+            directors: asObject(v)['directors'] == null
+                ? null
+                : asList(
+                    asObject(v)['directors'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(v)['studios'] == null
+                ? null
+                : asList(
+                    asObject(v)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -715,6 +770,16 @@ class RemoteCollectionDao implements CollectionDao {
             totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
             rating: (asObject(v)['rating'] as num?)?.toDouble(),
             status: asObject(v)['status'] as String?,
+            creators: asObject(v)['creators'] == null
+                ? null
+                : asList(
+                    asObject(v)['creators'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(v)['studios'] == null
+                ? null
+                : asList(
+                    asObject(v)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -952,6 +1017,11 @@ class RemoteCollectionDao implements CollectionDao {
             coverUrl: asObject(v)['coverUrl'] as String?,
             year: decodeIntOrNull(asObject(v)['year']),
             genres: asObject(v)['genres'] as String?,
+            authors: asObject(v)['authors'] == null
+                ? null
+                : asList(
+                    asObject(v)['authors'],
+                  ).map((Object? e) => e as String).toList(),
             platformName: asObject(v)['platformName'] as String?,
             platformId: decodeIntOrNull(asObject(v)['platformId']),
             format: asObject(v)['format'] as String?,
@@ -1047,6 +1117,16 @@ class RemoteCollectionDao implements CollectionDao {
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             artworkUrl: asObject(v)['artworkUrl'] as String?,
+            developers: asObject(v)['developers'] == null
+                ? null
+                : asList(
+                    asObject(v)['developers'],
+                  ).map((Object? e) => e as String).toList(),
+            publishers: asObject(v)['publishers'] == null
+                ? null
+                : asList(
+                    asObject(v)['publishers'],
+                  ).map((Object? e) => e as String).toList(),
             timeToBeat: decodeNullable<GameTimeToBeat>(
               asObject(v)['timeToBeat'],
               (Object? v) => GameTimeToBeat(
@@ -1075,6 +1155,16 @@ class RemoteCollectionDao implements CollectionDao {
             releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
             rating: (asObject(v)['rating'] as num?)?.toDouble(),
             runtime: decodeIntOrNull(asObject(v)['runtime']),
+            directors: asObject(v)['directors'] == null
+                ? null
+                : asList(
+                    asObject(v)['directors'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(v)['studios'] == null
+                ? null
+                : asList(
+                    asObject(v)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -1102,6 +1192,16 @@ class RemoteCollectionDao implements CollectionDao {
             totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
             rating: (asObject(v)['rating'] as num?)?.toDouble(),
             status: asObject(v)['status'] as String?,
+            creators: asObject(v)['creators'] == null
+                ? null
+                : asList(
+                    asObject(v)['creators'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(v)['studios'] == null
+                ? null
+                : asList(
+                    asObject(v)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -1339,6 +1439,11 @@ class RemoteCollectionDao implements CollectionDao {
             coverUrl: asObject(v)['coverUrl'] as String?,
             year: decodeIntOrNull(asObject(v)['year']),
             genres: asObject(v)['genres'] as String?,
+            authors: asObject(v)['authors'] == null
+                ? null
+                : asList(
+                    asObject(v)['authors'],
+                  ).map((Object? e) => e as String).toList(),
             platformName: asObject(v)['platformName'] as String?,
             platformId: decodeIntOrNull(asObject(v)['platformId']),
             format: asObject(v)['format'] as String?,
@@ -1427,6 +1532,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -1455,6 +1570,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -1482,6 +1607,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -1725,6 +1860,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,
@@ -1814,6 +1954,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -1842,6 +1992,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -1869,6 +2029,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -2112,6 +2282,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,
@@ -2343,6 +2518,16 @@ class RemoteCollectionDao implements CollectionDao {
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             artworkUrl: asObject(v)['artworkUrl'] as String?,
+            developers: asObject(v)['developers'] == null
+                ? null
+                : asList(
+                    asObject(v)['developers'],
+                  ).map((Object? e) => e as String).toList(),
+            publishers: asObject(v)['publishers'] == null
+                ? null
+                : asList(
+                    asObject(v)['publishers'],
+                  ).map((Object? e) => e as String).toList(),
             timeToBeat: decodeNullable<GameTimeToBeat>(
               asObject(v)['timeToBeat'],
               (Object? v) => GameTimeToBeat(
@@ -2371,6 +2556,16 @@ class RemoteCollectionDao implements CollectionDao {
             releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
             rating: (asObject(v)['rating'] as num?)?.toDouble(),
             runtime: decodeIntOrNull(asObject(v)['runtime']),
+            directors: asObject(v)['directors'] == null
+                ? null
+                : asList(
+                    asObject(v)['directors'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(v)['studios'] == null
+                ? null
+                : asList(
+                    asObject(v)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -2398,6 +2593,16 @@ class RemoteCollectionDao implements CollectionDao {
             totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
             rating: (asObject(v)['rating'] as num?)?.toDouble(),
             status: asObject(v)['status'] as String?,
+            creators: asObject(v)['creators'] == null
+                ? null
+                : asList(
+                    asObject(v)['creators'],
+                  ).map((Object? e) => e as String).toList(),
+            studios: asObject(v)['studios'] == null
+                ? null
+                : asList(
+                    asObject(v)['studios'],
+                  ).map((Object? e) => e as String).toList(),
             externalUrl: asObject(v)['externalUrl'] as String?,
             cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
             source: decodeEnum<DataSource>(
@@ -2635,6 +2840,11 @@ class RemoteCollectionDao implements CollectionDao {
             coverUrl: asObject(v)['coverUrl'] as String?,
             year: decodeIntOrNull(asObject(v)['year']),
             genres: asObject(v)['genres'] as String?,
+            authors: asObject(v)['authors'] == null
+                ? null
+                : asList(
+                    asObject(v)['authors'],
+                  ).map((Object? e) => e as String).toList(),
             platformName: asObject(v)['platformName'] as String?,
             platformId: decodeIntOrNull(asObject(v)['platformId']),
             format: asObject(v)['format'] as String?,
@@ -2755,6 +2965,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -2783,6 +3003,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -2810,6 +3040,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -3053,6 +3293,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,
@@ -3146,6 +3391,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -3174,6 +3429,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -3201,6 +3466,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -3444,6 +3719,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,
@@ -3586,6 +3866,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -3614,6 +3904,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -3641,6 +3941,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -3884,6 +4194,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,
@@ -4039,6 +4354,16 @@ class RemoteCollectionDao implements CollectionDao {
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 artworkUrl: asObject(v)['artworkUrl'] as String?,
+                developers: asObject(v)['developers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['developers'],
+                      ).map((Object? e) => e as String).toList(),
+                publishers: asObject(v)['publishers'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['publishers'],
+                      ).map((Object? e) => e as String).toList(),
                 timeToBeat: decodeNullable<GameTimeToBeat>(
                   asObject(v)['timeToBeat'],
                   (Object? v) => GameTimeToBeat(
@@ -4067,6 +4392,16 @@ class RemoteCollectionDao implements CollectionDao {
                 releaseYear: decodeIntOrNull(asObject(v)['releaseYear']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 runtime: decodeIntOrNull(asObject(v)['runtime']),
+                directors: asObject(v)['directors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['directors'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -4094,6 +4429,16 @@ class RemoteCollectionDao implements CollectionDao {
                 totalEpisodes: decodeIntOrNull(asObject(v)['totalEpisodes']),
                 rating: (asObject(v)['rating'] as num?)?.toDouble(),
                 status: asObject(v)['status'] as String?,
+                creators: asObject(v)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(v)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(v)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(v)['cachedAt']),
                 source: decodeEnum<DataSource>(
@@ -4337,6 +4682,11 @@ class RemoteCollectionDao implements CollectionDao {
                 coverUrl: asObject(v)['coverUrl'] as String?,
                 year: decodeIntOrNull(asObject(v)['year']),
                 genres: asObject(v)['genres'] as String?,
+                authors: asObject(v)['authors'] == null
+                    ? null
+                    : asList(
+                        asObject(v)['authors'],
+                      ).map((Object? e) => e as String).toList(),
                 platformName: asObject(v)['platformName'] as String?,
                 platformId: decodeIntOrNull(asObject(v)['platformId']),
                 format: asObject(v)['format'] as String?,

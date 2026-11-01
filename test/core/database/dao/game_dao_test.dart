@@ -30,6 +30,7 @@ void main() {
         conflictAlgorithm: any(named: 'conflictAlgorithm'),
       ),
     ).thenReturn(null);
+    when(() => mockBatch.rawInsert(any(), any())).thenReturn(null);
     when(() => mockBatch.commit(noResult: true))
         .thenAnswer((_) async => <Object?>[]);
   }
@@ -323,25 +324,19 @@ void main() {
     });
 
     group('upsertGame', () {
-      test('inserts with replace', () async {
+      test('writes a replace upsert that keeps cached companies', () async {
         const Game game = Game(id: 1, name: 'Test');
-        when(
-          () => mockDb.insert(
-            'games',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).thenAnswer((_) async => 1);
+        final List<String> sql = <String>[];
+        when(() => mockDb.rawInsert(any(), any())).thenAnswer((Invocation i) {
+          sql.add(i.positionalArguments.first as String);
+          return Future<int>.value(1);
+        });
 
         await dao.upsertGame(game);
 
-        verify(
-          () => mockDb.insert(
-            'games',
-            game.toDb(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(1);
+        expect(sql.single, contains('INSERT OR REPLACE INTO games'));
+        expect(sql.single, contains('SELECT developers FROM games'));
+        expect(sql.single, contains('SELECT publishers FROM games'));
       });
     });
 
@@ -360,13 +355,7 @@ void main() {
           Game(id: 2, name: 'G2'),
         ]);
 
-        verify(
-          () => mockBatch.insert(
-            'games',
-            any(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          ),
-        ).called(2);
+        verify(() => mockBatch.rawInsert(any(), any())).called(2);
         verify(() => mockBatch.commit(noResult: true)).called(1);
       });
     });

@@ -119,6 +119,8 @@ Future<Object?> dispatchTvShowDao(
           'totalEpisodes': encodeIntOrNull(v.totalEpisodes),
           'rating': v.rating,
           'status': v.status,
+          'creators': v.creators?.map((String e) => e).toList(),
+          'studios': v.studios?.map((String e) => e).toList(),
           'externalUrl': v.externalUrl,
           'cachedAt': encodeIntOrNull(v.cachedAt),
           'source': encodeEnum(v.source),
@@ -144,6 +146,8 @@ Future<Object?> dispatchTvShowDao(
               'totalEpisodes': encodeIntOrNull(e.totalEpisodes),
               'rating': e.rating,
               'status': e.status,
+              'creators': e.creators?.map((String e) => e).toList(),
+              'studios': e.studios?.map((String e) => e).toList(),
               'externalUrl': e.externalUrl,
               'cachedAt': encodeIntOrNull(e.cachedAt),
               'source': encodeEnum(e.source),
@@ -348,6 +352,16 @@ Future<Object?> dispatchTvShowDao(
           ),
           rating: (asObject(args['tvShow'])['rating'] as num?)?.toDouble(),
           status: asObject(args['tvShow'])['status'] as String?,
+          creators: asObject(args['tvShow'])['creators'] == null
+              ? null
+              : asList(
+                  asObject(args['tvShow'])['creators'],
+                ).map((Object? e) => e as String).toList(),
+          studios: asObject(args['tvShow'])['studios'] == null
+              ? null
+              : asList(
+                  asObject(args['tvShow'])['studios'],
+                ).map((Object? e) => e as String).toList(),
           externalUrl: asObject(args['tvShow'])['externalUrl'] as String?,
           cachedAt: decodeIntOrNull(asObject(args['tvShow'])['cachedAt']),
           source: decodeEnum<DataSource>(
@@ -379,6 +393,16 @@ Future<Object?> dispatchTvShowDao(
                 totalEpisodes: decodeIntOrNull(asObject(e)['totalEpisodes']),
                 rating: (asObject(e)['rating'] as num?)?.toDouble(),
                 status: asObject(e)['status'] as String?,
+                creators: asObject(e)['creators'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['creators'],
+                      ).map((Object? e) => e as String).toList(),
+                studios: asObject(e)['studios'] == null
+                    ? null
+                    : asList(
+                        asObject(e)['studios'],
+                      ).map((Object? e) => e as String).toList(),
                 externalUrl: asObject(e)['externalUrl'] as String?,
                 cachedAt: decodeIntOrNull(asObject(e)['cachedAt']),
                 source: decodeEnum<DataSource>(

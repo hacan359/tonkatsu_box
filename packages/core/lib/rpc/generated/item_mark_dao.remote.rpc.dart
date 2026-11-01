@@ -58,6 +58,8 @@ class RemoteItemMarkDao implements ItemMarkDao {
               likedAt: decodeDateTimeOrNull(
                 asObject(asObject(e)['mark'])['likedAt'],
               ),
+              userRating: (asObject(asObject(e)['mark'])['userRating'] as num?)
+                  ?.toDouble(),
             ),
             unitTitle: asObject(e)['unitTitle'] as String?,
           ),
@@ -84,6 +86,7 @@ class RemoteItemMarkDao implements ItemMarkDao {
             updatedAt: decodeDateTime(asObject(e)['updatedAt']),
             userComment: asObject(e)['userComment'] as String?,
             likedAt: decodeDateTimeOrNull(asObject(e)['likedAt']),
+            userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
           ),
         )
         .toList();
@@ -110,6 +113,7 @@ class RemoteItemMarkDao implements ItemMarkDao {
             updatedAt: decodeDateTime(asObject(e)['updatedAt']),
             userComment: asObject(e)['userComment'] as String?,
             likedAt: decodeDateTimeOrNull(asObject(e)['likedAt']),
+            userRating: (asObject(e)['userRating'] as num?)?.toDouble(),
           ),
         )
         .toList();
@@ -130,6 +134,7 @@ class RemoteItemMarkDao implements ItemMarkDao {
               'updatedAt': encodeDateTime(e.updatedAt),
               'userComment': e.userComment,
               'likedAt': encodeDateTimeOrNull(e.likedAt),
+              'userRating': e.userRating,
             },
           )
           .toList(),
@@ -165,6 +170,7 @@ class RemoteItemMarkDao implements ItemMarkDao {
         updatedAt: decodeDateTime(asObject(v)['updatedAt']),
         userComment: asObject(v)['userComment'] as String?,
         likedAt: decodeDateTimeOrNull(asObject(v)['likedAt']),
+        userRating: (asObject(v)['userRating'] as num?)?.toDouble(),
       ),
     );
   }
@@ -197,6 +203,40 @@ class RemoteItemMarkDao implements ItemMarkDao {
         updatedAt: decodeDateTime(asObject(v)['updatedAt']),
         userComment: asObject(v)['userComment'] as String?,
         likedAt: decodeDateTimeOrNull(asObject(v)['likedAt']),
+        userRating: (asObject(v)['userRating'] as num?)?.toDouble(),
+      ),
+    );
+  }
+
+  @override
+  Future<ItemMark?> setRating(
+    int itemId,
+    String unitType,
+    int parent,
+    int unit,
+    double? rating,
+  ) async {
+    final Object? result = await _transport
+        .call('ItemMarkDao', 'setRating', <String, Object?>{
+          'itemId': encodeInt(itemId),
+          'unitType': unitType,
+          'parent': encodeInt(parent),
+          'unit': encodeInt(unit),
+          'rating': rating,
+        });
+    return decodeNullable<ItemMark>(
+      result,
+      (Object? v) => ItemMark(
+        id: decodeInt(asObject(v)['id']),
+        itemId: decodeInt(asObject(v)['itemId']),
+        unitType: asObject(v)['unitType'] as String,
+        parentNumber: decodeInt(asObject(v)['parentNumber']),
+        unitNumber: decodeInt(asObject(v)['unitNumber']),
+        isFavorite: asObject(v)['isFavorite'] as bool,
+        updatedAt: decodeDateTime(asObject(v)['updatedAt']),
+        userComment: asObject(v)['userComment'] as String?,
+        likedAt: decodeDateTimeOrNull(asObject(v)['likedAt']),
+        userRating: (asObject(v)['userRating'] as num?)?.toDouble(),
       ),
     );
   }

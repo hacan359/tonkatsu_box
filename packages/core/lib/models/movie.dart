@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../utils/json_list.dart';
 import '../utils/tvdb_json.dart';
 import 'data_source.dart';
 
@@ -15,6 +16,8 @@ class Movie {
     this.releaseYear,
     this.rating,
     this.runtime,
+    this.directors,
+    this.studios,
     this.externalUrl,
     this.cachedAt,
     this.source = DataSource.tmdb,
@@ -51,6 +54,18 @@ class Movie {
       genres = genreIds.map((dynamic id) => id.toString()).toList();
     }
 
+    // Only the detail request appends `credits`; list hits carry none.
+    final Object? credits = json['credits'];
+    final Object? crew =
+        credits is Map<String, dynamic> ? credits['crew'] : null;
+    final List<String>? directors = crew is List<dynamic>
+        ? distinctNames(<Object?>[
+            for (final dynamic c in crew)
+              if (c is Map<String, dynamic> && c['job'] == 'Director')
+                c['name'],
+          ])
+        : null;
+
     final int tmdbId = json['id'] as int;
 
     return Movie(
@@ -64,6 +79,8 @@ class Movie {
       releaseYear: releaseYear,
       rating: (json['vote_average'] as num?)?.toDouble(),
       runtime: json['runtime'] as int?,
+      directors: directors,
+      studios: distinctEntryNames(json['production_companies']),
       externalUrl: 'https://www.themoviedb.org/movie/$tmdbId',
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
@@ -93,6 +110,9 @@ class Movie {
           tvdbYear((json['first_release'] as Map<String, dynamic>?)?['date']) ??
           tvdbYear(json['first_air_time']),
       runtime: json['runtime'] as int?,
+      directors: tvdbPeople(json['characters'], 'Director'),
+      studios: tvdbCompanies(json['companies'], 'Studio') ??
+          tvdbCompanies(json['companies'], 'Production'),
       externalUrl: tvdbRecordUrl('movies', json['slug'], id),
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       source: DataSource.tvdb,
@@ -118,6 +138,8 @@ class Movie {
       releaseYear: row['release_year'] as int?,
       rating: row['rating'] as double?,
       runtime: row['runtime'] as int?,
+      directors: decodeJsonStringListOrNull(row['directors']),
+      studios: decodeJsonStringListOrNull(row['studios']),
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
       source: DataSource.fromNameOr(row['source'] as String?, DataSource.tmdb),
@@ -148,6 +170,10 @@ class Movie {
   final double? rating;
 
   final int? runtime;
+
+  final List<String>? directors;
+
+  final List<String>? studios;
 
   final String? externalUrl;
 
@@ -186,6 +212,8 @@ class Movie {
       'release_year': releaseYear,
       'rating': rating,
       'runtime': runtime,
+      'directors': encodeJsonStringList(directors),
+      'studios': encodeJsonStringList(studios),
       'external_url': externalUrl,
       'cached_at': cachedAt,
       'source': source.name,
@@ -203,6 +231,8 @@ class Movie {
     int? releaseYear,
     double? rating,
     int? runtime,
+    List<String>? directors,
+    List<String>? studios,
     String? externalUrl,
     int? cachedAt,
     DataSource? source,
@@ -218,6 +248,8 @@ class Movie {
       releaseYear: releaseYear ?? this.releaseYear,
       rating: rating ?? this.rating,
       runtime: runtime ?? this.runtime,
+      directors: directors ?? this.directors,
+      studios: studios ?? this.studios,
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
       source: source ?? this.source,

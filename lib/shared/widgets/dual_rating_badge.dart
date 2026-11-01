@@ -4,12 +4,14 @@ import '../theme/app_colors.dart';
 
 /// Renders nothing when neither rating is set — the caller does not hide it.
 /// [compact] shrinks for landscape; [inline] drops the background for lists.
+/// [scale] grows the badge with the card it sits on.
 class DualRatingBadge extends StatelessWidget {
   const DualRatingBadge({
     this.userRating,
     this.apiRating,
     this.compact = false,
     this.inline = false,
+    this.scale = 1.0,
     super.key,
   });
 
@@ -21,6 +23,7 @@ class DualRatingBadge extends StatelessWidget {
 
   final bool compact;
   final bool inline;
+  final double scale;
 
   bool get hasRating => userRating != null || _hasApiRating;
 
@@ -53,16 +56,16 @@ class DualRatingBadge extends StatelessWidget {
   }
 
   Widget _buildBadge() {
-    final double fontSize = compact ? 8.0 : 11.0;
-    final double iconSize = compact ? 8.0 : 11.0;
-    final double hPad = compact ? 3.0 : 5.0;
-    final double vPad = compact ? 1.0 : 2.0;
+    final double fontSize = (compact ? 8.0 : 11.0) * scale;
+    final double iconSize = (compact ? 8.0 : 11.0) * scale;
+    final double hPad = (compact ? 3.0 : 5.0) * scale;
+    final double vPad = (compact ? 1.0 : 2.0) * scale;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
         color: AppColors.scrim.withAlpha(0xCC),
-        borderRadius: BorderRadius.circular(compact ? 4 : 6),
+        borderRadius: BorderRadius.circular((compact ? 4 : 6) * scale),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -72,7 +75,7 @@ class DualRatingBadge extends StatelessWidget {
             size: iconSize,
             color: AppColors.ratingStar,
           ),
-          SizedBox(width: compact ? 1 : 2),
+          SizedBox(width: (compact ? 1 : 2) * scale),
           Text(
             formattedRating,
             style: TextStyle(

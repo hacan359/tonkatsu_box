@@ -56,6 +56,12 @@ class CustomMediaDao {
     return CustomMedia.fromDb(rows.first);
   }
 
+  Future<List<CustomMedia>> getAll() async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query('custom_items');
+    return rows.map(CustomMedia.fromDb).toList();
+  }
+
   Future<List<CustomMedia>> getByIds(List<int> ids) async {
     final Database db = await _getDatabase();
     return queryByIdsInChunks(ids, (List<int> chunk) async {

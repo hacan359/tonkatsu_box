@@ -17,6 +17,13 @@ void main() {
       server.listen((HttpRequest request) async {
         received.add(request);
         bodies.add(await utf8.decoder.bind(request).join());
+        if (request.uri.path == '/redirect') {
+          request.response
+            ..statusCode = HttpStatus.found
+            ..headers.set(HttpHeaders.locationHeader, '/popularity');
+          await request.response.close();
+          return;
+        }
         request.response
           ..statusCode = 200
           ..headers.contentType = ContentType.json
@@ -79,6 +86,36 @@ void main() {
 
       expect(response.status, 200);
       expect(bodies.single, isEmpty);
+    });
+
+    test('follows redirects by default', () async {
+      final HttpUpstreamClient client = HttpUpstreamClient();
+
+      final UpstreamResponse response = await client.send(
+        method: 'GET',
+        url: url('/redirect'),
+        headers: <String, String>{},
+      );
+
+      expect(response.status, 200);
+      expect(response.isRedirect, isFalse);
+      expect(received.length, 2);
+    });
+
+    test('hands a redirect back when asked not to follow', () async {
+      final HttpUpstreamClient client = HttpUpstreamClient();
+
+      final UpstreamResponse response = await client.send(
+        method: 'GET',
+        url: url('/redirect'),
+        headers: <String, String>{},
+        followRedirects: false,
+      );
+
+      expect(response.status, HttpStatus.found);
+      expect(response.isRedirect, isTrue);
+      expect(response.location, '/popularity');
+      expect(received.length, 1);
     });
   });
 }

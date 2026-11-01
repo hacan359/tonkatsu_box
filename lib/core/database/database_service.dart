@@ -5,6 +5,7 @@ import 'package:core/database/dao/anilist_tag_dao.dart';
 import 'package:core/database/dao/anime_dao.dart';
 import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/calendar_entry_dao.dart';
+import 'package:core/database/dao/collection_import_dao.dart';
 import 'package:core/database/dao/canvas_dao.dart';
 import 'package:core/database/dao/collection_dao.dart';
 import 'package:core/database/dao/custom_media_dao.dart';
@@ -269,6 +270,9 @@ class DatabaseService {
 
   late final ItemMarkDao itemMarkDao =
       _remote?.itemMarkDao ?? ItemMarkDao(() => database);
+
+  late final CollectionImportDao collectionImportDao =
+      _remote?.collectionImportDao ?? CollectionImportDao(() => database);
 
   late final StatsDao statsDao = _remote?.statsDao ?? StatsDao(() => database);
 

@@ -8,12 +8,14 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/app_binding.dart';
 import 'core/logging/app_logger.dart';
 import 'core/logging/startup_error.dart';
 import 'core/services/api_key_initializer.dart';
 import 'core/services/collection_hero_service.dart';
 import 'core/services/platform_init_io.dart'
     if (dart.library.js_interop) 'core/services/platform_init_web.dart';
+import 'core/selfhost/server_auth_token.dart';
 import 'core/selfhost/server_credentials.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
@@ -30,7 +32,7 @@ Future<void> main() async {
 
   await runZonedGuarded<Future<void>>(
     () async {
-      WidgetsFlutterBinding.ensureInitialized();
+      TonkatsuBinding.ensureInitialized();
       AppLogger.setupErrorHandlers();
       initPlatform();
 
@@ -63,6 +65,9 @@ Future<void> main() async {
 
 Future<void> _loadAppState() async {
   _prefs = await SharedPreferences.getInstance();
+  // Before the first request: the /proxy/keys read below already needs it.
+  await ServerAuthToken.init(_prefs);
+  if (kIsWebBuild) await ServerAuthToken.consumeFromUrl(Uri.base);
   // Web keeps the same prefs-backed reads as desktop; the server is where the
   // values live, so they are copied in before anything reads them.
   if (kIsWebBuild) {

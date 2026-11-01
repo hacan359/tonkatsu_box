@@ -13,6 +13,7 @@ void main() {
       String? userComment = 'great episode',
       DateTime? likedAt,
       DateTime? updatedAt,
+      double? userRating,
     }) {
       return ItemMark(
         id: id,
@@ -25,6 +26,7 @@ void main() {
         likedAt: likedAt ?? DateTime.fromMillisecondsSinceEpoch(1700000000000),
         updatedAt:
             updatedAt ?? DateTime.fromMillisecondsSinceEpoch(1700000005000),
+        userRating: userRating,
       );
     }
 
@@ -54,6 +56,21 @@ void main() {
         expect(restored.updatedAt, original.updatedAt);
       });
 
+      test('toDb writes the rating and fromDb reads it back as a double', () {
+        final Map<String, dynamic> row = buildMark(userRating: 8.5).toDb();
+        expect(row['user_rating'], 8.5);
+
+        final ItemMark restored = ItemMark.fromDb(row..['id'] = 5);
+        expect(restored.userRating, 8.5);
+      });
+
+      test('fromDb reads an integer-typed rating and a missing column', () {
+        final Map<String, dynamic> row = buildMark().toDb()..['id'] = 5;
+        expect(ItemMark.fromDb(row).userRating, isNull);
+        row['user_rating'] = 7;
+        expect(ItemMark.fromDb(row).userRating, 7.0);
+      });
+
       test('fromDb tolerates null liked_at', () {
         final Map<String, dynamic> row = buildMark(
           isFavorite: false,
@@ -75,6 +92,22 @@ void main() {
         expect(json['liked_at'], 1700000000);
         expect(json['updated_at'], 1700000005);
         expect(json['is_favorite'], 1);
+      });
+
+      test('toExport writes the rating only when set', () {
+        expect(buildMark().toExport().containsKey('user_rating'), isFalse);
+        expect(buildMark(userRating: 9.1).toExport()['user_rating'], 9.1);
+      });
+
+      test('fromExport reads the rating and drops an out-of-range one', () {
+        final Map<String, dynamic> json =
+            buildMark(userRating: 6.4).toExport();
+        expect(ItemMark.fromExport(json, itemId: 1).userRating, 6.4);
+
+        json['user_rating'] = 42;
+        expect(ItemMark.fromExport(json, itemId: 1).userRating, isNull);
+        json['user_rating'] = 'nine';
+        expect(ItemMark.fromExport(json, itemId: 1).userRating, isNull);
       });
 
       test('fromExport re-anchors to the supplied itemId', () {
@@ -109,6 +142,31 @@ void main() {
             isFalse);
         expect(buildMark(isFavorite: false, userComment: null).hasContent,
             isFalse);
+      });
+
+      test('true when only a rating is set', () {
+        expect(
+          buildMark(isFavorite: false, userComment: null, userRating: 5.0)
+              .hasContent,
+          isTrue,
+        );
+      });
+    });
+
+    group('isValidRating', () {
+      test('accepts null and the 1..10 range', () {
+        expect(ItemMark.isValidRating(null), isTrue);
+        expect(ItemMark.isValidRating(1.0), isTrue);
+        expect(ItemMark.isValidRating(10.0), isTrue);
+        expect(ItemMark.isValidRating(5.5), isTrue);
+      });
+
+      test('rejects zero, out-of-range and non-finite values', () {
+        expect(ItemMark.isValidRating(0.0), isFalse);
+        expect(ItemMark.isValidRating(10.1), isFalse);
+        expect(ItemMark.isValidRating(-1.0), isFalse);
+        expect(ItemMark.isValidRating(double.nan), isFalse);
+        expect(ItemMark.isValidRating(double.infinity), isFalse);
       });
     });
 
@@ -157,6 +215,14 @@ void main() {
         expect(cleared.likedAt, isNull);
       });
 
+      test('clearUserRating nulls the rating, a value replaces it', () {
+        final ItemMark m = buildMark(userRating: 8.0);
+        expect(m.copyWith(clearUserRating: true).userRating, isNull);
+        expect(m.copyWith(userRating: 3.0).userRating, 3.0);
+        expect(m.copyWith(userRating: 3.0, clearUserRating: true).userRating,
+            isNull);
+      });
+
       test('keeps every field when nothing is passed', () {
         final ItemMark m = buildMark(likedAt: DateTime(2024, 5, 1));
         final ItemMark copy = m.copyWith();
@@ -170,6 +236,7 @@ void main() {
         expect(copy.userComment, m.userComment);
         expect(copy.likedAt, m.likedAt);
         expect(copy.updatedAt, m.updatedAt);
+        expect(copy.userRating, m.userRating);
       });
 
       test('replaces only the fields that were passed', () {

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/settings_provider.dart';
@@ -29,7 +32,9 @@ import '../widgets/settings_group.dart';
 
 /// Form + progress UI for importing a Hardcover user's book library.
 class HardcoverImportContent extends ConsumerStatefulWidget {
-  const HardcoverImportContent({super.key});
+  const HardcoverImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<HardcoverImportContent> createState() =>
@@ -46,8 +51,8 @@ class _HardcoverImportContentState
 
   ImportMode _mode = ImportMode.newOnly;
 
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
 
   @override
   void initState() {
@@ -449,6 +454,12 @@ class _HardcoverImportContentState
 
       final int? collectionId = result.effectiveCollectionId;
       ref.invalidate(collectionsProvider);
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.hardcover,
+        collectionId: collectionId,
+        options: <String, Object?>{CollectionImportOption.mode: _mode.name},
+      ));
       if (collectionId != null) {
         ref.invalidate(collectionStatsProvider(collectionId));
         ref.invalidate(collectionCoversProvider(collectionId));

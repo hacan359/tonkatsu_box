@@ -1,12 +1,17 @@
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/mal_import_content.dart';
+import '../widgets/remembered_import_collection.dart';
 
 class MalImportScreen extends StatelessWidget {
-  const MalImportScreen({super.key});
+  const MalImportScreen({this.initialCollectionId, super.key});
+
+  /// Preselects "existing collection" when opened from a collection.
+  final int? initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,12 @@ class MalImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: const MalImportContent(),
+                child: RememberedImportCollection(
+                  source: ImportSourceKind.mal,
+                  initialCollectionId: initialCollectionId,
+                  builder: (int? collectionId) =>
+                      MalImportContent(initialCollectionId: collectionId),
+                ),
               ),
             ),
           ),

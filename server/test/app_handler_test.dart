@@ -21,6 +21,7 @@ class _SilentUpstream implements UpstreamClient {
     required Uri url,
     required Map<String, String> headers,
     List<int>? body,
+    bool followRedirects = true,
   }) async {
     sent.add(url);
     return const UpstreamResponse(

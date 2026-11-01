@@ -87,8 +87,8 @@ class CreditsContent extends StatelessWidget {
       (
         source: DataSource.kitsu,
         description: l10n.creditsKitsuAttribution,
-        linkLabel: 'kitsu.io',
-        url: 'https://kitsu.io/',
+        linkLabel: 'kitsu.app',
+        url: 'https://kitsu.app/',
       ),
       (
         source: DataSource.vndb,

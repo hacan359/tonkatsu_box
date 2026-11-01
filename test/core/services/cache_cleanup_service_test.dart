@@ -2,7 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/profile.dart';
+import 'package:core/utils/cover_image_id.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -16,6 +19,8 @@ void main() {
   late Directory cacheDir;
   late ImageCacheService cache;
   late MockCollectionRepository repo;
+  late MockCustomMediaDao customMedia;
+  late MockProfileService profiles;
   late CacheCleanupService cleanup;
 
   setUp(() async {
@@ -24,7 +29,12 @@ void main() {
     cache = ImageCacheService();
     await cache.setCachePath(cacheDir.path);
     repo = MockCollectionRepository();
-    cleanup = CacheCleanupService(repo, cache);
+    customMedia = MockCustomMediaDao();
+    when(() => customMedia.getAll()).thenAnswer((_) async => <CustomMedia>[]);
+    profiles = MockProfileService();
+    when(() => profiles.loadProfiles())
+        .thenAnswer((_) async => createTestProfilesData());
+    cleanup = CacheCleanupService(repo, cache, customMedia, profiles);
   });
 
   tearDown(() async {
@@ -81,10 +91,9 @@ void main() {
       expect(orphanMovie.existsSync(), isFalse);
     });
 
-    test('never touches custom covers or canvas board images', () async {
+    test('never touches canvas board images', () async {
       stubItems(<CollectionItem>[]);
 
-      final File custom = await writeCacheFile(ImageType.customCover, '5');
       final File canvas =
           await writeCacheFile(ImageType.canvasImage, 'deadbeef');
       final File gameOrphan = await writeCacheFile(ImageType.gameCover, '1');
@@ -92,7 +101,6 @@ void main() {
       final CacheCleanupResult result = await cleanup.removeOrphans();
 
       expect(result.deletedCount, 1);
-      expect(custom.existsSync(), isTrue, reason: 'custom covers untouched');
       expect(canvas.existsSync(), isTrue, reason: 'canvas images untouched');
       expect(gameOrphan.existsSync(), isFalse);
     });
@@ -175,13 +183,84 @@ void main() {
       expect(stale.existsSync(), isFalse);
     });
 
-    test('should leave custom-card covers alone', () async {
+    test('should keep covers of live cards and delete those of deleted cards',
+        () async {
       stubItems(<CollectionItem>[]);
-      final File custom = await writeCacheFile(ImageType.customCover, '7');
+      final String uploaded = CustomMedia.localCoverMarkerFor(42);
+      when(() => customMedia.getAll()).thenAnswer(
+        (_) async => <CustomMedia>[
+          const CustomMedia(id: 7, title: 'Linked', coverUrl: 'https://x/c.png'),
+          CustomMedia(id: 8, title: 'Uploaded', coverUrl: uploaded),
+        ],
+      );
+      final File linked = await writeCacheFile(ImageType.customCover, '7');
+      final File upload = await writeCacheFile(
+        ImageType.customCover,
+        customCoverImageId(id: 8, coverUrl: uploaded),
+      );
+      final File replaced = await writeCacheFile(ImageType.customCover, '8');
+      final File deleted = await writeCacheFile(ImageType.customCover, '9');
 
       await cleanup.removeOrphans();
 
-      expect(custom.existsSync(), isTrue);
+      expect(linked.existsSync(), isTrue);
+      expect(upload.existsSync(), isTrue);
+      expect(replaced.existsSync(), isFalse);
+      expect(deleted.existsSync(), isFalse);
+    });
+
+    test('should keep a card cover when only a board or mood grid holds it',
+        () async {
+      stubItems(<CollectionItem>[]);
+      when(() => customMedia.getAll()).thenAnswer(
+        (_) async => <CustomMedia>[const CustomMedia(id: 3, title: 'Board')],
+      );
+      final File cover = await writeCacheFile(ImageType.customCover, '3');
+
+      await cleanup.removeOrphans();
+
+      expect(cover.existsSync(), isTrue);
+    });
+
+    test(
+        'should leave uploads alone when the custom folder serves several '
+        'profiles', () async {
+      // setUp pointed the cache at a custom folder, so it is shared.
+      when(() => profiles.loadProfiles()).thenAnswer(
+        (_) async => createTestProfilesData(
+          profiles: <Profile>[
+            createTestProfile(id: 'a'),
+            createTestProfile(id: 'b'),
+          ],
+        ),
+      );
+      stubItems(<CollectionItem>[]);
+      final File otherProfileCard =
+          await writeCacheFile(ImageType.customCover, '99');
+      final File otherProfileOverride =
+          await writeCacheFile(ImageType.coverOverride, 'abc123');
+      final File gameCover = await writeCacheFile(ImageType.gameCover, '5');
+
+      final CacheCleanupResult result = await cleanup.removeOrphans();
+
+      expect(otherProfileCard.existsSync(), isTrue);
+      expect(otherProfileOverride.existsSync(), isTrue);
+      expect(gameCover.existsSync(), isFalse);
+      expect(result.deletedCount, 1);
+    });
+
+    test('should sweep uploads of a single profile in a custom folder',
+        () async {
+      stubItems(<CollectionItem>[]);
+      final File card = await writeCacheFile(ImageType.customCover, '99');
+      final File override =
+          await writeCacheFile(ImageType.coverOverride, 'abc123');
+
+      await cleanup.removeOrphans();
+
+      expect(card.existsSync(), isFalse);
+      expect(override.existsSync(), isFalse);
+      verify(() => profiles.loadProfiles()).called(1);
     });
   });
 }

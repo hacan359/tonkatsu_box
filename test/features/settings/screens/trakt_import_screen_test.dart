@@ -1,7 +1,10 @@
 import 'package:core/models/collection.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/core/import/sources/trakt/trakt_import_service.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
@@ -12,10 +15,20 @@ import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import '../../../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(registerAllFallbacks);
+
   late MockTraktImportService mockService;
+  late MockDatabaseService db;
 
   setUp(() {
     mockService = MockTraktImportService();
+    db = MockDatabaseService();
+    final MockCollectionImportDao importDao = MockCollectionImportDao();
+    when(() => db.collectionImportDao).thenReturn(importDao);
+    when(
+      () => importDao.getLatestForSource(ImportSourceKind.trakt),
+    ).thenAnswer((_) async => null);
+    when(() => importDao.upsert(any())).thenAnswer((_) async {});
   });
 
   Widget createWidget({
@@ -25,13 +38,12 @@ void main() {
   }) {
     return ProviderScope(
       overrides: <Override>[
+        databaseServiceProvider.overrideWithValue(db),
         traktImportServiceProvider.overrideWithValue(mockService),
         collectionsProvider.overrideWith(
           () => _TestCollectionsNotifier(collections),
         ),
-        settingsNotifierProvider.overrideWith(
-          () => _FakeSettingsNotifier(),
-        ),
+        settingsNotifierProvider.overrideWith(() => _FakeSettingsNotifier()),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -46,8 +58,9 @@ void main() {
 
   group('TraktImportScreen', () {
     group('UI structure', () {
-      testWidgets('shows instructions section with description',
-          (WidgetTester tester) async {
+      testWidgets('shows instructions section with description', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -60,8 +73,9 @@ void main() {
         );
       });
 
-      testWidgets('shows file picker section with Select ZIP File button',
-          (WidgetTester tester) async {
+      testWidgets('shows file picker section with Select ZIP File button', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -69,16 +83,18 @@ void main() {
         expect(find.byIcon(Icons.folder_open), findsOneWidget);
       });
 
-      testWidgets('shows exactly 2 SettingsGroup widgets',
-          (WidgetTester tester) async {
+      testWidgets('shows exactly 2 SettingsGroup widgets', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
         expect(find.byType(SettingsGroup), findsOneWidget);
       });
 
-      testWidgets('does NOT show preview section before file selection',
-          (WidgetTester tester) async {
+      testWidgets('does NOT show preview section before file selection', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -87,8 +103,9 @@ void main() {
         expect(find.text('Import watchlist'), findsNothing);
       });
 
-      testWidgets('does NOT show import button before file selection',
-          (WidgetTester tester) async {
+      testWidgets('does NOT show import button before file selection', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -97,8 +114,9 @@ void main() {
     });
 
     group('Compact layout', () {
-      testWidgets('renders without errors on narrow screens',
-          (WidgetTester tester) async {
+      testWidgets('renders without errors on narrow screens', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(width: 500, height: 800));
         await tester.pumpAndSettle();
 
@@ -106,8 +124,9 @@ void main() {
         expect(find.byType(SettingsGroup), findsOneWidget);
       });
 
-      testWidgets('renders without errors on wide screens',
-          (WidgetTester tester) async {
+      testWidgets('renders without errors on wide screens', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(width: 1024, height: 768));
         await tester.pumpAndSettle();
 
@@ -137,8 +156,9 @@ void main() {
     });
 
     group('No validation error initially', () {
-      testWidgets('does not show validation error text',
-          (WidgetTester tester) async {
+      testWidgets('does not show validation error text', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 

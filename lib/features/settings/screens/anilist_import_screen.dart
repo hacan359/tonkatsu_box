@@ -1,13 +1,18 @@
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/anilist_import_content.dart';
+import '../widgets/remembered_import_collection.dart';
 
 /// Screen wrapper around [AniListImportContent] with a title bar.
 class AniListImportScreen extends StatelessWidget {
-  const AniListImportScreen({super.key});
+  const AniListImportScreen({this.initialCollectionId, super.key});
+
+  /// Preselects "existing collection" when opened from a collection.
+  final int? initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +34,12 @@ class AniListImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: const AniListImportContent(),
+                child: RememberedImportCollection(
+                  source: ImportSourceKind.aniList,
+                  initialCollectionId: initialCollectionId,
+                  builder: (int? collectionId) =>
+                      AniListImportContent(initialCollectionId: collectionId),
+                ),
               ),
             ),
           ),

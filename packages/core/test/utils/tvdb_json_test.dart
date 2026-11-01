@@ -187,4 +187,56 @@ void main() {
       );
     });
   });
+
+  group('tvdbPeople', () {
+    test('keeps only the given peopleType, de-duplicated', () {
+      expect(
+        tvdbPeople(<dynamic>[
+          <String, dynamic>{'peopleType': 'Director', 'personName': 'A'},
+          <String, dynamic>{'peopleType': 'Actor', 'personName': 'B'},
+          <String, dynamic>{'peopleType': 'Director', 'personName': 'A'},
+        ], 'Director'),
+        <String>['A'],
+      );
+    });
+
+    test('is null for a non-list or no match', () {
+      expect(tvdbPeople(null, 'Director'), isNull);
+      expect(tvdbPeople(<dynamic>[], 'Director'), isNull);
+    });
+  });
+
+  group('tvdbCompanies', () {
+    test('reads the series list shape by companyTypeName', () {
+      expect(
+        tvdbCompanies(<dynamic>[
+          <String, dynamic>{
+            'name': 'S',
+            'companyType': <String, dynamic>{'companyTypeName': 'Studio'},
+          },
+          <String, dynamic>{
+            'name': 'N',
+            'companyType': <String, dynamic>{'companyTypeName': 'Network'},
+          },
+        ], 'Studio'),
+        <String>['S'],
+      );
+    });
+
+    test('reads the movie map shape by lower-cased key', () {
+      expect(
+        tvdbCompanies(<String, dynamic>{
+          'studio': <dynamic>[
+            <String, dynamic>{'name': 'S'},
+          ],
+        }, 'Studio'),
+        <String>['S'],
+      );
+      expect(tvdbCompanies(<String, dynamic>{}, 'Studio'), isNull);
+    });
+
+    test('is null for anything else', () {
+      expect(tvdbCompanies('x', 'Studio'), isNull);
+    });
+  });
 }

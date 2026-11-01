@@ -203,4 +203,28 @@ void main() {
       expect(cleared.unitGroupTotal, isNull);
     });
   });
+
+  group('CustomMedia authors', () {
+    test('toDb and fromDb round-trip authors', () {
+      const CustomMedia card =
+          CustomMedia(id: 1, title: 'X', authors: <String>['A', 'B']);
+      expect(CustomMedia.fromDb(card.toDb()).authors, <String>['A', 'B']);
+      expect(card.toExport()['authors'], isNotNull);
+    });
+
+    test('fromDb reads a missing column as null', () {
+      expect(
+        CustomMedia.fromDb(<String, dynamic>{'id': 1, 'title': 'X'}).authors,
+        isNull,
+      );
+    });
+
+    test('copyWith keeps, replaces and clears authors', () {
+      const CustomMedia card =
+          CustomMedia(id: 1, title: 'X', authors: <String>['A']);
+      expect(card.copyWith(title: 'Y').authors, <String>['A']);
+      expect(card.copyWith(authors: <String>['B']).authors, <String>['B']);
+      expect(card.copyWith(clearAuthors: true).authors, isNull);
+    });
+  });
 }

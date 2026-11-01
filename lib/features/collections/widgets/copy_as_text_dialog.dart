@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/focusable_surface.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
@@ -253,44 +254,41 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: <Widget>[
                 Text(l.textExportSortBy, style: AppTypography.body),
-                PopupMenuButton<TextExportSortMode>(
-                  initialValue: _sortMode,
-                  onSelected: (TextExportSortMode mode) {
-                    setState(() => _sortMode = mode);
-                  },
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<TextExportSortMode>>[
-                    for (final TextExportSortMode mode
-                        in TextExportSortMode.values)
-                      PopupMenuItem<TextExportSortMode>(
-                        value: mode,
-                        child: Text(mode.localizedLabel(l)),
+                FocusableSurface(
+                  child: PopupMenuButton<TextExportSortMode>(
+                    initialValue: _sortMode,
+                    onSelected: (TextExportSortMode mode) {
+                      setState(() => _sortMode = mode);
+                    },
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<TextExportSortMode>>[
+                      for (final TextExportSortMode mode
+                          in TextExportSortMode.values)
+                        PopupMenuItem<TextExportSortMode>(
+                          value: mode,
+                          child: Text(mode.localizedLabel(l)),
+                        ),
+                    ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
-                  ],
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.surfaceBorder),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          _sortMode.localizedLabel(l),
-                          style: AppTypography.body,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          size: 18,
-                          color: AppColors.textSecondary,
-                        ),
-                      ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            _sortMode.localizedLabel(l),
+                            style: AppTypography.body,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            size: 18,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

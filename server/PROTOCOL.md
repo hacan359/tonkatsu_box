@@ -57,6 +57,11 @@ also points `/proxy` (below) at that server.
   have thrown, so callers above the DAO layer see no difference.
 - HTTP status stays `200` for a DAO-level error — the call reached the DAO and
   came back. Transport failures use real 4xx/5xx.
+- A server started with `--auth token` answers **401** with
+  `{ "ok": false, "error": { "kind": "auth", … } }` to any `/rpc`, `/proxy/*`
+  or non-GET `/img` request lacking `Authorization: Bearer <token>`. The client
+  treats `auth` as "ask the user for the token", never as a DAO failure.
+  `GET /health` carries `"auth": true|false` so a browser can tell beforehand.
 
 ## Type rules
 

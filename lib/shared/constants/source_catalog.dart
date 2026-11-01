@@ -68,7 +68,7 @@ const List<SourceInfo> kDataSourceCatalog = <SourceInfo>[
   SourceInfo(
     source: DataSource.kitsu,
     mediaTypes: <MediaType>[MediaType.anime, MediaType.manga],
-    url: 'https://kitsu.io/',
+    url: 'https://kitsu.app/',
   ),
   SourceInfo(
     source: DataSource.vndb,

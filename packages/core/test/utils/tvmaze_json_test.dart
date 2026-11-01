@@ -37,4 +37,60 @@ void main() {
       expect(tvMazeRating(null), isNull);
     });
   });
+
+  group('tvMazeCreators', () {
+    test('reads Creator crew', () {
+      expect(
+        tvMazeCreators(<String, dynamic>{
+          '_embedded': <String, dynamic>{
+            'crew': <dynamic>[
+              <String, dynamic>{
+                'type': 'Creator',
+                'person': <String, dynamic>{'name': 'C'},
+              },
+              <String, dynamic>{
+                'type': 'Executive Producer',
+                'person': <String, dynamic>{'name': 'P'},
+              },
+            ],
+          },
+        }),
+        <String>['C'],
+      );
+    });
+
+    test('never stands the network in for a creator', () {
+      expect(
+        tvMazeCreators(<String, dynamic>{
+          'network': <String, dynamic>{'name': 'CBS'},
+          '_embedded': <String, dynamic>{'crew': <dynamic>[]},
+        }),
+        isNull,
+      );
+      expect(tvMazeCreators(<String, dynamic>{}), isNull);
+    });
+  });
+
+  group('tvMazeNetworks', () {
+    test('reads the network and the web channel', () {
+      expect(
+        tvMazeNetworks(<String, dynamic>{
+          'network': <String, dynamic>{'name': 'CBS'},
+          'webChannel': <String, dynamic>{'name': 'Paramount+'},
+        }),
+        <String>['CBS', 'Paramount+'],
+      );
+      expect(
+        tvMazeNetworks(<String, dynamic>{
+          'network': null,
+          'webChannel': <String, dynamic>{'name': 'Netflix'},
+        }),
+        <String>['Netflix'],
+      );
+    });
+
+    test('is null with neither', () {
+      expect(tvMazeNetworks(<String, dynamic>{}), isNull);
+    });
+  });
 }

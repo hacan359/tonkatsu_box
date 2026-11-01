@@ -4,6 +4,7 @@ import 'package:core/models/data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/import/import_progress.dart';
+import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/widgets/import_progress_dialog.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -25,7 +26,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
   }
 
-  Future<void> pumpDialog(WidgetTester tester) async {
+  Future<void> pumpDialog(
+    WidgetTester tester, {
+    VoidCallback? onCancel,
+    ImportTalliesBuilder? talliesBuilder,
+    ImportResultBuilder<int>? resultBuilder,
+  }) async {
     // Created inside the test body: a completer made in setUp lives outside
     // the FakeAsync zone and its completion never reaches the FutureBuilder.
     completer = Completer<int>();
@@ -43,6 +49,9 @@ void main() {
                 title: 'Importing',
                 progressNotifier: progress,
                 importFuture: completer.future,
+                onCancel: onCancel,
+                talliesBuilder: talliesBuilder,
+                resultBuilder: resultBuilder,
               ),
             ),
             child: const Text('open'),
@@ -146,6 +155,77 @@ void main() {
       expect(find.textContaining('1'), findsWidgets);
       completer.complete(1);
       await tester.pump();
+    });
+
+    testWidgets('should show Stop only while running and fire it once',
+        (WidgetTester tester) async {
+      int cancels = 0;
+      await pumpDialog(tester, onCancel: () => cancels++);
+      progress.value = const ImportProgress(
+        stage: ImportStage.fetchingGames,
+        current: 0,
+        total: 2,
+      );
+      await tester.pump();
+
+      final Finder stop = find.byType(TextButton);
+      expect(stop, findsOneWidget);
+      await tester.tap(stop);
+      await tester.pump();
+      expect(cancels, 1);
+      expect(tester.widget<TextButton>(stop).onPressed, isNull);
+
+      completer.complete(1);
+      await settle(tester);
+      expect(find.byType(TextButton), findsNothing);
+    });
+
+    testWidgets('should offer no Stop without a cancel handler',
+        (WidgetTester tester) async {
+      await pumpDialog(tester);
+
+      expect(find.byType(TextButton), findsNothing);
+      completer.complete(1);
+      await tester.pump();
+    });
+
+    testWidgets('should render the custom tallies line',
+        (WidgetTester tester) async {
+      await pumpDialog(
+        tester,
+        talliesBuilder: (S l, ImportProgress p) => 'custom ${p.updated}',
+      );
+      progress.value = const ImportProgress(
+        stage: ImportStage.fetchingGames,
+        current: 1,
+        total: 2,
+        updated: 7,
+      );
+      await tester.pump();
+
+      expect(find.text('custom 7'), findsOneWidget);
+      completer.complete(1);
+      await tester.pump();
+    });
+
+    testWidgets('should render the result view only once settled',
+        (WidgetTester tester) async {
+      await pumpDialog(
+        tester,
+        resultBuilder: (BuildContext _, int r) => Text('result $r'),
+      );
+      progress.value = const ImportProgress(
+        stage: ImportStage.fetchingGames,
+        current: 0,
+        total: 1,
+      );
+      await tester.pump();
+      expect(find.text('result 5'), findsNothing);
+
+      completer.complete(5);
+      await settle(tester);
+
+      expect(find.text('result 5'), findsOneWidget);
     });
   });
 }

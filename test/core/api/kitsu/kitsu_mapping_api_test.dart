@@ -136,7 +136,7 @@ void main() {
           'data': <Map<String, dynamic>>[mapping('11061', '6448')],
           'included': <Map<String, dynamic>>[animeResource('6448')],
           'links': <String, dynamic>{
-            'next': 'https://kitsu.io/api/edge/next',
+            'next': 'https://kitsu.app/api/edge/next',
           },
         }),
         makeResponse(<String, dynamic>{

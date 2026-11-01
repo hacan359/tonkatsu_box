@@ -1,5 +1,6 @@
 import 'package:core/database/dao/item_mark_dao.dart';
 import 'package:core/database/migrations/migration_v53.dart';
+import 'package:core/database/migrations/migration_v69.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:test/test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -17,8 +18,11 @@ void main() {
     db = await factory.openDatabase(
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
-        version: 53,
-        onCreate: (Database d, int _) async => MigrationV53().migrate(d),
+        version: 69,
+        onCreate: (Database d, int _) async {
+          await MigrationV53().migrate(d);
+          await MigrationV69().migrate(d);
+        },
       ),
     );
     dao = ItemMarkDao(() async => db);
@@ -94,6 +98,85 @@ void main() {
           (await dao.getMarksForItem(itemId)).single.userComment,
           'spaced',
         );
+      });
+    });
+
+    group('setRating', () {
+      test('creates a rating-only row', () async {
+        final ItemMark? merged =
+            await dao.setRating(itemId, kUnitSeason, 2, 0, 8.5);
+        expect(merged?.userRating, 8.5);
+        final ItemMark stored = (await dao.getMarksForItem(itemId)).single;
+        expect(stored.userRating, 8.5);
+        expect(stored.isFavorite, isFalse);
+        expect(stored.userComment, isNull);
+      });
+
+      test('rounds to one decimal', () async {
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 7.26);
+        expect((await dao.getMarksForItem(itemId)).single.userRating, 7.3);
+      });
+
+      test('null on a rating-only mark deletes the row', () async {
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 8.5);
+        final ItemMark? gone =
+            await dao.setRating(itemId, kUnitSeason, 2, 0, null);
+        expect(gone, isNull);
+        expect(await dao.getMarksForItem(itemId), isEmpty);
+      });
+
+      test('null keeps the row when a note remains', () async {
+        await dao.setComment(itemId, kUnitSeason, 2, 0, 'note');
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 8.5);
+        await dao.setRating(itemId, kUnitSeason, 2, 0, null);
+        final ItemMark stored = (await dao.getMarksForItem(itemId)).single;
+        expect(stored.userRating, isNull);
+        expect(stored.userComment, 'note');
+      });
+
+      test('keeps the like, note and liked_at of the existing mark', () async {
+        await dao.setFavorite(itemId, kUnitSeason, 2, 0, isFavorite: true);
+        final DateTime? likedAt =
+            (await dao.getMarksForItem(itemId)).single.likedAt;
+        await dao.setComment(itemId, kUnitSeason, 2, 0, 'note');
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 9.0);
+        final ItemMark stored = (await dao.getMarksForItem(itemId)).single;
+        expect(stored.isFavorite, isTrue);
+        expect(stored.userComment, 'note');
+        expect(stored.likedAt, likedAt);
+        expect(stored.userRating, 9.0);
+      });
+
+      test('unliking a rated mark keeps the rating', () async {
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 8.5);
+        await dao.setFavorite(itemId, kUnitSeason, 2, 0, isFavorite: true);
+        await dao.setFavorite(itemId, kUnitSeason, 2, 0, isFavorite: false);
+        final ItemMark stored = (await dao.getMarksForItem(itemId)).single;
+        expect(stored.isFavorite, isFalse);
+        expect(stored.userRating, 8.5);
+      });
+
+      test('clearing the note of a rated mark keeps the rating', () async {
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 8.5);
+        await dao.setComment(itemId, kUnitSeason, 2, 0, 'note');
+        await dao.setComment(itemId, kUnitSeason, 2, 0, null);
+        final ItemMark stored = (await dao.getMarksForItem(itemId)).single;
+        expect(stored.userComment, isNull);
+        expect(stored.userRating, 8.5);
+      });
+
+      test('rejects a rating outside 1..10 without touching the row',
+          () async {
+        await dao.setRating(itemId, kUnitSeason, 2, 0, 8.5);
+        expect(
+          () => dao.setRating(itemId, kUnitSeason, 2, 0, 0.0),
+          throwsArgumentError,
+        );
+        expect(
+          () => dao.setRating(itemId, kUnitSeason, 2, 0, 10.5),
+          throwsArgumentError,
+        );
+        expect((await dao.getMarksForItem(itemId)).single.userRating, 8.5);
       });
     });
 
@@ -218,6 +301,7 @@ void main() {
         await dao.setFavorite(oldItemId, kUnitEpisode, 2, 5, isFavorite: true);
         await dao.setComment(oldItemId, kUnitEpisode, 2, 5, 'loved it');
         await dao.setComment(oldItemId, kUnitChapter, 0, 45, 'cliffhanger');
+        await dao.setRating(oldItemId, kUnitSeason, 2, 0, 8.5);
 
         // Export (nested, no item_id) then import under a fresh id.
         final List<Map<String, dynamic>> exported =
@@ -230,7 +314,12 @@ void main() {
         ]);
 
         final List<ItemMark> restored = await dao.getMarksForItem(newItemId);
-        expect(restored, hasLength(2));
+        expect(restored, hasLength(3));
+        final ItemMark season = restored
+            .firstWhere((ItemMark m) => m.unitType == kUnitSeason);
+        expect(season.itemId, newItemId);
+        expect(season.userRating, 8.5);
+        expect(season.parentNumber, 2);
         final ItemMark episode = restored
             .firstWhere((ItemMark m) => m.unitType == kUnitEpisode);
         expect(episode.itemId, newItemId);

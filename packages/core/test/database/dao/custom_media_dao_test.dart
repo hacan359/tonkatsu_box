@@ -186,6 +186,26 @@ void main() {
       });
     });
 
+    group('getAll', () {
+      test('returns empty when there are no cards', () async {
+        expect(await dao.getAll(), isEmpty);
+      });
+
+      test('returns every card with its cover url', () async {
+        await dao.create(_item(title: 'A'));
+        await dao.create(_item(title: 'B', coverUrl: 'https://x/b'));
+
+        final List<CustomMedia> all = await dao.getAll();
+
+        expect(
+          all.map((CustomMedia c) => c.title),
+          unorderedEquals(<String>['A', 'B']),
+        );
+        expect(all.firstWhere((CustomMedia c) => c.title == 'B').coverUrl,
+            'https://x/b');
+      });
+    });
+
     group('getByIds', () {
       test('returns empty for an empty id list', () async {
         expect(await dao.getByIds(const <int>[]), isEmpty);

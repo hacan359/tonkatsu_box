@@ -1,12 +1,17 @@
+import 'package:core/models/import_source_kind.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/simkl_import_content.dart';
+import '../widgets/remembered_import_collection.dart';
 
 class SimklImportScreen extends StatelessWidget {
-  const SimklImportScreen({super.key});
+  const SimklImportScreen({this.initialCollectionId, super.key});
+
+  /// Preselects "existing collection" when opened from a collection.
+  final int? initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,12 @@ class SimklImportScreen extends StatelessWidget {
                   horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                child: const SimklImportContent(),
+                child: RememberedImportCollection(
+                  source: ImportSourceKind.simkl,
+                  initialCollectionId: initialCollectionId,
+                  builder: (int? collectionId) =>
+                      SimklImportContent(initialCollectionId: collectionId),
+                ),
               ),
             ),
           ),

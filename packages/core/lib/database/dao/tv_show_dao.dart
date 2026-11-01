@@ -29,8 +29,8 @@ class TvShowDao {
     return TvShow.fromDb(rows.first);
   }
 
-  // List endpoints carry no totals/status; those columns keep the cached
-  // detail-endpoint value rather than being wiped by the sparse row.
+  // List endpoints carry no totals, status, creators or studios; those columns
+  // keep the cached detail-endpoint value instead of being wiped by the row.
   static ({String sql, List<Object?> args}) _showUpsert(TvShow tvShow) =>
       buildPreservingUpsert(
         table: 'tv_shows_cache',
@@ -40,6 +40,8 @@ class TvShowDao {
           'total_seasons',
           'total_episodes',
           'status',
+          'creators',
+          'studios',
         },
       );
 

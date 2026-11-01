@@ -18,9 +18,12 @@ import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/features/collections/screens/item_detail_screen.dart';
-import 'package:tonkatsu_box/features/collections/widgets/status_chip_row.dart';
+import 'package:tonkatsu_box/features/collections/widgets/item_detail/item_detail_app_bar.dart';
+import 'package:tonkatsu_box/features/collections/widgets/status_list.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_app_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/media_detail/identity_header.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
 import 'package:tonkatsu_box/shared/widgets/source_badge.dart';
 
@@ -97,6 +100,12 @@ void main() {
         ),
       ),
     );
+  }
+
+  Future<void> openMenuAndTap(WidgetTester tester, String label) async {
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(label));
   }
 
   group('ItemDetailScreen — Game', () {
@@ -297,28 +306,6 @@ void main() {
       expect(find.text('IGDB'), findsOneWidget);
     });
 
-    testWidgets('должен отображать комментарий автора',
-        (WidgetTester tester) async {
-      const Game game = Game(id: 100, name: 'Test Game');
-      const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionItem item = createGameItem(
-        game: game,
-        platform: platform,
-        authorComment: 'Best RPG ever!',
-      );
-
-      await tester.pumpWidget(createTestWidget(
-        collectionId: 1,
-        itemId: 1,
-        isEditable: true,
-        items: <CollectionItem>[item],
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text("Author's Review"), findsOneWidget);
-      expect(find.text('Best RPG ever!'), findsOneWidget);
-    });
-
     group('Board toggle', () {
       testWidgets('should show Board toggle кнопку если collectionId != null',
           (WidgetTester tester) async {
@@ -337,7 +324,11 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Board (Ctrl+B)'), findsOneWidget);
+        // The toggle lives in the menu, not in the bar.
+        expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        expect(find.text('Board (Ctrl+B)'), findsOneWidget);
         expect(find.byIcon(Icons.dashboard_outlined), findsOneWidget);
       });
 
@@ -359,8 +350,33 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Board (Ctrl+B)'), findsNothing);
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        expect(find.text('Board (Ctrl+B)'), findsNothing);
         expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
+      });
+
+      testWidgets('read-only card keeps the board entry and nothing else',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionItem item = createGameItem(
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: false,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        expect(find.text('Board (Ctrl+B)'), findsOneWidget);
+        expect(find.byType(PopupMenuItem<ItemDetailMenuAction>), findsOneWidget);
       });
 
       testWidgets('должен начинать с detail view (не canvas)',
@@ -381,8 +397,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text("Author's Review"), findsOneWidget);
-        expect(find.text('Test author comment'), findsOneWidget);
+        expect(find.byType(StatusList), findsOneWidget);
       });
     });
 
@@ -431,7 +446,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Board (Ctrl+B)'));
+        await openMenuAndTap(tester, 'Board (Ctrl+B)');
         await pumpFrames(tester);
 
         expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
@@ -455,7 +470,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Board (Ctrl+B)'));
+        await openMenuAndTap(tester, 'Board (Ctrl+B)');
         await pumpFrames(tester);
 
         expect(find.byTooltip('Lock board (Ctrl+L)'), findsNothing);
@@ -479,7 +494,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('Board (Ctrl+B)'));
+        await openMenuAndTap(tester, 'Board (Ctrl+B)');
         await pumpFrames(tester);
 
         await tester.tap(find.byTooltip('Lock board (Ctrl+L)'));
@@ -713,7 +728,7 @@ void main() {
     });
 
     group('Статус', () {
-      testWidgets('StatusChipRow использует MediaType.movie',
+      testWidgets('StatusList использует MediaType.movie',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
         final CollectionItem item = createMovieItem(movie: movie);
@@ -726,10 +741,10 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        final StatusChipRow dropdown = tester.widget<StatusChipRow>(
-          find.byType(StatusChipRow),
+        final StatusList list = tester.widget<StatusList>(
+          find.byType(StatusList),
         );
-        expect(dropdown.mediaType, MediaType.movie);
+        expect(list.mediaType, MediaType.movie);
       });
 
       testWidgets('should show иконку play для inProgress',
@@ -789,7 +804,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Board (Ctrl+B)'), findsNothing);
       expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
     });
   });
@@ -857,6 +871,63 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('TV Show'), findsOneWidget);
+    });
+
+    testWidgets('keeps the title out of the floating bar',
+        (WidgetTester tester) async {
+      final TvShow tvShow = createTestTvShow(title: 'Floating Bar Show');
+      final CollectionItem item = createTvShowItem(tvShow: tvShow);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(GlassAppBar),
+          matching: find.text('Floating Bar Show'),
+        ),
+        findsNothing,
+      );
+      expect(find.text('Floating Bar Show'), findsOneWidget);
+    });
+
+    testWidgets('shows the title above the cover at phone width',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final TvShow tvShow = createTestTvShow(title: 'Narrow Show');
+      final CollectionItem item = createTvShowItem(tvShow: tvShow);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      final Finder title = find.text('Narrow Show');
+      expect(title, findsOneWidget);
+      expect(
+        tester.getTopLeft(title).dy,
+        greaterThanOrEqualTo(kGlassAppBarHeight),
+      );
+      // On the backing with the rest of the card, not floating above it.
+      expect(
+        find.ancestor(of: title, matching: find.byType(Material)).first,
+        findsOneWidget,
+      );
+      expect(
+        tester.getTopLeft(title).dy,
+        lessThan(tester.getTopLeft(find.byType(IdentityHeader)).dy),
+      );
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('должен отображать SourceBadge TMDB',
@@ -1256,7 +1327,7 @@ void main() {
       expect(find.text('TMDB'), findsOneWidget);
     });
 
-    testWidgets('должен отображать StatusChipRow',
+    testWidgets('должен отображать StatusList',
         (WidgetTester tester) async {
       final Movie movie = createTestMovie();
       final CollectionItem item = createAnimeItem(
@@ -1273,7 +1344,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatusChipRow), findsOneWidget);
+      expect(find.byType(StatusList), findsOneWidget);
     });
 
     testWidgets('не should show Board toggle для uncategorized',
@@ -1293,7 +1364,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Board (Ctrl+B)'), findsNothing);
       expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
     });
   });
@@ -1415,7 +1485,7 @@ void main() {
       expect(find.text('Reviews'), findsNothing);
     });
 
-    testWidgets('должен отображать StatusChipRow',
+    testWidgets('должен отображать StatusList',
         (WidgetTester tester) async {
       final VisualNovel vn = createTestVn();
       final CollectionItem item = createVnItem(
@@ -1431,7 +1501,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatusChipRow), findsOneWidget);
+      expect(find.byType(StatusList), findsOneWidget);
     });
 
     testWidgets('should show MediaDetailView',
@@ -1924,6 +1994,9 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
+      // "Visible" can mean the top edge, which sits under the floating bar.
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 80));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.edit).first);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'unsaved note');

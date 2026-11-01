@@ -6,6 +6,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as model;
 import 'package:core/models/tag.dart';
 import 'package:core/utils/cover_image_id.dart';
+import 'package:core/utils/json_list.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -102,6 +103,7 @@ class _CreateCustomItemDialogState
   late final TextEditingController _descriptionController;
   late final TextEditingController _coverUrlController;
   late final TextEditingController _genresController;
+  late final TextEditingController _authorsController;
   late final TextEditingController _platformController;
   late final TextEditingController _unitTotalController;
   late final TextEditingController _unitGroupTotalController;
@@ -137,6 +139,8 @@ class _CreateCustomItemDialogState
         TextEditingController(text: e?.description ?? '');
     _coverUrlController = TextEditingController(text: e?.coverUrl ?? '');
     _genresController = TextEditingController(text: e?.genres ?? '');
+    _authorsController =
+        TextEditingController(text: e?.authors?.join(', ') ?? '');
     _platformController = TextEditingController(text: e?.platformName ?? '');
     _unitTotalController =
         TextEditingController(text: e?.unitTotal?.toString() ?? '');
@@ -214,6 +218,7 @@ class _CreateCustomItemDialogState
     _descriptionController.dispose();
     _coverUrlController.dispose();
     _genresController.dispose();
+    _authorsController.dispose();
     _platformController.dispose();
     _unitTotalController.dispose();
     _unitGroupTotalController.dispose();
@@ -247,6 +252,7 @@ class _CreateCustomItemDialogState
       genres: _genresController.text.trim().isNotEmpty
           ? _genresController.text.trim()
           : null,
+      authors: distinctNames(_authorsController.text.split(',')),
       platform: _selectedType == MediaType.game &&
               _platformController.text.trim().isNotEmpty
           ? _platformController.text.trim()
@@ -349,6 +355,9 @@ class _CreateCustomItemDialogState
       if (entry.genres != null) {
         _genresController.text = entry.genres!;
       }
+      if (entry.authors != null) {
+        _authorsController.text = entry.authors!.join(', ');
+      }
       if (entry.coverUrl != null) {
         _coverUrlController.text = entry.coverUrl!;
         _coverBytes = null;
@@ -445,6 +454,8 @@ class _CreateCustomItemDialogState
           _buildMediaTypeChips(l),
           const SizedBox(height: AppSpacing.md),
           _buildGenresSection(l),
+          const SizedBox(height: AppSpacing.md),
+          _buildAuthorsSection(l),
           const SizedBox(height: AppSpacing.md),
           _buildCountsSection(l),
           const SizedBox(height: AppSpacing.md),
@@ -732,6 +743,35 @@ class _CreateCustomItemDialogState
           controller: _genresController,
           decoration: InputDecoration(
             hintText: l.customItemGenresHint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              borderSide: BorderSide(color: AppColors.surfaceBorder),
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceLight,
+            isDense: true,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAuthorsSection(S l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          l.customItemAuthors,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        TextField(
+          controller: _authorsController,
+          decoration: InputDecoration(
+            hintText: l.customItemAuthorsHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               borderSide: BorderSide(color: AppColors.surfaceBorder),

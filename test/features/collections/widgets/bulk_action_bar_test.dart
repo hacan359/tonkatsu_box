@@ -1,4 +1,5 @@
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/widgets/bulk_action_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/confirm_dialog.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -117,6 +119,56 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('BulkActionBar refresh action', () {
+    testWidgets('should offer refresh when a selected item has a source',
+        (WidgetTester tester) async {
+      await tester.pumpApp(
+        BulkActionBar(
+          items: <CollectionItem>[
+            createTestCollectionItem(id: 1, mediaType: MediaType.custom),
+            createTestCollectionItem(id: 2),
+          ],
+          onClearSelection: () {},
+        ),
+        wrapInScaffold: true,
+      );
+
+      expect(find.byIcon(Icons.sync_outlined), findsOneWidget);
+    });
+
+    testWidgets('should hide refresh when only custom cards are selected',
+        (WidgetTester tester) async {
+      await tester.pumpApp(
+        BulkActionBar(
+          items: <CollectionItem>[
+            createTestCollectionItem(id: 1, mediaType: MediaType.custom),
+          ],
+          onClearSelection: () {},
+        ),
+        wrapInScaffold: true,
+      );
+
+      expect(find.byIcon(Icons.sync_outlined), findsNothing);
+    });
+
+    testWidgets('should ask for confirmation before refreshing',
+        (WidgetTester tester) async {
+      await tester.pumpApp(
+        BulkActionBar(
+          items: <CollectionItem>[createTestCollectionItem(id: 1)],
+          onClearSelection: () {},
+        ),
+        wrapInScaffold: true,
+      );
+
+      await tester.tap(find.byIcon(Icons.sync_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ConfirmDialog), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

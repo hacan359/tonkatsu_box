@@ -1,8 +1,10 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/app_binding.dart';
 import 'core/logging/startup_error.dart';
 import 'core/services/backup_service.dart';
 import 'features/settings/providers/kodi_settings_provider.dart';
@@ -12,7 +14,9 @@ import 'l10n/app_localizations.dart';
 import 'shared/gamepad/gamepad_provider.dart';
 import 'shared/theme/app_colors.dart';
 import 'shared/theme/app_theme.dart';
+import 'shared/constants/platform_features.dart';
 import 'shared/theme/app_theme_id.dart';
+import 'shared/widgets/ui_scale_scope.dart';
 
 /// Root app widget. A top-level [Listener] watches mouse movement to switch
 /// [InputMode] (gamepad ↔ mouse).
@@ -29,6 +33,8 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
   @override
   void initState() {
     super.initState();
+    // The browser zooms on Ctrl+wheel itself; doubling it would compound.
+    if (!kIsWebBuild) TonkatsuBinding.onCtrlWheel = _onCtrlWheel;
     _lifecycleListener = AppLifecycleListener(
       // Veto OS-level close requests while a restore is mid-flight so SQLite
       // can't be cut off mid-write; forced kills still bypass this.
@@ -43,8 +49,17 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
 
   @override
   void dispose() {
+    if (TonkatsuBinding.onCtrlWheel == _onCtrlWheel) {
+      TonkatsuBinding.onCtrlWheel = null;
+    }
     _lifecycleListener.dispose();
     super.dispose();
+  }
+
+  void _onCtrlWheel(PointerScrollEvent event) {
+    final double dy = event.scrollDelta.dy;
+    if (dy == 0) return;
+    ref.read(settingsNotifierProvider.notifier).stepUiScale(dy < 0 ? 1 : -1);
   }
 
   @override
@@ -87,7 +102,9 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
             valueListenable: startupError,
             builder: (BuildContext context, StartupErrorInfo? info, _) {
               if (info == null) {
-                return _TextScaleScope(child: child ?? const SizedBox.shrink());
+                return UiScaleScope(
+                  child: _TextScaleScope(child: child ?? const SizedBox.shrink()),
+                );
               }
               return StartupErrorView(info: info);
             },

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
+import 'package:core/utils/json_list.dart';
 
 import '../../../../shared/utils/media_format.dart';
 import 'custom_card_entry.dart';
@@ -249,6 +250,7 @@ class CustomCardsParser {
         description: _string(raw, CustomCardFields.description),
         year: year,
         genres: _string(raw, CustomCardFields.genres),
+        authors: _authors(raw),
         link: _string(raw, CustomCardFields.link),
         coverUrl: cover,
         platform: _string(raw, CustomCardFields.platform),
@@ -337,6 +339,15 @@ class CustomCardsParser {
       parts = text.split(',');
     }
     return Tag.dedupeNames(parts);
+  }
+
+  /// Comma-separated like [_tags], or a native JSON string array.
+  List<String>? _authors(Map<String, dynamic> raw) {
+    final Object? value = raw[CustomCardFields.authors];
+    if (value is List<Object?>) return distinctNames(value);
+    return distinctNames(
+      _string(raw, CustomCardFields.authors)?.split(',') ?? const <String>[],
+    );
   }
 
   /// Trimmed string value of [key]; empty and null collapse to null. Non-string

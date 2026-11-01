@@ -540,6 +540,39 @@ void main() {
       });
     });
 
+    group('authors', () {
+      test('splits a comma-separated JSON string', () {
+        final CustomCardEntry entry = sut.parseJson(
+          '{"title": "T", "type": "custom", "authors": "Ann, Bob, Ann"}',
+        ).single.entry!;
+
+        expect(entry.authors, <String>['Ann', 'Bob']);
+      });
+
+      test('accepts a native JSON array', () {
+        final CustomCardEntry entry = sut.parseJson(
+          '{"title": "T", "type": "custom", "authors": ["Ann", " "]}',
+        ).single.entry!;
+
+        expect(entry.authors, <String>['Ann']);
+      });
+
+      test('reads a quoted CSV column and stays null without one', () {
+        final List<CustomCardRow> rows = sut.parseCsv(
+          'title,type,authors\n'
+          'A,custom,"Ann, Bob"\n'
+          'B,custom,\n',
+        );
+
+        expect(rows[0].entry!.authors, <String>['Ann', 'Bob']);
+        expect(rows[1].entry!.authors, isNull);
+        expect(
+          sut.parseCsv('title,type\nC,custom\n').single.entry!.authors,
+          isNull,
+        );
+      });
+    });
+
     group('parseCsv', () {
       test('parses rows addressed by header name', () {
         final List<CustomCardRow> rows = sut.parseCsv(

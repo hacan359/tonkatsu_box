@@ -14,6 +14,7 @@ ItemMark _mark({
   int unit = 3,
   bool fav = true,
   String? note,
+  double? rating,
 }) {
   return ItemMark(
     id: 1,
@@ -24,6 +25,7 @@ ItemMark _mark({
     isFavorite: fav,
     userComment: note,
     updatedAt: DateTime.fromMillisecondsSinceEpoch(1700000000000),
+    userRating: rating,
   );
 }
 
@@ -127,6 +129,57 @@ void main() {
 
       expect(
         container.read(itemMarksProvider(1)).noteFor(kUnitEpisode, 1, 3),
+        isNull,
+      );
+    });
+
+    test('setRating delegates to the dao and exposes ratingFor', () async {
+      when(() => mockDao.getMarksForItem(1))
+          .thenAnswer((_) async => <ItemMark>[]);
+      when(() => mockDao.setRating(any(), any(), any(), any(), any()))
+          .thenAnswer((_) async =>
+              _mark(unitType: kUnitSeason, parent: 2, unit: 0, fav: false,
+                  rating: 8.5));
+
+      final ProviderContainer container = makeContainer();
+      container.read(itemMarksProvider(1));
+      await pumpEventQueue();
+      expect(
+        container.read(itemMarksProvider(1)).ratingFor(kUnitSeason, 2, 0),
+        isNull,
+      );
+
+      await container
+          .read(itemMarksProvider(1).notifier)
+          .setRating(kUnitSeason, 2, 0, 8.5);
+
+      verify(() => mockDao.setRating(1, kUnitSeason, 2, 0, 8.5)).called(1);
+      expect(
+        container.read(itemMarksProvider(1)).ratingFor(kUnitSeason, 2, 0),
+        8.5,
+      );
+    });
+
+    test('clearing the rating removes a rating-only mark from state',
+        () async {
+      when(() => mockDao.getMarksForItem(1)).thenAnswer((_) async =>
+          <ItemMark>[
+            _mark(unitType: kUnitSeason, parent: 2, unit: 0, fav: false,
+                rating: 8.5),
+          ]);
+      when(() => mockDao.setRating(any(), any(), any(), any(), any()))
+          .thenAnswer((_) async => null);
+
+      final ProviderContainer container = makeContainer();
+      container.read(itemMarksProvider(1));
+      await pumpEventQueue();
+
+      await container
+          .read(itemMarksProvider(1).notifier)
+          .setRating(kUnitSeason, 2, 0, null);
+
+      expect(
+        container.read(itemMarksProvider(1)).markFor(kUnitSeason, 2, 0),
         isNull,
       );
     });

@@ -54,7 +54,6 @@ import 'kinorium_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'simkl_import_screen.dart';
 import 'trakt_import_screen.dart';
-import 'card_banner_debug_screen.dart';
 import 'debug_hub_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'kodi_screen.dart';
@@ -566,6 +565,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onChangeEnd: notifier.setTextScale,
             ),
           ),
+          SettingsTile(
+            leadingIcon: Icons.zoom_in_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsUiScale,
+            subtitle: l.settingsUiScaleSubtitle,
+            showChevron: false,
+            trailing: _ScaleSlider(
+              scale: settings.uiScale,
+              min: SettingsKeys.uiScaleMin,
+              max: SettingsKeys.uiScaleMax,
+              step: SettingsKeys.uiScaleStep,
+              onChanged: (double value) =>
+                  notifier.setUiScale(value, persist: false),
+              onChangeEnd: notifier.setUiScale,
+            ),
+          ),
         ],
       ),
       gap,
@@ -719,22 +734,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
 
-      // Experimental designs live here, reachable in release builds too.
-      gap,
-      SettingsGroup(
-        title: l.settingsLaboratory,
-        titleIcon: Icons.science_outlined,
-        children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.style_outlined,
-            leadingColor: _kDebugColor,
-            title: l.settingsLaboratoryCardDesigns,
-            value: l.settingsLaboratoryCardDesignsSubtitle,
-            onTap: () => _pushScreen(const CardBannerDebugScreen()),
-          ),
-        ],
-      ),
-
       // Android-only gamepad button debug, available in release too so
       // controller key codes can be captured on devices like the Odin 2.
       if (!kDebugMode && defaultTargetPlatform == TargetPlatform.android) ...<Widget>[
@@ -853,6 +852,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _themeLabel(S l, AppThemeId theme) => switch (theme) {
         AppThemeId.dark => l.settingsThemeDark,
         AppThemeId.sakura => l.settingsThemeSakura,
+        AppThemeId.ps1 => l.settingsThemePs1,
+        AppThemeId.eva => l.settingsThemeEva,
       };
 
   void _showThemePicker(SettingsState settings) {

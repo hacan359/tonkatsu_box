@@ -79,6 +79,9 @@ class ItemMarkDao {
     return rows.map(MarkedUnit.fromDb).toList();
   }
 
+  // Every setter rebuilds the row from `existing`: a field left out of one
+  // of them is silently wiped by the next unrelated write.
+
   /// Sets (or clears) the like flag on a unit, merging with any existing note.
   /// Returns the merged mark, or null when the row was deleted (empty mark).
   Future<ItemMark?> setFavorite(
@@ -106,6 +109,7 @@ class ItemMarkDao {
         userComment: existing?.userComment,
         likedAt: likedAt,
         updatedAt: now,
+        userRating: existing?.userRating,
       );
       return _writeInTxn(txn, merged);
     });
@@ -136,6 +140,45 @@ class ItemMarkDao {
         userComment: trimmed,
         likedAt: existing?.likedAt,
         updatedAt: DateTime.now(),
+        userRating: existing?.userRating,
+      );
+      return _writeInTxn(txn, merged);
+    });
+  }
+
+  /// Null clears the rating. Validated here, not only in the widget: on web
+  /// the call arrives over RPC. Returns the merged mark, or null when deleted.
+  Future<ItemMark?> setRating(
+    int itemId,
+    String unitType,
+    int parent,
+    int unit,
+    double? rating,
+  ) async {
+    if (!ItemMark.isValidRating(rating)) {
+      throw ArgumentError.value(
+        rating,
+        'rating',
+        'must be null or within ${ItemMark.minRating}..${ItemMark.maxRating}',
+      );
+    }
+    final double? rounded =
+        rating == null ? null : (rating * 10).roundToDouble() / 10;
+    final Database db = await _getDatabase();
+    return db.transaction((Transaction txn) async {
+      final ItemMark? existing =
+          await _readInTxn(txn, itemId, unitType, parent, unit);
+      final ItemMark merged = ItemMark(
+        id: existing?.id ?? 0,
+        itemId: itemId,
+        unitType: unitType,
+        parentNumber: parent,
+        unitNumber: unit,
+        isFavorite: existing?.isFavorite ?? false,
+        userComment: existing?.userComment,
+        likedAt: existing?.likedAt,
+        updatedAt: DateTime.now(),
+        userRating: rounded,
       );
       return _writeInTxn(txn, merged);
     });

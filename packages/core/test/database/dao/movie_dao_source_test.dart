@@ -104,5 +104,17 @@ void main() {
 
       expect(await dao.getMoviesByTmdbIds(<int>[1]), hasLength(2));
     });
+
+    test('a list hit without credits keeps the cached directors', () async {
+      await dao.upsertMovie(
+        const Movie(tmdbId: 3, title: 'Alien', directors: <String>['R. S.']),
+      );
+      await dao.upsertMovie(const Movie(tmdbId: 3, title: 'Alien'));
+
+      expect(
+        (await dao.getMovieByTmdbId(3))?.directors,
+        <String>['R. S.'],
+      );
+    });
   });
 }

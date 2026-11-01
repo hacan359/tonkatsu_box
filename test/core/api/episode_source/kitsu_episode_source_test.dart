@@ -213,7 +213,7 @@ void main() {
           status: 'FINISHED',
           startYear: 2013,
           genres: <String>['Action'],
-          externalUrl: 'https://kitsu.io/anime/attack-on-titan',
+          externalUrl: 'https://kitsu.app/anime/attack-on-titan',
         ),
       );
 
@@ -230,7 +230,7 @@ void main() {
       expect(show.rating, closeTo(8.4, 0.001));
       expect(show.firstAirYear, 2013);
       expect(show.genres, <String>['Action']);
-      expect(show.externalUrl, 'https://kitsu.io/anime/attack-on-titan');
+      expect(show.externalUrl, 'https://kitsu.app/anime/attack-on-titan');
       expect(show.source, DataSource.kitsu);
     });
 

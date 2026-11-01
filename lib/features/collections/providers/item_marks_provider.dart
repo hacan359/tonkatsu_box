@@ -28,6 +28,10 @@ class ItemMarksState {
   String? noteFor(String unitType, int parent, int unit) =>
       markFor(unitType, parent, unit)?.note;
 
+  /// The rating on a unit (null when not rated).
+  double? ratingFor(String unitType, int parent, int unit) =>
+      markFor(unitType, parent, unit)?.userRating;
+
   /// All marks as a flat list.
   List<ItemMark> get all => marks.values.toList();
 
@@ -111,6 +115,18 @@ class ItemMarksNotifier extends FamilyNotifier<ItemMarksState, int> {
   ) async {
     final ItemMark? merged = await _db.itemMarkDao
         .setComment(_itemId, unitType, parent, unit, comment);
+    _apply((unitType: unitType, parent: parent, unit: unit), merged);
+  }
+
+  /// Sets the rating on a unit (null clears it).
+  Future<void> setRating(
+    String unitType,
+    int parent,
+    int unit,
+    double? rating,
+  ) async {
+    final ItemMark? merged = await _db.itemMarkDao
+        .setRating(_itemId, unitType, parent, unit, rating);
     _apply((unitType: unitType, parent: parent, unit: unit), merged);
   }
 

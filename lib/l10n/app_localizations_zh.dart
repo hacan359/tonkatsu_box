@@ -499,15 +499,6 @@ class SZh extends S {
   String get settingsDebugSubtitleNoKey => '部分工具需先设置 SteamGridDB 密钥';
 
   @override
-  String get settingsLaboratory => '实验室';
-
-  @override
-  String get settingsLaboratoryCardDesigns => '卡片横幅设计';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle => '海报卡片的实验性布局';
-
-  @override
   String get settingsHelp => '帮助';
 
   @override
@@ -545,6 +536,32 @@ class SZh extends S {
 
   @override
   String get settingsApiKeys => 'API 密钥';
+
+  @override
+  String get credentialsServerTokenLabel => '服务器访问令牌';
+
+  @override
+  String get credentialsServerTokenHint =>
+      '仅当服务器以 TONKATSU_AUTH=token 运行时需要。保存后应用会重启。';
+
+  @override
+  String get credentialsServerTokenSaved => '服务器令牌已保存';
+
+  @override
+  String get serverTokenTitle => '服务器访问令牌';
+
+  @override
+  String get serverTokenBody =>
+      '此服务器需要访问令牌。每次启动时它会以登录链接的形式打印在服务器日志中，并保存在数据文件夹的 auth_token 文件里。';
+
+  @override
+  String get serverTokenFieldLabel => '令牌';
+
+  @override
+  String get serverTokenConnect => '连接';
+
+  @override
+  String get serverTokenRejected => '服务器拒绝了此令牌';
 
   @override
   String get credentialsServerManagedTitle => '密钥保存在服务器上';
@@ -586,6 +603,12 @@ class SZh extends S {
 
   @override
   String get settingsThemeSakura => '樱花';
+
+  @override
+  String get settingsThemePs1 => 'PS1 复古灰';
+
+  @override
+  String get settingsThemeEva => 'Eva 蔚蓝';
 
   @override
   String get settingsAppLanguageSubtitle => '界面语言';
@@ -1678,6 +1701,30 @@ class SZh extends S {
 
   @override
   String get customItemGenresHint => '例如：RPG、动作、益智';
+
+  @override
+  String get customItemAuthors => '作者';
+
+  @override
+  String get customItemAuthorsHint => '例如：小岛秀夫、新川洋司';
+
+  @override
+  String get creatorDirector => '导演';
+
+  @override
+  String get creatorCreator => '主创';
+
+  @override
+  String get creatorDeveloper => '开发商';
+
+  @override
+  String get creatorPublisher => '发行商';
+
+  @override
+  String get creatorStudio => '制作公司';
+
+  @override
+  String get creatorAuthor => '作者';
 
   @override
   String get platform => '平台';
@@ -3417,6 +3464,13 @@ class SZh extends S {
   String get settingsTextScaleSubtitle => '界面文字大小，在系统设置基础上调整';
 
   @override
+  String get settingsUiScale => '界面缩放';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      '像浏览器一样缩放整个应用。Ctrl+滚轮或 Ctrl+加号 / 减号，Ctrl+0 重置';
+
+  @override
   String get collectionEditHeroImage => '封面图片';
 
   @override
@@ -3944,6 +3998,11 @@ class SZh extends S {
   @override
   String steamImportWishlisted(int count) {
     return '已加入愿望单：$count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return '跳过的自定义卡片：$count';
   }
 
   @override
@@ -5246,6 +5305,12 @@ class SZh extends S {
   String get itemMarkNote => '备注';
 
   @override
+  String get seasonRate => '评价本季';
+
+  @override
+  String get seasonRatingLabel => '本季评分';
+
+  @override
   String get itemMarkNoteHint => '写备注…';
 
   @override
@@ -5307,6 +5372,12 @@ class SZh extends S {
   String get unitTrack => '曲目';
 
   @override
+  String get unitIssue => '期';
+
+  @override
+  String get progressStoppedAt => '停在';
+
+  @override
   String get cardLinkCopy => '复制卡片链接';
 
   @override
@@ -5338,6 +5409,15 @@ class SZh extends S {
 
   @override
   String get shortcutThisHelp => '此帮助';
+
+  @override
+  String get shortcutZoomIn => '放大';
+
+  @override
+  String get shortcutZoomOut => '缩小';
+
+  @override
+  String get shortcutZoomReset => '重置缩放';
 
   @override
   String get shortcutCreateCollection => '创建收藏';
@@ -5413,12 +5493,6 @@ class SZh extends S {
 
   @override
   String get shortcutFocusSearchField => '聚焦搜索框';
-
-  @override
-  String get shortcutClearOrBack => '清除/返回';
-
-  @override
-  String get shortcutRunSearch => '执行搜索';
 
   @override
   String get debugKeyEvents => '按键事件';
@@ -5788,6 +5862,33 @@ class SZh extends S {
   }
 
   @override
+  String get importStageFetchingAudio => '正在获取音频数据...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return '已更新 $updated · 未找到 $notFound · 错误 $failed · 已跳过 $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    return '从来源刷新 $count 项？';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    return '所选的 $count 项没有来源，将被跳过。';
+  }
+
+  @override
+  String get bulkRefreshStart => '刷新';
+
+  @override
+  String get bulkRefreshProblems => '未刷新';
+
+  @override
+  String get stop => '停止';
+
+  @override
   String get customImportResolveTitle => '在来源中查找卡片';
 
   @override
@@ -5799,4 +5900,33 @@ class SZh extends S {
 
   @override
   String get importResultUnresolvedCopied => '已复制标题';
+
+  @override
+  String get collectionImportPickSource => '导入到收藏';
+
+  @override
+  String get collectionImportFromFile => '从收藏文件';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return '上次运行 $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return '再次从 $source 导入？';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return '来自 $source 的新条目将以上次的设置添加到“$collection”。';
+  }
+
+  @override
+  String get collectionImportRun => '运行';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source 已同步：新增 $count';
+  }
 }

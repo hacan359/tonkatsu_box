@@ -7,6 +7,7 @@ import 'package:core/database/dao/book_dao.dart';
 import 'package:core/database/dao/calendar_entry_dao.dart';
 import 'package:core/database/dao/canvas_dao.dart';
 import 'package:core/database/dao/collection_dao.dart';
+import 'package:core/database/dao/collection_import_dao.dart';
 import 'package:core/database/dao/custom_media_dao.dart';
 import 'package:core/database/dao/game_dao.dart';
 import 'package:core/database/dao/global_tag_dao.dart';
@@ -138,6 +139,8 @@ class MockDiscordRpcService extends Mock implements DiscordRpcService {}
 class MockCustomMediaDao extends Mock implements CustomMediaDao {}
 
 class MockCollectionDao extends Mock implements CollectionDao {}
+
+class MockCollectionImportDao extends Mock implements CollectionImportDao {}
 
 class MockStatsDao extends Mock implements StatsDao {}
 

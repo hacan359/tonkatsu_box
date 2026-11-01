@@ -10,6 +10,7 @@ abstract final class CustomCardFields {
   static const String description = 'description';
   static const String year = 'year';
   static const String genres = 'genres';
+  static const String authors = 'authors';
   static const String link = 'link';
   static const String cover = 'cover';
   static const String platform = 'platform';
@@ -36,6 +37,7 @@ abstract final class CustomCardFields {
     description,
     year,
     genres,
+    authors,
     link,
     cover,
     platform,
@@ -136,6 +138,7 @@ class CustomCardEntry {
     this.description,
     this.year,
     this.genres,
+    this.authors,
     this.link,
     this.coverUrl,
     this.platform,
@@ -166,6 +169,8 @@ class CustomCardEntry {
 
   /// Comma-separated genre list, stored verbatim.
   final String? genres;
+
+  final List<String>? authors;
 
   /// External page URL (`external_url` on the card).
   final String? link;

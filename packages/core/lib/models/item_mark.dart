@@ -40,7 +40,7 @@ const List<String> kUnitPresets = <String>[
   return (parent: 0, unit: number);
 }
 
-/// A like and/or note on one unit of a collection item. Anchored on
+/// A like, note and/or rating on one unit of a collection item. Anchored on
 /// `collection_items.id` so it works for every media type without duplication.
 class ItemMark {
   const ItemMark({
@@ -53,6 +53,7 @@ class ItemMark {
     required this.updatedAt,
     this.userComment,
     this.likedAt,
+    this.userRating,
   });
 
   /// Builds an [ItemMark] from a database row.
@@ -70,6 +71,7 @@ class ItemMark {
           ? DateTime.fromMillisecondsSinceEpoch(likedAtMs)
           : null,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(row['updated_at'] as int),
+      userRating: (row['user_rating'] as num?)?.toDouble(),
     );
   }
 
@@ -95,8 +97,23 @@ class ItemMark {
       updatedAt: updatedAtSec != null
           ? DateTime.fromMillisecondsSinceEpoch(updatedAtSec * 1000)
           : DateTime.now(),
+      userRating: _ratingOrNull(json['user_rating']),
     );
   }
+
+  /// A hand-edited or foreign file may carry junk here; junk reads as unrated.
+  static double? _ratingOrNull(Object? raw) {
+    final double? value = raw is num ? raw.toDouble() : null;
+    return isValidRating(value) ? value : null;
+  }
+
+  static const double minRating = 1.0;
+  static const double maxRating = 10.0;
+
+  /// Same scale as the title's rating; `null` means "not rated", never zero.
+  static bool isValidRating(double? rating) =>
+      rating == null ||
+      (rating >= minRating && rating <= maxRating && rating.isFinite);
 
   /// Row id (0 when not yet persisted).
   final int id;
@@ -125,6 +142,9 @@ class ItemMark {
   /// Last modification time.
   final DateTime updatedAt;
 
+  /// 1.0..10.0 (step 0.1), null when not rated.
+  final double? userRating;
+
   /// The number shown to the user: [parentNumber] for season/volume marks,
   /// [unitNumber] otherwise.
   int get displayNumber =>
@@ -139,8 +159,8 @@ class ItemMark {
   }
 
   /// Whether the mark carries anything worth keeping. An empty mark (no like,
-  /// no note) is deleted rather than stored.
-  bool get hasContent => isFavorite || note != null;
+  /// no note, no rating) is deleted rather than stored.
+  bool get hasContent => isFavorite || note != null || userRating != null;
 
   /// [id] is omitted so upserts resolve against the
   /// `(item_id, unit_type, parent_number, unit_number)` unique key.
@@ -154,6 +174,7 @@ class ItemMark {
       'user_comment': userComment,
       'liked_at': likedAt?.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
+      'user_rating': userRating,
     };
   }
 
@@ -170,6 +191,7 @@ class ItemMark {
           ? likedAt!.millisecondsSinceEpoch ~/ 1000
           : null,
       'updated_at': updatedAt.millisecondsSinceEpoch ~/ 1000,
+      if (userRating != null) 'user_rating': userRating,
     };
   }
 
@@ -186,6 +208,8 @@ class ItemMark {
     DateTime? likedAt,
     bool clearLikedAt = false,
     DateTime? updatedAt,
+    double? userRating,
+    bool clearUserRating = false,
   }) {
     return ItemMark(
       id: id ?? this.id,
@@ -198,6 +222,7 @@ class ItemMark {
           clearUserComment ? null : (userComment ?? this.userComment),
       likedAt: clearLikedAt ? null : (likedAt ?? this.likedAt),
       updatedAt: updatedAt ?? this.updatedAt,
+      userRating: clearUserRating ? null : (userRating ?? this.userRating),
     );
   }
 
@@ -218,5 +243,6 @@ class ItemMark {
   @override
   String toString() =>
       'ItemMark(item: $itemId, $unitType p$parentNumber u$unitNumber, '
-      'fav: $isFavorite, note: ${userComment != null})';
+      'fav: $isFavorite, note: ${userComment != null}, '
+      'rating: $userRating)';
 }

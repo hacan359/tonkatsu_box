@@ -279,44 +279,48 @@ class _RecommendationRowState extends State<_RecommendationRow> {
           style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: rowHeight,
-          child: ScrollableRowWithArrows(
-            controller: _scrollController,
+        // Clip.none inside lets hover scale / shadows use the row padding;
+        // this rect stops cards sliding out over neighbouring UI mid-scroll.
+        ClipRect(
+          child: SizedBox(
             height: rowHeight,
-            child: ListView.separated(
+            child: ScrollableRowWithArrows(
               controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              padding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.posterRowVerticalPadding,
+              height: rowHeight,
+              child: ListView.separated(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.posterRowVerticalPadding,
+                ),
+                itemCount: widget.items.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: AppSpacing.sm),
+                itemBuilder: (BuildContext context, int index) {
+                  final _RecItem item = widget.items[index];
+                  return SizedBox(
+                    width: posterWidth,
+                    child: MediaPosterCard(
+                      variant: compact
+                          ? CardVariant.compact
+                          : CardVariant.grid,
+                      title: item.title,
+                      imageUrl: item.posterUrl ?? '',
+                      cacheImageType: item.cacheImageType,
+                      cacheImageId: item.cacheImageId,
+                      year: item.year,
+                      apiRating: item.apiRating,
+                      splitRatings: true,
+                      isInCollection: item.isOwned,
+                      placeholderIcon: item.icon,
+                      source: item.source,
+                      onSourceTap: openUrlCallback(item.externalUrl),
+                      onTap: item.onAddToCollection,
+                    ),
+                  );
+                },
               ),
-              itemCount: widget.items.length,
-              separatorBuilder: (_, _) =>
-                  const SizedBox(width: AppSpacing.sm),
-              itemBuilder: (BuildContext context, int index) {
-                final _RecItem item = widget.items[index];
-                return SizedBox(
-                  width: posterWidth,
-                  child: MediaPosterCard(
-                    variant: compact
-                        ? CardVariant.compact
-                        : CardVariant.grid,
-                    title: item.title,
-                    imageUrl: item.posterUrl ?? '',
-                    cacheImageType: item.cacheImageType,
-                    cacheImageId: item.cacheImageId,
-                    year: item.year,
-                    apiRating: item.apiRating,
-                    splitRatings: true,
-                    isInCollection: item.isOwned,
-                    placeholderIcon: item.icon,
-                    source: item.source,
-                    onSourceTap: openUrlCallback(item.externalUrl),
-                    onTap: item.onAddToCollection,
-                  ),
-                );
-              },
             ),
           ),
         ),

@@ -79,7 +79,9 @@ void main() {
       expect(group.title, 'Поиск');
       expect(group.entries, isNotEmpty);
       expect(hasKey(group, 'Ctrl+F'), isTrue);
-      expect(hasKey(group, 'Escape'), isTrue);
+      // Search binds no keys of its own; Escape lives in the global group.
+      expect(hasKey(group, 'Escape'), isFalse);
+      expect(hasKey(group, 'Enter'), isFalse);
     });
   });
 }

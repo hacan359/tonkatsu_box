@@ -71,6 +71,19 @@ abstract final class AppSpacing {
   /// Max card width on desktop grids at 100% card scale.
   static const double desktopMaxCardWidth = 170;
 
+  /// Compact card width the badge sizes were drawn for: three columns on a
+  /// 360 px phone.
+  static const double compactRefCardWidth = 105;
+
+  static const double badgeScaleMin = 1.0;
+  static const double badgeScaleMax = 1.6;
+
+  /// Badges only grow: below the reference width they would cover the poster.
+  static double badgeScale({required double cardWidth, required bool compact}) {
+    final double ref = compact ? compactRefCardWidth : desktopMaxCardWidth;
+    return (cardWidth / ref).clamp(badgeScaleMin, badgeScaleMax);
+  }
+
   /// Grid cell ratio for poster cards: a ~2:3 poster plus the title block
   /// below it.
   static const double posterCardAspectRatio = 0.55;

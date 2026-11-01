@@ -16,6 +16,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/services/backup_service.dart';
 import 'package:tonkatsu_box/core/services/import_service.dart';
 
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
+
 import '../../helpers/test_helpers.dart';
 
 void main() {
@@ -76,6 +79,11 @@ void main() {
       registerFallbackValue(DataSource.tmdb);
       registerFallbackValue(<(int, int, int?)>[]);
       registerFallbackValue(<int, int>{});
+      registerFallbackValue(CollectionImport(
+        collectionId: 0,
+        source: ImportSourceKind.steam,
+        lastRunAt: DateTime(2025),
+      ));
       registerFallbackValue(CalendarEntry(
         externalId: 0,
         source: DataSource.tmdb,
@@ -233,6 +241,53 @@ void main() {
 
       expect(r.success, isTrue);
       verify(() => collectionRepo.setHidden(any(), isHidden: true)).called(1);
+    });
+
+    test('re-attaches import sources to the restored collection', () async {
+      stubImportOk();
+      final MockCollectionImportDao importDao = MockCollectionImportDao();
+      when(() => database.collectionImportDao).thenReturn(importDao);
+      when(() => importDao.upsert(any())).thenAnswer((_) async {});
+      final Uint8List path = writeZip(<String, String>{
+        'collections/000_my-coll.xcollx': collectionXcoll,
+        'collections/001_other.xcollx': collectionXcoll,
+        'collection_imports.json': '{"collections/000_my-coll.xcollx":['
+            '{"source":"steam","options":{"wishlist":true,"name":"x"},'
+            '"last_run_at":1700000000},'
+            '{"source":"from_the_future","options":{},"last_run_at":1}'
+            ']}',
+      });
+
+      final RestoreResult r =
+          await makeService().restoreFromBackup(zipBytes: path);
+
+      expect(r.success, isTrue);
+      final CollectionImport saved =
+          verify(() => importDao.upsert(captureAny())).captured.single
+              as CollectionImport;
+      expect(saved.collectionId, createTestCollection().id);
+      expect(saved.source, ImportSourceKind.steam);
+      expect(saved.options, <String, Object?>{'wishlist': true, 'name': 'x'});
+      expect(saved.lastRunAt.millisecondsSinceEpoch ~/ 1000, 1700000000);
+    });
+
+    test('skips import sources of a collection that failed to restore',
+        () async {
+      when(() => importService.importFromXcoll(
+            any(),
+            customIds: any(named: 'customIds'),
+          )).thenAnswer((_) async => const ImportResult.failure('boom'));
+      final MockCollectionImportDao importDao = MockCollectionImportDao();
+      when(() => database.collectionImportDao).thenReturn(importDao);
+      final Uint8List path = writeZip(<String, String>{
+        'collections/000_my-coll.xcollx': collectionXcoll,
+        'collection_imports.json': '{"collections/000_my-coll.xcollx":['
+            '{"source":"steam","options":{},"last_run_at":1700000000}]}',
+      });
+
+      await makeService().restoreFromBackup(zipBytes: path);
+
+      verifyNever(() => importDao.upsert(any()));
     });
 
     test('applies settings only when restoreSettings is true', () async {
@@ -610,6 +665,45 @@ void main() {
             platformId: any(named: 'platformId'),
             source: any(named: 'source'),
           ));
+    });
+  });
+
+  group('BackupService import source serialisation', () {
+    test('should round-trip a record onto a new collection id', () {
+      final CollectionImport record = CollectionImport(
+        collectionId: 7,
+        source: ImportSourceKind.kinorium,
+        options: <String, Object?>{'includeWatched': false, 'limit': 50},
+        lastRunAt: DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000),
+      );
+
+      final CollectionImport? back = BackupService.importFromExport(
+        BackupService.importToExport(record),
+        collectionId: 42,
+      );
+
+      expect(back, isNotNull);
+      expect(back!.collectionId, 42);
+      expect(back.source, ImportSourceKind.kinorium);
+      expect(back.options, record.options);
+      expect(back.lastRunAt, record.lastRunAt);
+    });
+
+    test('should return null for an unknown source or a missing timestamp', () {
+      expect(
+        BackupService.importFromExport(
+          <String, dynamic>{'source': 'nope', 'last_run_at': 1},
+          collectionId: 1,
+        ),
+        isNull,
+      );
+      expect(
+        BackupService.importFromExport(
+          <String, dynamic>{'source': 'steam'},
+          collectionId: 1,
+        ),
+        isNull,
+      );
     });
   });
 }

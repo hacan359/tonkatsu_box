@@ -557,16 +557,6 @@ class SRu extends S {
   String get settingsDebugSubtitleNoKey => 'Сначала укажите ключ SteamGridDB';
 
   @override
-  String get settingsLaboratory => 'Лаборатория';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Дизайны шапок карточек';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Экспериментальные раскладки карточки-постера';
-
-  @override
   String get settingsHelp => 'Справка';
 
   @override
@@ -605,6 +595,32 @@ class SRu extends S {
 
   @override
   String get settingsApiKeys => 'API ключи';
+
+  @override
+  String get credentialsServerTokenLabel => 'Токен доступа к серверу';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Нужен только если сервер запущен с TONKATSU_AUTH=token. Сохранение перезапускает приложение.';
+
+  @override
+  String get credentialsServerTokenSaved => 'Токен сервера сохранён';
+
+  @override
+  String get serverTokenTitle => 'Токен доступа к серверу';
+
+  @override
+  String get serverTokenBody =>
+      'Этот сервер требует токен доступа. Он печатается в логе сервера в виде ссылки для входа при каждом запуске и хранится в файле auth_token в папке данных.';
+
+  @override
+  String get serverTokenFieldLabel => 'Токен';
+
+  @override
+  String get serverTokenConnect => 'Подключиться';
+
+  @override
+  String get serverTokenRejected => 'Сервер отклонил этот токен';
 
   @override
   String get credentialsServerManagedTitle => 'Ключи хранятся на сервере';
@@ -646,6 +662,12 @@ class SRu extends S {
 
   @override
   String get settingsThemeSakura => 'Сакура';
+
+  @override
+  String get settingsThemePs1 => 'PS1 Ретро';
+
+  @override
+  String get settingsThemeEva => 'Eva Лазурь';
 
   @override
   String get settingsAppLanguageSubtitle => 'Язык интерфейса';
@@ -1837,6 +1859,30 @@ class SRu extends S {
 
   @override
   String get customItemGenresHint => 'напр. RPG, Экшен, Головоломка';
+
+  @override
+  String get customItemAuthors => 'Авторы';
+
+  @override
+  String get customItemAuthorsHint => 'напр. Хидэо Кодзима, Ёдзи Синкава';
+
+  @override
+  String get creatorDirector => 'Режиссёр';
+
+  @override
+  String get creatorCreator => 'Создатель';
+
+  @override
+  String get creatorDeveloper => 'Разработчик';
+
+  @override
+  String get creatorPublisher => 'Издатель';
+
+  @override
+  String get creatorStudio => 'Студия';
+
+  @override
+  String get creatorAuthor => 'Автор';
 
   @override
   String get platform => 'Платформа';
@@ -3696,6 +3742,13 @@ class SRu extends S {
       'Размер текста интерфейса поверх системной настройки';
 
   @override
+  String get settingsUiScale => 'Масштаб интерфейса';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Увеличивает всё приложение, как в браузере. Ctrl+колесо или Ctrl+плюс / минус, Ctrl+0 сбрасывает';
+
+  @override
   String get collectionEditHeroImage => 'Обложка';
 
   @override
@@ -4241,6 +4294,11 @@ class SRu extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'В вишлист: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Пропущено своих карточек: $count';
   }
 
   @override
@@ -5635,6 +5693,12 @@ class SRu extends S {
   String get itemMarkNote => 'Заметка';
 
   @override
+  String get seasonRate => 'Оценить сезон';
+
+  @override
+  String get seasonRatingLabel => 'Оценка сезона';
+
+  @override
   String get itemMarkNoteHint => 'Напишите заметку…';
 
   @override
@@ -5696,6 +5760,12 @@ class SRu extends S {
   String get unitTrack => 'Трек';
 
   @override
+  String get unitIssue => 'Выпуск';
+
+  @override
+  String get progressStoppedAt => 'Остановился на';
+
+  @override
   String get cardLinkCopy => 'Скопировать ссылку на карточку';
 
   @override
@@ -5727,6 +5797,15 @@ class SRu extends S {
 
   @override
   String get shortcutThisHelp => 'Эта справка';
+
+  @override
+  String get shortcutZoomIn => 'Увеличить масштаб';
+
+  @override
+  String get shortcutZoomOut => 'Уменьшить масштаб';
+
+  @override
+  String get shortcutZoomReset => 'Сбросить масштаб';
 
   @override
   String get shortcutCreateCollection => 'Создать коллекцию';
@@ -5802,12 +5881,6 @@ class SRu extends S {
 
   @override
   String get shortcutFocusSearchField => 'Фокус в поле поиска';
-
-  @override
-  String get shortcutClearOrBack => 'Очистить / назад';
-
-  @override
-  String get shortcutRunSearch => 'Выполнить поиск';
 
   @override
   String get debugKeyEvents => 'Кнопки (key events)';
@@ -6191,6 +6264,49 @@ class SRu extends S {
   }
 
   @override
+  String get importStageFetchingAudio => 'Загрузка данных аудио...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Обновлено $updated · Не найдено $notFound · Ошибок $failed · Пропущено $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Обновить $count элементов из источников?',
+      many: 'Обновить $count элементов из источников?',
+      few: 'Обновить $count элемента из источников?',
+      one: 'Обновить 1 элемент из источника?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'У $count элементов нет источника, они будут пропущены.',
+      many: 'У $count элементов нет источника, они будут пропущены.',
+      few: 'У $count элементов нет источника, они будут пропущены.',
+      one: 'У 1 элемента нет источника, он будет пропущен.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Обновить';
+
+  @override
+  String get bulkRefreshProblems => 'Не обновлены';
+
+  @override
+  String get stop => 'Остановить';
+
+  @override
   String get customImportResolveTitle => 'Искать карточки в источниках';
 
   @override
@@ -6203,4 +6319,33 @@ class SRu extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Названия скопированы';
+
+  @override
+  String get collectionImportPickSource => 'Импорт в коллекцию';
+
+  @override
+  String get collectionImportFromFile => 'Из файла коллекции';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Последний запуск $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Повторить импорт из $source?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'Новые записи из $source добавятся в «$collection» с теми же настройками, что и в прошлый раз.';
+  }
+
+  @override
+  String get collectionImportRun => 'Запустить';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source синхронизирован: новых $count';
+  }
 }

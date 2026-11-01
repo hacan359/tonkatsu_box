@@ -189,4 +189,71 @@ void main() {
       expect(c.infoChips.where((MediaDetailChip x) => x.onTap != null), isEmpty);
     });
   });
+
+  group('ItemDetailMediaConfig.from creator chips', () {
+    List<String> creatorTexts(ItemDetailMediaConfig c) => <String>[
+          for (final MediaDetailChip chip in c.infoChips)
+            if (chip.tooltip != null) chip.text,
+        ];
+
+    testWidgets('should show directors and studios as tappable chips',
+        (WidgetTester t) async {
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.movie,
+        externalId: 8,
+        movie: createTestMovie(tmdbId: 8).copyWith(
+          directors: <String>['Ridley Scott'],
+          studios: <String>['Brandywine'],
+        ),
+      );
+
+      final ItemDetailMediaConfig c = await buildConfig(t, item);
+
+      expect(creatorTexts(c), <String>['Ridley Scott', 'Brandywine']);
+      expect(
+        c.infoChips
+            .where((MediaDetailChip x) => x.tooltip != null)
+            .every((MediaDetailChip x) => x.onTap != null),
+        isTrue,
+      );
+    });
+
+    testWidgets('should cap each role at four chips', (WidgetTester t) async {
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.tvShow,
+        externalId: 9,
+        tvShow: createTestTvShow(tmdbId: 9).copyWith(
+          studios: <String>['A', 'B', 'C', 'D', 'E'],
+        ),
+      );
+
+      final ItemDetailMediaConfig c = await buildConfig(t, item);
+
+      expect(creatorTexts(c), <String>['A', 'B', 'C', 'D']);
+    });
+
+    testWidgets('should show game developers and publishers',
+        (WidgetTester t) async {
+      final CollectionItem item = createTestCollectionItem(
+        game: createTestGame().copyWith(
+          developers: <String>['Team Cherry'],
+          publishers: <String>['Fangamer'],
+        ),
+      );
+
+      final ItemDetailMediaConfig c = await buildConfig(t, item);
+
+      expect(creatorTexts(c), <String>['Team Cherry', 'Fangamer']);
+    });
+
+    testWidgets('should show no creator chips for an item without them',
+        (WidgetTester t) async {
+      final CollectionItem item =
+          createTestCollectionItem(game: createTestGame());
+
+      final ItemDetailMediaConfig c = await buildConfig(t, item);
+
+      expect(creatorTexts(c), isEmpty);
+    });
+  });
 }

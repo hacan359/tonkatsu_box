@@ -35,13 +35,13 @@ class TvMazeShowApi {
     }
   }
 
-  /// Full show with embedded seasons.
+  /// Full show with embedded seasons and crew.
   Future<TvShow?> getShow(int showId) async {
     try {
       final Response<dynamic> resp = await _client.get(
         'shows/$showId',
         queryParameters: <String, dynamic>{
-          'embed[]': <String>['seasons'],
+          'embed[]': <String>['seasons', 'crew'],
         },
       );
       final Object? data = resp.data;

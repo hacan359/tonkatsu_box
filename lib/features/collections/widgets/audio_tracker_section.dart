@@ -22,6 +22,7 @@ import '../../../shared/utils/date_format_preset.dart';
 import '../../../shared/widgets/audio_track_row.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/listened_tracks_provider.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
 
@@ -214,6 +215,7 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
           ? (<(int, int)>{..._listened}..removeAll(keys))
           : <(int, int)>{..._listened, ...keys};
     });
+    _refreshLastListened(album, collectionId);
     unawaited(_updateAutoStatus());
   }
 
@@ -246,7 +248,17 @@ class _AudioTrackerSectionState extends ConsumerState<AudioTrackerSection> {
         _listened = <(int, int)>{..._listened, key};
       }
     });
+    _refreshLastListened(album, collectionId);
     unawaited(_updateAutoStatus());
+  }
+
+  /// The card's "stopped at" line reads its own provider, not this state.
+  void _refreshLastListened(AudioItem album, int collectionId) {
+    ref.invalidate(lastListenedTrackProvider((
+      collectionId: collectionId,
+      source: album.source,
+      audioId: album.id,
+    )));
   }
 
   /// Mirrors the TV tracker: all tracks listened flips the item to completed,

@@ -1,4 +1,6 @@
 import 'package:core/models/profile.dart';
+import 'package:core/rpc/protocol.dart';
+import 'package:core/rpc/rpc_transport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +11,7 @@ import '../../../features/settings/providers/profile_provider.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/welcome/screens/welcome_screen.dart';
 import 'profile_picker_screen.dart';
+import 'server_token_screen.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/navigation/app_shell.dart';
@@ -79,6 +82,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       _dbDone = true;
       _tryNavigate();
     }).catchError((Object error, StackTrace stack) {
+      // The server wants a token this browser does not hold yet: ask for it
+      // instead of painting the fatal screen nobody can get past.
+      if (error is RpcException && error.kind == kRpcErrorKindAuth) {
+        _navigateToServerToken();
+        return;
+      }
       // A failed migration, or on web a server that did not answer. Without
       // this the future just rejects and the splash hangs forever.
       recordStartupError('database', error, stack);
@@ -112,6 +121,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         _navigateToHome();
       }
     }
+  }
+
+  void _navigateToServerToken() {
+    if (!mounted || _navigated) return;
+    _navigated = true;
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder<void>(
+        pageBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          return const ServerTokenScreen();
+        },
+        transitionsBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) {
+          return FadeTransition(
+            opacity: animation,
+            child: _withBackdrop(child),
+          );
+        },
+        transitionDuration: AppDurations.slower,
+      ),
+    );
   }
 
   void _navigateToProfilePicker() {

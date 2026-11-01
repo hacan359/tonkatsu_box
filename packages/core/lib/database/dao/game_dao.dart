@@ -1,4 +1,5 @@
 import '../query_chunk.dart';
+import '../sparse_upsert.dart';
 import '../../models/game.dart';
 import '../../models/platform.dart';
 import 'package:sqflite_common/sqlite_api.dart';
@@ -129,11 +130,8 @@ class GameDao {
 
   Future<void> upsertGame(Game game) async {
     final Database db = await _getDatabase();
-    await db.insert(
-      'games',
-      game.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final ({String sql, List<Object?> args}) upsert = _gameUpsert(game);
+    await db.rawInsert(upsert.sql, upsert.args);
   }
 
   /// Batched in a single transaction for performance.
@@ -144,15 +142,22 @@ class GameDao {
     await db.transaction((Transaction txn) async {
       final Batch batch = txn.batch();
       for (final Game game in games) {
-        batch.insert(
-          'games',
-          game.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        final ({String sql, List<Object?> args}) upsert = _gameUpsert(game);
+        batch.rawInsert(upsert.sql, upsert.args);
       }
       await batch.commit(noResult: true);
     });
   }
+
+  /// Files and imports from before the company columns carry none, so a
+  /// row without them must not blank what a detail fetch already cached.
+  ({String sql, List<Object?> args}) _gameUpsert(Game game) =>
+      buildPreservingUpsert(
+        table: 'games',
+        row: game.toDb(),
+        conflictKey: <String>['id'],
+        preserveWhenNull: <String>{'developers', 'publishers'},
+      );
 
   Future<void> deleteGame(int id) async {
     final Database db = await _getDatabase();

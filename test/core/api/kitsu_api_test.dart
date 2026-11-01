@@ -49,7 +49,7 @@ void main() {
           resource('2', 'manga'),
         ],
         'meta': <String, dynamic>{'count': 40},
-        'links': <String, dynamic>{'next': 'https://kitsu.io/...?page=2'},
+        'links': <String, dynamic>{'next': 'https://kitsu.app/...?page=2'},
       }));
 
       final (List<Manga> mangas, bool hasMore, int totalPages) =

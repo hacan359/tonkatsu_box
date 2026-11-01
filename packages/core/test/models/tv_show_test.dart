@@ -743,4 +743,114 @@ void main() {
       });
     });
   });
+
+  group('TvShow creators', () {
+    test('fromJson reads TMDB created_by', () {
+      final TvShow show = TvShow.fromJson(<String, dynamic>{
+        'id': 1,
+        'name': 'Breaking Bad',
+        'created_by': <dynamic>[
+          <String, dynamic>{'name': 'Vince Gilligan'},
+        ],
+      });
+      expect(show.creators, <String>['Vince Gilligan']);
+    });
+
+    test('fromJson reads networks, then production companies, as studios',
+        () {
+      final TvShow show = TvShow.fromJson(<String, dynamic>{
+        'id': 1,
+        'name': 'The Wire',
+        'networks': <dynamic>[
+          <String, dynamic>{'name': 'HBO'},
+        ],
+        'production_companies': <dynamic>[
+          <String, dynamic>{'name': 'Blown Deadline'},
+          <String, dynamic>{'name': 'HBO'},
+        ],
+      });
+      expect(show.studios, <String>['HBO', 'Blown Deadline']);
+      expect(show.creators, isNull);
+    });
+
+    test('fromJson leaves creators null for list hits', () {
+      final TvShow show =
+          TvShow.fromJson(<String, dynamic>{'id': 1, 'name': 'BB'});
+      expect(show.creators, isNull);
+    });
+
+    test('fromTvMaze reads Creator crew, the network goes to studios', () {
+      final TvShow show = TvShow.fromTvMaze(<String, dynamic>{
+        'id': 1,
+        'name': 'Under the Dome',
+        'network': <String, dynamic>{'name': 'CBS'},
+        '_embedded': <String, dynamic>{
+          'crew': <dynamic>[
+            <String, dynamic>{
+              'type': 'Creator',
+              'person': <String, dynamic>{'name': 'Brian K. Vaughan'},
+            },
+          ],
+        },
+      });
+      expect(show.creators, <String>['Brian K. Vaughan']);
+      expect(show.studios, <String>['CBS']);
+    });
+
+    test('fromTvMaze search hit has a studio but no creators', () {
+      final TvShow show = TvShow.fromTvMaze(<String, dynamic>{
+        'id': 1,
+        'name': 'Under the Dome',
+        'network': <String, dynamic>{'name': 'CBS'},
+      });
+      expect(show.creators, isNull);
+      expect(show.studios, <String>['CBS']);
+    });
+
+    test('fromTvdb keeps Creator people and studios apart', () {
+      final Map<String, dynamic> base = <String, dynamic>{
+        'id': 1,
+        'name': 'Show',
+        'originalNetwork': <String, dynamic>{'name': 'HBO'},
+        'companies': <dynamic>[
+          <String, dynamic>{
+            'name': 'Studio X',
+            'companyType': <String, dynamic>{'companyTypeName': 'Studio'},
+          },
+        ],
+      };
+      final TvShow withCreator = TvShow.fromTvdb(<String, dynamic>{
+        ...base,
+        'characters': <dynamic>[
+          <String, dynamic>{'peopleType': 'Creator', 'personName': 'C'},
+        ],
+      });
+      expect(withCreator.creators, <String>['C']);
+      expect(withCreator.studios, <String>['HBO', 'Studio X']);
+      expect(TvShow.fromTvdb(base).creators, isNull);
+      final TvShow bare =
+          TvShow.fromTvdb(<String, dynamic>{'id': 1, 'name': 'Show'});
+      expect(bare.creators, isNull);
+      expect(bare.studios, isNull);
+    });
+
+    test('toDb and fromDb round-trip creators and studios', () {
+      const TvShow show = TvShow(
+        tmdbId: 1,
+        title: 'BB',
+        creators: <String>['V. G.'],
+        studios: <String>['AMC'],
+      );
+      final TvShow restored = TvShow.fromDb(show.toDb());
+      expect(restored.creators, <String>['V. G.']);
+      expect(restored.studios, <String>['AMC']);
+      expect(const TvShow(tmdbId: 1, title: 'BB').toDb()['creators'], isNull);
+    });
+
+    test('copyWith keeps creators', () {
+      const TvShow show =
+          TvShow(tmdbId: 1, title: 'BB', creators: <String>['V. G.']);
+      expect(show.copyWith(title: 'X').creators, <String>['V. G.']);
+    });
+  });
 }

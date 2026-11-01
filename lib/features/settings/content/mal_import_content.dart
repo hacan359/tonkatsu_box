@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +22,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
@@ -28,7 +32,9 @@ import '../widgets/settings_group.dart';
 
 /// Flow: file input → progress → navigate to the result screen.
 class MalImportContent extends ConsumerStatefulWidget {
-  const MalImportContent({super.key});
+  const MalImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<MalImportContent> createState() => _MalImportContentState();
@@ -42,8 +48,8 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
   bool _isImporting = false;
   ImportProgress? _progress;
 
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
   bool _overwriteExisting = false;
 
   _PickedFile? _animePicked;
@@ -483,6 +489,14 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
       final int? collectionId = result.effectiveCollectionId;
       ref.invalidate(collectionsProvider);
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.mal,
+        collectionId: collectionId,
+        options: <String, Object?>{
+          CollectionImportOption.overwriteExisting: _overwriteExisting,
+        },
+      ));
       if (collectionId != null) {
         ref.invalidate(collectionStatsProvider(collectionId));
         ref.invalidate(collectionCoversProvider(collectionId));

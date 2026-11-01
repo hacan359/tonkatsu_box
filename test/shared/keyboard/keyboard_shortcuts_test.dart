@@ -15,6 +15,8 @@ void main() {
     late bool searchCalled;
     late bool refreshCalled;
     late bool helpCalled;
+    late int zoomSteps;
+    late bool zoomReset;
 
     Map<ShortcutActivator, VoidCallback> buildTestShortcuts() {
       return buildGlobalShortcuts(
@@ -26,6 +28,9 @@ void main() {
         onSearch: () => searchCalled = true,
         onRefresh: () => refreshCalled = true,
         onShowHelp: () => helpCalled = true,
+        onZoomIn: () => zoomSteps++,
+        onZoomOut: () => zoomSteps--,
+        onZoomReset: () => zoomReset = true,
       );
     }
 
@@ -38,13 +43,15 @@ void main() {
       searchCalled = false;
       refreshCalled = false;
       helpCalled = false;
+      zoomSteps = 0;
+      zoomReset = false;
     });
 
     test('should contain all expected shortcut activators', () {
       final Map<ShortcutActivator, VoidCallback> shortcuts =
           buildTestShortcuts();
 
-      expect(shortcuts.length, 15);
+      expect(shortcuts.length, 22);
     });
 
     test('should map Ctrl+7 to the last slot', () {
@@ -186,6 +193,41 @@ void main() {
       shortcuts[activator]!();
 
       expect(helpCalled, isTrue);
+    });
+
+    test('should map Ctrl+= and Ctrl+numpad+ to zoom in', () {
+      final Map<ShortcutActivator, VoidCallback> shortcuts =
+          buildTestShortcuts();
+
+      shortcuts[const SingleActivator(LogicalKeyboardKey.equal, control: true)]!();
+      shortcuts[const SingleActivator(
+        LogicalKeyboardKey.numpadAdd,
+        control: true,
+      )]!();
+
+      expect(zoomSteps, 2);
+    });
+
+    test('should map Ctrl+- and Ctrl+numpad- to zoom out', () {
+      final Map<ShortcutActivator, VoidCallback> shortcuts =
+          buildTestShortcuts();
+
+      shortcuts[const SingleActivator(LogicalKeyboardKey.minus, control: true)]!();
+      shortcuts[const SingleActivator(
+        LogicalKeyboardKey.numpadSubtract,
+        control: true,
+      )]!();
+
+      expect(zoomSteps, -2);
+    });
+
+    test('should map Ctrl+0 to zoom reset', () {
+      final Map<ShortcutActivator, VoidCallback> shortcuts =
+          buildTestShortcuts();
+
+      shortcuts[const SingleActivator(LogicalKeyboardKey.digit0, control: true)]!();
+
+      expect(zoomReset, isTrue);
     });
   });
 

@@ -110,7 +110,11 @@ class TmdbMoviesApi {
     _client.ensureApiKey();
 
     try {
-      final Response<dynamic> response = await _client.get('/movie/$tmdbId');
+      // The director comes from credits, appended to the same request.
+      final Response<dynamic> response = await _client.get(
+        '/movie/$tmdbId',
+        queryParameters: <String, dynamic>{'append_to_response': 'credits'},
+      );
 
       if (response.statusCode != 200 || response.data == null) {
         throw TmdbApiException(

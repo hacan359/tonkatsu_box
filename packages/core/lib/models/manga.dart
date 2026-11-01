@@ -170,10 +170,11 @@ class Manga {
     final List<String>? genres = _stringList(json['genres']);
     final List<String>? tags = _stringList(json['tags']);
 
-    final List<String> authors = <String>[
+    // MangaBaka lists one person under both roles for most series.
+    final List<String> authors = <String>{
       ...?_stringList(json['authors']),
       ...?_stringList(json['artists']),
-    ];
+    }.toList();
 
     final num? rating = json['rating'] as num?;
 
@@ -354,7 +355,7 @@ class Manga {
       chapters: (attrs['chapterCount'] as num?)?.toInt(),
       volumes: (attrs['volumeCount'] as num?)?.toInt(),
       format: _kitsuFormat(attrs['subtype'] as String?),
-      externalUrl: 'https://kitsu.io/manga/$path',
+      externalUrl: 'https://kitsu.app/manga/$path',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }

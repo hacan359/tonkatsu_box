@@ -16,6 +16,8 @@ const Set<String> _redactKeys = <String>{
   'devpassword',
   'ssid',
   'sspassword',
+  'npsso', // PSN password-equivalent
+  'x_access_token', // PSN JWT
 };
 
 /// `/path?api_key=***&query=fox` — what the log may say about a request.

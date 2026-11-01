@@ -1,4 +1,5 @@
 import 'package:core/models/collection_item.dart';
+import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/testing/builders.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
@@ -81,8 +82,71 @@ void main() {
       expect(search('chrono', mode: SearchMode.meta).matches(game), isFalse);
     });
 
-    test('creatorsOf is empty for types without a creator field', () {
+    test('creatorsOf is empty for a game without developers', () {
       expect(ItemSearch.creatorsOf(game), isEmpty);
+    });
+
+    test('matches directors, show creators, developers and card authors', () {
+      final CollectionItem movie = createTestCollectionItem(
+        id: 4,
+        mediaType: MediaType.movie,
+        movie: createTestMovie(title: 'Alien')
+            .copyWith(directors: <String>['Ridley Scott']),
+      );
+      final CollectionItem show = createTestCollectionItem(
+        id: 5,
+        mediaType: MediaType.tvShow,
+        tvShow: createTestTvShow(title: 'BB')
+            .copyWith(creators: <String>['Vince Gilligan']),
+      );
+      final CollectionItem animated = createTestCollectionItem(
+        id: 6,
+        mediaType: MediaType.animation,
+        tvShow: createTestTvShow(title: 'Arcane')
+            .copyWith(creators: <String>['Fortiche']),
+      );
+      final CollectionItem hk = createTestCollectionItem(
+        id: 7,
+        game: createTestGame(name: 'Hollow Knight').copyWith(
+          developers: <String>['Team Cherry'],
+          publishers: <String>['Fangamer'],
+        ),
+      );
+      final CollectionItem card = createTestCollectionItem(
+        id: 8,
+        mediaType: MediaType.custom,
+        customMedia: const CustomMedia(
+          id: 1,
+          title: 'Zine',
+          authors: <String>['Jane Doe'],
+        ),
+      );
+      expect(search('scott').matches(movie), isTrue);
+      expect(search('gilligan').matches(show), isTrue);
+      expect(search('fortiche').matches(animated), isTrue);
+      expect(search('cherry').matches(hk), isTrue);
+      expect(search('jane').matches(card), isTrue);
+    });
+
+    test('title search skips publishers, meta search keeps them', () {
+      final CollectionItem hk = createTestCollectionItem(
+        id: 7,
+        game: createTestGame(name: 'Hollow Knight')
+            .copyWith(publishers: <String>['Fangamer']),
+      );
+      expect(search('fangamer').matches(hk), isFalse);
+      expect(search('fangamer', mode: SearchMode.meta).matches(hk), isTrue);
+    });
+
+    test('meta search finds a show by its studio, title search does not', () {
+      final CollectionItem show = createTestCollectionItem(
+        id: 9,
+        mediaType: MediaType.tvShow,
+        tvShow: createTestTvShow(title: 'The Wire')
+            .copyWith(studios: <String>['HBO']),
+      );
+      expect(search('hbo').matches(show), isFalse);
+      expect(search('hbo', mode: SearchMode.meta).matches(show), isTrue);
     });
   });
 }

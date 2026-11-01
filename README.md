@@ -123,11 +123,11 @@ The whole interface is localized with runtime switching. Pick your language in *
 | Platform | Link |
 |----------|------|
 | Windows | [**Download .zip**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
-| Linux | [**Download .tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
+| Linux | [**Download .AppImage**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**.tar.gz**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | macOS | [**Download .dmg**](https://github.com/hacan359/tonkatsu_box/releases/latest) |
 | Android | [**Download .apk**](https://github.com/hacan359/tonkatsu_box/releases/latest) or [**RuStore**](https://www.rustore.ru/catalog/app/com.hacan359.tonkatsubox) |
 
-> The Linux build ships as a plain bundle: unpack it anywhere and run `tonkatsu_box`. It needs GTK 3 and SQLite from your distribution, plus `zenity` for the file dialogs and `xdg-utils` for opening links.
+> On Linux the AppImage is the easy route: `chmod +x` and run (x86_64 only). The .tar.gz is a plain bundle: unpack it anywhere and run `tonkatsu_box`. Both need GTK 3 from your distribution, plus `zenity` for the file dialogs and `xdg-utils` for opening links.
 
 > macOS support is experimental. That build has not been tested by the maintainers yet, so expect rough edges. It is also unsigned, so macOS will warn about an unidentified developer on first launch.
 
@@ -240,7 +240,7 @@ When you pick an empty folder, the app copies your current data there. When you 
 | <img src="assets/images/icon_anilist_color.png" width="28" alt="AniList"> | Anime & Manga | [AniList](https://anilist.co/) | Not required |
 | <img src="assets/images/icon_mangabaka_color.png" width="28" alt="MangaBaka"> | Manga | [MangaBaka](https://mangabaka.org/) | Not required |
 | <img src="assets/images/icon_mangadex_color.png" width="28" alt="MangaDex"> | Manga | [MangaDex](https://mangadex.org/) | Not required |
-| <img src="assets/images/icon_kitsu_color.png" width="28" alt="Kitsu"> | Anime & Manga | [Kitsu](https://kitsu.io/) | Not required |
+| <img src="assets/images/icon_kitsu_color.png" width="28" alt="Kitsu"> | Anime & Manga | [Kitsu](https://kitsu.app/) | Not required |
 | <img src="assets/images/open_library_color.png" width="28" alt="OpenLibrary"> | Books | [OpenLibrary](https://openlibrary.org/) | Not required |
 | <img src="assets/images/icon_fantlab_color.png" width="28" alt="Fantlab"> | Books | [Fantlab](https://fantlab.ru/) | Not required |
 | <img src="assets/images/icon_google_book_color.png" width="28" alt="Google Books"> | Books | [Google Books](https://books.google.com/) | Optional (free key) |
@@ -306,10 +306,36 @@ you need. Without a `.env` everything uses defaults.
 | `TONKATSU_PORT` | `8080` | Port the web UI answers on |
 | `PUID` / `PGID` | `1000` / `1000` | Owner of the files in the data folder |
 | `TONKATSU_KEY_*` | — | API keys (e.g. `TONKATSU_KEY_TMDB`) |
+| `TONKATSU_AUTH` | `off` | `token` makes the web UI ask for an access token |
+| `TONKATSU_AUTH_TOKEN` | generated | Your own token instead of the generated one |
+| `TONKATSU_BIND` | `0.0.0.0` | Host interface the port is published on |
+| `TONKATSU_IMAGE_HOSTS` | any | Hosts covers may be fetched from, comma-separated |
 
 API keys can also be entered in the app itself (**Settings → API Keys**) —
 they are stored on the server in `data/keys.json`. Keys set via `.env`
 override `keys.json`.
+
+### Access token (optional)
+
+By default the server has no login: anyone who can reach the port can use the
+library. For a server that other devices can reach, set `TONKATSU_AUTH=token`
+in `.env`. The server then prints a sign-in link on every start:
+
+```bash
+docker compose logs tonkatsu | grep "Sign in"
+# Sign in: http://localhost:8080/?token=…
+```
+
+Open that link with the server's address instead of `localhost`: the browser
+stores the token and removes it from the address bar. A browser without the
+token is shown a screen to paste it into, and **Settings → API Keys** lets you
+change it later. The token is kept in `data/auth_token`; delete the file and
+restart to issue a new one, or set your own with `TONKATSU_AUTH_TOKEN`.
+
+`TONKATSU_BIND=127.0.0.1` publishes the port on this machine only.
+`TONKATSU_IMAGE_HOSTS` limits which hosts the server fetches covers from, as a
+comma-separated list of domains (subdomains included). Leave it empty unless
+you need it: a cover host missing from the list shows as a broken image.
 
 ### Files
 
@@ -318,6 +344,7 @@ override `keys.json`.
 | `.env` | Your local configuration (not committed) |
 | `data/tonkatsu_box.db` | The database |
 | `data/keys.json` | API keys entered in the app |
+| `data/auth_token` | The access token, when `TONKATSU_AUTH=token` |
 | `data/images/` | Cover cache |
 | `data/snapshots/` | Automatic DB snapshots taken before migrations |
 
@@ -358,7 +385,8 @@ requirement.
 
 ### Notes
 
-- The web build has no accounts or passwords — expose it to your LAN only.
+- The web build has no accounts; `TONKATSU_AUTH=token` makes it ask for a
+  single access token. Keep it on your LAN or behind HTTPS.
 - Desktop-only features (VGMaps, Discord Rich Presence, Kodi, gamepad, LAN
   sync) are hidden in the browser.
 
@@ -390,7 +418,7 @@ Contributions welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for build ins
 
 ## Credits
 
-Catalogs: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.io/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MusicBrainz](https://musicbrainz.org/) · [Cover Art Archive](https://coverartarchive.org/) · [ListenBrainz](https://listenbrainz.org/) · [Podcast Index](https://podcastindex.org/)
+Catalogs: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [TVmaze](https://www.tvmaze.com/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MangaBaka](https://mangabaka.org/) · [MangaDex](https://mangadex.org/) · [Kitsu](https://kitsu.app/) · [OpenLibrary](https://openlibrary.org/) · [Fantlab](https://fantlab.ru/) · [Google Books](https://books.google.com/) · [Hardcover](https://hardcover.app/) · [ComicVine](https://comicvine.gamespot.com/) · [MusicBrainz](https://musicbrainz.org/) · [Cover Art Archive](https://coverartarchive.org/) · [ListenBrainz](https://listenbrainz.org/) · [Podcast Index](https://podcastindex.org/)
 
 Imports and extras: [Simkl](https://simkl.com/) · [Trakt.tv](https://trakt.tv/) · [Steam](https://store.steampowered.com/) · [Kinorium](https://kinorium.com/) · [MyAnimeList](https://myanimelist.net/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/) · [ScreenScraper](https://www.screenscraper.fr/) · [Kodi](https://kodi.tv/)
 

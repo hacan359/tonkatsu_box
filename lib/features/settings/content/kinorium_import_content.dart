@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:core/models/collection.dart';
+import 'package:core/models/collection_import.dart';
+import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'dart:typed_data';
 
@@ -16,6 +20,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collection_imports_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
@@ -26,7 +31,9 @@ import '../../../shared/widgets/import_progress_dialog.dart';
 
 /// Flow: CSV file pick → options (watchlist toggle, target) → import progress.
 class KinoriumImportContent extends ConsumerStatefulWidget {
-  const KinoriumImportContent({super.key});
+  const KinoriumImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<KinoriumImportContent> createState() =>
@@ -38,8 +45,8 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
   String? _csvName;
   bool _isWishlist = false;
   bool _importNotes = false;
-  bool _useNewCollection = true;
-  int? _selectedCollectionId;
+  late bool _useNewCollection = widget.initialCollectionId == null;
+  late int? _selectedCollectionId = widget.initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
@@ -350,6 +357,15 @@ class _KinoriumImportContentState extends ConsumerState<KinoriumImportContent> {
     if (result.success) {
       ref.invalidate(collectionsProvider);
       final int? cid = result.effectiveCollectionId;
+      unawaited(recordCollectionImport(
+        ref,
+        source: ImportSourceKind.kinorium,
+        collectionId: cid,
+        options: <String, Object?>{
+          CollectionImportOption.isWishlist: _isWishlist,
+          CollectionImportOption.importNotes: _importNotes,
+        },
+      ));
       if (cid != null) {
         ref.invalidate(collectionStatsProvider(cid));
         ref.invalidate(collectionCoversProvider(cid));

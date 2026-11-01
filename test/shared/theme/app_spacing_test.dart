@@ -91,6 +91,60 @@ void main() {
       });
     });
 
+    group('badgeScale', () {
+      test('опорная ширина даёт 1.0', () {
+        expect(
+          AppSpacing.badgeScale(
+            cardWidth: AppSpacing.desktopMaxCardWidth,
+            compact: false,
+          ),
+          equals(1.0),
+        );
+        expect(
+          AppSpacing.badgeScale(
+            cardWidth: AppSpacing.compactRefCardWidth,
+            compact: true,
+          ),
+          equals(1.0),
+        );
+      });
+
+      test('шире опорной растёт пропорционально', () {
+        expect(
+          AppSpacing.badgeScale(
+            cardWidth: AppSpacing.desktopMaxCardWidth * 1.3,
+            compact: false,
+          ),
+          closeTo(1.3, 1e-9),
+        );
+      });
+
+      test('уже опорной не уменьшается', () {
+        expect(
+          AppSpacing.badgeScale(cardWidth: 60, compact: true),
+          equals(AppSpacing.badgeScaleMin),
+        );
+      });
+
+      test('ограничен сверху, в том числе при бесконечной ширине', () {
+        expect(
+          AppSpacing.badgeScale(cardWidth: 1000, compact: false),
+          equals(AppSpacing.badgeScaleMax),
+        );
+        expect(
+          AppSpacing.badgeScale(cardWidth: double.infinity, compact: true),
+          equals(AppSpacing.badgeScaleMax),
+        );
+      });
+
+      test('компактная опорная меньше десктопной', () {
+        expect(
+          AppSpacing.badgeScale(cardWidth: 150, compact: true),
+          greaterThan(AppSpacing.badgeScale(cardWidth: 150, compact: false)),
+        );
+      });
+    });
+
     group('cardTitleBlockHeight', () {
       test('должен складывать отступ и высоту текстового блока', () {
         expect(

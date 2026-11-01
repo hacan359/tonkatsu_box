@@ -1,3 +1,5 @@
+import 'json_list.dart';
+
 /// App locale → TheTVDB 3-letter code. Portuguese is listed twice upstream
 /// (`por` and `pt`), so callers must try both.
 const Map<String, List<String>> tvdbLanguageCodes = <String, List<String>>{
@@ -118,4 +120,36 @@ int? tvdbYear(Object? value) {
   if (value is int) return value;
   if (value is! String || value.length < 4) return null;
   return int.tryParse(value.substring(0, 4));
+}
+
+/// Names of the `characters` entries whose `peopleType` is [peopleType]
+/// (`Director`, `Creator`, ...); the extended record lists crew there too.
+List<String>? tvdbPeople(Object? characters, String peopleType) {
+  if (characters is! List<dynamic>) return null;
+  return distinctNames(<Object?>[
+    for (final dynamic c in characters)
+      if (c is Map<String, dynamic> && c['peopleType'] == peopleType)
+        c['personName'],
+  ]);
+}
+
+/// Company names of one kind. Series carry a flat list tagged with
+/// `companyType.companyTypeName` (`Studio`), movies a map keyed `studio`.
+List<String>? tvdbCompanies(Object? companies, String typeName) {
+  if (companies is Map<String, dynamic>) {
+    return distinctNames(<Object?>[
+      for (final dynamic c
+          in companies[typeName.toLowerCase()] as List<dynamic>? ??
+              const <dynamic>[])
+        if (c is Map<String, dynamic>) c['name'],
+    ]);
+  }
+  if (companies is! List<dynamic>) return null;
+  return distinctNames(<Object?>[
+    for (final dynamic c in companies)
+      if (c is Map<String, dynamic> &&
+          (c['companyType'] as Map<String, dynamic>?)?['companyTypeName'] ==
+              typeName)
+        c['name'],
+  ]);
 }

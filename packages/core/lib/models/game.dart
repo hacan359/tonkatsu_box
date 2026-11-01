@@ -1,3 +1,4 @@
+import '../utils/json_list.dart';
 import 'game_time_to_beat.dart';
 
 class Game {
@@ -14,6 +15,8 @@ class Game {
     this.externalUrl,
     this.cachedAt,
     this.artworkUrl,
+    this.developers,
+    this.publishers,
     this.timeToBeat,
   });
 
@@ -64,6 +67,18 @@ class Game {
       }
     }
 
+    // One company can hold both roles, so the two lists may overlap.
+    final List<Map<String, dynamic>> involved = <Map<String, dynamic>>[
+      for (final dynamic c
+          in json['involved_companies'] as List<dynamic>? ?? const <dynamic>[])
+        if (c is Map<String, dynamic>) c,
+    ];
+    List<String>? companies(String role) => distinctNames(<Object?>[
+          for (final Map<String, dynamic> c in involved)
+            if (c[role] == true)
+              (c['company'] as Map<String, dynamic>?)?['name'],
+        ]);
+
     return Game(
       id: json['id'] as int,
       name: json['name'] as String,
@@ -77,6 +92,8 @@ class Game {
       externalUrl: json['url'] as String?,
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       artworkUrl: artworkUrl,
+      developers: companies('developer'),
+      publishers: companies('publisher'),
     );
   }
 
@@ -115,6 +132,8 @@ class Game {
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
       artworkUrl: row['artwork_url'] as String?,
+      developers: decodeJsonStringListOrNull(row['developers']),
+      publishers: decodeJsonStringListOrNull(row['publishers']),
     );
   }
 
@@ -143,6 +162,10 @@ class Game {
   final int? cachedAt;
 
   final String? artworkUrl;
+
+  final List<String>? developers;
+
+  final List<String>? publishers;
 
   /// Transient: fetched with search, never stored — excluded from [toDb] /
   /// [fromDb] / [fromJson].
@@ -185,6 +208,8 @@ class Game {
       'external_url': externalUrl,
       'cached_at': cachedAt,
       'artwork_url': artworkUrl,
+      'developers': encodeJsonStringList(developers),
+      'publishers': encodeJsonStringList(publishers),
     };
   }
 
@@ -202,6 +227,8 @@ class Game {
       'genres': genres,
       'platform_ids': platformIds,
       'external_url': externalUrl,
+      'developers': developers,
+      'publishers': publishers,
     };
   }
 
@@ -218,6 +245,8 @@ class Game {
     String? externalUrl,
     int? cachedAt,
     String? artworkUrl,
+    List<String>? developers,
+    List<String>? publishers,
     GameTimeToBeat? timeToBeat,
   }) {
     return Game(
@@ -233,6 +262,8 @@ class Game {
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
       artworkUrl: artworkUrl ?? this.artworkUrl,
+      developers: developers ?? this.developers,
+      publishers: publishers ?? this.publishers,
       timeToBeat: timeToBeat ?? this.timeToBeat,
     );
   }

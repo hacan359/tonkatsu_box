@@ -45,14 +45,20 @@ class MovieDao {
     });
   }
 
-  /// Search hits carry no runtime and no overview, so a later list refresh must
-  /// not blank what a detail fetch already cached.
+  /// Search hits carry no runtime, overview or credits, so a later list
+  /// refresh must not blank what a detail fetch already cached.
   ({String sql, List<Object?> args}) _movieUpsert(Movie movie) {
     return buildPreservingUpsert(
       table: 'movies_cache',
       row: movie.toDb(),
       conflictKey: <String>['tmdb_id', 'source'],
-      preserveWhenNull: <String>{'runtime', 'overview', 'backdrop_url'},
+      preserveWhenNull: <String>{
+        'runtime',
+        'overview',
+        'backdrop_url',
+        'directors',
+        'studios',
+      },
     );
   }
 

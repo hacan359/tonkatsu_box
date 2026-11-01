@@ -6,6 +6,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/focusable_surface.dart';
 import '../models/search_source.dart';
 import '../utils/filter_ui.dart';
 
@@ -108,52 +109,52 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
         : widget.value != null;
     final String label = _getSelectedLabel(l);
 
-    final Widget chip = Container(
-      height: 32,
+    // The fill and border sit under the button's ink; an opaque chip used to
+    // paint over the hover and focus highlight.
+    final Color fill = isActive
+        ? AppColors.brand.withValues(alpha: 0.12)
+        : AppColors.surface;
+    final Color border = isActive ? AppColors.brand : AppColors.surfaceBorder;
+    final Widget content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: isActive
-            ? AppColors.brand.withValues(alpha: 0.12)
-            : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(
-          color: isActive ? AppColors.brand : AppColors.surfaceBorder,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            label,
-            style: AppTypography.body.copyWith(
+      child: SizedBox(
+        height: 32,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              label,
+              style: AppTypography.body.copyWith(
+                color: isActive
+                    ? AppColors.brand
+                    : AppColors.textTertiary,
+                fontWeight:
+                    isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 16,
               color: isActive
                   ? AppColors.brand
                   : AppColors.textTertiary,
-              fontWeight:
-                  isActive ? FontWeight.w600 : FontWeight.normal,
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(
-            Icons.keyboard_arrow_down,
-            size: 16,
-            color: isActive
-                ? AppColors.brand
-                : AppColors.textTertiary,
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
     if (widget.filter.searchable) {
-      return InkWell(
+      return FocusableSurface(
         onTap: () => _showSearchableDialog(l),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        child: chip,
+        color: fill,
+        borderColor: border,
+        child: content,
       );
     }
 
-    return PopupMenuButton<Object>(
+    final Widget button = PopupMenuButton<Object>(
       onSelected: (Object value) {
         widget.onChanged(value == kFilterResetSentinel ? null : value);
       },
@@ -215,8 +216,9 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
               ),
         ];
       },
-      child: chip,
+      child: content,
     );
+    return FocusableSurface(color: fill, borderColor: border, child: button);
   }
 
   Future<void> _showSearchableDialog(S l) async {
@@ -599,53 +601,52 @@ class SortDropdown extends StatelessWidget {
       }
     }
 
-    final Widget chip = Container(
-      height: 32,
+    final Widget content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(
-            Icons.sort,
-            size: 14,
-            color: enabled
-                ? AppColors.textTertiary
-                : AppColors.textTertiary.withValues(alpha: 0.4),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            currentLabel,
-            style: AppTypography.body.copyWith(
+      child: SizedBox(
+        height: 32,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              Icons.sort,
+              size: 14,
               color: enabled
-                  ? AppColors.textSecondary
+                  ? AppColors.textTertiary
                   : AppColors.textTertiary.withValues(alpha: 0.4),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(
-            Icons.keyboard_arrow_down,
-            size: 16,
-            color: enabled
-                ? AppColors.textTertiary
-                : AppColors.textTertiary.withValues(alpha: 0.4),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Text(
+              currentLabel,
+              style: AppTypography.body.copyWith(
+                color: enabled
+                    ? AppColors.textSecondary
+                    : AppColors.textTertiary.withValues(alpha: 0.4),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 16,
+              color: enabled
+                  ? AppColors.textTertiary
+                  : AppColors.textTertiary.withValues(alpha: 0.4),
+            ),
+          ],
+        ),
       ),
     );
 
     if (!enabled) {
-      return Tooltip(
-        message: l.browseSortDisabledHint,
-        child: chip,
+      return FocusableSurface(
+        child: Tooltip(
+          message: l.browseSortDisabledHint,
+          child: content,
+        ),
       );
     }
 
-    return PopupMenuButton<String>(
+    final Widget button = PopupMenuButton<String>(
       onSelected: onChanged,
       offset: const Offset(0, 36),
       shape: RoundedRectangleBorder(
@@ -672,7 +673,8 @@ class SortDropdown extends StatelessWidget {
           );
         }).toList();
       },
-      child: chip,
+      child: content,
     );
+    return FocusableSurface(child: button);
   }
 }

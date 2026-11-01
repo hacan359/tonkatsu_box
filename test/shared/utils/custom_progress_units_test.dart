@@ -59,6 +59,24 @@ void main() {
     });
   });
 
+  group('CustomProgressUnits.fineUnit', () {
+    test('names one unit per display type', () {
+      expect(CustomProgressUnits.fineUnit(MediaType.tvShow, l), l.unitEpisode);
+      expect(CustomProgressUnits.fineUnit(MediaType.anime, l), l.unitEpisode);
+      expect(CustomProgressUnits.fineUnit(MediaType.manga, l), l.unitChapter);
+      expect(CustomProgressUnits.fineUnit(MediaType.book, l), l.unitPage);
+      expect(CustomProgressUnits.fineUnit(MediaType.game, l), l.unitPart);
+    });
+  });
+
+  group('CustomProgressUnits.groupUnit', () {
+    test('follows hasGroupAxis', () {
+      expect(CustomProgressUnits.groupUnit(MediaType.tvShow, l), l.unitSeason);
+      expect(CustomProgressUnits.groupUnit(MediaType.manga, l), l.unitVolume);
+      expect(CustomProgressUnits.groupUnit(MediaType.book, l), isNull);
+    });
+  });
+
   group('CustomProgressUnits.hasGroupAxis', () {
     test('matches the types that expose a group label', () {
       expect(CustomProgressUnits.hasGroupAxis(MediaType.tvShow), isTrue);

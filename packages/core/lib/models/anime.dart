@@ -172,7 +172,7 @@ class Anime {
       episodes: (attrs['episodeCount'] as num?)?.toInt(),
       duration: (attrs['episodeLength'] as num?)?.toInt(),
       format: _kitsuFormat(attrs['subtype'] as String?),
-      externalUrl: 'https://kitsu.io/anime/$path',
+      externalUrl: 'https://kitsu.app/anime/$path',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }

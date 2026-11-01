@@ -59,6 +59,13 @@ class ItemSearch {
       switch (item.mediaType) {
         MediaType.audio => item.audioItem?.artists ?? const <String>[],
         MediaType.book => item.book?.authors ?? const <String>[],
+        // Publishers stay out: a title search for "nintendo" would match half
+        // of a Switch collection.
+        MediaType.game => item.game?.developers ?? const <String>[],
+        // Animation holds either a Movie or a TvShow.
+        MediaType.movie || MediaType.animation || MediaType.tvShow =>
+          item.movie?.directors ?? item.tvShow?.creators ?? const <String>[],
+        MediaType.custom => item.customMedia?.authors ?? const <String>[],
         _ => const <String>[],
       };
 }

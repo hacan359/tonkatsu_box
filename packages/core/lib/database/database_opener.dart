@@ -8,6 +8,24 @@ import 'migrations/migration_runner.dart';
 /// exactly one writer, and the default of 0 fails the loser instantly.
 const int kBusyTimeoutMs = 5000;
 
+/// Without an `onDowngrade`, sqflite silently stamps the lower version onto a
+/// newer schema; the next up-to-date build then replays migrations and fails.
+class DatabaseTooNewException implements Exception {
+  const DatabaseTooNewException({
+    required this.fileVersion,
+    required this.appVersion,
+  });
+
+  final int fileVersion;
+
+  final int appVersion;
+
+  @override
+  String toString() =>
+      'Database schema v$fileVersion is newer than this build supports '
+      '(v$appVersion). Update the app — the file was left untouched.';
+}
+
 /// Takes a ready [path] — where the file lives is the caller's job — so this
 /// stays free of `dart:io`. Target version is [MigrationRegistry.latestVersion].
 Future<Database> openAppDatabase({
@@ -46,6 +64,12 @@ Future<Database> openAppDatabase({
           onFailure: onMigrationFailure,
         );
         onInfo?.call('Database upgrade complete');
+      },
+      onDowngrade: (Database db, int oldVersion, int newVersion) {
+        throw DatabaseTooNewException(
+          fileVersion: oldVersion,
+          appVersion: newVersion,
+        );
       },
       onConfigure: (Database db) async {
         await db.execute('PRAGMA foreign_keys = ON');

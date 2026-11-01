@@ -711,9 +711,15 @@ class CollectionItem with Exportable {
     // `mediaType`, so animation (Movie or TvShow) needs no special case.
     final List<String?> values = <String?>[
       ...?game?.genres,
+      ...?game?.developers,
+      ...?game?.publishers,
       platform?.name,
       ...?movie?.genres,
+      ...?movie?.directors,
+      ...?movie?.studios,
       ...?tvShow?.genres,
+      ...?tvShow?.creators,
+      ...?tvShow?.studios,
       ...?visualNovel?.tags,
       ...?visualNovel?.developers,
       ...?visualNovel?.platforms,
@@ -742,6 +748,7 @@ class CollectionItem with Exportable {
       anime?.format,
       anime?.sourceMaterial,
       ...?customMedia?.genreList,
+      ...?customMedia?.authors,
       customMedia?.platformName,
       customMedia?.format,
       releaseYear?.toString(),

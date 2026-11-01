@@ -1,6 +1,7 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/utils/json_list.dart';
 
 /// Only the card's metadata: status, rating, note and episode marks stay
 /// behind, so the duplicate starts like a freshly added item.
@@ -30,6 +31,18 @@ CustomMedia customDraftFromItem(CollectionItem item, {required String title}) {
         : null,
     year: item.releaseYear,
     genres: item.genresString,
+    // Each item holds one sub-model, so at most one list is non-empty.
+    authors: distinctNames(<String>[
+      ...?item.customMedia?.authors,
+      ...?item.movie?.directors,
+      ...?item.tvShow?.creators,
+      ...?item.game?.developers,
+      ...?item.book?.authors,
+      ...?item.manga?.authors,
+      ...?item.audioItem?.artists,
+      ...?item.visualNovel?.developers,
+      ...?item.anime?.studios,
+    ]),
     platformName: type == MediaType.game ? item.platform?.displayName : null,
     platformId: type == MediaType.game ? item.effectivePlatformId : null,
     format: item.formatCode,

@@ -8,30 +8,38 @@ import '../../theme/app_typography.dart';
 /// Full-width description collapsed to a few lines with an expand toggle,
 /// shown only when the text actually overflows.
 class ExpandableDescription extends StatefulWidget {
-  const ExpandableDescription({required this.text, super.key});
+  const ExpandableDescription({
+    required this.text,
+    this.collapsedLines = 3,
+    this.style,
+    super.key,
+  });
 
   final String text;
+  final int collapsedLines;
+
+  /// Defaults to small secondary body text.
+  final TextStyle? style;
 
   @override
   State<ExpandableDescription> createState() => _ExpandableDescriptionState();
 }
 
 class _ExpandableDescriptionState extends State<ExpandableDescription> {
-  static const int _collapsedLines = 3;
-
   bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle style = AppTypography.bodySmall.copyWith(
-      color: AppColors.textSecondary,
-      height: 1.4,
-    );
+    final TextStyle style = widget.style ??
+        AppTypography.bodySmall.copyWith(
+          color: AppColors.textSecondary,
+          height: 1.4,
+        );
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final TextPainter painter = TextPainter(
           text: TextSpan(text: widget.text, style: style),
-          maxLines: _collapsedLines,
+          maxLines: widget.collapsedLines,
           textDirection: Directionality.of(context),
         )..layout(maxWidth: constraints.maxWidth);
         final bool overflows = painter.didExceedMaxLines;
@@ -42,7 +50,7 @@ class _ExpandableDescriptionState extends State<ExpandableDescription> {
             Text(
               widget.text,
               style: style,
-              maxLines: _expanded ? null : _collapsedLines,
+              maxLines: _expanded ? null : widget.collapsedLines,
               overflow:
                   _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
             ),

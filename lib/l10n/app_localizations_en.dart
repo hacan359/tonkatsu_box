@@ -544,16 +544,6 @@ class SEn extends S {
       'Set SteamGridDB key first for some tools';
 
   @override
-  String get settingsLaboratory => 'Laboratory';
-
-  @override
-  String get settingsLaboratoryCardDesigns => 'Card banner designs';
-
-  @override
-  String get settingsLaboratoryCardDesignsSubtitle =>
-      'Experimental poster card layouts';
-
-  @override
   String get settingsHelp => 'Help';
 
   @override
@@ -595,6 +585,32 @@ class SEn extends S {
   String get settingsApiKeys => 'API Keys';
 
   @override
+  String get credentialsServerTokenLabel => 'Server access token';
+
+  @override
+  String get credentialsServerTokenHint =>
+      'Needed only when the server runs with TONKATSU_AUTH=token. Saving restarts the app.';
+
+  @override
+  String get credentialsServerTokenSaved => 'Server token saved';
+
+  @override
+  String get serverTokenTitle => 'Server access token';
+
+  @override
+  String get serverTokenBody =>
+      'This server asks for an access token. It is printed in the server log as a sign-in link on every start and kept in the auth_token file in the data folder.';
+
+  @override
+  String get serverTokenFieldLabel => 'Token';
+
+  @override
+  String get serverTokenConnect => 'Connect';
+
+  @override
+  String get serverTokenRejected => 'The server rejected this token';
+
+  @override
   String get credentialsServerManagedTitle => 'Keys are stored on the server';
 
   @override
@@ -634,6 +650,12 @@ class SEn extends S {
 
   @override
   String get settingsThemeSakura => 'Sakura';
+
+  @override
+  String get settingsThemePs1 => 'PS1 Retro';
+
+  @override
+  String get settingsThemeEva => 'Eva Azure';
 
   @override
   String get settingsAppLanguageSubtitle => 'Interface language';
@@ -1794,6 +1816,30 @@ class SEn extends S {
 
   @override
   String get customItemGenresHint => 'e.g. RPG, Action, Puzzle';
+
+  @override
+  String get customItemAuthors => 'Authors';
+
+  @override
+  String get customItemAuthorsHint => 'e.g. Hideo Kojima, Yoji Shinkawa';
+
+  @override
+  String get creatorDirector => 'Director';
+
+  @override
+  String get creatorCreator => 'Creator';
+
+  @override
+  String get creatorDeveloper => 'Developer';
+
+  @override
+  String get creatorPublisher => 'Publisher';
+
+  @override
+  String get creatorStudio => 'Studio';
+
+  @override
+  String get creatorAuthor => 'Author';
 
   @override
   String get platform => 'Platform';
@@ -3630,6 +3676,13 @@ class SEn extends S {
       'Interface text size, on top of the system setting';
 
   @override
+  String get settingsUiScale => 'Interface scale';
+
+  @override
+  String get settingsUiScaleSubtitle =>
+      'Zooms the whole app, like a browser. Ctrl+wheel or Ctrl+plus / minus, Ctrl+0 resets';
+
+  @override
   String get collectionEditHeroImage => 'Cover image';
 
   @override
@@ -4174,6 +4227,11 @@ class SEn extends S {
   @override
   String steamImportWishlisted(int count) {
     return 'Added to wishlist: $count';
+  }
+
+  @override
+  String importCustomSkipped(int count) {
+    return 'Custom cards skipped: $count';
   }
 
   @override
@@ -5536,6 +5594,12 @@ class SEn extends S {
   String get itemMarkNote => 'Note';
 
   @override
+  String get seasonRate => 'Rate season';
+
+  @override
+  String get seasonRatingLabel => 'Season rating';
+
+  @override
   String get itemMarkNoteHint => 'Write a note…';
 
   @override
@@ -5597,6 +5661,12 @@ class SEn extends S {
   String get unitTrack => 'Track';
 
   @override
+  String get unitIssue => 'Issue';
+
+  @override
+  String get progressStoppedAt => 'Stopped at';
+
+  @override
   String get cardLinkCopy => 'Copy card link';
 
   @override
@@ -5628,6 +5698,15 @@ class SEn extends S {
 
   @override
   String get shortcutThisHelp => 'This help';
+
+  @override
+  String get shortcutZoomIn => 'Zoom in';
+
+  @override
+  String get shortcutZoomOut => 'Zoom out';
+
+  @override
+  String get shortcutZoomReset => 'Reset zoom';
 
   @override
   String get shortcutCreateCollection => 'Create collection';
@@ -5703,12 +5782,6 @@ class SEn extends S {
 
   @override
   String get shortcutFocusSearchField => 'Focus search field';
-
-  @override
-  String get shortcutClearOrBack => 'Clear / back';
-
-  @override
-  String get shortcutRunSearch => 'Run search';
 
   @override
   String get debugKeyEvents => 'Button key events';
@@ -6089,6 +6162,45 @@ class SEn extends S {
   }
 
   @override
+  String get importStageFetchingAudio => 'Fetching audio data...';
+
+  @override
+  String refreshTallies(int updated, int notFound, int failed, int skipped) {
+    return 'Updated $updated · Not found $notFound · Errors $failed · Skipped $skipped';
+  }
+
+  @override
+  String bulkRefreshConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Refresh $count items from their sources?',
+      one: 'Refresh 1 item from its source?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkRefreshSkippedNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected items have no source and will be skipped.',
+      one: '1 selected item has no source and will be skipped.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkRefreshStart => 'Refresh';
+
+  @override
+  String get bulkRefreshProblems => 'Not refreshed';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
   String get customImportResolveTitle => 'Look up cards in sources';
 
   @override
@@ -6101,4 +6213,33 @@ class SEn extends S {
 
   @override
   String get importResultUnresolvedCopied => 'Titles copied';
+
+  @override
+  String get collectionImportPickSource => 'Import into collection';
+
+  @override
+  String get collectionImportFromFile => 'From a collection file';
+
+  @override
+  String collectionImportLastRun(String date) {
+    return 'Last run $date';
+  }
+
+  @override
+  String collectionImportRerunTitle(String source) {
+    return 'Run $source import again?';
+  }
+
+  @override
+  String collectionImportRerunMessage(String source, String collection) {
+    return 'New items from $source are added to “$collection” with the same settings as last time.';
+  }
+
+  @override
+  String get collectionImportRun => 'Run';
+
+  @override
+  String collectionImportSynced(String source, int count) {
+    return '$source synced: $count new';
+  }
 }

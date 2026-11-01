@@ -12,6 +12,7 @@ import 'package:logging/logging.dart';
 
 import '../../../core/api/episode_source/tv_episode_source.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/utils/highest_pair.dart';
 import 'collections_provider.dart';
 
 class EpisodeTrackerState {
@@ -77,6 +78,12 @@ class EpisodeTrackerState {
     }
     return count;
   }
+
+  /// Highest watched (season, episode), specials excluded; `null` while
+  /// nothing is marked.
+  (int, int)? get lastWatchedEpisode => highestPair(
+        watchedEpisodes.keys.where(((int, int) key) => key.$1 > 0),
+      );
 
   /// Returns the total number of loaded episodes, excluding specials
   /// (season 0) — see [totalWatchedCount].

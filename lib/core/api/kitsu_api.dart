@@ -11,7 +11,7 @@ import 'kitsu/kitsu_manga_api.dart';
 import 'kitsu/kitsu_mapping_api.dart';
 export 'kitsu/kitsu_types.dart';
 
-/// Kitsu JSON:API facade (`https://kitsu.io/api/edge`, no auth) — an anime +
+/// Kitsu JSON:API facade (`https://kitsu.app/api/edge`, no auth) — an anime +
 /// manga catalog; both carry `DataSource.kitsu`.
 class KitsuApi {
   KitsuApi({Dio? dio}) : _client = KitsuHttpClient(dio: dio) {

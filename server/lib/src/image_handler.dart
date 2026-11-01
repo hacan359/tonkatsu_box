@@ -38,10 +38,14 @@ class ImageCache {
   ImageCache({
     required this.dataDir,
     UpstreamClient? upstream,
+    this.allowedHosts = const <String>[],
   }) : _upstream = upstream ?? HttpUpstreamClient();
 
   final String dataDir;
   final UpstreamClient _upstream;
+
+  /// Domain roots `?src=` may point at, subdomains included; empty = any.
+  final List<String> allowedHosts;
 
   Handler get handler => (Request request) async {
         final (ImageType, String)? target = _target(request);
@@ -71,16 +75,9 @@ class ImageCache {
 
         final UpstreamResponse response;
         try {
-          await _throttleHost(sourceUri.host);
-          response = await _upstream.send(
-            method: 'GET',
-            url: sourceUri,
-            // Cover hosts (Cover Art Archive among them) rate-limit or refuse
-            // agent-less clients; identify like the API proxy does.
-            headers: <String, String>{
-              HttpHeaders.userAgentHeader: kProxyUserAgent,
-            },
-          );
+          response = await _fetch(sourceUri);
+        } on _HostNotAllowed catch (e) {
+          return _error(HttpStatus.forbidden, e.message);
         } on Object catch (e) {
           return _error(HttpStatus.badGateway, '$e');
         }
@@ -109,6 +106,44 @@ class ImageCache {
           response.contentType ?? _contentTypeOf(imageId),
         );
       };
+
+  /// With an allowlist every redirect hop is checked too: following them
+  /// blindly would let one listed host with an open redirect reach anything.
+  Future<UpstreamResponse> _fetch(Uri source) async {
+    Uri url = source;
+    for (int hop = 0;; hop++) {
+      if (!_isAllowedHost(url.host)) throw _HostNotAllowed(url.host);
+      await _throttleHost(url.host);
+      final UpstreamResponse response = await _upstream.send(
+        method: 'GET',
+        url: url,
+        // Cover hosts (Cover Art Archive among them) rate-limit or refuse
+        // agent-less clients; identify like the API proxy does.
+        headers: <String, String>{
+          HttpHeaders.userAgentHeader: kProxyUserAgent,
+        },
+        followRedirects: allowedHosts.isEmpty,
+      );
+      final String? location = response.location;
+      if (!response.isRedirect || location == null) return response;
+      if (hop >= _kMaxRedirects) {
+        throw StateError('Too many redirects from ${source.host}');
+      }
+      url = url.resolve(location);
+      if (!url.isScheme('https')) {
+        throw StateError('Redirected to a non-https URL');
+      }
+    }
+  }
+
+  bool _isAllowedHost(String host) {
+    if (allowedHosts.isEmpty) return true;
+    final String lower = host.toLowerCase();
+    for (final String allowed in allowedHosts) {
+      if (lower == allowed || lower.endsWith('.$allowed')) return true;
+    }
+    return false;
+  }
 
   /// The web build's stand-in for the desktop local-cache write: a user-picked
   /// cover has no upstream URL the GET route could fetch.
@@ -233,3 +268,14 @@ Response _error(int status, String message) => Response(
         HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
+
+/// Browsers stop at 20; covers never need more than a CDN hand-off or two.
+const int _kMaxRedirects = 5;
+
+class _HostNotAllowed implements Exception {
+  const _HostNotAllowed(this.host);
+
+  final String host;
+
+  String get message => 'Source host $host is not an allowed cover host';
+}

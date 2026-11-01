@@ -26,7 +26,9 @@ import '../widgets/settings_group.dart';
 /// Flow: JSON/CSV file pick → parse + validate → target collection →
 /// preview screen with per-row checkboxes → import.
 class CustomCardsImportContent extends ConsumerStatefulWidget {
-  const CustomCardsImportContent({super.key});
+  const CustomCardsImportContent({this.initialCollectionId, super.key});
+
+  final int? initialCollectionId;
 
   @override
   ConsumerState<CustomCardsImportContent> createState() =>
@@ -37,9 +39,9 @@ class _CustomCardsImportContentState
     extends ConsumerState<CustomCardsImportContent> {
   String? _fileName;
   List<CustomCardRow>? _rows;
-  bool _useNewCollection = true;
+  late bool _useNewCollection = widget.initialCollectionId == null;
   bool _resolveFromSources = false;
-  int? _selectedCollectionId;
+  late int? _selectedCollectionId = widget.initialCollectionId;
 
   @override
   Widget build(BuildContext context) {
