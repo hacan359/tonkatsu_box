@@ -126,72 +126,72 @@
       "count": {"type": "int"}
     }
   },
-  "bulkClearSelection": "Clear selection",
-  "selectAll": "Select all",
-  "bulkMove": "Move selected to collection",
-  "bulkCopy": "Copy selected to collection",
-  "bulkChangeStatus": "Change status",
-  "bulkRemoveConfirm": "Remove {count, plural, =1{1 item} other{{count} items}} from this collection?",
+    "bulkClearSelection": "سلیکشن صاف کریں",
+  "selectAll": "سب سلیکٹ کریں",
+  "bulkMove": "سلیکٹ کیے گئے آئٹمز کو مجموعے میں منتقل کریں",
+  "bulkCopy": "سلیکٹ کیے گئے آئٹمز کو مجموعے میں کاپی کریں",
+  "bulkChangeStatus": "اسٹیٹس تبدیل کریں",
+  "bulkRemoveConfirm": "کیا آپ اس مجموعے سے {count, plural, =1{1 آئٹم} other{{count} آئٹمز}} ہٹانا چاہتے ہیں؟",
   "@bulkRemoveConfirm": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkResult": "Done: {done} • Duplicates: {skipped}",
+  "bulkResult": "ہو گیا: {done} • ڈپلیکیٹس: {skipped}",
   "@bulkResult": {
     "placeholders": {
       "done": {"type": "int"},
       "skipped": {"type": "int"}
     }
   },
-  "bulkRemoved": "Removed: {count}",
+  "bulkRemoved": "ہٹائے گئے: {count}",
   "@bulkRemoved": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkStatusUpdated": "Status updated for {count, plural, =1{1 item} other{{count} items}}",
+  "bulkStatusUpdated": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} کا اسٹیٹس اپڈیٹ ہو گیا",
   "@bulkStatusUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkAddTags": "Add tags",
-  "bulkRemoveTags": "Remove tags",
-  "bulkAddTagsTitle": "Add tags to {count, plural, =1{1 item} other{{count} items}}",
+  "bulkAddTags": "ٹیگز شامل کریں",
+  "bulkRemoveTags": "ٹیگز ہٹائیں",
+  "bulkAddTagsTitle": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} میں ٹیگز شامل کریں",
   "@bulkAddTagsTitle": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkRemoveTagsTitle": "Remove tags from {count, plural, =1{1 item} other{{count} items}}",
+  "bulkRemoveTagsTitle": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} سے ٹیگز ہٹائیں",
   "@bulkRemoveTagsTitle": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkTagsAdded": "Tags added: {count}",
+  "bulkTagsAdded": "ٹیگز شامل ہوئے: {count}",
   "@bulkTagsAdded": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkTagsRemoved": "Tags removed: {count}",
+  "bulkTagsRemoved": "ٹیگز ہٹائے گئے: {count}",
   "@bulkTagsRemoved": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkTagsUnchanged": "Nothing to change",
-  "bulkExportPngTitle": "Export as PNG",
-  "columnsCount": "Columns",
-  "bulkExportPngItemsCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "bulkTagsUnchanged": "تبدیل کرنے کے لیے کچھ نہیں",
+  "bulkExportPngTitle": "کے طور پر ایکسپورٹ کریں PNG",
+  "columnsCount": "کالمز",
+  "bulkExportPngItemsCount": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}}",
   "@bulkExportPngItemsCount": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "bulkExportPngItemsCountPreview": "{total, plural, =1{1 item} other{{total} items}} ({preview} shown in preview)",
+  "bulkExportPngItemsCountPreview": "{total, plural, =1{1 آئٹم} other{{total} آئٹمز}} (پریویو میں {preview} دکھائے گئے)",
   "@bulkExportPngItemsCountPreview": {
     "placeholders": {
       "total": {"type": "int"},
