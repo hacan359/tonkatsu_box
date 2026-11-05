@@ -9,6 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
 import 'item_marks_list_section.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Reuses existing item fields: `currentEpisode` stores chapters read,
 /// `currentSeason` stores volumes read.
@@ -52,9 +53,7 @@ class MangaProgressSection extends ConsumerWidget {
             const SizedBox(width: AppSpacing.sm),
             Text(
               l.readingProgress,
-              style: AppTypography.h3.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -67,8 +66,12 @@ class MangaProgressSection extends ConsumerWidget {
           total: totalChapters,
           accentColor: accentColor,
           onIncrement: () => _incrementChapter(ref, totalChapters),
-          onEdit: () =>
-              _editProgress(context, ref, isChapter: true, total: totalChapters),
+          onEdit: () => _editProgress(
+            context,
+            ref,
+            isChapter: true,
+            total: totalChapters,
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
 
@@ -79,12 +82,17 @@ class MangaProgressSection extends ConsumerWidget {
           total: totalVolumes,
           accentColor: accentColor,
           onIncrement: () => _incrementVolume(ref, totalVolumes),
-          onEdit: () =>
-              _editProgress(context, ref, isChapter: false, total: totalVolumes),
+          onEdit: () => _editProgress(
+            context,
+            ref,
+            isChapter: false,
+            total: totalVolumes,
+          ),
         ),
 
         // Mark as completed
-        if (totalChapters != null && currentChapter < totalChapters) ...<Widget>[
+        if (totalChapters != null &&
+            currentChapter < totalChapters) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             width: double.infinity,
@@ -150,13 +158,14 @@ class MangaProgressSection extends ConsumerWidget {
     int? total,
   }) async {
     final int current = isChapter ? currentChapter : currentVolume;
-    final TextEditingController controller =
-        TextEditingController(text: current > 0 ? current.toString() : '');
+    final TextEditingController controller = TextEditingController(
+      text: current > 0 ? current.toString() : '',
+    );
     final S l = S.of(context);
 
     final String? result = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(isChapter ? l.mangaChapters : l.mangaVolumes),
         content: TextField(
           controller: controller,
@@ -182,8 +191,7 @@ class MangaProgressSection extends ConsumerWidget {
     if (result != null) {
       final int? value = int.tryParse(result);
       if (value != null && value >= 0) {
-        final int clamped =
-            total != null && value > total ? total : value;
+        final int clamped = total != null && value > total ? total : value;
         if (isChapter) {
           ref
               .read(collectionItemsNotifierProvider(collectionId).notifier)
@@ -198,4 +206,3 @@ class MangaProgressSection extends ConsumerWidget {
     controller.dispose();
   }
 }
-

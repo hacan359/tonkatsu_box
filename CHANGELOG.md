@@ -7,6 +7,121 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Glass app frame**
+
+  The app is laid out as glass panels over a wallpaper: a search row on top,
+  the menu rail on the left (a bottom band on phones) and the content panel.
+  A sub-screen's back button, title and actions sit in the top row instead of
+  a second bar; pages switch with a shrink-and-grow transition.
+
+  * lib/shared/navigation/app_frame.dart (AppFrame, frameChromeHeight): New.
+  * lib/shared/navigation/frame_chrome.dart (FrameChrome, FrameChromeController,
+    FrameChromeScope, FrameChromeBinding): New; a page lends its title, back
+    button, actions and filter strip to the top row.
+  * lib/shared/navigation/app_wallpaper.dart (AppWallpaper),
+    lib/shared/navigation/frame_metrics.dart,
+    lib/shared/navigation/zone_icon_button.dart (ZoneIconButton): New.
+  * lib/shared/widgets/frame_page.dart (FramePage): New; the body of every tab
+    and sub-screen.
+  * lib/shared/widgets/glass_panel.dart (GlassPanel, GlassTile),
+    lib/shared/widgets/chip_tile.dart (ChipTile),
+    lib/shared/widgets/image_placeholder.dart (ImagePlaceholder): New.
+  * lib/shared/navigation/app_shell.dart, lib/shared/navigation/app_top_bar.dart:
+    Render through AppFrame; the top bar hosts the lent chrome.
+  * lib/features/collections/screens/collection_screen.dart, lib/features/collections/screens/item_detail_screen.dart, lib/features/genre_cloud/screens/genre_cloud_screen.dart, lib/features/likes/screens/likes_screen.dart, lib/features/mood_grids/screens/mood_grid_detail_screen.dart, lib/features/personalization/screens/personalization_hub_screen.dart, lib/features/personalization/widgets/personalization_sub_screen.dart, lib/features/recommendations/screens/recommendations_screen.dart, lib/features/showcase/screens/showcase_screen.dart, lib/features/tier_lists/screens/tier_list_detail_screen.dart, and every screen under lib/features/settings/screens/: Moved onto FramePage.
+  * lib/shared/widgets/media_detail_view.dart,
+    lib/shared/widgets/media_detail/desktop_detail_layout.dart,
+    lib/shared/widgets/media_detail/mobile_detail_layout.dart,
+    lib/shared/widgets/media_detail/media_detail_backdrop.dart,
+    lib/shared/widgets/media_detail/detail_sections.dart,
+    lib/features/collections/widgets/item_detail/item_detail_app_bar.dart:
+    The title card lays out on glass tiles and lends its buttons to the top row.
+
+- **Dialogs, sheets and menus on glass**
+
+  * lib/shared/widgets/glass_dialog.dart (GlassDialog, GlassDialogOption,
+    GlassAlertDialog, GlassSheet, showGlassSheet, GlassDialogFrame): New.
+  * lib/shared/widgets/glass_popup_menu.dart (GlassPopupMenuButton,
+    GlassMenuRow, GlassMenuDivider): New.
+  * Dialog, bottom sheet and popup menu call sites under lib/features/ and
+    lib/shared/widgets/: Switched to the glass variants.
+
+- **Media-type filters as an icon strip with count badges**
+
+  * lib/shared/widgets/media_type_icon_strip.dart (MediaTypeIconStrip,
+    MediaTypeIconTile, StripActionTile): New.
+  * lib/shared/widgets/filter_segments.dart (FilterSegment,
+    StatusDropdownSegment, FilterDropdownSegment): Renamed from
+    chevron_filter_bar.dart; dropdowns open an arrowed glass menu.
+  * lib/features/collections/widgets/collection_filter_bar.dart,
+    lib/features/home/screens/all_items_screen.dart,
+    lib/features/search/widgets/filter_bar.dart,
+    lib/features/search/widgets/filter_bar_compact.dart,
+    lib/features/search/widgets/filter_control.dart: Use the strip.
+
+- **Style setting: Glass or Classic**
+
+  Settings → Appearance gains "Style" next to "Theme". Glass puts translucent
+  panels over the palette background or a blurred photo of your own; Classic keeps the opaque tiled look of 0.46. Either works
+  with any palette. With Glass, "Wallpaper" sets your own picture behind the
+  frame or resets it to the palette background (desktop and Android).
+
+  * lib/shared/theme/app_skin.dart (AppSkin, SkinAlpha),
+    lib/shared/theme/app_skin_id.dart (AppSkinId),
+    lib/shared/theme/app_surface.dart (AppSurface),
+    lib/shared/theme/skins/glass_skin.dart,
+    lib/shared/theme/skins/classic_skin.dart: New.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setAppSkin, SettingsKeys.appSkin,
+    SettingsNotifier.pickWallpaper, SettingsNotifier.resetWallpaper,
+    SettingsKeys.wallpaperPath, SettingsState.wallpaperPath): New settings.
+  * lib/features/settings/screens/settings_screen.dart: "Style" picker and
+    "Wallpaper" options.
+  * lib/core/services/wallpaper_service.dart (WallpaperService,
+    WallpaperSaveException): New; keeps a copy of the picked image.
+  * lib/core/services/image_extension.dart (sanitizeImageExtension): New;
+    shared with lib/core/services/collection_hero_service.dart
+    (CollectionHeroService).
+  * lib/shared/navigation/app_wallpaper.dart (AppWallpaper): Shows the user's
+    picture; without one, or when the file is unreadable, the palette tile.
+  * lib/app.dart: Applies the selected skin.
+  * lib/shared/theme/palettes/sakura_palette.dart: Deeper text colours.
+  * lib/l10n/app_*.arb (settingsSkin, settingsSkinSubtitle, settingsSkinGlass,
+    settingsSkinClassic, settingsWallpaper, settingsWallpaperSubtitle,
+    settingsWallpaperDefault, settingsWallpaperCustom, settingsWallpaperChoose,
+    settingsWallpaperReset, settingsWallpaperError): New keys.
+  * docs/THEMES.md: New.
+
+- **Volumetric logo on the splash screen**
+
+  The logo appears flat, then the clapperboard and tonkatsu pieces rise over
+  the backing with a side, a shadow and a highlight.
+
+  * lib/shared/widgets/volumetric_logo.dart (VolumetricLogo): New.
+  * lib/features/splash/screens/splash_screen.dart (SplashScreen): Uses it.
+  * assets/images/logo_layers/, pubspec.yaml: Logo layers.
+  * README.md, docs/assets/logo_volumetric.png: Static volumetric logo.
+
+### Removed
+
+- **Old per-screen chrome**
+
+  * lib/shared/widgets/glass_app_bar.dart (GlassAppBar),
+    lib/shared/widgets/sub_screen_title_bar.dart (SubScreenTitleBar),
+    lib/shared/widgets/frame_inset.dart,
+    lib/shared/extensions/bottom_inset_extension.dart,
+    lib/features/search/widgets/platform_filter_sheet.dart (PlatformFilterSheet):
+    Removed.
+
+### Fixed
+
+- **"Refresh from source" works for TMDB animated movies**
+
+  * lib/features/collections/helpers/item_refresh.dart: An animation item
+    without the series flag is refetched as a movie.
+
 ## [0.46.0] - 2026-11-01
 
 ### Added

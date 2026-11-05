@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../glass_dialog.dart';
 
 /// Info button exposing system metadata (added / last activity / completion
 /// time) via a tooltip and a dialog.
@@ -14,22 +15,15 @@ class SystemMetaInfoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(
-        Icons.info_outline,
-        size: 16,
-        color: AppColors.textTertiary,
-      ),
+      icon: Icon(Icons.info_outline, size: 16, color: AppColors.textTertiary),
       visualDensity: VisualDensity.compact,
       tooltip: text,
       onPressed: () => showDialog<void>(
         context: context,
-        builder: (BuildContext ctx) => AlertDialog(
+        builder: (BuildContext ctx) => GlassAlertDialog(
           title: Text(S.of(ctx).activityDatesTitle),
           content: SingleChildScrollView(
-            child: Text(
-              text,
-              style: AppTypography.body.copyWith(height: 1.6),
-            ),
+            child: Text(text, style: AppTypography.body.copyWith(height: 1.6)),
           ),
           actions: <Widget>[
             TextButton(

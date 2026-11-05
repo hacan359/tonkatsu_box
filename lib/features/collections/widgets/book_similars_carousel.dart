@@ -7,6 +7,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/book_carousel.dart';
 import '../../search/widgets/item_details_sheet.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 class BookSimilarsCarousel extends StatelessWidget {
   const BookSimilarsCarousel({
@@ -42,9 +43,10 @@ class BookSimilarsCarousel extends StatelessWidget {
   }
 
   void _showBook(BuildContext context, Book book) {
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      selfBacked: true,
       builder: (BuildContext ctx) => ItemDetailsSheet.book(
         book,
         onAddToCollection: () => onAddBook?.call(book),

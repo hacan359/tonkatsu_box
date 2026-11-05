@@ -9,14 +9,12 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/tier_lists_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 class CreateTierListDialog extends ConsumerStatefulWidget {
   /// A non-null [preselectedCollectionId] locks the scope to that collection
   /// and hides the picker.
-  const CreateTierListDialog({
-    this.preselectedCollectionId,
-    super.key,
-  });
+  const CreateTierListDialog({this.preselectedCollectionId, super.key});
 
   final int? preselectedCollectionId;
 
@@ -25,8 +23,7 @@ class CreateTierListDialog extends ConsumerStatefulWidget {
       _CreateTierListDialogState();
 }
 
-class _CreateTierListDialogState
-    extends ConsumerState<CreateTierListDialog> {
+class _CreateTierListDialogState extends ConsumerState<CreateTierListDialog> {
   final TextEditingController _nameController = TextEditingController();
   bool _isGlobal = true;
   int? _selectedCollectionId;
@@ -51,14 +48,15 @@ class _CreateTierListDialogState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.watch(collectionsProvider);
+    final AsyncValue<List<Collection>> collectionsAsync = ref.watch(
+      collectionsProvider,
+    );
 
     final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isDesktop = screenWidth >= 800;
     final double dialogWidth = isDesktop ? 520 : 400;
 
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.tierListCreate),
       contentPadding: isDesktop
           ? const EdgeInsets.fromLTRB(28, 20, 28, 0)
@@ -73,105 +71,103 @@ class _CreateTierListDialogState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-            TextField(
-              controller: _nameController,
-              autofocus: true,
-              style: isDesktop ? const TextStyle(fontSize: 16) : null,
-              decoration: InputDecoration(
-                hintText: l.tierListNameHint,
-                errorText: _nameError,
-                contentPadding: isDesktop
-                    ? const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
-                      )
-                    : null,
-              ),
-              onChanged: (_) {
-                if (_nameError != null) setState(() => _nameError = null);
-              },
-              onSubmitted: (_) => _submit(context),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            if (widget.preselectedCollectionId == null) ...<Widget>[
-              RadioGroup<bool>(
-                groupValue: _isGlobal,
-                onChanged: (bool? value) {
-                  if (value == null) return;
-                  setState(() => _isGlobal = value);
-                },
-                child: Column(
-                  children: <Widget>[
-                    ListTile(
-                      title: Text(l.tierListScopeAll),
-                      leading: const Radio<bool>(value: true),
-                      dense: !isDesktop,
-                      contentPadding: EdgeInsets.zero,
-                      onTap: () => setState(() => _isGlobal = true),
-                    ),
-                    ListTile(
-                      title: Text(l.tierListScopeCollection),
-                      leading: const Radio<bool>(value: false),
-                      dense: !isDesktop,
-                      contentPadding: EdgeInsets.zero,
-                      onTap: () => setState(() => _isGlobal = false),
-                    ),
-                  ],
+              TextField(
+                controller: _nameController,
+                autofocus: true,
+                style: isDesktop ? const TextStyle(fontSize: 16) : null,
+                decoration: InputDecoration(
+                  hintText: l.tierListNameHint,
+                  errorText: _nameError,
+                  contentPadding: isDesktop
+                      ? const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        )
+                      : null,
                 ),
+                onChanged: (_) {
+                  if (_nameError != null) setState(() => _nameError = null);
+                },
+                onSubmitted: (_) => _submit(context),
               ),
-              if (!_isGlobal)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xs),
-                  child: collectionsAsync.when(
-                    loading: () => const CircularProgressIndicator(),
-                    error: (Object e, StackTrace s) => Text(e.toString()),
-                    data: (List<Collection> collections) {
-                      if (collections.isEmpty) {
-                        return Text(
-                          l.importNoCollections,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                          ),
-                        );
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          CollectionPickerField(
-                            value: _selectedCollectionId,
-                            hint: l.tierListScopeCollection,
-                            title: l.tierListScopeCollection,
-                            onChanged: (int? id) {
-                              setState(() {
-                                _selectedCollectionId = id;
-                                _collectionError = null;
-                              });
-                            },
-                          ),
-                          if (_collectionError != null)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: AppSpacing.xs,
-                                left: AppSpacing.sm,
-                              ),
-                              child: Text(
-                                _collectionError!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
+              const SizedBox(height: AppSpacing.lg),
+
+              if (widget.preselectedCollectionId == null) ...<Widget>[
+                RadioGroup<bool>(
+                  groupValue: _isGlobal,
+                  onChanged: (bool? value) {
+                    if (value == null) return;
+                    setState(() => _isGlobal = value);
+                  },
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: Text(l.tierListScopeAll),
+                        leading: const Radio<bool>(value: true),
+                        dense: !isDesktop,
+                        contentPadding: EdgeInsets.zero,
+                        onTap: () => setState(() => _isGlobal = true),
+                      ),
+                      ListTile(
+                        title: Text(l.tierListScopeCollection),
+                        leading: const Radio<bool>(value: false),
+                        dense: !isDesktop,
+                        contentPadding: EdgeInsets.zero,
+                        onTap: () => setState(() => _isGlobal = false),
+                      ),
+                    ],
                   ),
                 ),
+                if (!_isGlobal)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: collectionsAsync.when(
+                      loading: () => const CircularProgressIndicator(),
+                      error: (Object e, StackTrace s) => Text(e.toString()),
+                      data: (List<Collection> collections) {
+                        if (collections.isEmpty) {
+                          return Text(
+                            l.importNoCollections,
+                            style: TextStyle(color: AppColors.textSecondary),
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            CollectionPickerField(
+                              value: _selectedCollectionId,
+                              hint: l.tierListScopeCollection,
+                              title: l.tierListScopeCollection,
+                              onChanged: (int? id) {
+                                setState(() {
+                                  _selectedCollectionId = id;
+                                  _collectionError = null;
+                                });
+                              },
+                            ),
+                            if (_collectionError != null)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: AppSpacing.xs,
+                                  left: AppSpacing.sm,
+                                ),
+                                child: Text(
+                                  _collectionError!,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ],
-          ],
-        ),
+          ),
         ),
       ),
       actions: <Widget>[
@@ -179,10 +175,7 @@ class _CreateTierListDialogState
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        FilledButton(
-          onPressed: () => _submit(context),
-          child: Text(l.create),
-        ),
+        FilledButton(onPressed: () => _submit(context), child: Text(l.create)),
       ],
     );
   }
@@ -209,9 +202,7 @@ class _CreateTierListDialogState
           .read(collectionTierListsProvider(collectionId).notifier)
           .create(name);
     } else {
-      tierList = await ref
-          .read(tierListsProvider.notifier)
-          .create(name);
+      tierList = await ref.read(tierListsProvider.notifier).create(name);
     }
 
     if (context.mounted) {

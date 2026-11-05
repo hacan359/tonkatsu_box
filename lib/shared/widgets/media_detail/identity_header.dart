@@ -6,6 +6,7 @@ import '../../theme/app_typography.dart';
 import '../../utils/url_launch.dart';
 import '../source_badge.dart';
 import 'media_detail_chip.dart';
+import '../glass_panel.dart';
 
 /// Cover beside the identity badges and info chips — the mobile card's head.
 class IdentityHeader extends StatelessWidget {
@@ -190,14 +191,17 @@ class _InfoChipState extends State<_InfoChip> {
       builder: (BuildContext context, BoxConstraints constraints) {
         bool overflows = false;
         if (constraints.maxWidth.isFinite) {
-          final TextPainter painter = TextPainter(
-            text: TextSpan(text: widget.text, style: style),
-            maxLines: 1,
-            textDirection: Directionality.of(context),
-          )..layout(
-              maxWidth: (constraints.maxWidth - _chrome)
-                  .clamp(0.0, double.infinity),
-            );
+          final TextPainter painter =
+              TextPainter(
+                text: TextSpan(text: widget.text, style: style),
+                maxLines: 1,
+                textDirection: Directionality.of(context),
+              )..layout(
+                maxWidth: (constraints.maxWidth - _chrome).clamp(
+                  0.0,
+                  double.infinity,
+                ),
+              );
           overflows = painter.didExceedMaxLines;
           painter.dispose();
         }
@@ -235,8 +239,9 @@ class _InfoChipState extends State<_InfoChip> {
                 child: Text(
                   widget.text,
                   style: style,
-                  overflow:
-                      _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  overflow: _expanded
+                      ? TextOverflow.visible
+                      : TextOverflow.ellipsis,
                   maxLines: _expanded ? null : 1,
                 ),
               ),
@@ -245,12 +250,13 @@ class _InfoChipState extends State<_InfoChip> {
         );
 
         final Widget chip = Material(
-          color: AppColors.surfaceLight,
+          color: glassChipColor(),
           shape: shape,
           child: widget.onTap != null || expandable
               ? InkWell(
                   customBorder: shape,
-                  onTap: widget.onTap ??
+                  onTap:
+                      widget.onTap ??
                       () => setState(() => _expanded = !_expanded),
                   child: inner,
                 )

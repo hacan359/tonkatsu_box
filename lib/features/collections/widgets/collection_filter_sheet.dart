@@ -10,6 +10,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../settings/widgets/settings_tile.dart';
 import '../providers/collections_provider.dart';
 import '../../../shared/constants/collection_sort_mode_ui.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 Future<void> showCollectionFilterSheet(
   BuildContext context, {
@@ -20,10 +22,10 @@ Future<void> showCollectionFilterSheet(
   required ValueChanged<int?> onTagToggled,
   required VoidCallback onGroupToggled,
 }) {
-  return showModalBottomSheet<void>(
+  return showGlassSheet<void>(
     context: context,
-    backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    selfBacked: true,
     builder: (BuildContext ctx) => DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,
@@ -31,14 +33,14 @@ Future<void> showCollectionFilterSheet(
       expand: false,
       builder: (BuildContext _, ScrollController scrollController) =>
           CollectionFilterSheet(
-        scrollController: scrollController,
-        collectionId: collectionId,
-        tags: tags,
-        selectedTagIds: selectedTagIds,
-        groupByTags: groupByTags,
-        onTagToggled: onTagToggled,
-        onGroupToggled: onGroupToggled,
-      ),
+            scrollController: scrollController,
+            collectionId: collectionId,
+            tags: tags,
+            selectedTagIds: selectedTagIds,
+            groupByTags: groupByTags,
+            onTagToggled: onTagToggled,
+            onGroupToggled: onGroupToggled,
+          ),
     ),
   );
 }
@@ -80,8 +82,7 @@ class CollectionFilterSheet extends ConsumerStatefulWidget {
       _CollectionFilterSheetState();
 }
 
-class _CollectionFilterSheetState
-    extends ConsumerState<CollectionFilterSheet> {
+class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
   late final Set<int> _selectedTagIds = <int>{...widget.selectedTagIds};
   late bool _groupByTags = widget.groupByTags;
 
@@ -110,79 +111,49 @@ class _CollectionFilterSheetState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final CollectionSortMode currentSort =
-        ref.watch(collectionSortProvider(widget.collectionId));
-    final bool isDescending =
-        ref.watch(collectionSortDescProvider(widget.collectionId));
+    final CollectionSortMode currentSort = ref.watch(
+      collectionSortProvider(widget.collectionId),
+    );
+    final bool isDescending = ref.watch(
+      collectionSortDescProvider(widget.collectionId),
+    );
     final bool hasTagFilter = _selectedTagIds.isNotEmpty;
 
-    return Material(
-      color: AppColors.background,
-      elevation: 16,
-      shadowColor: AppColors.shadow,
+    return GlassPanel(
       borderRadius: const BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusLg),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          image: AppColors.tileImage,
-        ),
-        child: Stack(
-          children: <Widget>[
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: const Alignment(0, -0.7),
-                      radius: 1.1,
-                      colors: <Color>[
-                        AppColors.brand.withAlpha(80),
-                        AppColors.brand.withAlpha(20),
-                        Colors.transparent,
-                      ],
-                      stops: const <double>[0.0, 0.4, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        AppColors.background.withAlpha(80),
-                        AppColors.background.withAlpha(160),
-                        AppColors.background.withAlpha(220),
-                      ],
-                      stops: const <double>[0.0, 0.45, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            SingleChildScrollView(
-              controller: widget.scrollController,
-              padding: const EdgeInsets.all(AppSpacing.md),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withAlpha(80),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(
-                    color: AppColors.surfaceBorder.withAlpha(40),
+                  gradient: RadialGradient(
+                    center: const Alignment(0, -0.7),
+                    radius: 1.1,
+                    colors: <Color>[
+                      AppColors.brand.withAlpha(60),
+                      AppColors.brand.withAlpha(16),
+                      Colors.transparent,
+                    ],
+                    stops: const <double>[0.0, 0.4, 1.0],
                   ),
                 ),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
+              ),
+            ),
+          ),
+
+          SingleChildScrollView(
+            controller: widget.scrollController,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: DecoratedBox(
+              decoration: glassTileDecoration(radius: AppSpacing.radiusMd),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -191,9 +162,7 @@ class _CollectionFilterSheetState
                         AppSpacing.sm,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppSpacing.md,
-                        ),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: SizedBox(
                           width: double.infinity,
                           child: Stack(
@@ -204,7 +173,9 @@ class _CollectionFilterSheetState
                                 height: 4,
                                 decoration: BoxDecoration(
                                   color: AppColors.textPrimary.withAlpha(80),
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
+                                  borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusXxs,
+                                  ),
                                 ),
                               ),
                               if (hasTagFilter)
@@ -215,7 +186,10 @@ class _CollectionFilterSheetState
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: AppSpacing.sm,
                                       ),
-                                      minimumSize: const Size(0, AppSpacing.buttonHeightDense),
+                                      minimumSize: const Size(
+                                        0,
+                                        AppSpacing.buttonHeightDense,
+                                      ),
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                       visualDensity: VisualDensity.compact,
@@ -223,8 +197,7 @@ class _CollectionFilterSheetState
                                     onPressed: () => _handleTagToggle(null),
                                     child: Text(
                                       l.filtersClear,
-                                      style:
-                                          AppTypography.bodySmall.copyWith(
+                                      style: AppTypography.bodySmall.copyWith(
                                         color: AppColors.error,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -307,14 +280,19 @@ class _CollectionFilterSheetState
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.sm,
                               ),
-                              minimumSize: const Size(0, AppSpacing.buttonHeightDense),
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                              minimumSize: const Size(
+                                0,
+                                AppSpacing.buttonHeightDense,
+                              ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             ),
                             onPressed: () => ref
-                                .read(collectionSortDescProvider(widget.collectionId)
-                                    .notifier)
+                                .read(
+                                  collectionSortDescProvider(
+                                    widget.collectionId,
+                                  ).notifier,
+                                )
                                 .toggle(),
                             icon: Icon(
                               isDescending
@@ -342,19 +320,21 @@ class _CollectionFilterSheetState
                         label: mode.localizedDisplayLabel(l),
                         selected: mode == currentSort,
                         onTap: () => ref
-                            .read(collectionSortProvider(widget.collectionId)
-                                .notifier)
+                            .read(
+                              collectionSortProvider(
+                                widget.collectionId,
+                              ).notifier,
+                            )
                             .setSortMode(mode),
                       ),
 
                     const SizedBox(height: AppSpacing.md),
                   ],
-                  ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -376,15 +356,12 @@ class _TagChip extends StatelessWidget {
     final Color color = tag.color != null
         ? Color(tag.color!)
         : AppColors.textSecondary;
-    final Color bg = selected ? color : Colors.transparent;
+    final Color bg = selected ? color : glassChipColor();
     final Color fg = selected ? AppColors.background : color;
     return Material(
       color: bg,
       shape: StadiumBorder(
-        side: BorderSide(
-          color: color,
-          width: selected ? 1.5 : 1,
-        ),
+        side: BorderSide(color: color, width: selected ? 1.5 : 1),
       ),
       child: InkWell(
         onTap: onTap,
@@ -443,9 +420,7 @@ class _SortTile extends StatelessWidget {
         ),
       ),
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       onTap: onTap,
     );
   }

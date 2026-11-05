@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// A single name suggestion shown as a chip above the text field.
 class RenameSuggestion {
@@ -51,8 +52,9 @@ class RenameItemDialog extends StatefulWidget {
 }
 
 class _RenameItemDialogState extends State<RenameItemDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.currentOverride ?? widget.originalName);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.currentOverride ?? widget.originalName,
+  );
 
   @override
   void dispose() {
@@ -70,7 +72,7 @@ class _RenameItemDialogState extends State<RenameItemDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.rename),
       content: SingleChildScrollView(
         child: Column(

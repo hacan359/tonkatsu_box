@@ -9,6 +9,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../features/collections/providers/collections_provider.dart';
 import '../constants/collection_list_sort_mode_ui.dart';
+import 'glass_dialog.dart';
 
 sealed class CollectionChoice {
   const CollectionChoice();
@@ -39,36 +40,35 @@ Future<CollectionChoice?> showCollectionPickerDialog({
   IconData? uncategorizedIcon,
 }) async {
   final String resolvedTitle = title ?? S.of(context).chooseCollection;
-  final AsyncValue<List<Collection>> collectionsAsync =
-      ref.read(collectionsProvider);
+  final AsyncValue<List<Collection>> collectionsAsync = ref.read(
+    collectionsProvider,
+  );
 
-  final CollectionListSortMode initialSortMode =
-      ref.read(collectionListSortProvider);
+  final CollectionListSortMode initialSortMode = ref.read(
+    collectionListSortProvider,
+  );
   final bool initialDescending = ref.read(collectionListSortDescProvider);
 
   final List<Collection> collections =
       collectionsAsync.valueOrNull ?? <Collection>[];
   final List<Collection> editableCollections = collections
-      .where(
-        (Collection c) =>
-            c.isEditable && c.id != excludeCollectionId,
-      )
+      .where((Collection c) => c.isEditable && c.id != excludeCollectionId)
       .toList();
 
   return showDialog<CollectionChoice>(
     context: context,
-    builder: (BuildContext context) => Dialog(
+    builder: (BuildContext context) => GlassDialogFrame(
       child: _CollectionPickerContent(
-        title: resolvedTitle,
-        collections: editableCollections,
-        showUncategorized: showUncategorized,
-        alreadyInCollectionIds: alreadyInCollectionIds,
-        initialSortMode: initialSortMode,
-        initialDescending: initialDescending,
-        uncategorizedLabel: uncategorizedLabel,
-        uncategorizedSubtitle: uncategorizedSubtitle,
-        uncategorizedIcon: uncategorizedIcon,
-      ),
+          title: resolvedTitle,
+          collections: editableCollections,
+          showUncategorized: showUncategorized,
+          alreadyInCollectionIds: alreadyInCollectionIds,
+          initialSortMode: initialSortMode,
+          initialDescending: initialDescending,
+          uncategorizedLabel: uncategorizedLabel,
+          uncategorizedSubtitle: uncategorizedSubtitle,
+          uncategorizedIcon: uncategorizedIcon,
+        )
     ),
   );
 }
@@ -131,17 +131,17 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
   List<Collection> get _sortedCollections {
     final List<Collection> filtered = List<Collection>.of(_filteredCollections);
 
-    filtered.sort((Collection a, Collection b) =>
-        _sortMode.compare(a, b, descending: _descending));
+    filtered.sort(
+      (Collection a, Collection b) =>
+          _sortMode.compare(a, b, descending: _descending),
+    );
 
     // Already-added collections sink to the bottom of the list.
     final List<Collection> available = filtered
-        .where(
-            (Collection c) => !widget.alreadyInCollectionIds.contains(c.id))
+        .where((Collection c) => !widget.alreadyInCollectionIds.contains(c.id))
         .toList();
     final List<Collection> already = filtered
-        .where(
-            (Collection c) => widget.alreadyInCollectionIds.contains(c.id))
+        .where((Collection c) => widget.alreadyInCollectionIds.contains(c.id))
         .toList();
     return <Collection>[...available, ...already];
   }
@@ -189,12 +189,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
             padding: const EdgeInsets.fromLTRB(24, 20, 12, 0),
             child: Row(
               children: <Widget>[
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: AppTypography.h3,
-                  ),
-                ),
+                Expanded(child: Text(widget.title, style: AppTypography.h3)),
                 InkWell(
                   onTap: _toggleSort,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -264,11 +259,12 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
                 if (widget.showUncategorized && index == 0) {
                   return _buildUncategorizedTile(l);
                 }
-                final int collectionIndex =
-                    widget.showUncategorized ? index - 1 : index;
+                final int collectionIndex = widget.showUncategorized
+                    ? index - 1
+                    : index;
                 final Collection collection = sorted[collectionIndex];
-                final bool isAlreadyAdded =
-                    widget.alreadyInCollectionIds.contains(collection.id);
+                final bool isAlreadyAdded = widget.alreadyInCollectionIds
+                    .contains(collection.id);
                 return _buildCollectionTile(collection, isAlreadyAdded, l);
               },
             ),
@@ -304,11 +300,11 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
   }
 
   Widget _buildUncategorizedTile(S l) {
-    final bool isAlreadyAdded =
-        widget.alreadyInCollectionIds.contains(null);
+    final bool isAlreadyAdded = widget.alreadyInCollectionIds.contains(null);
     final bool customised = widget.uncategorizedLabel != null;
     final String title = widget.uncategorizedLabel ?? l.withoutCollection;
-    final String? subtitle = widget.uncategorizedSubtitle ??
+    final String? subtitle =
+        widget.uncategorizedSubtitle ??
         (customised ? null : l.collectionsUncategorized);
     return ListTile(
       enabled: !isAlreadyAdded,
@@ -325,11 +321,7 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
     );
   }
 
-  Widget _buildCollectionTile(
-    Collection collection,
-    bool isAlreadyAdded,
-    S l,
-  ) {
+  Widget _buildCollectionTile(Collection collection, bool isAlreadyAdded, S l) {
     return ListTile(
       enabled: !isAlreadyAdded,
       leading: _buildLeadingIcon(collection, isAlreadyAdded),
@@ -347,16 +339,12 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.12),
-        border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Text(
         l.collectionPickerAlreadyAdded,
-        style: AppTypography.caption.copyWith(
-          color: AppColors.success,
-        ),
+        style: AppTypography.caption.copyWith(color: AppColors.success),
       ),
     );
   }
@@ -365,8 +353,8 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
     final IconData icon = collection == null
         ? Icons.inbox_outlined
         : collection.type == CollectionType.own
-            ? Icons.folder_rounded
-            : Icons.fork_right;
+        ? Icons.folder_rounded
+        : Icons.fork_right;
     return _buildIconBox(icon, disabled);
   }
 

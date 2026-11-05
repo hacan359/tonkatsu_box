@@ -11,6 +11,7 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/features/settings/screens/settings_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_tile.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -46,8 +47,11 @@ void main() {
 
   Future<Finder> scrollTo(WidgetTester tester, String text) async {
     final Finder finder = find.text(text);
-    await tester.scrollUntilVisible(finder, 200,
-        scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     return finder;
   }
@@ -61,16 +65,16 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('wide layout constrains content width',
-          (WidgetTester tester) async {
+      testWidgets('wide layout constrains content width', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(width: 1200));
         await tester.pumpAndSettle();
 
         final Finder boxes = find.byType(ConstrainedBox);
         bool found600 = false;
         for (int i = 0; i < boxes.evaluate().length; i++) {
-          final ConstrainedBox box =
-              tester.widget<ConstrainedBox>(boxes.at(i));
+          final ConstrainedBox box = tester.widget<ConstrainedBox>(boxes.at(i));
           if (box.constraints.maxWidth == 600) {
             found600 = true;
             break;
@@ -81,8 +85,9 @@ void main() {
     });
 
     group('Appearance section', () {
-      testWidgets('tapping App Language opens picker dialog',
-          (WidgetTester tester) async {
+      testWidgets('tapping App Language opens picker dialog', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -96,11 +101,12 @@ void main() {
         await tester.tap(find.text('App Language'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        expect(find.byType(SimpleDialog), findsOneWidget);
+        expect(find.byType(GlassDialog), findsOneWidget);
       });
 
-      testWidgets('picking a language in the dialog saves it to prefs',
-          (WidgetTester tester) async {
+      testWidgets('picking a language in the dialog saves it to prefs', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -118,11 +124,12 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(prefs.getString(SettingsKeys.appLanguage), 'es');
-        expect(find.byType(SimpleDialog), findsNothing);
+        expect(find.byType(GlassDialog), findsNothing);
       });
 
-      testWidgets('tapping Content Language opens picker dialog',
-          (WidgetTester tester) async {
+      testWidgets('tapping Content Language opens picker dialog', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -136,13 +143,14 @@ void main() {
         await tester.tap(find.text('Content Language'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        expect(find.byType(SimpleDialog), findsOneWidget);
+        expect(find.byType(GlassDialog), findsOneWidget);
       });
     });
 
     group('Profile section', () {
-      testWidgets('shows custom author name from SharedPreferences',
-          (WidgetTester tester) async {
+      testWidgets('shows custom author name from SharedPreferences', (
+        WidgetTester tester,
+      ) async {
         await prefs.setString(SettingsKeys.defaultAuthor, 'Hacan');
 
         await tester.pumpWidget(createWidget());
@@ -153,8 +161,9 @@ void main() {
     });
 
     group('Navigation', () {
-      testWidgets('Database tile navigates without crash',
-          (WidgetTester tester) async {
+      testWidgets('Database tile navigates without crash', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -169,8 +178,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Trakt Import tile navigates without crash',
-          (WidgetTester tester) async {
+      testWidgets('Trakt Import tile navigates without crash', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -187,8 +197,9 @@ void main() {
     });
 
     group('Version', () {
-      testWidgets('shows version placeholder before PackageInfo loads',
-          (WidgetTester tester) async {
+      testWidgets('shows version placeholder before PackageInfo loads', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
@@ -198,26 +209,27 @@ void main() {
     });
 
     group('Data Sources section', () {
-      testWidgets('API Keys value counts every configured source out of total',
-          (WidgetTester tester) async {
-        // 6 of 9 sources set — the Podcast Index pair counts as one source
-        // and only counts when both halves are present.
-        await prefs.setString(SettingsKeys.clientId, 'cid');
-        await prefs.setString(SettingsKeys.clientSecret, 'secret');
-        await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb');
-        await prefs.setString(SettingsKeys.comicVineApiKey, 'cv');
-        await prefs.setString(SettingsKeys.googleBooksApiKey, 'gb');
-        await prefs.setString(SettingsKeys.hardcoverApiKey, 'hc');
-        await prefs.setString(SettingsKeys.podcastIndexApiKey, 'pik');
-        await prefs.setString(SettingsKeys.podcastIndexApiSecret, 'pis');
+      testWidgets(
+        'API Keys value counts every configured source out of total',
+        (WidgetTester tester) async {
+          // 6 of 9 sources set — the Podcast Index pair counts as one source
+          // and only counts when both halves are present.
+          await prefs.setString(SettingsKeys.clientId, 'cid');
+          await prefs.setString(SettingsKeys.clientSecret, 'secret');
+          await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb');
+          await prefs.setString(SettingsKeys.comicVineApiKey, 'cv');
+          await prefs.setString(SettingsKeys.googleBooksApiKey, 'gb');
+          await prefs.setString(SettingsKeys.hardcoverApiKey, 'hc');
+          await prefs.setString(SettingsKeys.podcastIndexApiKey, 'pik');
+          await prefs.setString(SettingsKeys.podcastIndexApiSecret, 'pis');
 
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(createWidget());
+          await tester.pumpAndSettle();
 
-        await scrollTo(tester, '6/9');
-        expect(find.text('6/9'), findsOneWidget);
-      });
+          await scrollTo(tester, '6/9');
+          expect(find.text('6/9'), findsOneWidget);
+        },
+      );
     });
   });
 }
-

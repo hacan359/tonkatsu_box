@@ -611,6 +611,39 @@ class SZh extends S {
   String get settingsThemeEva => 'Eva 蔚蓝';
 
   @override
+  String get settingsSkin => '风格';
+
+  @override
+  String get settingsSkinSubtitle => '玻璃或经典外观';
+
+  @override
+  String get settingsSkinGlass => '玻璃';
+
+  @override
+  String get settingsSkinClassic => '经典';
+
+  @override
+  String get settingsWallpaper => '壁纸';
+
+  @override
+  String get settingsWallpaperSubtitle => '玻璃框架后的图片';
+
+  @override
+  String get settingsWallpaperDefault => '默认';
+
+  @override
+  String get settingsWallpaperCustom => '自定义图片';
+
+  @override
+  String get settingsWallpaperChoose => '选择图片…';
+
+  @override
+  String get settingsWallpaperReset => '恢复默认';
+
+  @override
+  String get settingsWallpaperError => '无法保存壁纸';
+
+  @override
   String get settingsAppLanguageSubtitle => '界面语言';
 
   @override

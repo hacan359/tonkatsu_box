@@ -5,6 +5,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/import_source_kind_ui.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 sealed class CollectionImportChoice {
   const CollectionImportChoice();
@@ -39,10 +40,10 @@ class CollectionImportSourceDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final MaterialLocalizations dates = MaterialLocalizations.of(context);
-    return SimpleDialog(
-      title: Text(l.collectionImportPickSource),
+    return GlassDialog(
+      title: l.collectionImportPickSource,
       children: <Widget>[
-        SimpleDialogOption(
+        GlassDialogOption(
           onPressed: () =>
               Navigator.of(context).pop(const CollectionImportFromFile()),
           child: ListTile(
@@ -52,7 +53,7 @@ class CollectionImportSourceDialog extends StatelessWidget {
           ),
         ),
         for (final CollectionImport record in saved)
-          SimpleDialogOption(
+          GlassDialogOption(
             key: ValueKey<String>(record.source.key),
             onPressed: () =>
                 Navigator.of(context).pop(CollectionImportRerun(record)),

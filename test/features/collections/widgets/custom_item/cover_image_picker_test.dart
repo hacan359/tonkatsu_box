@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 import 'package:tonkatsu_box/features/collections/widgets/custom_item/cover_image_picker.dart';
 
 import '../../../../helpers/test_helpers.dart';
@@ -36,7 +37,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    Finder option(int index) => find.byType(SimpleDialogOption).at(index);
+    Finder option(int index) => find.byType(GlassDialogOption).at(index);
 
     testWidgets('should return a trimmed link from the URL dialog',
         (WidgetTester tester) async {

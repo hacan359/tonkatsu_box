@@ -658,6 +658,39 @@ class SEn extends S {
   String get settingsThemeEva => 'Eva Azure';
 
   @override
+  String get settingsSkin => 'Style';
+
+  @override
+  String get settingsSkinSubtitle => 'Glass or the classic look';
+
+  @override
+  String get settingsSkinGlass => 'Glass';
+
+  @override
+  String get settingsSkinClassic => 'Classic';
+
+  @override
+  String get settingsWallpaper => 'Wallpaper';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Picture behind the glass frame';
+
+  @override
+  String get settingsWallpaperDefault => 'Default';
+
+  @override
+  String get settingsWallpaperCustom => 'Your image';
+
+  @override
+  String get settingsWallpaperChoose => 'Choose image…';
+
+  @override
+  String get settingsWallpaperReset => 'Reset to default';
+
+  @override
+  String get settingsWallpaperError => 'Could not save the wallpaper';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Interface language';
 
   @override

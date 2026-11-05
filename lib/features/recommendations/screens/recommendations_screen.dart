@@ -11,6 +11,7 @@ import '../../search/handlers/media_handlers.dart';
 import '../../search/widgets/collection_chips_row.dart';
 import '../providers/recommendations_provider.dart';
 import '../widgets/recommendation_row.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 /// Shows recommendation rows, or an empty/no-candidates placeholder.
 class RecommendationsScreen extends ConsumerStatefulWidget {
@@ -62,8 +63,7 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
         ? result?.rows.length
         : null;
 
-    return Material(
-      color: AppColors.background,
+    return FramePage(
       child: Column(
         children: <Widget>[
           _buildHeader(l, rowCount),

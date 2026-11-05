@@ -136,9 +136,9 @@ class StatsHeroWall extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: <Color>[
-                  AppColors.background,
-                  AppColors.background.withAlpha(140),
-                  AppColors.background,
+                  AppColors.background.withAlpha(215),
+                  AppColors.background.withAlpha(120),
+                  AppColors.background.withAlpha(215),
                 ],
                 stops: const <double>[0.12, 0.55, 1.0],
               ),

@@ -7,6 +7,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/showcase_settings_provider.dart';
 import 'showcase_group_title.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Sizing comes from the `constraints` the caller passes to
 /// [showModalBottomSheet].
@@ -15,7 +16,7 @@ class ShowcaseSettingsSheet extends ConsumerWidget {
 
   static Future<void> show(BuildContext context) {
     final Size screenSize = MediaQuery.sizeOf(context);
-    return showModalBottomSheet<void>(
+    return showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
@@ -31,8 +32,9 @@ class ShowcaseSettingsSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
     final ShowcaseSettings settings = ref.watch(showcaseSettingsProvider);
-    final ShowcaseSettingsNotifier notifier =
-        ref.read(showcaseSettingsProvider.notifier);
+    final ShowcaseSettingsNotifier notifier = ref.read(
+      showcaseSettingsProvider.notifier,
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -66,7 +68,8 @@ class ShowcaseSettingsSheet extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                for (final ShowcaseGroup group in ShowcaseGroup.values) ...<Widget>[
+                for (final ShowcaseGroup group
+                    in ShowcaseGroup.values) ...<Widget>[
                   Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.sm),
                     child: Text(
@@ -81,7 +84,11 @@ class ShowcaseSettingsSheet extends ConsumerWidget {
                       key: ValueKey<String>('showcase_row_${row.key}'),
                       title: Row(
                         children: <Widget>[
-                          Icon(row.icon, size: 18, color: AppColors.textSecondary),
+                          Icon(
+                            row.icon,
+                            size: 18,
+                            color: AppColors.textSecondary,
+                          ),
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(child: Text(row.localizedLabel(l))),
                         ],

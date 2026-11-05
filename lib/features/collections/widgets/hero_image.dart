@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/image_placeholder.dart';
 
 /// On web `CollectionHeroService.resolve` yields a server URL and File()
 /// would throw in a browser; on desktop the location is a plain file path.
@@ -33,7 +33,7 @@ class HeroCoverImage extends StatelessWidget {
       fit: BoxFit.cover,
       alignment: alignment ?? Alignment.topCenter,
       filterQuality: FilterQuality.medium,
-      errorBuilder: (_, _, _) => ColoredBox(color: AppColors.surface),
+      errorBuilder: (_, _, _) => const ImagePlaceholder(showIcon: false),
     );
   }
 }

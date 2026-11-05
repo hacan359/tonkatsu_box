@@ -4,6 +4,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({
@@ -81,10 +82,7 @@ class SettingsGroup extends StatelessWidget {
             ),
           ),
         Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
+          decoration: glassTileDecoration(radius: AppSpacing.radiusSm),
           clipBehavior: Clip.antiAlias,
           child: Material(
             type: MaterialType.transparency,

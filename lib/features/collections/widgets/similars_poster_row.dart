@@ -3,13 +3,13 @@ import 'package:core/models/image_type.dart';
 import 'package:flutter/material.dart';
 
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// One card of a [SimilarsPosterRow], already resolved to display values so
 /// the row stays media-type agnostic.
@@ -139,7 +139,7 @@ class SimilarsPosterRowShimmer extends StatelessWidget {
           width: 150,
           height: 20,
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: glassTileColor(),
             borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
           ),
         ),

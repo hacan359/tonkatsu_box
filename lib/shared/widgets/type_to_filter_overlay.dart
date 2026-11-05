@@ -7,6 +7,7 @@ import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../../l10n/app_localizations.dart';
+import 'glass_panel.dart';
 
 /// Desktop-only: intercepts key presses and floats a search line. On mobile it
 /// returns [child] untouched, with no overhead.
@@ -32,8 +33,9 @@ class TypeToFilterOverlay extends StatefulWidget {
 class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     with SingleTickerProviderStateMixin {
   final FocusNode _wrapperFocus = FocusNode(debugLabel: 'TypeToFilter-wrapper');
-  final FocusNode _textFieldFocus =
-      FocusNode(debugLabel: 'TypeToFilter-textField');
+  final FocusNode _textFieldFocus = FocusNode(
+    debugLabel: 'TypeToFilter-textField',
+  );
   final TextEditingController _controller = TextEditingController();
   late final AnimationController _animationController;
   late final Animation<Offset> _slideAnimation;
@@ -48,13 +50,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       vsync: this,
       duration: AppDurations.normal,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
   }
 
   @override
@@ -89,7 +88,8 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
         // Focus the wrapper AFTER the rebuild — setState can drop focus when the
         // overlay's TextField leaves the tree.
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && !_wrapperFocus.hasFocus &&
+          if (mounted &&
+              !_wrapperFocus.hasFocus &&
               !_isExternalTextFieldFocused()) {
             _wrapperFocus.requestFocus();
           }
@@ -118,7 +118,8 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       _dismissInstantly();
       // requestFocus after the NEXT rebuild, since _dismissInstantly setStates.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_wrapperFocus.hasFocus &&
+        if (mounted &&
+            !_wrapperFocus.hasFocus &&
             !_isExternalTextFieldFocused()) {
           _wrapperFocus.requestFocus();
         }
@@ -176,8 +177,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
 
     if (event.logicalKey == LogicalKeyboardKey.backspace) {
       if (_controller.text.isNotEmpty) {
-        _controller.text =
-            _controller.text.substring(0, _controller.text.length - 1);
+        _controller.text = _controller.text.substring(
+          0,
+          _controller.text.length - 1,
+        );
         if (_controller.text.isEmpty) {
           _hide();
           widget.onFilterChanged('');
@@ -212,8 +215,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     // ModalRoute.of registers a dependency, so build re-runs on route status
     // change — that is where lost focus (e.g. after back) gets restored.
     final ModalRoute<dynamic>? route = ModalRoute.of(context);
-    if (route != null && route.isCurrent &&
-        !_wrapperFocus.hasFocus && !_textFieldFocus.hasFocus) {
+    if (route != null &&
+        route.isCurrent &&
+        !_wrapperFocus.hasFocus &&
+        !_textFieldFocus.hasFocus) {
       _scheduleWrapperFocusRestore();
     }
 
@@ -231,10 +236,10 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
   }
 
   Widget _buildOverlay(BuildContext context) {
-    final String hint =
-        widget.hintText ?? S.of(context).typeToFilterHint;
-    final BorderRadius borderRadius =
-        BorderRadius.circular(AppSpacing.radiusMd);
+    final String hint = widget.hintText ?? S.of(context).typeToFilterHint;
+    final BorderRadius borderRadius = BorderRadius.circular(
+      AppSpacing.radiusMd,
+    );
 
     return Positioned(
       top: AppSpacing.sm,
@@ -248,7 +253,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
             child: Material(
               elevation: 8,
               borderRadius: borderRadius,
-              color: AppColors.surface,
+              color: AppColors.surface.withAlpha(225),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: borderRadius,
@@ -260,11 +265,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
                 ),
                 child: Row(
                   children: <Widget>[
-                    Icon(
-                      Icons.search,
-                      size: 18,
-                      color: AppColors.textTertiary,
-                    ),
+                    Icon(Icons.search, size: 18, color: AppColors.textTertiary),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: TextField(
@@ -303,12 +304,11 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusXs),
-                        border: Border.all(
-                          color: AppColors.surfaceBorder,
+                        color: glassChipColor(),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusXs,
                         ),
+                        border: Border.all(color: AppColors.surfaceBorder),
                       ),
                       child: Text(
                         'Esc',

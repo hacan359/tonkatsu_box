@@ -9,7 +9,7 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/services/png_export_service.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/draggable_fab.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -19,6 +19,7 @@ import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
 import '../widgets/tier_list_export_view.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 class TierListDetailScreen extends ConsumerStatefulWidget {
   const TierListDetailScreen({required this.tierListId, super.key});
@@ -26,21 +27,20 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
   final int tierListId;
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupTierList,
-        entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+E', description: l.exportAsImage),
-          ShortcutEntry(keys: 'Ctrl+Enter', description: l.tierListAddTier),
-          ShortcutEntry(keys: 'Ctrl+Shift+D', description: l.clearAll),
-        ],
-      );
+    title: l.shortcutsGroupTierList,
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+E', description: l.exportAsImage),
+      ShortcutEntry(keys: 'Ctrl+Enter', description: l.tierListAddTier),
+      ShortcutEntry(keys: 'Ctrl+Shift+D', description: l.clearAll),
+    ],
+  );
 
   @override
   ConsumerState<TierListDetailScreen> createState() =>
       _TierListDetailScreenState();
 }
 
-class _TierListDetailScreenState
-    extends ConsumerState<TierListDetailScreen> {
+class _TierListDetailScreenState extends ConsumerState<TierListDetailScreen> {
   static final Logger _log = Logger('TierListDetailScreen');
 
   final GlobalKey _exportKey = GlobalKey();
@@ -48,20 +48,23 @@ class _TierListDetailScreenState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final TierListDetailState state =
-        ref.watch(tierListDetailProvider(widget.tierListId));
-    final String titleLanguage = ref.watch(settingsNotifierProvider
-        .select((SettingsState s) => s.animeMangaTitleLanguage));
+    final TierListDetailState state = ref.watch(
+      tierListDetailProvider(widget.tierListId),
+    );
+    final String titleLanguage = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.animeMangaTitleLanguage,
+      ),
+    );
 
-    return wrapWithScreenShortcuts(
+    return FramePage(
+      title: state.isLoading ? '' : state.tierList.name,
+      child: wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(state),
       child: Stack(
         children: <Widget>[
           Column(
             children: <Widget>[
-              SubScreenTitleBar(
-                title: state.isLoading ? '' : state.tierList.name,
-              ),
               Expanded(
                 child: state.isLoading
                     ? const ShimmerTierListDetail()
@@ -118,6 +121,7 @@ class _TierListDetailScreenState
             ),
         ],
       ),
+      ),
     );
   }
 
@@ -128,15 +132,16 @@ class _TierListDetailScreenState
       return <ShortcutActivator, VoidCallback>{};
     }
     return <ShortcutActivator, VoidCallback>{
-      const SingleActivator(LogicalKeyboardKey.keyE, control: true):
-          () => _exportAsImage(context, state),
-      const SingleActivator(LogicalKeyboardKey.enter, control: true):
-          () => _addTier(context),
+      const SingleActivator(LogicalKeyboardKey.keyE, control: true): () =>
+          _exportAsImage(context, state),
+      const SingleActivator(LogicalKeyboardKey.enter, control: true): () =>
+          _addTier(context),
       const SingleActivator(
         LogicalKeyboardKey.keyD,
         control: true,
         shift: true,
-      ): () => _confirmClear(context),
+      ): () =>
+          _confirmClear(context),
     };
   }
 
@@ -152,14 +157,13 @@ class _TierListDetailScreenState
     final TextEditingController controller = TextEditingController();
     final String? tierName = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(l.tierListAddTier),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(hintText: l.tierListNameHint),
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
+          onSubmitted: (String value) => Navigator.of(ctx).pop(value.trim()),
         ),
         actions: <Widget>[
           TextButton(
@@ -167,8 +171,7 @@ class _TierListDetailScreenState
             child: Text(l.cancel),
           ),
           TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
             child: Text(l.add),
           ),
         ],

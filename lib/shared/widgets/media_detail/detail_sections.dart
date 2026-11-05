@@ -25,6 +25,7 @@ class DetailSections {
     this.gallery,
     this.extras = const <Widget>[],
     this.recommendations = const <Widget>[],
+    this.backdropUrl,
   });
 
   final String title;
@@ -51,6 +52,9 @@ class DetailSections {
   final Widget? gallery;
   final List<Widget> extras;
   final List<Widget> recommendations;
+
+  /// Artwork the layout lays behind the text column; null draws none.
+  final String? backdropUrl;
 }
 
 /// User-set progress facts plus the system metadata (added / last activity

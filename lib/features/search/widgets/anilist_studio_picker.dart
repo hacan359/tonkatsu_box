@@ -12,6 +12,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../models/search_source.dart';
 import '../utils/filter_ui.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Returns the picked studio name, [kFilterResetSentinel] to clear, or null
 /// when dismissed - the single-select custom picker contract.
@@ -21,14 +22,10 @@ Future<Object?> showAniListStudioPicker(
   S l,
   Object? currentValue,
 ) {
-  return showModalBottomSheet<Object?>(
+  return showGlassSheet<Object?>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: AppColors.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
     builder: (BuildContext ctx) => _AniListStudioPicker(
       current: currentValue is String ? currentValue : null,
       l: l,
@@ -148,14 +145,18 @@ class _AniListStudioPickerState extends ConsumerState<_AniListStudioPicker> {
             const SizedBox(height: AppSpacing.xs),
             Row(
               children: <Widget>[
-                Icon(Icons.info_outline,
-                    size: 14, color: AppColors.textTertiary),
+                Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: AppColors.textTertiary,
+                ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: Text(
                     l.studioFilterExclusiveHint,
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textTertiary),
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 ),
               ],

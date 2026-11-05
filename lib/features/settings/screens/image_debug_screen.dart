@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
 import '../../../shared/constants/media_type_ui.dart';
@@ -50,9 +50,10 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return Column(
+    return FramePage(
+      title: 'Image Debug',
+      child: Column(
       children: <Widget>[
-        const SubScreenTitleBar(title: 'Image Debug'),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -86,6 +87,7 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
               : const Center(child: Text('No collections')),
         ),
       ],
+      ),
     );
   }
 

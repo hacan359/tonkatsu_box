@@ -13,8 +13,10 @@ import 'features/splash/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'shared/gamepad/gamepad_provider.dart';
 import 'shared/theme/app_colors.dart';
+import 'shared/theme/app_surface.dart';
 import 'shared/theme/app_theme.dart';
 import 'shared/constants/platform_features.dart';
+import 'shared/theme/app_skin_id.dart';
 import 'shared/theme/app_theme_id.dart';
 import 'shared/widgets/ui_scale_scope.dart';
 
@@ -72,9 +74,13 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
     final AppThemeId themeId = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.appTheme),
     );
-    // AppColors getters read a static palette, so it must be swapped before
+    final AppSkinId skinId = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.appSkin),
+    );
+    // AppColors and AppSurface read statics, so both must be swapped before
     // the subtree builds; the ValueKey below remounts everything on switch.
     AppColors.palette = themeId.palette;
+    AppSurface.skin = skinId.skin;
     final ThemeData theme = AppTheme.build(themeId.palette);
 
     // Kodi sync provider is lazy — a read is required to start it.
@@ -85,7 +91,7 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
         ref.read(inputModeProvider.notifier).setMouseMode();
       },
       child: MaterialApp(
-        key: ValueKey<AppThemeId>(themeId),
+        key: ValueKey<String>('${themeId.id}-${skinId.id}'),
         title: 'Tonkatsu Box',
         debugShowCheckedModeBanner: false,
         theme: theme,
@@ -103,7 +109,9 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
             builder: (BuildContext context, StartupErrorInfo? info, _) {
               if (info == null) {
                 return UiScaleScope(
-                  child: _TextScaleScope(child: child ?? const SizedBox.shrink()),
+                  child: _TextScaleScope(
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 );
               }
               return StartupErrorView(info: info);

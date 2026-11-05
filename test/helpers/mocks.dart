@@ -69,6 +69,7 @@ import 'package:tonkatsu_box/core/services/import_service.dart';
 import 'package:tonkatsu_box/core/services/kodi_sync_service.dart';
 import 'package:tonkatsu_box/core/services/profile_service.dart';
 import 'package:tonkatsu_box/core/services/ra_to_igdb_mapper.dart';
+import 'package:tonkatsu_box/core/services/wallpaper_service.dart';
 import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
 import 'package:tonkatsu_box/data/repositories/game_repository.dart';
@@ -170,8 +171,7 @@ class MockVndbApi extends Mock implements VndbApi {}
 
 class MockAniListApi extends Mock implements AniListApi {}
 
-class MockAniListGraphQLClient extends Mock
-    implements AniListGraphQLClient {}
+class MockAniListGraphQLClient extends Mock implements AniListGraphQLClient {}
 
 class MockAniListTagDao extends Mock implements AniListTagDao {}
 
@@ -205,11 +205,9 @@ class MockSteamImportService extends Mock implements SteamImportService {}
 
 class MockImageCacheService extends Mock implements ImageCacheService {}
 
-class MockTraktImportService extends Mock
-    implements TraktImportService {}
+class MockTraktImportService extends Mock implements TraktImportService {}
 
-class MockKinoriumImportService extends Mock
-    implements KinoriumImportService {}
+class MockKinoriumImportService extends Mock implements KinoriumImportService {}
 
 class MockRaToIgdbMapper extends Mock implements RaToIgdbMapper {}
 
@@ -249,6 +247,8 @@ class MockCollectionItemsNotifier extends CollectionItemsNotifier {
 }
 
 class MockWidgetRef extends Mock implements WidgetRef {}
+
+class MockWallpaperService extends Mock implements WallpaperService {}
 
 class MockS extends Mock implements S {}
 

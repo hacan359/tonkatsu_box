@@ -17,7 +17,7 @@ import 'package:tonkatsu_box/features/collections/screens/collection_screen.dart
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
-import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/media_type_icon_strip.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -140,21 +140,24 @@ void main() {
     prefs = await SharedPreferences.getInstance();
 
     when(() => mockRepo.getById(1)).thenAnswer((_) async => testCollection);
-    when(() => mockRepo.getItemsWithData(
-          1,
-          mediaType: any(named: 'mediaType'),
-        )).thenAnswer((_) async => testItems);
+    when(
+      () => mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+    ).thenAnswer((_) async => testItems);
     when(() => mockRepo.getStats(1)).thenAnswer((_) async => testStats);
 
-    when(() => mockCache.getImageUri(
-          type: any(named: 'type'),
-          imageId: any(named: 'imageId'),
-          remoteUrl: any(named: 'remoteUrl'),
-        )).thenAnswer((_) async => const ImageResult(
-          uri: 'https://example.com/cached.jpg',
-          isLocal: false,
-          isMissing: false,
-        ));
+    when(
+      () => mockCache.getImageUri(
+        type: any(named: 'type'),
+        imageId: any(named: 'imageId'),
+        remoteUrl: any(named: 'remoteUrl'),
+      ),
+    ).thenAnswer(
+      (_) async => const ImageResult(
+        uri: 'https://example.com/cached.jpg',
+        isLocal: false,
+        isMissing: false,
+      ),
+    );
   });
 
   Future<void> pumpScreen(WidgetTester tester) async {
@@ -175,23 +178,23 @@ void main() {
         collectionRepositoryProvider.overrideWithValue(mockRepo),
         imageCacheServiceProvider.overrideWithValue(mockCache),
         sharedPreferencesProvider.overrideWithValue(overridePrefs ?? prefs),
-        collectionStatsProvider(collectionId)
-            .overrideWith((Ref ref) async => stats),
+        collectionStatsProvider(
+          collectionId,
+        ).overrideWith((Ref ref) async => stats),
         collectionsSearchQueryProvider.overrideWith((Ref ref) => searchQuery),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: Scaffold(
-          body: CollectionScreen(collectionId: collectionId),
-        ),
+        home: Scaffold(body: CollectionScreen(collectionId: collectionId)),
       ),
     );
   }
 
   group('CollectionScreen', () {
-    testWidgets('не should show header со статистикой',
-        (WidgetTester tester) async {
+    testWidgets('не should show header со статистикой', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
 
@@ -199,8 +202,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
-    testWidgets('should show элементы коллекции',
-        (WidgetTester tester) async {
+    testWidgets('should show элементы коллекции', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
 
@@ -210,8 +212,9 @@ void main() {
     });
 
     group('grid mode (по умолчанию)', () {
-      testWidgets('grid mode should show MediaPosterCard',
-          (WidgetTester tester) async {
+      testWidgets('grid mode should show MediaPosterCard', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -219,8 +222,9 @@ void main() {
         expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('table mode не should contain MediaPosterCard',
-          (WidgetTester tester) async {
+      testWidgets('table mode не should contain MediaPosterCard', (
+        WidgetTester tester,
+      ) async {
         final SharedPreferences tablePrefs =
             await SharedPreferences.getInstance();
         await tablePrefs.setBool(
@@ -244,12 +248,13 @@ void main() {
         WidgetTester tester,
         String segmentText,
       ) async {
-        await tester.tap(find.text(segmentText).first);
+        await tester.tap(find.byTooltip(segmentText).first);
         await pumpScreen(tester);
       }
 
-      testWidgets('Games фильтр should show только игры',
-          (WidgetTester tester) async {
+      testWidgets('Games фильтр should show только игры', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -260,8 +265,9 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('Movies фильтр should show только фильмы',
-          (WidgetTester tester) async {
+      testWidgets('Movies фильтр should show только фильмы', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -272,8 +278,9 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('TV Shows фильтр should show только сериалы',
-          (WidgetTester tester) async {
+      testWidgets('TV Shows фильтр should show только сериалы', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -284,8 +291,9 @@ void main() {
         expect(find.text('Breaking Bad'), findsOneWidget);
       });
 
-      testWidgets('повторный тап на Games снимает фильтр и показывает всё',
-          (WidgetTester tester) async {
+      testWidgets('повторный тап на Games снимает фильтр и показывает всё', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -299,8 +307,9 @@ void main() {
         expect(find.text('Breaking Bad'), findsOneWidget);
       });
 
-      testWidgets('Animation фильтр should show только анимацию',
-          (WidgetTester tester) async {
+      testWidgets('Animation фильтр should show только анимацию', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -315,8 +324,9 @@ void main() {
     });
 
     group('animation items в grid mode', () {
-      testWidgets('animation movie should use moviePoster ImageType',
-          (WidgetTester tester) async {
+      testWidgets('animation movie should use moviePoster ImageType', (
+        WidgetTester tester,
+      ) async {
         final List<CollectionItem> animMovieItems = <CollectionItem>[
           CollectionItem(
             id: 4,
@@ -336,25 +346,28 @@ void main() {
           ),
         ];
 
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => animMovieItems);
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => animMovieItems);
 
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
         expect(find.byType(MediaPosterCard), findsOneWidget);
 
-        verify(() => mockCache.getImageUri(
-              type: ImageType.moviePoster,
-              imageId: '401',
-              remoteUrl: any(named: 'remoteUrl'),
-            )).called(greaterThan(0));
+        verify(
+          () => mockCache.getImageUri(
+            type: ImageType.moviePoster,
+            imageId: '401',
+            remoteUrl: any(named: 'remoteUrl'),
+          ),
+        ).called(greaterThan(0));
       });
 
-      testWidgets('animation tvShow should use tvShowPoster ImageType',
-          (WidgetTester tester) async {
+      testWidgets('animation tvShow should use tvShowPoster ImageType', (
+        WidgetTester tester,
+      ) async {
         final List<CollectionItem> animTvItems = <CollectionItem>[
           CollectionItem(
             id: 5,
@@ -374,103 +387,114 @@ void main() {
           ),
         ];
 
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => animTvItems);
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => animTvItems);
 
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
         expect(find.byType(MediaPosterCard), findsOneWidget);
 
-        verify(() => mockCache.getImageUri(
-              type: ImageType.tvShowPoster,
-              imageId: '501',
-              remoteUrl: any(named: 'remoteUrl'),
-            )).called(greaterThan(0));
+        verify(
+          () => mockCache.getImageUri(
+            type: ImageType.tvShowPoster,
+            imageId: '501',
+            remoteUrl: any(named: 'remoteUrl'),
+          ),
+        ).called(greaterThan(0));
       });
     });
 
     group('animation items в list mode', () {
       testWidgets(
-          'animation movie в list mode should use moviePoster ImageType',
-          (WidgetTester tester) async {
-        final List<CollectionItem> animMovieItems = <CollectionItem>[
-          CollectionItem(
-            id: 4,
-            collectionId: 1,
-            mediaType: MediaType.animation,
-            externalId: 401,
-            platformId: AnimationSource.movie,
-            status: ItemStatus.completed,
-            addedAt: testDate,
-            movie: const Movie(
-              tmdbId: 401,
-              title: 'Spirited Away',
-              posterUrl: 'https://example.com/spirited.jpg',
-              rating: 8.6,
-              releaseYear: 2001,
+        'animation movie в list mode should use moviePoster ImageType',
+        (WidgetTester tester) async {
+          final List<CollectionItem> animMovieItems = <CollectionItem>[
+            CollectionItem(
+              id: 4,
+              collectionId: 1,
+              mediaType: MediaType.animation,
+              externalId: 401,
+              platformId: AnimationSource.movie,
+              status: ItemStatus.completed,
+              addedAt: testDate,
+              movie: const Movie(
+                tmdbId: 401,
+                title: 'Spirited Away',
+                posterUrl: 'https://example.com/spirited.jpg',
+                rating: 8.6,
+                releaseYear: 2001,
+              ),
             ),
-          ),
-        ];
+          ];
 
-        when(() => mockRepo.getItemsWithData(
+          when(
+            () => mockRepo.getItemsWithData(
               1,
               mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => animMovieItems);
+            ),
+          ).thenAnswer((_) async => animMovieItems);
 
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
+          await tester.pumpWidget(createWidget());
+          await pumpScreen(tester);
 
-        verify(() => mockCache.getImageUri(
+          verify(
+            () => mockCache.getImageUri(
               type: ImageType.moviePoster,
               imageId: '401',
               remoteUrl: any(named: 'remoteUrl'),
-            )).called(greaterThan(0));
-      });
+            ),
+          ).called(greaterThan(0));
+        },
+      );
 
       testWidgets(
-          'animation tvShow в list mode should use tvShowPoster ImageType',
-          (WidgetTester tester) async {
-        final List<CollectionItem> animTvItems = <CollectionItem>[
-          CollectionItem(
-            id: 5,
-            collectionId: 1,
-            mediaType: MediaType.animation,
-            externalId: 501,
-            platformId: AnimationSource.tvShow,
-            status: ItemStatus.inProgress,
-            addedAt: testDate,
-            tvShow: const TvShow(
-              tmdbId: 501,
-              title: 'Attack on Titan',
-              posterUrl: 'https://example.com/aot.jpg',
-              rating: 8.9,
-              firstAirYear: 2013,
+        'animation tvShow в list mode should use tvShowPoster ImageType',
+        (WidgetTester tester) async {
+          final List<CollectionItem> animTvItems = <CollectionItem>[
+            CollectionItem(
+              id: 5,
+              collectionId: 1,
+              mediaType: MediaType.animation,
+              externalId: 501,
+              platformId: AnimationSource.tvShow,
+              status: ItemStatus.inProgress,
+              addedAt: testDate,
+              tvShow: const TvShow(
+                tmdbId: 501,
+                title: 'Attack on Titan',
+                posterUrl: 'https://example.com/aot.jpg',
+                rating: 8.9,
+                firstAirYear: 2013,
+              ),
             ),
-          ),
-        ];
+          ];
 
-        when(() => mockRepo.getItemsWithData(
+          when(
+            () => mockRepo.getItemsWithData(
               1,
               mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => animTvItems);
+            ),
+          ).thenAnswer((_) async => animTvItems);
 
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
+          await tester.pumpWidget(createWidget());
+          await pumpScreen(tester);
 
-        verify(() => mockCache.getImageUri(
+          verify(
+            () => mockCache.getImageUri(
               type: ImageType.tvShowPoster,
               imageId: '501',
               remoteUrl: any(named: 'remoteUrl'),
-            )).called(greaterThan(0));
-      });
+            ),
+          ).called(greaterThan(0));
+        },
+      );
     });
 
     group('поиск по имени (через collectionsSearchQueryProvider)', () {
-      testWidgets('should filter по имени',
-          (WidgetTester tester) async {
+      testWidgets('should filter по имени', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(searchQuery: 'Zelda'));
         await pumpScreen(tester);
 
@@ -479,16 +503,18 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('поиск должен быть case-insensitive',
-          (WidgetTester tester) async {
+      testWidgets('поиск должен быть case-insensitive', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(searchQuery: 'zelda'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
       });
 
-      testWidgets('пустой поиск should show все элементы',
-          (WidgetTester tester) async {
+      testWidgets('пустой поиск should show все элементы', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(searchQuery: ''));
         await pumpScreen(tester);
 
@@ -497,19 +523,18 @@ void main() {
         expect(find.text('Breaking Bad'), findsOneWidget);
       });
 
-      testWidgets('должен находить по тексту в userComment (заметки)',
-          (WidgetTester tester) async {
+      testWidgets('должен находить по тексту в userComment (заметки)', (
+        WidgetTester tester,
+      ) async {
         final List<CollectionItem> itemsWithNotes = <CollectionItem>[
-          testItems[0].copyWith(
-            userComment: 'настоящий шедевр геймдева',
-          ),
+          testItems[0].copyWith(userComment: 'настоящий шедевр геймдева'),
           testItems[1],
           testItems[2],
         ];
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => itemsWithNotes);
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => itemsWithNotes);
 
         await tester.pumpWidget(createWidget(searchQuery: 'шедевр'));
         await pumpScreen(tester);
@@ -519,19 +544,18 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('должен находить по тексту в authorComment (рецензия)',
-          (WidgetTester tester) async {
+      testWidgets('должен находить по тексту в authorComment (рецензия)', (
+        WidgetTester tester,
+      ) async {
         final List<CollectionItem> itemsWithReviews = <CollectionItem>[
           testItems[0],
-          testItems[1].copyWith(
-            authorComment: 'переоценённый проходняк',
-          ),
+          testItems[1].copyWith(authorComment: 'переоценённый проходняк'),
           testItems[2],
         ];
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => itemsWithReviews);
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => itemsWithReviews);
 
         await tester.pumpWidget(createWidget(searchQuery: 'проходняк'));
         await pumpScreen(tester);
@@ -541,16 +565,17 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('поиск по заметкам должен быть case-insensitive',
-          (WidgetTester tester) async {
+      testWidgets('поиск по заметкам должен быть case-insensitive', (
+        WidgetTester tester,
+      ) async {
         final List<CollectionItem> itemsWithNotes = <CollectionItem>[
           testItems[0].copyWith(userComment: 'Настоящий ШЕДЕВР'),
           testItems[1],
         ];
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => itemsWithNotes);
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => itemsWithNotes);
 
         await tester.pumpWidget(createWidget(searchQuery: 'шедевр'));
         await pumpScreen(tester);
@@ -561,12 +586,13 @@ void main() {
     });
 
     group('комбинированные фильтры', () {
-      testWidgets('фильтр типа + поиск должны работать вместе',
-          (WidgetTester tester) async {
+      testWidgets('фильтр типа + поиск должны работать вместе', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(searchQuery: 'Zel'));
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Games (1)').first);
+        await tester.tap(find.byTooltip('Games (1)').first);
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
@@ -574,12 +600,13 @@ void main() {
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
-      testWidgets('фильтры должны работать в grid mode',
-          (WidgetTester tester) async {
+      testWidgets('фильтры должны работать в grid mode', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Movies (1)').first);
+        await tester.tap(find.byTooltip('Movies (1)').first);
         await pumpScreen(tester);
 
         expect(find.byType(MediaPosterCard), findsOneWidget);
@@ -587,12 +614,11 @@ void main() {
     });
 
     group('пустая коллекция', () {
-      testWidgets('should show empty state',
-          (WidgetTester tester) async {
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => const <CollectionItem>[]);
+      testWidgets('should show empty state', (WidgetTester tester) async {
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => const <CollectionItem>[]);
 
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -602,22 +628,24 @@ void main() {
     });
 
     group('collection not found', () {
-      testWidgets('should show сообщение об ошибке',
-          (WidgetTester tester) async {
+      testWidgets('should show сообщение об ошибке', (
+        WidgetTester tester,
+      ) async {
         when(() => mockRepo.getById(99)).thenAnswer((_) async => null);
-        when(() => mockRepo.getItemsWithData(
-              99,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => const <CollectionItem>[]);
-        when(() => mockRepo.getStats(99))
-            .thenAnswer((_) async => const CollectionStats(
-                  total: 0,
-                  completed: 0,
-                  inProgress: 0,
-                  notStarted: 0,
-                  dropped: 0,
-                  planned: 0,
-                ));
+        when(
+          () =>
+              mockRepo.getItemsWithData(99, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => const <CollectionItem>[]);
+        when(() => mockRepo.getStats(99)).thenAnswer(
+          (_) async => const CollectionStats(
+            total: 0,
+            completed: 0,
+            inProgress: 0,
+            notStarted: 0,
+            dropped: 0,
+            planned: 0,
+          ),
+        );
 
         await tester.pumpWidget(createWidget(collectionId: 99));
         await pumpScreen(tester);
@@ -627,12 +655,10 @@ void main() {
     });
 
     group('сохранение режима отображения (grid/table)', () {
-      testWidgets('должен загрузить grid mode из SharedPreferences',
-          (WidgetTester tester) async {
-        await prefs.setBool(
-          '${SettingsKeys.collectionViewModePrefix}1',
-          true,
-        );
+      testWidgets('должен загрузить grid mode из SharedPreferences', (
+        WidgetTester tester,
+      ) async {
+        await prefs.setBool('${SettingsKeys.collectionViewModePrefix}1', true);
 
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -640,20 +666,19 @@ void main() {
         expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('должен загрузить grid mode по умолчанию',
-          (WidgetTester tester) async {
+      testWidgets('должен загрузить grid mode по умолчанию', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
         expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('разные коллекции сохраняют режим независимо',
-          (WidgetTester tester) async {
-        await prefs.setBool(
-          '${SettingsKeys.collectionViewModePrefix}1',
-          true,
-        );
+      testWidgets('разные коллекции сохраняют режим независимо', (
+        WidgetTester tester,
+      ) async {
+        await prefs.setBool('${SettingsKeys.collectionViewModePrefix}1', true);
 
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -681,17 +706,18 @@ void main() {
         animationCount: 0,
       );
 
-      testWidgets('should hide FilterBar при 0 элементах',
-          (WidgetTester tester) async {
-        when(() => mockRepo.getItemsWithData(
-              1,
-              mediaType: any(named: 'mediaType'),
-            )).thenAnswer((_) async => const <CollectionItem>[]);
+      testWidgets('should hide FilterBar при 0 элементах', (
+        WidgetTester tester,
+      ) async {
+        when(
+          () =>
+              mockRepo.getItemsWithData(1, mediaType: any(named: 'mediaType')),
+        ).thenAnswer((_) async => const <CollectionItem>[]);
 
         await tester.pumpWidget(createWidget(stats: zeroStats));
         await pumpScreen(tester);
 
-        expect(find.byType(ChevronSegment), findsNothing);
+        expect(find.byType(MediaTypeIconTile), findsNothing);
       });
     });
   });

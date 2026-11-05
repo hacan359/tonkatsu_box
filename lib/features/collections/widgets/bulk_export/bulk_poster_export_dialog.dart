@@ -13,6 +13,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../../../../shared/services/png_export_service.dart';
 import 'bulk_poster_mosaic_view.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 Future<void> showBulkPosterExportDialog({
   required BuildContext context,
@@ -21,18 +22,13 @@ Future<void> showBulkPosterExportDialog({
 }) {
   return showDialog<void>(
     context: context,
-    builder: (BuildContext ctx) => _BulkPosterExportDialog(
-      items: items,
-      collectionName: collectionName,
-    ),
+    builder: (BuildContext ctx) =>
+        _BulkPosterExportDialog(items: items, collectionName: collectionName),
   );
 }
 
 class _BulkPosterExportDialog extends ConsumerStatefulWidget {
-  const _BulkPosterExportDialog({
-    required this.items,
-    this.collectionName,
-  });
+  const _BulkPosterExportDialog({required this.items, this.collectionName});
 
   final List<CollectionItem> items;
   final String? collectionName;
@@ -88,7 +84,7 @@ class _BulkPosterExportDialogState
               ),
             ),
           ),
-        AlertDialog(
+        GlassAlertDialog(
           title: Text(l.bulkExportPngTitle),
           content: SizedBox(
             width: 560,
@@ -115,7 +111,7 @@ class _BulkPosterExportDialogState
                           onChanged: _saving
                               ? null
                               : (double v) =>
-                                  setState(() => _columns = v.round()),
+                                    setState(() => _columns = v.round()),
                         ),
                       ),
                       SizedBox(
@@ -138,8 +134,7 @@ class _BulkPosterExportDialogState
                     decoration: BoxDecoration(
                       color: AppColors.background,
                       border: Border.all(color: AppColors.surfaceBorder),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     child: FittedBox(
@@ -155,7 +150,9 @@ class _BulkPosterExportDialogState
                   Text(
                     _previewIsTruncated
                         ? l.bulkExportPngItemsCountPreview(
-                            widget.items.length, _previewLimit)
+                            widget.items.length,
+                            _previewLimit,
+                          )
                         : l.bulkExportPngItemsCount(widget.items.length),
                     style: AppTypography.caption.copyWith(
                       color: AppColors.textTertiary,
@@ -338,5 +335,4 @@ class _BulkPosterExportDialogState
       // Single cover failing to precache must not abort the whole export.
     }
   }
-
 }

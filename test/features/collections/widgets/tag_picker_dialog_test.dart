@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/collections/widgets/tag_picker_dialog.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -21,8 +22,9 @@ void main() {
         createTestTag(id: 2, name: 'Beta', sortOrder: 1),
       ],
     );
-    when(() => mockDao.getAllItemTags())
-        .thenAnswer((_) async => <int, List<int>>{});
+    when(
+      () => mockDao.getAllItemTags(),
+    ).thenAnswer((_) async => <int, List<int>>{});
   });
 
   Future<Set<int>? Function()> pumpAndOpen(
@@ -44,9 +46,7 @@ void main() {
           child: const Text('open'),
         ),
       ),
-      overrides: <Override>[
-        globalTagDaoProvider.overrideWithValue(mockDao),
-      ],
+      overrides: <Override>[globalTagDaoProvider.overrideWithValue(mockDao)],
       wrapInScaffold: true,
     );
     await tester.tap(find.text('open'));
@@ -71,19 +71,19 @@ void main() {
       WidgetTester tester,
     ) async {
       await pumpAndOpen(tester, initialSelection: <int>{1});
-      final Iterable<Checkbox> boxes =
-          tester.widgetList<Checkbox>(find.byType(Checkbox));
-      expect(
-        boxes.map((Checkbox c) => c.value).toList(),
-        <bool>[true, false],
+      final Iterable<Checkbox> boxes = tester.widgetList<Checkbox>(
+        find.byType(Checkbox),
       );
+      expect(boxes.map((Checkbox c) => c.value).toList(), <bool>[true, false]);
     });
 
     testWidgets('should return the toggled selection on apply', (
       WidgetTester tester,
     ) async {
-      final Set<int>? Function() result =
-          await pumpAndOpen(tester, initialSelection: <int>{1});
+      final Set<int>? Function() result = await pumpAndOpen(
+        tester,
+        initialSelection: <int>{1},
+      );
 
       // Row tap toggles Beta on; the checkbox toggles Alpha off.
       await tester.tap(find.text('Beta'));
@@ -130,15 +130,19 @@ void main() {
     testWidgets('should return null when dismissed via cancel', (
       WidgetTester tester,
     ) async {
-      final Set<int>? Function() result =
-          await pumpAndOpen(tester, initialSelection: <int>{1});
+      final Set<int>? Function() result = await pumpAndOpen(
+        tester,
+        initialSelection: <int>{1},
+      );
 
       await tester.tap(find.text('Alpha'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.byType(TextButton),
-      ));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(GlassAlertDialog),
+          matching: find.byType(TextButton),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(result(), isNull);

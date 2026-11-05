@@ -13,6 +13,7 @@ import '../../../shared/widgets/logo_loader.dart';
 import '../models/library_stats.dart';
 import '../providers/statistics_provider.dart';
 import 'stats_cards.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Opens the month drill-down dialog.
 Future<void> showStatsMonthDetailDialog(
@@ -54,23 +55,23 @@ class StatsMonthDetailDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
     final String locale = Localizations.localeOf(context).toString();
-    final AsyncValue<MonthDetail> detail =
-        ref.watch(monthDetailProvider((year, month)));
+    final AsyncValue<MonthDetail> detail = ref.watch(
+      monthDetailProvider((year, month)),
+    );
 
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(DateFormat.yMMMM(locale).format(DateTime(year, month))),
       content: SizedBox(
         width: 420,
         child: SingleChildScrollView(
           child: detail.when(
-            loading: () => const SizedBox(
-              height: 160,
-              child: Center(child: LogoLoader()),
-            ),
+            loading: () =>
+                const SizedBox(height: 160, child: Center(child: LogoLoader())),
             error: (Object error, StackTrace _) => Text(
               '${l.settingsError}: $error',
-              style:
-                  AppTypography.body.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             data: (MonthDetail d) {
               // Per-type totals across the whole month feed the legend.
@@ -81,19 +82,19 @@ class StatsMonthDetailDialog extends ConsumerWidget {
                 });
               }
               final List<MapEntry<MediaType, int>> legend =
-                  typeTotals.entries.toList()
-                    ..sort(
-                      (MapEntry<MediaType, int> a, MapEntry<MediaType, int> b) =>
-                          b.value.compareTo(a.value),
-                    );
+                  typeTotals.entries.toList()..sort(
+                    (MapEntry<MediaType, int> a, MapEntry<MediaType, int> b) =>
+                        b.value.compareTo(a.value),
+                  );
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
                     l.statsMonthCounts(d.totalAdded, episodesWatched),
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   _WeekBars(weeks: d.weeks),
@@ -160,15 +161,14 @@ class _WeekBars extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  _WeekBar(
-                    week: week,
-                    maxTotal: maxTotal,
-                  ),
+                  _WeekBar(week: week, maxTotal: maxTotal),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     _labels[index],
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textTertiary, fontSize: 10),
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textTertiary,
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),
@@ -200,7 +200,7 @@ class _WeekBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
             if (total == 0)
-              Container(height: 2, color: AppColors.surfaceLight)
+              Container(height: 2, color: AppColors.textPrimary.withAlpha(30))
             else
               SizedBox(
                 height: total / maxTotal * _WeekBars._barHeight,

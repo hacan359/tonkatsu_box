@@ -8,6 +8,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/custom_progress_units.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// The fine axis ([unitTotal]) is always shown; the coarse axis appears only
 /// for display types that have one (series → seasons, manga → volumes).
@@ -142,13 +143,14 @@ class CustomProgressSection extends ConsumerWidget {
     final String label = isGroup
         ? (CustomProgressUnits.groupLabel(displayType, l) ?? l.progress)
         : CustomProgressUnits.fineLabel(displayType, l);
-    final TextEditingController controller =
-        TextEditingController(text: current > 0 ? current.toString() : '');
+    final TextEditingController controller = TextEditingController(
+      text: current > 0 ? current.toString() : '',
+    );
 
     try {
       final String? result = await showDialog<String>(
         context: context,
-        builder: (BuildContext ctx) => AlertDialog(
+        builder: (BuildContext ctx) => GlassAlertDialog(
           title: Text(label),
           content: SingleChildScrollView(
             child: TextField(

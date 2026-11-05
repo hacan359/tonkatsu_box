@@ -1239,6 +1239,72 @@ abstract class S {
   /// **'Eva Azure'**
   String get settingsThemeEva;
 
+  /// No description provided for @settingsSkin.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get settingsSkin;
+
+  /// No description provided for @settingsSkinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass or the classic look'**
+  String get settingsSkinSubtitle;
+
+  /// No description provided for @settingsSkinGlass.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get settingsSkinGlass;
+
+  /// No description provided for @settingsSkinClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get settingsSkinClassic;
+
+  /// No description provided for @settingsWallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper'**
+  String get settingsWallpaper;
+
+  /// No description provided for @settingsWallpaperSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture behind the glass frame'**
+  String get settingsWallpaperSubtitle;
+
+  /// No description provided for @settingsWallpaperDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get settingsWallpaperDefault;
+
+  /// No description provided for @settingsWallpaperCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Your image'**
+  String get settingsWallpaperCustom;
+
+  /// No description provided for @settingsWallpaperChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image…'**
+  String get settingsWallpaperChoose;
+
+  /// No description provided for @settingsWallpaperReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get settingsWallpaperReset;
+
+  /// No description provided for @settingsWallpaperError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the wallpaper'**
+  String get settingsWallpaperError;
+
   /// No description provided for @settingsAppLanguageSubtitle.
   ///
   /// In en, this message translates to:

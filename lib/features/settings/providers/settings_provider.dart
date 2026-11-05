@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../shared/constants/api_defaults.dart';
 import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/theme/app_skin_id.dart';
 import '../../../shared/theme/app_theme_id.dart';
 import '../../../shared/constants/rich_hero_style.dart';
 import '../../../core/services/discord_rpc_service.dart';
@@ -22,6 +23,7 @@ import '../../../core/api/tmdb_api.dart';
 import '../../../core/api/tvdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/config_service.dart';
+import '../../../core/services/wallpaper_service.dart';
 
 abstract class SettingsKeys {
   static const String clientId = 'igdb_client_id';
@@ -146,6 +148,12 @@ abstract class SettingsKeys {
   /// App theme id (see [AppThemeId]).
   static const String appTheme = 'app_theme';
 
+  /// Surface style id (see [AppSkinId]).
+  static const String appSkin = 'app_skin';
+
+  /// Absolute path of the user's wallpaper copy; absent = bundled picture.
+  static const String wallpaperPath = 'wallpaper_path';
+
   /// Grid card size multiplier.
   static const String cardScale = 'card_scale';
 
@@ -223,6 +231,8 @@ class SettingsState {
     this.textScale = SettingsKeys.textScaleDefault,
     this.uiScale = SettingsKeys.uiScaleDefault,
     this.appTheme = AppThemeId.dark,
+    this.appSkin = AppSkinId.glass,
+    this.wallpaperPath,
   });
 
   final String? clientId;
@@ -333,10 +343,12 @@ class SettingsState {
   /// Selected app theme.
   final AppThemeId appTheme;
 
-  String? resolveOverlay({
-    String? platformOverlay,
-    String? mediaTypeOverlay,
-  }) {
+  /// Selected surface style; pairs with any theme.
+  final AppSkinId appSkin;
+
+  final String? wallpaperPath;
+
+  String? resolveOverlay({String? platformOverlay, String? mediaTypeOverlay}) {
     if (platformOverlay != null && showPlatformOverlay) return platformOverlay;
     if (mediaTypeOverlay != null && showBlurayOverlay) return mediaTypeOverlay;
     return null;
@@ -455,6 +467,9 @@ class SettingsState {
     double? textScale,
     double? uiScale,
     AppThemeId? appTheme,
+    AppSkinId? appSkin,
+    String? wallpaperPath,
+    bool clearWallpaperPath = false,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -503,29 +518,30 @@ class SettingsState {
       textScale: textScale ?? this.textScale,
       uiScale: uiScale ?? this.uiScale,
       appTheme: appTheme ?? this.appTheme,
+      appSkin: appSkin ?? this.appSkin,
+      wallpaperPath: clearWallpaperPath
+          ? null
+          : (wallpaperPath ?? this.wallpaperPath),
     );
   }
 }
 
-enum ConnectionStatus {
-  unknown,
-  connected,
-  error,
-  checking,
-}
+enum ConnectionStatus { unknown, connected, error, checking }
 
 final Provider<SharedPreferences> sharedPreferencesProvider =
     Provider<SharedPreferences>((Ref ref) {
-  throw UnimplementedError('SharedPreferences must be overridden');
-});
+      throw UnimplementedError('SharedPreferences must be overridden');
+    });
 
 final Provider<bool> hasValidApiKeyProvider = Provider<bool>((Ref ref) {
   final SettingsState settings = ref.watch(settingsNotifierProvider);
   return settings.isApiReady;
 });
 
-final NotifierProvider<SettingsNotifier, SettingsState> settingsNotifierProvider =
-    NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
+final NotifierProvider<SettingsNotifier, SettingsState>
+settingsNotifierProvider = NotifierProvider<SettingsNotifier, SettingsState>(
+  SettingsNotifier.new,
+);
 
 extension AnimeMangaTitleLanguagePrefs on SharedPreferences {
   /// For non-UI callers that already hold a [SharedPreferences] and should not
@@ -594,71 +610,79 @@ class SettingsNotifier extends Notifier<SettingsState> {
   SettingsState _loadFromPrefs() {
     // IGDB: user key → built-in key → null
     final String? userClientId = _prefs.getString(SettingsKeys.clientId);
-    final String? clientId =
-        (userClientId != null && userClientId.isNotEmpty)
-            ? userClientId
-            : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientId : null);
-    final String? userClientSecret =
-        _prefs.getString(SettingsKeys.clientSecret);
+    final String? clientId = (userClientId != null && userClientId.isNotEmpty)
+        ? userClientId
+        : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientId : null);
+    final String? userClientSecret = _prefs.getString(
+      SettingsKeys.clientSecret,
+    );
     final String? clientSecret =
         (userClientSecret != null && userClientSecret.isNotEmpty)
-            ? userClientSecret
-            : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientSecret : null);
+        ? userClientSecret
+        : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientSecret : null);
     final String? accessToken = _prefs.getString(SettingsKeys.accessToken);
     final int? tokenExpires = _prefs.getInt(SettingsKeys.tokenExpires);
     // SteamGridDB: user key → built-in key → null
-    final String? userSteamGridDbKey =
-        _prefs.getString(SettingsKeys.steamGridDbApiKey);
+    final String? userSteamGridDbKey = _prefs.getString(
+      SettingsKeys.steamGridDbApiKey,
+    );
     final String? steamGridDbApiKey =
         (userSteamGridDbKey != null && userSteamGridDbKey.isNotEmpty)
-            ? userSteamGridDbKey
-            : (ApiDefaults.hasSteamGridDbKey
-                ? ApiDefaults.steamGridDbApiKey
-                : null);
+        ? userSteamGridDbKey
+        : (ApiDefaults.hasSteamGridDbKey
+              ? ApiDefaults.steamGridDbApiKey
+              : null);
 
     // TMDB: user key → built-in key → null
     final String? userTmdbKey = _prefs.getString(SettingsKeys.tmdbApiKey);
-    final String? tmdbApiKey =
-        (userTmdbKey != null && userTmdbKey.isNotEmpty)
-            ? userTmdbKey
-            : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
+    final String? tmdbApiKey = (userTmdbKey != null && userTmdbKey.isNotEmpty)
+        ? userTmdbKey
+        : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
     // TheTVDB: user key → built-in key → null
     final String? userTvdbKey = _prefs.getString(SettingsKeys.tvdbApiKey);
     final String? tvdbApiKey = (userTvdbKey != null && userTvdbKey.isNotEmpty)
         ? userTvdbKey
         : (ApiDefaults.hasTvdbKey ? ApiDefaults.tvdbApiKey : null);
     // ComicVine: user key from prefs only, no built-in.
-    final String? comicVineApiKey =
-        _prefs.getString(SettingsKeys.comicVineApiKey);
+    final String? comicVineApiKey = _prefs.getString(
+      SettingsKeys.comicVineApiKey,
+    );
 
     // Podcast Index: user pair from prefs; the built-in pair stays invisible
     // here so the credentials screen shows only what the user entered.
-    final String? podcastIndexApiKey =
-        _prefs.getString(SettingsKeys.podcastIndexApiKey);
-    final String? podcastIndexApiSecret =
-        _prefs.getString(SettingsKeys.podcastIndexApiSecret);
+    final String? podcastIndexApiKey = _prefs.getString(
+      SettingsKeys.podcastIndexApiKey,
+    );
+    final String? podcastIndexApiSecret = _prefs.getString(
+      SettingsKeys.podcastIndexApiSecret,
+    );
     // Google Books: optional user key from prefs only, no built-in.
-    final String? googleBooksApiKey =
-        _prefs.getString(SettingsKeys.googleBooksApiKey);
+    final String? googleBooksApiKey = _prefs.getString(
+      SettingsKeys.googleBooksApiKey,
+    );
     // Hardcover: personal token from prefs only, no built-in.
-    final String? hardcoverApiKey =
-        _prefs.getString(SettingsKeys.hardcoverApiKey);
-    final String? screenScraperSsid =
-        _prefs.getString(SettingsKeys.screenScraperSsid);
-    final String? screenScraperSspassword =
-        _prefs.getString(SettingsKeys.screenScraperSspassword);
-    final String? screenScraperDevId =
-        _prefs.getString(SettingsKeys.screenScraperDevId);
-    final String? screenScraperDevPassword =
-        _prefs.getString(SettingsKeys.screenScraperDevPassword);
-    final String? defaultAuthor =
-        _prefs.getString(SettingsKeys.defaultAuthor);
+    final String? hardcoverApiKey = _prefs.getString(
+      SettingsKeys.hardcoverApiKey,
+    );
+    final String? screenScraperSsid = _prefs.getString(
+      SettingsKeys.screenScraperSsid,
+    );
+    final String? screenScraperSspassword = _prefs.getString(
+      SettingsKeys.screenScraperSspassword,
+    );
+    final String? screenScraperDevId = _prefs.getString(
+      SettingsKeys.screenScraperDevId,
+    );
+    final String? screenScraperDevPassword = _prefs.getString(
+      SettingsKeys.screenScraperDevPassword,
+    );
+    final String? defaultAuthor = _prefs.getString(SettingsKeys.defaultAuthor);
     final String tmdbLanguage =
         _prefs.getString(SettingsKeys.tmdbLanguage) ??
-            SettingsKeys.tmdbLanguageDefault;
+        SettingsKeys.tmdbLanguageDefault;
     final String appLanguage =
         _prefs.getString(SettingsKeys.appLanguage) ??
-            SettingsKeys.appLanguageDefault;
+        SettingsKeys.appLanguageDefault;
     final bool showRecommendations =
         _prefs.getBool(SettingsKeys.showRecommendations) ?? true;
     final bool showBlurayOverlay =
@@ -671,8 +695,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.discordRaSyncEnabled) ?? false;
     final bool richCollectionsEnabled =
         _prefs.getBool(SettingsKeys.richCollectionsEnabled) ?? false;
-    final RichHeroStyle richHeroStyle =
-        RichHeroStyle.fromId(_prefs.getString(SettingsKeys.richHeroStyle));
+    final RichHeroStyle richHeroStyle = RichHeroStyle.fromId(
+      _prefs.getString(SettingsKeys.richHeroStyle),
+    );
     final bool hideEmptyMediaTypeChevrons =
         _prefs.getBool(SettingsKeys.hideEmptyMediaTypeChevrons) ?? false;
     final bool alwaysShowSubcategories =
@@ -681,30 +706,39 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.showAllCardTags) ?? false;
     final String dateFormat =
         _prefs.getString(SettingsKeys.dateFormat) ??
-            SettingsKeys.dateFormatDefault;
+        SettingsKeys.dateFormatDefault;
     final String animeMangaTitleLanguage =
         _prefs.getString(SettingsKeys.animeMangaTitleLanguage) ??
-            SettingsKeys.animeMangaTitleLanguageDefault;
-    final double cardScale = (_prefs.getDouble(SettingsKeys.cardScale) ??
-            SettingsKeys.cardScaleDefault)
-        .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
-    final double textScale = (_prefs.getDouble(SettingsKeys.textScale) ??
-            SettingsKeys.textScaleDefault)
-        .clamp(SettingsKeys.textScaleMin, SettingsKeys.textScaleMax);
-    final double uiScale = (_prefs.getDouble(SettingsKeys.uiScale) ??
-            SettingsKeys.uiScaleDefault)
-        .clamp(SettingsKeys.uiScaleMin, SettingsKeys.uiScaleMax);
-    final AppThemeId appTheme =
-        AppThemeId.fromId(_prefs.getString(SettingsKeys.appTheme));
+        SettingsKeys.animeMangaTitleLanguageDefault;
+    final double cardScale =
+        (_prefs.getDouble(SettingsKeys.cardScale) ??
+                SettingsKeys.cardScaleDefault)
+            .clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    final double textScale =
+        (_prefs.getDouble(SettingsKeys.textScale) ??
+                SettingsKeys.textScaleDefault)
+            .clamp(SettingsKeys.textScaleMin, SettingsKeys.textScaleMax);
+    final double uiScale =
+        (_prefs.getDouble(SettingsKeys.uiScale) ?? SettingsKeys.uiScaleDefault)
+            .clamp(SettingsKeys.uiScaleMin, SettingsKeys.uiScaleMax);
+    final AppThemeId appTheme = AppThemeId.fromId(
+      _prefs.getString(SettingsKeys.appTheme),
+    );
+    final AppSkinId appSkin = AppSkinId.fromId(
+      _prefs.getString(SettingsKeys.appSkin),
+    );
+    final String? wallpaperPath = _prefs.getString(SettingsKeys.wallpaperPath);
 
     // Valid token → connected immediately (skip verify);
     // expired with credentials → trigger auto-verify below.
-    final bool hasValidToken = accessToken != null &&
+    final bool hasValidToken =
+        accessToken != null &&
         tokenExpires != null &&
         tokenExpires > DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    final ConnectionStatus initialStatus =
-        hasValidToken ? ConnectionStatus.connected : ConnectionStatus.unknown;
+    final ConnectionStatus initialStatus = hasValidToken
+        ? ConnectionStatus.connected
+        : ConnectionStatus.unknown;
 
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
@@ -743,6 +777,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
       textScale: textScale,
       uiScale: uiScale,
       appTheme: appTheme,
+      appSkin: appSkin,
+      wallpaperPath: wallpaperPath,
     );
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
@@ -771,8 +807,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
         rpc.enable();
         if (loadedState.discordRaSyncEnabled) {
           final RaApi raApi = ref.read(raApiProvider);
-          final String? raUsername =
-              _prefs.getString(SettingsKeys.raUsername);
+          final String? raUsername = _prefs.getString(SettingsKeys.raUsername);
           if (raUsername != null && raApi.hasCredentials) {
             rpc.enableRaSync(raApi: raApi, raUsername: raUsername);
           }
@@ -964,10 +999,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }) async {
     await _writeCredential(SettingsKeys.screenScraperDevId, devId);
     await _writeCredential(SettingsKeys.screenScraperDevPassword, devPassword);
-    _screenScraperApi.setDevCredentials(
-      devId: devId,
-      devPassword: devPassword,
-    );
+    _screenScraperApi.setDevCredentials(devId: devId, devPassword: devPassword);
     state = state.copyWith(
       screenScraperDevId: devId,
       screenScraperDevPassword: devPassword,
@@ -1146,11 +1178,41 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(appTheme: theme);
   }
 
+  /// Same remount through the splash as [setAppTheme], same picker guard.
+  Future<void> setAppSkin(AppSkinId skin) async {
+    if (skin == state.appSkin) return;
+    await _prefs.setString(SettingsKeys.appSkin, skin.id);
+    await _prefs.setBool(SettingsKeys.skipPickerOnce, true);
+    state = state.copyWith(appSkin: skin);
+  }
+
+  /// Returns false when the user cancels the picker; a failed copy throws
+  /// [WallpaperSaveException] and leaves the current wallpaper in place.
+  Future<bool> pickWallpaper({required String dialogTitle}) async {
+    final String? path = await ref
+        .read(wallpaperServiceProvider)
+        .pickAndSave(dialogTitle: dialogTitle, oldPath: state.wallpaperPath);
+    if (path == null) return false;
+    await _prefs.setString(SettingsKeys.wallpaperPath, path);
+    state = state.copyWith(wallpaperPath: path);
+    return true;
+  }
+
+  Future<void> resetWallpaper() async {
+    final String? old = state.wallpaperPath;
+    if (old == null) return;
+    await _prefs.remove(SettingsKeys.wallpaperPath);
+    state = state.copyWith(clearWallpaperPath: true);
+    await ref.read(wallpaperServiceProvider).delete(old);
+  }
+
   /// Set [persist] to false for live slider preview; the final value must be
   /// saved with a persisting call.
   Future<void> setCardScale(double scale, {bool persist = true}) async {
-    final double clamped =
-        scale.clamp(SettingsKeys.cardScaleMin, SettingsKeys.cardScaleMax);
+    final double clamped = scale.clamp(
+      SettingsKeys.cardScaleMin,
+      SettingsKeys.cardScaleMax,
+    );
     state = state.copyWith(cardScale: clamped);
     if (persist) {
       await _prefs.setDouble(SettingsKeys.cardScale, clamped);
@@ -1162,12 +1224,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setTextScale(double scale, {bool persist = true}) async {
     // Slider stops arrive as 0.9999999999999999; two decimals keep the 1.0
     // fast path in the app root alive.
-    final double clamped = (scale.clamp(
-              SettingsKeys.textScaleMin,
-              SettingsKeys.textScaleMax,
-            ) *
-            100)
-        .roundToDouble() /
+    final double clamped =
+        (scale.clamp(SettingsKeys.textScaleMin, SettingsKeys.textScaleMax) *
+                100)
+            .roundToDouble() /
         100;
     state = state.copyWith(textScale: clamped);
     if (persist) {
@@ -1180,12 +1240,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setUiScale(double scale, {bool persist = true}) async {
     // Two decimals: wheel steps accumulate float noise and would otherwise
     // miss the 1.0 fast path in the app root.
-    final double clamped = (scale.clamp(
-              SettingsKeys.uiScaleMin,
-              SettingsKeys.uiScaleMax,
-            ) *
-            100)
-        .roundToDouble() /
+    final double clamped =
+        (scale.clamp(SettingsKeys.uiScaleMin, SettingsKeys.uiScaleMax) * 100)
+            .roundToDouble() /
         100;
     if (clamped == state.uiScale) return;
     state = state.copyWith(uiScale: clamped);
@@ -1367,6 +1424,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.textScale);
     await _prefs.remove(SettingsKeys.uiScale);
     await _prefs.remove(SettingsKeys.appTheme);
+    await _prefs.remove(SettingsKeys.appSkin);
+    await resetWallpaper();
     await _writeCredential(SettingsKeys.raUsername, '');
     await _writeCredential(SettingsKeys.raApiKey, '');
 

@@ -5,7 +5,7 @@ import '../../features/releases/providers/releases_provider.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../../l10n/app_localizations.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import 'liquid_indicator.dart';
 import 'nav_center_button.dart';
 import 'nav_destinations.dart';
@@ -63,86 +63,71 @@ class AppSidebar extends ConsumerWidget {
     final int selectedIndex =
         destinations.indexWhere((NavDestination d) => d.tab == selectedTab);
 
+    // One extra slot in the middle holds the centre button.
+    final int slotCount = destinations.length + 1;
+    final int selectedSlot = navSelectedSlot(
+      selectedIndex: selectedIndex,
+      centerActive: centerActive,
+    );
+
+    // Bare rail: the frame wraps it in a capsule; the capsule hugs the
+    // column, so the column sizes itself and leaves the icons some air.
     return SizedBox(
       width: kAppSidebarWidth,
-      child: ColoredBox(
-        color: AppColors.surface,
-        child: Stack(
-          children: <Widget>[
-            Positioned(
-              top: 0,
-              bottom: 0,
-              right: 0,
-              child: VerticalDivider(
-                thickness: 1,
-                width: 1,
-                color: AppColors.surfaceBorder,
-              ),
-            ),
-            LayoutBuilder(
-              builder: (BuildContext ctx, BoxConstraints c) {
-                // One extra slot in the middle holds the centre button.
-                final int slotCount = destinations.length + 1;
-                // Shrink button height when the screen is shorter than ideal,
-                // but never below the minimum or the icons blur together.
-                final double itemHeight = (c.maxHeight / slotCount)
-                    .clamp(_kItemHeightMin, _kItemHeight);
-                final double totalHeight = itemHeight * slotCount;
-                final int selectedSlot = navSelectedSlot(
-                  selectedIndex: selectedIndex,
-                  centerActive: centerActive,
-                );
-                return Center(
-                  child: SizedBox(
-                    height: totalHeight,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: <Widget>[
-                        LiquidIndicator(
-                          selectedIndex: selectedSlot,
-                          itemExtent: itemHeight,
-                          crossExtent: kAppSidebarWidth,
-                          // The centre logo is larger than a tab icon, so its
-                          // highlight needs to be bigger too.
-                          size: centerActive ? 50 : 40,
-                          rainbow: centerActive,
-                        ),
-                        Column(
-                          children: <Widget>[
-                            for (int i = 0; i < destinations.length; i++) ...<Widget>[
-                              if (i == kNavCenterSlot)
-                                NavCenterButton(
-                                  key: tourActive
-                                      ? tourKeys.personalization
-                                      : null,
-                                  width: kAppSidebarWidth,
-                                  height: itemHeight,
-                                  tooltip: S.of(context).personalizationTitle,
-                                  onTap: onCenterTap,
-                                ),
-                              NavIconButton(
-                                key: tourActive
-                                    ? tourKeys.keyFor(destinations[i].tab)
-                                    : null,
-                                destination: destinations[i],
-                                active: !centerActive &&
-                                    destinations[i].tab == selectedTab,
-                                width: kAppSidebarWidth,
-                                height: itemHeight,
-                                onTap: () =>
-                                    onDestinationSelected(destinations[i].tab),
-                              ),
-                            ],
-                          ],
+      child: LayoutBuilder(
+        builder: (BuildContext ctx, BoxConstraints c) {
+          // Shrink button height when the screen is shorter than ideal,
+          // but never below the minimum or the icons blur together.
+          final double cellHeight = ((c.maxHeight - AppSpacing.md) / slotCount)
+              .clamp(_kItemHeightMin, _kItemHeight);
+          final double cellWidth = c.maxWidth;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            child: SizedBox(
+              height: cellHeight * slotCount,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  LiquidIndicator(
+                    selectedIndex: selectedSlot,
+                    itemExtent: cellHeight,
+                    crossExtent: cellWidth,
+                    // The centre logo is larger than a tab icon, so its
+                    // highlight needs to be bigger too.
+                    size: centerActive ? 50 : 40,
+                    rainbow: centerActive,
+                  ),
+                  Column(
+                    children: <Widget>[
+                      for (int i = 0; i < destinations.length; i++) ...<Widget>[
+                        if (i == kNavCenterSlot)
+                          NavCenterButton(
+                            key: tourActive ? tourKeys.personalization : null,
+                            width: cellWidth,
+                            height: cellHeight,
+                            tooltip: S.of(context).personalizationTitle,
+                            onTap: onCenterTap,
+                          ),
+                        NavIconButton(
+                          key: tourActive
+                              ? tourKeys.keyFor(destinations[i].tab)
+                              : null,
+                          destination: destinations[i],
+                          active: !centerActive &&
+                              destinations[i].tab == selectedTab,
+                          width: cellWidth,
+                          height: cellHeight,
+                          onTap: () =>
+                              onDestinationSelected(destinations[i].tab),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                );
-              },
+                ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

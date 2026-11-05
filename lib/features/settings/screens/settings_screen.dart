@@ -23,6 +23,9 @@ import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../core/services/wallpaper_service.dart';
+import '../../../shared/theme/app_skin.dart';
+import '../../../shared/theme/app_skin_id.dart';
 import '../../../shared/theme/app_theme_id.dart';
 import '../../../shared/utils/date_format_preset.dart';
 import '../../../core/services/update_service.dart';
@@ -61,6 +64,7 @@ import 'profiles_screen.dart';
 import '../providers/profile_provider.dart';
 import '../../../shared/constants/rich_hero_style.dart';
 import '../../../shared/constants/rich_hero_style_ui.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Breakpoint for switching content width.
 const double _desktopBreakpoint = 800;
@@ -81,7 +85,9 @@ const Map<String, String> _kAppLanguageNames = <String, String>{
   'fr': 'Français',
 };
 const Color _kApiKeysColor = Color(0xFFEF5350);
-const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple (used for RA-sync Icons.sync tile)
+const Color _kDiscordColor = Color(
+  0xFF5865F2,
+); // Discord blurple (used for RA-sync Icons.sync tile)
 const Color _kAboutColor = Color(0xFF8E8E93);
 const Color _kDebugColor = Color(0xFFAB47BC);
 
@@ -128,9 +134,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: isWide ? 600 : double.infinity,
-          ),
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
           child: ListView(
             padding: EdgeInsets.symmetric(
               horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
@@ -170,11 +174,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return result;
   }
 
-
   List<Widget> _buildSections() {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
+    final SettingsNotifier notifier = ref.read(
+      settingsNotifierProvider.notifier,
+    );
     final S l = S.of(context);
     final Profile currentProfile = ref.watch(currentProfileProvider);
 
@@ -195,49 +199,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               value: '',
               onTap: () => _pushScreen(const ProfilesScreen()),
             ),
-          Builder(builder: (BuildContext ctx) {
-            final bool compact = isCompactScreen(ctx);
-            final double bubble = compact ? 24 : 28;
-            final double iconSize = compact ? 14 : 17;
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    width: bubble,
-                    height: bubble,
-                    decoration: BoxDecoration(
-                      color: _kProfileColor,
-                      borderRadius: BorderRadius.circular(bubble * 0.25),
+          Builder(
+            builder: (BuildContext ctx) {
+              final bool compact = isCompactScreen(ctx);
+              final double bubble = compact ? 24 : 28;
+              final double iconSize = compact ? 14 : 17;
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: bubble,
+                      height: bubble,
+                      decoration: BoxDecoration(
+                        color: _kProfileColor,
+                        borderRadius: BorderRadius.circular(bubble * 0.25),
+                      ),
+                      child: Icon(
+                        Icons.drive_file_rename_outline,
+                        size: iconSize,
+                        color: AppColors.onOverlay,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.drive_file_rename_outline,
-                      size: iconSize,
-                      color: AppColors.onOverlay,
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: InlineTextField(
+                        label: l.settingsAuthorName,
+                        value: settings.authorName,
+                        placeholder: l.defaultAuthor,
+                        compact: true,
+                        onChanged: (String value) {
+                          ref
+                              .read(settingsNotifierProvider.notifier)
+                              .setDefaultAuthor(value);
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: InlineTextField(
-                      label: l.settingsAuthorName,
-                      value: settings.authorName,
-                      placeholder: l.defaultAuthor,
-                      compact: true,
-                      onChanged: (String value) {
-                        ref
-                            .read(settingsNotifierProvider.notifier)
-                            .setDefaultAuthor(value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
       gap,
@@ -388,6 +394,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _showThemePicker(settings),
           ),
           SettingsTile(
+            leadingIcon: Icons.layers_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsSkin,
+            subtitle: l.settingsSkinSubtitle,
+            value: _skinLabel(l, settings.appSkin),
+            onTap: () => _showSkinPicker(settings),
+          ),
+          if (!kIsWebBuild &&
+              settings.appSkin.skin.wallpaper == SkinWallpaper.picture)
+            SettingsTile(
+              leadingIcon: Icons.wallpaper_outlined,
+              leadingColor: _kAppearanceColor,
+              title: l.settingsWallpaper,
+              subtitle: l.settingsWallpaperSubtitle,
+              value: settings.wallpaperPath == null
+                  ? l.settingsWallpaperDefault
+                  : l.settingsWallpaperCustom,
+              onTap: () => _showWallpaperOptions(settings),
+            ),
+          SettingsTile(
             leadingIcon: Icons.language,
             leadingColor: _kAppearanceColor,
             title: l.settingsAppLanguage,
@@ -416,7 +442,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leadingColor: _kAppearanceColor,
             title: l.settingsAnimeMangaTitleLanguage,
             subtitle: l.settingsAnimeMangaTitleLanguageSubtitle,
-            value: _animeMangaTitleLanguageLabel(l, settings.animeMangaTitleLanguage),
+            value: _animeMangaTitleLanguageLabel(
+              l,
+              settings.animeMangaTitleLanguage,
+            ),
             onTap: () => _showAnimeMangaTitleLanguagePicker(settings),
           ),
           SettingsTile(
@@ -596,9 +625,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsApiKeys,
             subtitle: l.settingsApiKeysSubtitle,
             value: _apiKeysValue(settings),
-            valueColor: _apiKeysAllSet(settings)
-                ? AppColors.success
-                : null,
+            valueColor: _apiKeysAllSet(settings) ? AppColors.success : null,
             onTap: () => _pushScreen(const CredentialsScreen()),
           ),
         ],
@@ -627,64 +654,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   : null,
               onTap: () => _pushScreen(const KodiScreen()),
             ),
-          if (kDiscordRpcAvailable)
-            SettingsTile(
-              leadingAssetPath: AppAssets.iconDiscordColor,
-              leadingAssetColored: true,
-              title: l.settingsDiscordRpc,
-              subtitle: l.settingsDiscordRpcSubtitle,
-              showChevron: false,
-              trailing: Switch(
-                value: settings.discordRpcEnabled,
-                onChanged: (bool value) {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setDiscordRpcEnabled(enabled: value);
-                  final DiscordRpcService rpc =
-                      ref.read(discordRpcServiceProvider);
-                  if (value) {
-                    rpc.enable();
-                  } else {
-                    rpc.disableRaSync();
+            if (kDiscordRpcAvailable)
+              SettingsTile(
+                leadingAssetPath: AppAssets.iconDiscordColor,
+                leadingAssetColored: true,
+                title: l.settingsDiscordRpc,
+                subtitle: l.settingsDiscordRpcSubtitle,
+                showChevron: false,
+                trailing: Switch(
+                  value: settings.discordRpcEnabled,
+                  onChanged: (bool value) {
                     ref
                         .read(settingsNotifierProvider.notifier)
-                        .setDiscordRaSyncEnabled(enabled: false);
-                    rpc.disable();
-                  }
-                },
-              ),
-            ),
-          if (kDiscordRpcAvailable &&
-              settings.discordRpcEnabled &&
-              ref.read(raApiProvider).hasCredentials)
-            SettingsTile(
-              leadingIcon: Icons.sync,
-              leadingColor: _kDiscordColor,
-              title: l.settingsDiscordRaSync,
-              subtitle: l.settingsDiscordRaSyncSubtitle,
-              showChevron: false,
-              trailing: Switch(
-                value: settings.discordRaSyncEnabled,
-                onChanged: (bool value) {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setDiscordRaSyncEnabled(enabled: value);
-                  final DiscordRpcService rpc =
-                      ref.read(discordRpcServiceProvider);
-                  if (value) {
-                    final RaApi raApi = ref.read(raApiProvider);
-                    rpc.enableRaSync(
-                      raApi: raApi,
-                      raUsername: raApi.username!,
+                        .setDiscordRpcEnabled(enabled: value);
+                    final DiscordRpcService rpc = ref.read(
+                      discordRpcServiceProvider,
                     );
-                  } else {
-                    rpc.disableRaSync();
-                  }
-                },
+                    if (value) {
+                      rpc.enable();
+                    } else {
+                      rpc.disableRaSync();
+                      ref
+                          .read(settingsNotifierProvider.notifier)
+                          .setDiscordRaSyncEnabled(enabled: false);
+                      rpc.disable();
+                    }
+                  },
+                ),
               ),
-            ),
-        ],
-      ),
+            if (kDiscordRpcAvailable &&
+                settings.discordRpcEnabled &&
+                ref.read(raApiProvider).hasCredentials)
+              SettingsTile(
+                leadingIcon: Icons.sync,
+                leadingColor: _kDiscordColor,
+                title: l.settingsDiscordRaSync,
+                subtitle: l.settingsDiscordRaSyncSubtitle,
+                showChevron: false,
+                trailing: Switch(
+                  value: settings.discordRaSyncEnabled,
+                  onChanged: (bool value) {
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setDiscordRaSyncEnabled(enabled: value);
+                    final DiscordRpcService rpc = ref.read(
+                      discordRpcServiceProvider,
+                    );
+                    if (value) {
+                      final RaApi raApi = ref.read(raApiProvider);
+                      rpc.enableRaSync(
+                        raApi: raApi,
+                        raUsername: raApi.username!,
+                      );
+                    } else {
+                      rpc.disableRaSync();
+                    }
+                  },
+                ),
+              ),
+          ],
+        ),
       gap,
 
       SettingsGroup(
@@ -695,9 +724,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leadingIcon: Icons.waving_hand_outlined,
             leadingColor: _kAboutColor,
             title: l.settingsWelcomeGuide,
-            onTap: () => _pushScreen(
-              const WelcomeScreen(fromSettings: true),
-            ),
+            onTap: () => _pushScreen(const WelcomeScreen(fromSettings: true)),
           ),
           SettingsTile(
             leadingIcon: Icons.article_outlined,
@@ -736,7 +763,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       // Android-only gamepad button debug, available in release too so
       // controller key codes can be captured on devices like the Odin 2.
-      if (!kDebugMode && defaultTargetPlatform == TargetPlatform.android) ...<Widget>[
+      if (!kDebugMode &&
+          defaultTargetPlatform == TargetPlatform.android) ...<Widget>[
         gap,
         SettingsGroup(
           title: l.settingsGamepadDebug,
@@ -757,18 +785,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ];
   }
 
-
   void _pushScreen(Widget screen) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => screen,
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (BuildContext context) => screen));
   }
 
   Future<void> _showChangelog() async {
-    final WhatsNewContent? content =
-        await ref.read(whatsNewServiceProvider).previewLatest();
+    final WhatsNewContent? content = await ref
+        .read(whatsNewServiceProvider)
+        .previewLatest();
     if (!mounted) return;
     if (content == null) {
       context.showSnack(S.of(context).settingsChangelogEmpty);
@@ -780,16 +806,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Baked-in default keys don't count — a fresh install with nothing entered
   /// must read 0/6, matching the empty fields the credentials screen shows.
   List<bool> _apiKeyStates(SettingsState settings) => <bool>[
-        settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
-        settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
-        settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
-        settings.hasTvdbKey && !settings.isTvdbKeyBuiltIn,
-        settings.hasComicVineKey,
-        settings.hasGoogleBooksKey,
-        settings.hasHardcoverKey,
-        settings.hasPodcastIndexKeys,
-        settings.hasScreenScraperCreds,
-      ];
+    settings.hasCredentials && !settings.isIgdbKeyBuiltIn,
+    settings.hasSteamGridDbKey && !settings.isSteamGridDbKeyBuiltIn,
+    settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn,
+    settings.hasTvdbKey && !settings.isTvdbKeyBuiltIn,
+    settings.hasComicVineKey,
+    settings.hasGoogleBooksKey,
+    settings.hasHardcoverKey,
+    settings.hasPodcastIndexKeys,
+    settings.hasScreenScraperCreds,
+  ];
 
   String _apiKeysValue(SettingsState settings) {
     final List<bool> states = _apiKeyStates(settings);
@@ -809,11 +835,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }) {
     showDialog<void>(
       context: context,
-      builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(title),
+      builder: (BuildContext dialogContext) => GlassDialog(
+        title: title,
         children: <Widget>[
           for (final T value in values)
-            SimpleDialogOption(
+            GlassDialogOption(
               // Pop before applying: a theme switch remounts the whole
               // MaterialApp, taking this dialog's navigator with it.
               onPressed: () {
@@ -843,18 +869,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       isSelected: (MapEntry<String, String> lang) =>
           settings.appLanguage == lang.key,
       label: (MapEntry<String, String> lang) => lang.value,
-      onSelected: (MapEntry<String, String> lang) => ref
-          .read(settingsNotifierProvider.notifier)
-          .setAppLanguage(lang.key),
+      onSelected: (MapEntry<String, String> lang) =>
+          ref.read(settingsNotifierProvider.notifier).setAppLanguage(lang.key),
     );
   }
 
   String _themeLabel(S l, AppThemeId theme) => switch (theme) {
-        AppThemeId.dark => l.settingsThemeDark,
-        AppThemeId.sakura => l.settingsThemeSakura,
-        AppThemeId.ps1 => l.settingsThemePs1,
-        AppThemeId.eva => l.settingsThemeEva,
-      };
+    AppThemeId.dark => l.settingsThemeDark,
+    AppThemeId.sakura => l.settingsThemeSakura,
+    AppThemeId.ps1 => l.settingsThemePs1,
+    AppThemeId.eva => l.settingsThemeEva,
+  };
 
   void _showThemePicker(SettingsState settings) {
     final S l = S.of(context);
@@ -866,6 +891,62 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onSelected: (AppThemeId theme) =>
           ref.read(settingsNotifierProvider.notifier).setAppTheme(theme),
     );
+  }
+
+  String _skinLabel(S l, AppSkinId skin) => switch (skin) {
+    AppSkinId.glass => l.settingsSkinGlass,
+    AppSkinId.classic => l.settingsSkinClassic,
+  };
+
+  void _showSkinPicker(SettingsState settings) {
+    final S l = S.of(context);
+    _showChoicePicker<AppSkinId>(
+      title: l.settingsSkin,
+      values: AppSkinId.values,
+      isSelected: (AppSkinId skin) => settings.appSkin == skin,
+      label: (AppSkinId skin) => _skinLabel(l, skin),
+      onSelected: (AppSkinId skin) =>
+          ref.read(settingsNotifierProvider.notifier).setAppSkin(skin),
+    );
+  }
+
+  void _showWallpaperOptions(SettingsState settings) {
+    final S l = S.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => GlassDialog(
+        title: l.settingsWallpaper,
+        children: <Widget>[
+          GlassDialogOption(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _pickWallpaper();
+            },
+            child: Text(l.settingsWallpaperChoose),
+          ),
+          if (settings.wallpaperPath != null)
+            GlassDialogOption(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                ref.read(settingsNotifierProvider.notifier).resetWallpaper();
+              },
+              child: Text(l.settingsWallpaperReset),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickWallpaper() async {
+    final S l = S.of(context);
+    try {
+      await ref
+          .read(settingsNotifierProvider.notifier)
+          .pickWallpaper(dialogTitle: l.settingsWallpaper);
+    } on WallpaperSaveException {
+      if (!mounted) return;
+      context.showSnack(l.settingsWallpaperError, type: SnackType.error);
+    }
   }
 
   String _contentLanguageLabel(String code) {
@@ -903,13 +984,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _showChoicePicker<DateFormatPreset>(
       title: S.of(context).settingsDateFormat,
       values: DateFormatPreset.values,
-      isSelected: (DateFormatPreset preset) =>
-          settings.dateFormat == preset.id,
+      isSelected: (DateFormatPreset preset) => settings.dateFormat == preset.id,
       label: (DateFormatPreset preset) =>
           preset.format(sample, locale: localeName),
-      onSelected: (DateFormatPreset preset) => ref
-          .read(settingsNotifierProvider.notifier)
-          .setDateFormat(preset.id),
+      onSelected: (DateFormatPreset preset) =>
+          ref.read(settingsNotifierProvider.notifier).setDateFormat(preset.id),
     );
   }
 
@@ -920,9 +999,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       values: RichHeroStyle.values,
       isSelected: (RichHeroStyle style) => settings.richHeroStyle == style,
       label: (RichHeroStyle style) => style.localizedLabel(l),
-      onSelected: (RichHeroStyle style) => ref
-          .read(settingsNotifierProvider.notifier)
-          .setRichHeroStyle(style),
+      onSelected: (RichHeroStyle style) =>
+          ref.read(settingsNotifierProvider.notifier).setRichHeroStyle(style),
     );
   }
 
@@ -953,8 +1031,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildVersionTile(S l) {
-    final UpdateInfo? updateInfo =
-        ref.watch(updateCheckProvider).valueOrNull;
+    final UpdateInfo? updateInfo = ref.watch(updateCheckProvider).valueOrNull;
     final bool hasUpdate = updateInfo?.hasUpdate ?? false;
     final String versionText = _appVersion.isNotEmpty ? _appVersion : '...';
 
@@ -977,11 +1054,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showUpdateWarning(S l, String releaseUrl) {
     showDialog<void>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Row(
           children: <Widget>[
-            Icon(Icons.warning_amber_rounded,
-                color: AppColors.warning, size: 24),
+            Icon(
+              Icons.warning_amber_rounded,
+              color: AppColors.warning,
+              size: 24,
+            ),
             const SizedBox(width: 8),
             Expanded(child: Text(l.updateWarningTitle)),
           ],
@@ -1008,11 +1088,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _handleBackup(
-    BuildContext context,
-    WidgetRef ref,
-    S l,
-  ) async {
+  Future<void> _handleBackup(BuildContext context, WidgetRef ref, S l) async {
     context.showSnack(
       l.settingsBackupAll,
       loading: true,
@@ -1030,20 +1106,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         type: SnackType.success,
       );
     } else if (!result.isCancelled) {
-      context.showSnack(
-        result.error ?? 'Backup failed',
-        type: SnackType.error,
-      );
+      context.showSnack(result.error ?? 'Backup failed', type: SnackType.error);
     } else {
       context.hideSnack();
     }
   }
 
-  Future<void> _handleRestore(
-    BuildContext context,
-    WidgetRef ref,
-    S l,
-  ) async {
+  Future<void> _handleRestore(BuildContext context, WidgetRef ref, S l) async {
     // withData only on web: the browser has no paths; desktop/Android read
     // from the path so a large archive is never held in memory twice.
     final bool useAny = kIsMobile;
@@ -1060,8 +1129,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final Uint8List? zipBytes = kIsWebBuild
         ? pickedFile.bytes
         : (pickedFile.path == null
-            ? null
-            : await File(pickedFile.path!).readAsBytes());
+              ? null
+              : await File(pickedFile.path!).readAsBytes());
     if (zipBytes == null) return;
 
     // 2. Read the manifest.
@@ -1085,17 +1154,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return StatefulBuilder(
           builder: (BuildContext ctx, StateSetter setState) {
             final S dl = S.of(ctx);
-            return AlertDialog(
+            return GlassAlertDialog(
               title: Text(dl.restoreConfirmTitle),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(dl.restoreConfirmBody(
-                    manifest.collectionsCount,
-                    manifest.itemsCount,
-                    manifest.wishlistCount,
-                  )),
+                  Text(
+                    dl.restoreConfirmBody(
+                      manifest.collectionsCount,
+                      manifest.itemsCount,
+                      manifest.wishlistCount,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     dl.restoreConfirmHint,
@@ -1152,13 +1223,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     // Modal blocking dialog runs concurrently with the await below.
     final NavigatorState navigator = Navigator.of(context, rootNavigator: true);
-    unawaited(showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      useRootNavigator: true,
-      builder: (BuildContext _) =>
-          _RestoreProgressDialog(progress: progressNotifier),
-    ));
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        useRootNavigator: true,
+        builder: (BuildContext _) =>
+            _RestoreProgressDialog(progress: progressNotifier),
+      ),
+    );
 
     ref.read(restoreInProgressProvider.notifier).state = true;
     RestoreResult result;
@@ -1219,7 +1292,7 @@ class _RestoreProgressDialog extends StatelessWidget {
     final S l = S.of(context);
     return PopScope(
       canPop: false,
-      child: AlertDialog(
+      child: GlassAlertDialog(
         title: Text(l.restoreProgressTitle),
         content: ValueListenableBuilder<BackupProgress?>(
           valueListenable: progress,

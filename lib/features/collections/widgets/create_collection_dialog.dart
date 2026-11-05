@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import 'hidden_collection_checkbox.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 class CreateCollectionResult {
   const CreateCollectionResult({required this.name, required this.isHidden});
@@ -60,7 +61,7 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.createCollectionTitle),
       scrollable: true,
       content: Form(
@@ -100,29 +101,22 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(l.create),
-        ),
+        FilledButton(onPressed: _submit, child: Text(l.create)),
       ],
     );
   }
 }
 
 class RenameCollectionDialog extends StatefulWidget {
-  const RenameCollectionDialog({
-    required this.currentName,
-    super.key,
-  });
+  const RenameCollectionDialog({required this.currentName, super.key});
 
   final String currentName;
 
   static Future<String?> show(BuildContext context, String currentName) {
     return showDialog<String>(
       context: context,
-      builder: (BuildContext context) => RenameCollectionDialog(
-        currentName: currentName,
-      ),
+      builder: (BuildContext context) =>
+          RenameCollectionDialog(currentName: currentName),
     );
   }
 
@@ -164,7 +158,7 @@ class _RenameCollectionDialogState extends State<RenameCollectionDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.renameCollectionTitle),
       scrollable: true,
       content: Form(
@@ -194,10 +188,7 @@ class _RenameCollectionDialogState extends State<RenameCollectionDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(l.rename),
-        ),
+        FilledButton(onPressed: _submit, child: Text(l.rename)),
       ],
     );
   }

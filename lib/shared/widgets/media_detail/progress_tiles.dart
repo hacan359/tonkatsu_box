@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../glass_panel.dart';
 
 /// Single progress fact tile: icon + label on top, value below. Shows an
 /// edit hint icon and becomes tappable when [onTap] is set.
@@ -65,11 +66,7 @@ class ProgressTile extends StatelessWidget {
               ),
               if (onTap != null) ...<Widget>[
                 const SizedBox(width: 4),
-                Icon(
-                  Icons.edit_outlined,
-                  size: 12,
-                  color: AppColors.brand,
-                ),
+                Icon(Icons.edit_outlined, size: 12, color: AppColors.brand),
               ],
             ],
           ),
@@ -78,7 +75,7 @@ class ProgressTile extends StatelessWidget {
     );
 
     Widget tile = Material(
-      color: AppColors.surfaceLight.withAlpha(120),
+      color: glassTileColor(),
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: onTap != null
           ? InkWell(
@@ -114,8 +111,9 @@ class ProgressTileGrid extends StatelessWidget {
         final int perRow = constraints.maxWidth < 480 ? 2 : tiles.length;
         final List<Widget> rows = <Widget>[];
         for (int i = 0; i < tiles.length; i += perRow) {
-          final int end =
-              (i + perRow > tiles.length) ? tiles.length : i + perRow;
+          final int end = (i + perRow > tiles.length)
+              ? tiles.length
+              : i + perRow;
           final List<Widget> chunk = tiles.sublist(i, end);
           if (rows.isNotEmpty) rows.add(const SizedBox(height: AppSpacing.sm));
           rows.add(
@@ -166,13 +164,13 @@ class ProgressFact {
   final VoidCallback? onTap;
 
   ProgressTile toTile() => ProgressTile(
-        icon: icon,
-        label: label,
-        value: value,
-        hasValue: hasValue,
-        tooltip: tooltip,
-        onTap: onTap,
-      );
+    icon: icon,
+    label: label,
+    value: value,
+    hasValue: hasValue,
+    tooltip: tooltip,
+    onTap: onTap,
+  );
 }
 
 /// Label on the left, value on the right, a hairline below — the list form
@@ -188,7 +186,7 @@ class ProgressFactRow extends StatelessWidget {
     final Widget row = Container(
       padding: const EdgeInsets.symmetric(vertical: 7),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.surfaceBorder)),
+        border: Border(bottom: BorderSide(color: glassTileBorderColor())),
       ),
       child: Row(
         children: <Widget>[

@@ -28,6 +28,7 @@ import '../widgets/hardcover_edition_picker.dart';
 import 'item_refresh.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Actions extracted from [CollectionScreen] to keep that file smaller;
 /// each method takes its dependencies explicitly.
@@ -39,12 +40,10 @@ class CollectionActions {
 
   /// Switches to the shared Search tab with this collection as add target —
   /// no separate search screen, so the shell's single field stays consistent.
-  static void addItems({
-    required WidgetRef ref,
-    required int? collectionId,
-  }) {
-    ref.read(searchTabRequestProvider.notifier).state =
-        SearchTabRequest(collectionId: collectionId);
+  static void addItems({required WidgetRef ref, required int? collectionId}) {
+    ref.read(searchTabRequestProvider.notifier).state = SearchTabRequest(
+      collectionId: collectionId,
+    );
   }
 
   /// Copies a `[[card:…]]` cross-link for [item] to the clipboard.
@@ -83,9 +82,7 @@ class CollectionActions {
     }
 
     final ({bool success, bool sourceEmpty}) result = await ref
-        .read(
-          collectionItemsNotifierProvider(collectionId).notifier,
-        )
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .moveItem(
           item.id,
           targetCollectionId: targetCollectionId,
@@ -140,9 +137,7 @@ class CollectionActions {
     }
 
     final bool success = await ref
-        .read(
-          collectionItemsNotifierProvider(collectionId).notifier,
-        )
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .cloneItem(
           item.id,
           targetCollectionId: targetCollectionId,
@@ -161,10 +156,7 @@ class CollectionActions {
       );
     } else {
       context.showSnack(
-        S.of(context).collectionItemAlreadyInTarget(
-              displayName,
-              targetName,
-            ),
+        S.of(context).collectionItemAlreadyInTarget(displayName, targetName),
       );
     }
   }
@@ -185,9 +177,7 @@ class CollectionActions {
       cancelLabel: dl.keep,
     );
     if (confirmed && context.mounted) {
-      await ref
-          .read(collectionsProvider.notifier)
-          .delete(collectionId);
+      await ref.read(collectionsProvider.notifier).delete(collectionId);
       if (context.mounted) {
         navigator.pop();
       }
@@ -291,8 +281,9 @@ class CollectionActions {
     required WidgetRef ref,
     required int? collectionId,
   }) async {
-    final List<CollectionItem>? items =
-        ref.read(collectionItemsNotifierProvider(collectionId)).valueOrNull;
+    final List<CollectionItem>? items = ref
+        .read(collectionItemsNotifierProvider(collectionId))
+        .valueOrNull;
 
     if (items == null || items.isEmpty) {
       if (context.mounted) {
@@ -322,8 +313,9 @@ class CollectionActions {
     required int? collectionId,
     required Collection collection,
   }) async {
-    final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.read(collectionItemsNotifierProvider(collectionId));
+    final AsyncValue<List<CollectionItem>> itemsAsync = ref.read(
+      collectionItemsNotifierProvider(collectionId),
+    );
 
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     if (items == null) {
@@ -365,24 +357,17 @@ class CollectionActions {
         'Exported to ${result.filePath}',
         type: SnackType.success,
         duration: _exportedSnackDuration,
-        action: SnackBarAction(
-          label: 'OK',
-          onPressed: () {},
-        ),
+        action: SnackBarAction(label: 'OK', onPressed: () {}),
       );
     } else if (!result.isCancelled) {
-      context.showSnack(
-        result.error ?? 'Export failed',
-        type: SnackType.error,
-      );
+      context.showSnack(result.error ?? 'Export failed', type: SnackType.error);
     } else {
       context.hideSnack();
     }
   }
 
-  static Future<({ExportFormat format, bool includeUserData})?> _showExportFormatDialog(
-    BuildContext context,
-  ) {
+  static Future<({ExportFormat format, bool includeUserData})?>
+  _showExportFormatDialog(BuildContext context) {
     return showDialog<({ExportFormat format, bool includeUserData})>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -390,7 +375,7 @@ class CollectionActions {
         bool includeUserData = false;
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
+            return GlassAlertDialog(
               scrollable: true,
               title: Text(dl.collectionExportFormat),
               content: Column(
@@ -402,17 +387,19 @@ class CollectionActions {
                     leading: const Icon(Icons.description_outlined),
                     title: Text(dl.collectionExportLight),
                     subtitle: Text(dl.collectionExportLightDesc),
-                    onTap: () => Navigator.of(dialogContext).pop(
-                      (format: ExportFormat.light, includeUserData: includeUserData),
-                    ),
+                    onTap: () => Navigator.of(dialogContext).pop((
+                      format: ExportFormat.light,
+                      includeUserData: includeUserData,
+                    )),
                   ),
                   ListTile(
                     leading: const Icon(Icons.folder_zip_outlined),
                     title: Text(dl.collectionExportFull),
                     subtitle: Text(dl.collectionExportFullDesc),
-                    onTap: () => Navigator.of(dialogContext).pop(
-                      (format: ExportFormat.full, includeUserData: includeUserData),
-                    ),
+                    onTap: () => Navigator.of(dialogContext).pop((
+                      format: ExportFormat.full,
+                      includeUserData: includeUserData,
+                    )),
                   ),
                   const Divider(),
                   CheckboxListTile(
@@ -456,15 +443,14 @@ class CollectionActions {
 
     if (image.width > 0 && image.height > 0) {
       final double aspectRatio = image.width / image.height;
-      targetWidth =
-          image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
+      targetWidth = image.width.toDouble() > maxWidth
+          ? maxWidth
+          : image.width.toDouble();
       targetHeight = targetWidth / aspectRatio;
     }
 
-    final double centerX =
-        CanvasRepository.initialCenterX - targetWidth / 2;
-    final double centerY =
-        CanvasRepository.initialCenterY - targetHeight / 2;
+    final double centerX = CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY = CanvasRepository.initialCenterY - targetHeight / 2;
 
     ref
         .read(canvasNotifierProvider(collectionId).notifier)
@@ -499,15 +485,12 @@ class CollectionActions {
 
     if (width != null && height != null && width > 0 && height > 0) {
       final double aspectRatio = width / height;
-      targetWidth =
-          width.toDouble() > maxWidth ? maxWidth : width.toDouble();
+      targetWidth = width.toDouble() > maxWidth ? maxWidth : width.toDouble();
       targetHeight = targetWidth / aspectRatio;
     }
 
-    final double centerX =
-        CanvasRepository.initialCenterX - targetWidth / 2;
-    final double centerY =
-        CanvasRepository.initialCenterY - targetHeight / 2;
+    final double centerX = CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY = CanvasRepository.initialCenterY - targetHeight / 2;
 
     ref
         .read(canvasNotifierProvider(collectionId).notifier)
@@ -520,10 +503,7 @@ class CollectionActions {
         );
 
     if (context.mounted) {
-      context.showSnack(
-        S.of(context).mapAddedToBoard,
-        type: SnackType.success,
-      );
+      context.showSnack(S.of(context).mapAddedToBoard, type: SnackType.success);
     }
   }
 
@@ -540,8 +520,9 @@ class CollectionActions {
     // picking refreshes with it, dismissing keeps the current one.
     FantlabEdition? pickedFantlab;
     HardcoverEdition? pickedHardcover;
-    final Book? cachedBook =
-        item.mediaType == MediaType.book ? item.book : null;
+    final Book? cachedBook = item.mediaType == MediaType.book
+        ? item.book
+        : null;
     if (cachedBook != null && item.source == DataSource.fantlab) {
       pickedFantlab = await showFantlabEditionPicker(
         context,
@@ -555,7 +536,7 @@ class CollectionActions {
         bookId: cachedBook.nativeId,
         currentEditionId:
             hardcoverEditionIdFromExternalUrl(cachedBook.externalUrl) ??
-                hardcoverEditionIdFromCoverUrl(cachedBook.coverUrl),
+            hardcoverEditionIdFromCoverUrl(cachedBook.coverUrl),
       );
       if (!context.mounted) return false;
     }

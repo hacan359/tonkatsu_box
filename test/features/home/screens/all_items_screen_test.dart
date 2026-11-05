@@ -25,8 +25,14 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 import 'package:tonkatsu_box/shared/widgets/logo_loader.dart';
+import 'package:tonkatsu_box/shared/widgets/media_type_icon_strip.dart';
 
 import '../../../helpers/test_helpers.dart';
+
+/// The strip shows a type as an icon tile; its label lives in the tooltip.
+Finder _tile(String label) => find.byWidgetPredicate(
+  (Widget w) => w is MediaTypeIconTile && w.label == label,
+);
 
 void main() {
   setUpAll(registerAllFallbacks);
@@ -120,47 +126,53 @@ void main() {
     prefs = await SharedPreferences.getInstance();
 
     mockRepo = MockCollectionRepository();
-    when(() => mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
-        .thenAnswer((_) async => testItems);
-    when(() => mockRepo.getAll())
-        .thenAnswer((_) async => testCollections);
-    when(() => mockRepo.getStats(any()))
-        .thenAnswer((_) async => CollectionStats.empty);
+    when(
+      () => mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')),
+    ).thenAnswer((_) async => testItems);
+    when(() => mockRepo.getAll()).thenAnswer((_) async => testCollections);
+    when(
+      () => mockRepo.getStats(any()),
+    ).thenAnswer((_) async => CollectionStats.empty);
 
     mockDb = MockDatabaseService();
     when(mockDb.warmUp).thenAnswer((_) async {});
     // TV cards spin up a real episode tracker for the progress badge.
     final MockTvShowDao mockTvShowDao = MockTvShowDao();
     when(() => mockDb.tvShowDao).thenReturn(mockTvShowDao);
-    when(() => mockTvShowDao.getWatchedEpisodes(any(), any(), any()))
-        .thenAnswer((_) async => <(int, int), DateTime?>{});
-    when(() => mockTvShowDao.getEpisodesByShowId(any(), any()))
-        .thenAnswer((_) async => <TvEpisode>[]);
-    when(() => mockTvShowDao.getTvShowByTmdbId(any(),
-        source: any(named: 'source'))).thenAnswer((_) async => null);
-    when(() => mockTvShowDao.getTvSeasonsByShowId(any(), any()))
-        .thenAnswer((_) async => <TvSeason>[]);
+    when(
+      () => mockTvShowDao.getWatchedEpisodes(any(), any(), any()),
+    ).thenAnswer((_) async => <(int, int), DateTime?>{});
+    when(
+      () => mockTvShowDao.getEpisodesByShowId(any(), any()),
+    ).thenAnswer((_) async => <TvEpisode>[]);
+    when(
+      () =>
+          mockTvShowDao.getTvShowByTmdbId(any(), source: any(named: 'source')),
+    ).thenAnswer((_) async => null);
+    when(
+      () => mockTvShowDao.getTvSeasonsByShowId(any(), any()),
+    ).thenAnswer((_) async => <TvSeason>[]);
     final MockGameDao mockGameDao = MockGameDao();
     when(() => mockDb.gameDao).thenReturn(mockGameDao);
-    when(() => mockGameDao.getPlatformsByIds(any())).thenAnswer(
-      (Invocation inv) async {
-        final List<int> ids = inv.positionalArguments.first as List<int>;
-        return <model.Platform>[
-          if (ids.contains(19))
-            const model.Platform(
-              id: 19,
-              name: 'Super Nintendo',
-              abbreviation: 'SNES',
-            ),
-          if (ids.contains(24))
-            const model.Platform(
-              id: 24,
-              name: 'Game Boy Advance',
-              abbreviation: 'GBA',
-            ),
-        ];
-      },
-    );
+    when(() => mockGameDao.getPlatformsByIds(any())).thenAnswer((
+      Invocation inv,
+    ) async {
+      final List<int> ids = inv.positionalArguments.first as List<int>;
+      return <model.Platform>[
+        if (ids.contains(19))
+          const model.Platform(
+            id: 19,
+            name: 'Super Nintendo',
+            abbreviation: 'SNES',
+          ),
+        if (ids.contains(24))
+          const model.Platform(
+            id: 24,
+            name: 'Game Boy Advance',
+            abbreviation: 'GBA',
+          ),
+      ];
+    });
   });
 
   Widget buildTestWidget({
@@ -177,12 +189,14 @@ void main() {
             alwaysShowSubcategories: alwaysShowSubcategories,
           ),
         ),
-        currentProfileProvider.overrideWithValue(Profile(
-          id: 'test',
-          name: 'Test',
-          color: '#FF0000',
-          createdAt: DateTime(2025),
-        )),
+        currentProfileProvider.overrideWithValue(
+          Profile(
+            id: 'test',
+            name: 'Test',
+            color: '#FF0000',
+            createdAt: DateTime(2025),
+          ),
+        ),
         ...extraOverrides,
       ],
       child: const MaterialApp(
@@ -194,19 +208,19 @@ void main() {
   }
 
   group('AllItemsScreen', () {
-    testWidgets('показывает сегменты типов медиа',
-        (WidgetTester tester) async {
+    testWidgets('показывает сегменты типов медиа', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.text('Games'), findsOneWidget);
-      expect(find.text('Movies'), findsOneWidget);
-      expect(find.text('TV Shows'), findsOneWidget);
-      expect(find.text('Animation'), findsOneWidget);
-      expect(find.text('Visual Novels'), findsOneWidget);
+      expect(_tile('Games'), findsOneWidget);
+      expect(_tile('Movies'), findsOneWidget);
+      expect(_tile('TV Shows'), findsOneWidget);
+      expect(_tile('Animation'), findsOneWidget);
+      expect(_tile('Visual Novels'), findsOneWidget);
     });
 
-    testWidgets('long-press выделяет элемент и передаёт его в BulkActionBar',
-        (WidgetTester tester) async {
+    testWidgets('long-press выделяет элемент и передаёт его в BulkActionBar', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -218,8 +232,9 @@ void main() {
 
       // Bulk actions must receive exactly the selected item, from the
       // unfiltered list — this is what move/clone will operate on.
-      final BulkActionBar bar =
-          tester.widget<BulkActionBar>(find.byType(BulkActionBar));
+      final BulkActionBar bar = tester.widget<BulkActionBar>(
+        find.byType(BulkActionBar),
+      );
       expect(bar.items.map((CollectionItem i) => i.id).toList(), <int>[5]);
 
       // A second tap toggles the item off; the bar leaves with the selection.
@@ -229,21 +244,22 @@ void main() {
       expect(find.byType(BulkActionBar), findsNothing);
     });
 
-    testWidgets('показывает счётчики на сегментах после загрузки',
-        (WidgetTester tester) async {
+    testWidgets('показывает счётчики на сегментах после загрузки', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Games (2)'), findsOneWidget);
-      expect(find.text('Movies (1)'), findsOneWidget);
-      expect(find.text('TV Shows (1)'), findsOneWidget);
-      expect(find.text('Visual Novels (1)'), findsOneWidget);
-      expect(find.text('Animation'), findsOneWidget);
+      expect(find.byTooltip('Games (2)'), findsOneWidget);
+      expect(find.byTooltip('Movies (1)'), findsOneWidget);
+      expect(find.byTooltip('TV Shows (1)'), findsOneWidget);
+      expect(find.byTooltip('Visual Novels (1)'), findsOneWidget);
+      expect(_tile('Animation'), findsOneWidget);
     });
 
-    testWidgets(
-        'should render on a landscape phone with the keyboard up',
-        (WidgetTester tester) async {
+    testWidgets('should render on a landscape phone with the keyboard up', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(640, 300);
       tester.view.devicePixelRatio = 1.0;
       tester.view.viewInsets = const FakeViewPadding(bottom: 270);
@@ -256,40 +272,43 @@ void main() {
     });
 
     testWidgets(
-        'заголовок группы с длинным именем не переполняется на узком экране',
-        (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(360, 640);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.reset);
-      when(() => mockRepo.getAll()).thenAnswer(
-        (_) async => <Collection>[
-          Collection(
-            id: 10,
-            name: 'Очень длинное название коллекции, которое никак не влезает',
-            author: 'User',
-            type: CollectionType.own,
-            createdAt: DateTime(2025),
-          ),
-          testCollections[1],
-        ],
-      );
+      'заголовок группы с длинным именем не переполняется на узком экране',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+        when(() => mockRepo.getAll()).thenAnswer(
+          (_) async => <Collection>[
+            Collection(
+              id: 10,
+              name:
+                  'Очень длинное название коллекции, которое никак не влезает',
+              author: 'User',
+              type: CollectionType.own,
+              createdAt: DateTime(2025),
+            ),
+            testCollections[1],
+          ],
+        );
 
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-    });
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-    testWidgets('показывает chevron-dropdown статуса с текстом "All"',
-        (WidgetTester tester) async {
+    testWidgets('показывает chevron-dropdown статуса с текстом "All"', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
 
       expect(find.text('All'), findsOneWidget);
-      expect(find.byIcon(Icons.filter_list), findsNothing);
     });
 
-    testWidgets('dropdown статуса открывает popup и фильтрует',
-        (WidgetTester tester) async {
+    testWidgets('dropdown статуса открывает popup и фильтрует', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -306,8 +325,9 @@ void main() {
       expect(find.textContaining('Watch List'), findsNothing);
     });
 
-    testWidgets('выбор "All" в dropdown сбрасывает фильтр статуса',
-        (WidgetTester tester) async {
+    testWidgets('выбор "All" в dropdown сбрасывает фильтр статуса', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -323,31 +343,34 @@ void main() {
       expect(find.textContaining('Watch List'), findsOneWidget);
     });
 
-    testWidgets('dropdown статуса набирает несколько статусов за одно открытие',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'dropdown статуса набирает несколько статусов за одно открытие',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('All'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Completed'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Watch List'), findsNothing);
+        await tester.tap(find.text('All'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Completed'));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Watch List'), findsNothing);
 
-      await tester.tap(find.text('Not Started'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Not Started'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('My Games'), findsOneWidget);
-      expect(find.textContaining('Watch List'), findsOneWidget);
-    });
+        expect(find.text('My Games'), findsOneWidget);
+        expect(find.textContaining('Watch List'), findsOneWidget);
+      },
+    );
 
-    testWidgets('показывает loading state при запуске',
-        (WidgetTester tester) async {
+    testWidgets('показывает loading state при запуске', (
+      WidgetTester tester,
+    ) async {
       final Completer<List<CollectionItem>> completer =
           Completer<List<CollectionItem>>();
-      when(() =>
-              mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
-          .thenAnswer((_) => completer.future);
+      when(
+        () => mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')),
+      ).thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
@@ -359,11 +382,12 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('показывает empty state когда нет элементов',
-        (WidgetTester tester) async {
-      when(() =>
-              mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
-          .thenAnswer((_) async => <CollectionItem>[]);
+    testWidgets('показывает empty state когда нет элементов', (
+      WidgetTester tester,
+    ) async {
+      when(
+        () => mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')),
+      ).thenAnswer((_) async => <CollectionItem>[]);
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
@@ -371,16 +395,18 @@ void main() {
       expect(find.text('No items yet'), findsOneWidget);
     });
 
-    testWidgets('показывает grid после загрузки данных',
-        (WidgetTester tester) async {
+    testWidgets('показывает grid после загрузки данных', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
-    testWidgets('показывает разделители коллекций',
-        (WidgetTester tester) async {
+    testWidgets('показывает разделители коллекций', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -388,12 +414,13 @@ void main() {
       expect(find.text('Watch List'), findsOneWidget);
     });
 
-    testWidgets('разделители обновляются при фильтрации',
-        (WidgetTester tester) async {
+    testWidgets('разделители обновляются при фильтрации', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
 
       expect(find.text('My Games'), findsOneWidget);
@@ -402,54 +429,60 @@ void main() {
   });
 
   group('AllItemsScreen фильтрация', () {
-    testWidgets('нажатие на Games фильтрует по типу',
-        (WidgetTester tester) async {
+    testWidgets('нажатие на Games фильтрует по типу', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
 
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
-    testWidgets('повторное нажатие на Games сбрасывает фильтр',
-        (WidgetTester tester) async {
+    testWidgets('повторное нажатие на Games сбрасывает фильтр', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsNothing);
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsOneWidget);
     });
 
-    testWidgets('можно выбрать несколько типов одновременно',
-        (WidgetTester tester) async {
+    testWidgets('можно выбрать несколько типов одновременно', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsNothing);
 
-      await tester.tap(find.text('TV Shows (1)'));
+      await tester.tap(find.byTooltip('TV Shows (1)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsOneWidget);
       expect(find.textContaining('My Games'), findsOneWidget);
     });
 
-    testWidgets('фильтр Избранное оставляет только избранные и сбрасывается',
-        (WidgetTester tester) async {
-      when(() =>
-              mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
-          .thenAnswer((_) async => <CollectionItem>[
-                testItems[0].copyWith(isFavorite: true), // game, My Games
-                testItems[2], // tvShow, Watch List, not favorite
-              ]);
+    testWidgets('фильтр Избранное оставляет только избранные и сбрасывается', (
+      WidgetTester tester,
+    ) async {
+      when(
+        () => mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')),
+      ).thenAnswer(
+        (_) async => <CollectionItem>[
+          testItems[0].copyWith(isFavorite: true), // game, My Games
+          testItems[2], // tvShow, Watch List, not favorite
+        ],
+      );
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
@@ -457,62 +490,66 @@ void main() {
       expect(find.textContaining('My Games'), findsOneWidget);
       expect(find.textContaining('Watch List'), findsOneWidget);
 
-      await tester.tap(find.text('Favorite'));
+      await tester.tap(_tile('Favorite'));
       await tester.pumpAndSettle();
       expect(find.textContaining('My Games'), findsOneWidget);
       expect(find.textContaining('Watch List'), findsNothing);
 
-      await tester.tap(find.text('Favorite'));
+      await tester.tap(_tile('Favorite'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsOneWidget);
     });
   });
 
   group('AllItemsScreen платформенный фильтр', () {
-    testWidgets('при выборе Games показывает мини-чипы платформ',
-        (WidgetTester tester) async {
+    testWidgets('при выборе Games показывает мини-чипы платформ', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
 
       expect(find.text('SNES'), findsOneWidget);
       expect(find.text('GBA'), findsOneWidget);
     });
 
-    testWidgets('при выборе Movies не показывает чипы платформ',
-        (WidgetTester tester) async {
+    testWidgets('при выборе Movies не показывает чипы платформ', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Movies (1)'));
+      await tester.tap(find.byTooltip('Movies (1)'));
       await tester.pumpAndSettle();
 
       expect(find.text('SNES'), findsNothing);
       expect(find.text('GBA'), findsNothing);
     });
 
-    testWidgets('отмена выбора Games убирает чипы платформ',
-        (WidgetTester tester) async {
+    testWidgets('отмена выбора Games убирает чипы платформ', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.text('SNES'), findsOneWidget);
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.text('SNES'), findsNothing);
     });
 
-    testWidgets('тап по мини-чипу платформы фильтрует элементы',
-        (WidgetTester tester) async {
+    testWidgets('тап по мини-чипу платформы фильтрует элементы', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Games (2)'));
+      await tester.tap(find.byTooltip('Games (2)'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('SNES'));
@@ -522,25 +559,26 @@ void main() {
     });
 
     testWidgets(
-        'показывает чипы платформ без выбора Games когда настройка включена',
-        (WidgetTester tester) async {
-      await tester
-          .pumpWidget(buildTestWidget(alwaysShowSubcategories: true));
-      await tester.pumpAndSettle();
+      'показывает чипы платформ без выбора Games когда настройка включена',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(alwaysShowSubcategories: true));
+        await tester.pumpAndSettle();
 
-      expect(find.text('SNES'), findsOneWidget);
-      expect(find.text('GBA'), findsOneWidget);
-    });
+        expect(find.text('SNES'), findsOneWidget);
+        expect(find.text('GBA'), findsOneWidget);
+      },
+    );
   });
 
   group('AllItemsScreen Visual Novel фильтр', () {
-    testWidgets('нажатие на Visual Novels фильтрует по типу',
-        (WidgetTester tester) async {
+    testWidgets('нажатие на Visual Novels фильтрует по типу', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
       // VN chip may be off-screen; scroll it into view.
-      final Finder vnChip = find.text('Visual Novels (1)');
+      final Finder vnChip = find.byTooltip('Visual Novels (1)');
       await tester.ensureVisible(vnChip);
       await tester.pumpAndSettle();
 
@@ -552,12 +590,13 @@ void main() {
       expect(find.textContaining('My Games'), findsNothing);
     });
 
-    testWidgets('при выборе Visual Novels не показывает чипсы платформ',
-        (WidgetTester tester) async {
+    testWidgets('при выборе Visual Novels не показывает чипсы платформ', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      final Finder vnChip = find.text('Visual Novels (1)');
+      final Finder vnChip = find.byTooltip('Visual Novels (1)');
       await tester.ensureVisible(vnChip);
       await tester.pumpAndSettle();
 
@@ -570,48 +609,53 @@ void main() {
 
     group('chevron counts and visibility under search', () {
       Widget buildWithHideEmpty() => ProviderScope(
-            overrides: <Override>[
-              collectionRepositoryProvider.overrideWithValue(mockRepo),
-              databaseServiceProvider.overrideWithValue(mockDb),
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              settingsNotifierProvider.overrideWith(
-                () => _FakeSettingsNotifier(hideEmptyMediaTypeChevrons: true),
-              ),
-              currentProfileProvider.overrideWithValue(Profile(
-                id: 'test',
-                name: 'Test',
-                color: '#FF0000',
-                createdAt: DateTime(2025),
-              )),
-            ],
-            child: const MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
-              supportedLocales: S.supportedLocales,
-              home: Scaffold(body: AllItemsScreen()),
+        overrides: <Override>[
+          collectionRepositoryProvider.overrideWithValue(mockRepo),
+          databaseServiceProvider.overrideWithValue(mockDb),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          settingsNotifierProvider.overrideWith(
+            () => _FakeSettingsNotifier(hideEmptyMediaTypeChevrons: true),
+          ),
+          currentProfileProvider.overrideWithValue(
+            Profile(
+              id: 'test',
+              name: 'Test',
+              color: '#FF0000',
+              createdAt: DateTime(2025),
             ),
-          );
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(body: AllItemsScreen()),
+        ),
+      );
 
       testWidgets(
-          'should keep chevrons with non-zero totals visible even when search '
-          'filters them out', (WidgetTester tester) async {
-        await tester.pumpWidget(buildWithHideEmpty());
-        await tester.pumpAndSettle();
+        'should keep chevrons with non-zero totals visible even when search '
+        'filters them out',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(buildWithHideEmpty());
+          await tester.pumpAndSettle();
 
-        // Sanity: with the flag on, only types present in data are listed.
-        expect(find.text('Games (2)'), findsOneWidget);
-        expect(find.text('Movies (1)'), findsOneWidget);
+          // Sanity: with the flag on, only types present in data are listed.
+          expect(find.byTooltip('Games (2)'), findsOneWidget);
+          expect(find.byTooltip('Movies (1)'), findsOneWidget);
 
-        final ProviderContainer container = ProviderScope.containerOf(
-          tester.element(find.byType(AllItemsScreen)),
-        );
-        container.read(homeSearchQueryProvider.notifier).state = 'zzz_no_match';
-        await tester.pumpAndSettle();
+          final ProviderContainer container = ProviderScope.containerOf(
+            tester.element(find.byType(AllItemsScreen)),
+          );
+          container.read(homeSearchQueryProvider.notifier).state =
+              'zzz_no_match';
+          await tester.pumpAndSettle();
 
-        // Counts collapse to 0 across the board, but the chevrons must stay
-        // mounted because the underlying totals are still non-zero.
-        expect(find.textContaining('Games'), findsOneWidget);
-        expect(find.textContaining('Movies'), findsOneWidget);
-      });
+          // Counts collapse to 0 across the board, but the chevrons must stay
+          // mounted because the underlying totals are still non-zero.
+          expect(_tile('Games'), findsOneWidget);
+          expect(_tile('Movies'), findsOneWidget);
+        },
+      );
     });
   });
 
@@ -637,33 +681,41 @@ void main() {
       WidgetTester tester,
       CollectionItem item,
     ) async {
-      when(() =>
-              mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')))
-          .thenAnswer((_) async => <CollectionItem>[item]);
-      await tester.pumpWidget(buildTestWidget(extraOverrides: <Override>[
-        episodeTrackerNotifierProvider
-            .overrideWith(() => _FakeEpisodeTrackerNotifier(trackedState)),
-      ]));
+      when(
+        () => mockRepo.getAllItemsWithData(mediaType: any(named: 'mediaType')),
+      ).thenAnswer((_) async => <CollectionItem>[item]);
+      await tester.pumpWidget(
+        buildTestWidget(
+          extraOverrides: <Override>[
+            episodeTrackerNotifierProvider.overrideWith(
+              () => _FakeEpisodeTrackerNotifier(trackedState),
+            ),
+          ],
+        ),
+      );
       await tester.pumpAndSettle();
     }
 
-    testWidgets('показывает счётчик просмотренных серий для сериала',
-        (WidgetTester tester) async {
+    testWidgets('показывает счётчик просмотренных серий для сериала', (
+      WidgetTester tester,
+    ) async {
       await pumpWithTvItem(tester, makeTvItem());
 
       expect(find.text('2/24'), findsOneWidget);
     });
 
-    testWidgets('не показывает счётчик для сериала без коллекции',
-        (WidgetTester tester) async {
+    testWidgets('не показывает счётчик для сериала без коллекции', (
+      WidgetTester tester,
+    ) async {
       await pumpWithTvItem(tester, makeTvItem(collectionId: null));
 
       expect(find.text('2/24'), findsNothing);
     });
   });
   group('AllItemsScreen collection headers', () {
-    testWidgets('should open the collection when its header is tapped',
-        (WidgetTester tester) async {
+    testWidgets('should open the collection when its header is tapped', (
+      WidgetTester tester,
+    ) async {
       when(() => mockRepo.getById(any())).thenAnswer(
         (Invocation inv) async => testCollections.firstWhere(
           (Collection c) => c.id == inv.positionalArguments[0] as int,
@@ -678,13 +730,15 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
       }
 
-      final CollectionScreen screen =
-          tester.widget<CollectionScreen>(find.byType(CollectionScreen));
+      final CollectionScreen screen = tester.widget<CollectionScreen>(
+        find.byType(CollectionScreen),
+      );
       expect(screen.collectionId, 10);
     });
 
-    testWidgets('should stay on the screen while a selection is active',
-        (WidgetTester tester) async {
+    testWidgets('should stay on the screen while a selection is active', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -723,8 +777,7 @@ class _FakeSettingsNotifier extends SettingsNotifier {
 
   @override
   SettingsState build() => SettingsState(
-        hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
-        alwaysShowSubcategories: alwaysShowSubcategories,
-      );
-
+    hideEmptyMediaTypeChevrons: hideEmptyMediaTypeChevrons,
+    alwaysShowSubcategories: alwaysShowSubcategories,
+  );
 }

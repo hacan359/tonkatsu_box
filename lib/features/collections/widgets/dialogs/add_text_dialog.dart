@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Pops a `Map<String, dynamic>` with `content` and `fontSize` keys,
 /// or `null` if the user cancelled.
 class AddTextDialog extends StatefulWidget {
-  const AddTextDialog({
-    this.initialContent,
-    this.initialFontSize,
-    super.key,
-  });
+  const AddTextDialog({this.initialContent, this.initialFontSize, super.key});
 
   /// Non-null switches the dialog to edit mode.
   final String? initialContent;
@@ -94,16 +91,15 @@ class _AddTextDialogState extends State<AddTextDialog> {
     final String content = _contentController.text.trim();
     if (content.isEmpty) return;
 
-    Navigator.of(context).pop(<String, dynamic>{
-      'content': content,
-      'fontSize': _selectedFontSize,
-    });
+    Navigator.of(
+      context,
+    ).pop(<String, dynamic>{'content': content, 'fontSize': _selectedFontSize});
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(_isEditing ? l.editTextTitle : l.canvasAddText),
       content: SizedBox(
@@ -136,8 +132,9 @@ class _AddTextDialogState extends State<AddTextDialog> {
                     .map(
                       (_FontSizeOption option) => DropdownMenuItem<double>(
                         value: option.size,
-                        child:
-                            Text('${option.localizedLabel(l)} (${option.size.toInt()}px)'),
+                        child: Text(
+                          '${option.localizedLabel(l)} (${option.size.toInt()}px)',
+                        ),
                       ),
                     )
                     .toList(),

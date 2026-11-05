@@ -8,6 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../filters/mangadex_tag_filter.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Searchable, with a manual catalog refresh. Values are tag UUIDs, matching
 /// the multi-select filter contract (MangaDex `includedTags[]`).
@@ -22,18 +23,12 @@ Future<Object?> showMangaDexTagPicker(
     final String single => <String>[single],
     _ => const <String>[],
   };
-  return showModalBottomSheet<Object?>(
+  return showGlassSheet<Object?>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: AppColors.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (BuildContext ctx) => _MangaDexTagPicker(
-      initialSelection: initial,
-      l: l,
-    ),
+    builder: (BuildContext ctx) =>
+        _MangaDexTagPicker(initialSelection: initial, l: l),
   );
 }
 
@@ -60,7 +55,9 @@ class _MangaDexTagPickerState extends ConsumerState<_MangaDexTagPicker> {
 
   Future<void> _refresh() async {
     try {
-      await ref.read(mangaDexTagsRepositoryProvider).getTags(forceRefresh: true);
+      await ref
+          .read(mangaDexTagsRepositoryProvider)
+          .getTags(forceRefresh: true);
     } on Object {
       // Refresh failures fall back to the cached set.
     }
@@ -78,8 +75,9 @@ class _MangaDexTagPickerState extends ConsumerState<_MangaDexTagPicker> {
   @override
   Widget build(BuildContext context) {
     final S l = widget.l;
-    final AsyncValue<List<MangaDexTag>> tagsAsync =
-        ref.watch(mangaDexThemesProvider);
+    final AsyncValue<List<MangaDexTag>> tagsAsync = ref.watch(
+      mangaDexThemesProvider,
+    );
     final Size screen = MediaQuery.sizeOf(context);
     final double height = screen.height * 0.85;
 
@@ -123,16 +121,16 @@ class _MangaDexTagPickerState extends ConsumerState<_MangaDexTagPicker> {
             const Divider(height: 1),
             Expanded(
               child: tagsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (Object e, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Text(
                       e.toString(),
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.error),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 ),
@@ -150,8 +148,9 @@ class _MangaDexTagPickerState extends ConsumerState<_MangaDexTagPicker> {
                 children: <Widget>[
                   Text(
                     l.selectedCount(_selected.length),
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   if (_selected.isNotEmpty)
                     TextButton(
@@ -164,9 +163,7 @@ class _MangaDexTagPickerState extends ConsumerState<_MangaDexTagPicker> {
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(context).pop(
-                      _selected.isEmpty
-                          ? const <String>[]
-                          : _selected.toList(),
+                      _selected.isEmpty ? const <String>[] : _selected.toList(),
                     ),
                     child: Text(l.apply),
                   ),
@@ -185,8 +182,9 @@ class _MangaDexTagPickerState extends ConsumerState<_MangaDexTagPicker> {
       return Center(
         child: Text(
           l.tagPickerEmpty,
-          style: AppTypography.bodySmall
-              .copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
       );
     }

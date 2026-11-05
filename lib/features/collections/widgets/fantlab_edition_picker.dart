@@ -8,10 +8,12 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Cache of editions providers keyed by Fantlab work id.
-final Map<String, FutureProvider<List<FantlabEditionBlock>>>
-    _editionProviders = <String, FutureProvider<List<FantlabEditionBlock>>>{};
+final Map<String, FutureProvider<List<FantlabEditionBlock>>> _editionProviders =
+    <String, FutureProvider<List<FantlabEditionBlock>>>{};
 
 FutureProvider<List<FantlabEditionBlock>> _getEditionsProvider(String workId) {
   return _editionProviders.putIfAbsent(
@@ -29,7 +31,7 @@ Future<FantlabEdition?> showFantlabEditionPicker(
   required String workId,
   int? currentEditionId,
 }) {
-  return showModalBottomSheet<FantlabEdition>(
+  return showGlassSheet<FantlabEdition>(
     context: context,
     isScrollControlled: true,
     builder: (BuildContext ctx) => _FantlabEditionPickerSheet(
@@ -62,8 +64,9 @@ Book applyFantlabEdition(Book book, FantlabEdition edition) {
 /// (`/images/editions/big/24724`), so the picker can mark the current cover.
 int? editionIdFromCoverUrl(String? coverUrl) {
   if (coverUrl == null) return null;
-  final RegExpMatch? m =
-      RegExp(r'/images/editions/\w+/(\d+)').firstMatch(coverUrl);
+  final RegExpMatch? m = RegExp(
+    r'/images/editions/\w+/(\d+)',
+  ).firstMatch(coverUrl);
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
@@ -79,8 +82,9 @@ Future<Book> reapplyFantlabEdition(
     return fresh;
   }
 
-  final List<FantlabEditionBlock> blocks =
-      await api.getEditions(cached.nativeId);
+  final List<FantlabEditionBlock> blocks = await api.getEditions(
+    cached.nativeId,
+  );
   for (final FantlabEditionBlock block in blocks) {
     for (final FantlabEdition edition in block.editions) {
       if (edition.editionId == pickedId) {
@@ -125,8 +129,9 @@ class _FantlabEditionsSectionState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<List<FantlabEditionBlock>> async =
-        ref.watch(_getEditionsProvider(widget.workId));
+    final AsyncValue<List<FantlabEditionBlock>> async = ref.watch(
+      _getEditionsProvider(widget.workId),
+    );
 
     return async.maybeWhen(
       data: (List<FantlabEditionBlock> blocks) {
@@ -147,13 +152,13 @@ class _FantlabEditionsSectionState
                 ),
                 child: Row(
                   children: <Widget>[
-                    Icon(Icons.menu_book,
-                        color: AppColors.brand, size: 22),
+                    Icon(Icons.menu_book, color: AppColors.brand, size: 22),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       l.editionPickerTitle,
-                      style: AppTypography.cardTitle
-                          .copyWith(color: AppColors.textPrimary),
+                      style: AppTypography.cardTitle.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -177,8 +182,7 @@ class _FantlabEditionsSectionState
                       final FantlabEdition edition = editions[i];
                       return _EditionCard(
                         edition: edition,
-                        selected:
-                            edition.editionId == widget.selectedEditionId,
+                        selected: edition.editionId == widget.selectedEditionId,
                         onTap: () => widget.onSelected(edition),
                       );
                     },
@@ -206,8 +210,9 @@ class _FantlabEditionPickerSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    final AsyncValue<List<FantlabEditionBlock>> async =
-        ref.watch(_getEditionsProvider(workId));
+    final AsyncValue<List<FantlabEditionBlock>> async = ref.watch(
+      _getEditionsProvider(workId),
+    );
 
     return SafeArea(
       child: SizedBox(
@@ -226,8 +231,9 @@ class _FantlabEditionPickerSheet extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       l.editionPickerTitle,
-                      style: AppTypography.h3
-                          .copyWith(fontWeight: FontWeight.w600),
+                      style: AppTypography.h3.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -245,8 +251,7 @@ class _FantlabEditionPickerSheet extends ConsumerWidget {
                         blocks: blocks,
                         currentEditionId: currentEditionId,
                       ),
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => Center(child: Text(l.editionPickerEmpty)),
               ),
             ),
@@ -346,8 +351,11 @@ class _EditionCard extends StatelessWidget {
                         alignment: Alignment.topRight,
                         child: Padding(
                           padding: const EdgeInsets.all(4),
-                          child: Icon(Icons.check_circle,
-                              color: AppColors.brand, size: 22),
+                          child: Icon(
+                            Icons.check_circle,
+                            color: AppColors.brand,
+                            size: 22,
+                          ),
                         ),
                       ),
                   ],
@@ -380,11 +388,9 @@ class _EditionCard extends StatelessWidget {
   }
 
   Widget _placeholder() => ColoredBox(
-        color: AppColors.surfaceLight,
-        child: Center(
-          child: Icon(Icons.menu_book, color: AppColors.textTertiary),
-        ),
-      );
+    color: glassTileColor(),
+    child: Center(child: Icon(Icons.menu_book, color: AppColors.textTertiary)),
+  );
 
   String _caption() {
     final List<String> parts = <String>[

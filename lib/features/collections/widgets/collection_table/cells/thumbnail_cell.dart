@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/widgets/cached_image.dart';
 import '../../../../../shared/constants/collection_item_ui.dart';
+import '../../../../../shared/widgets/glass_panel.dart';
 
 class ThumbnailCell extends StatelessWidget {
   const ThumbnailCell({
@@ -43,7 +44,7 @@ class ThumbnailCell extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      color: AppColors.surfaceLight,
+      color: glassTileColor(),
       child: Icon(
         item.placeholderIcon,
         size: 18,

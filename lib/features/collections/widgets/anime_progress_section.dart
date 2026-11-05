@@ -9,6 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
 import 'item_marks_list_section.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Tracks watched episodes via `currentEpisode` only; `currentSeason` is
 /// unused because AniList anime have no season split.
@@ -47,9 +48,7 @@ class AnimeProgressSection extends ConsumerWidget {
             const SizedBox(width: AppSpacing.sm),
             Text(
               l.animeProgress,
-              style: AppTypography.h3.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -74,9 +73,7 @@ class AnimeProgressSection extends ConsumerWidget {
               const SizedBox(width: 4),
               Text(
                 l.animeNextEpisode(anime!.nextAiringEpisode!),
-                style: AppTypography.caption.copyWith(
-                  color: accentColor,
-                ),
+                style: AppTypography.caption.copyWith(color: accentColor),
               ),
             ],
           ),
@@ -133,12 +130,13 @@ class AnimeProgressSection extends ConsumerWidget {
     int? total,
   ) async {
     final TextEditingController controller = TextEditingController(
-        text: currentEpisode > 0 ? currentEpisode.toString() : '');
+      text: currentEpisode > 0 ? currentEpisode.toString() : '',
+    );
     final S l = S.of(context);
 
     final String? result = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(l.animeEpisodes),
         content: TextField(
           controller: controller,
@@ -164,8 +162,7 @@ class AnimeProgressSection extends ConsumerWidget {
     if (result != null) {
       final int? value = int.tryParse(result);
       if (value != null && value >= 0) {
-        final int clamped =
-            total != null && value > total ? total : value;
+        final int clamped = total != null && value > total ? total : value;
         ref
             .read(collectionItemsNotifierProvider(collectionId).notifier)
             .updateProgress(itemId, currentEpisode: clamped);

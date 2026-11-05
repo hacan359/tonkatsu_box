@@ -109,7 +109,7 @@ Current features: `collections` (main module — collection screens, ItemDetail,
 ### `shared/`
 
 - **`widgets/`** — shared widgets: `ScreenAppBar`, `CachedImage`, `MediaPosterCard`, `SourceBadge`, `StarRatingBar`, etc.
-- **`theme/`** — `AppColors`, `AppTypography`, `AppSpacing`, `AppTheme` (Material 3 dark).
+- **`theme/`** — `AppColors`, `AppTypography`, `AppSpacing`, `AppTheme`; a theme is a palette (`AppPalette`, colours) plus a skin (`AppSkin`, surfaces), see [THEMES.md](THEMES.md).
 - **`navigation/`** — `NavigationShell` (Rail on desktop, BottomBar on mobile).
 - **`gamepad/`** — gamepad events, `InputMode`, `GamepadListener`. See [GAMEPAD.md](GAMEPAD.md).
 

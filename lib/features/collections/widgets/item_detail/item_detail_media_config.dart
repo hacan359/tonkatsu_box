@@ -47,7 +47,10 @@ class ItemDetailMediaConfig {
     this.audioItem,
   });
 
-  factory ItemDetailMediaConfig.from(CollectionItem item, BuildContext context) {
+  factory ItemDetailMediaConfig.from(
+    CollectionItem item,
+    BuildContext context,
+  ) {
     final String? externalUrl = switch (item.mediaType) {
       MediaType.game => item.game?.externalUrl,
       MediaType.movie || MediaType.animation =>
@@ -82,10 +85,12 @@ class ItemDetailMediaConfig {
           item.mediaType == MediaType.anime && !item.usesEpisodeTracker,
       hasBookProgress: item.mediaType == MediaType.book,
       hasAudioTracker: item.mediaType == MediaType.audio,
-      hasCustomProgress: item.mediaType == MediaType.custom &&
+      hasCustomProgress:
+          item.mediaType == MediaType.custom &&
           (item.customUnitTotal != null || item.customUnitGroupTotal != null),
       externalUrl: externalUrl,
-      backdropUrl: item.game?.artworkUrl ??
+      backdropUrl:
+          item.game?.artworkUrl ??
           item.movie?.backdropUrl ??
           item.tvShow?.backdropUrl ??
           item.manga?.bannerUrl ??
@@ -129,9 +134,10 @@ String _typeLabel(CollectionItem item, BuildContext context) {
     MediaType.game => item.platformName,
     MediaType.movie => l.mediaTypeMovie,
     MediaType.tvShow => l.mediaTypeTvShow,
-    MediaType.animation => item.platformId == AnimationSource.tvShow
-        ? l.animatedSeries
-        : l.animatedMovie,
+    MediaType.animation =>
+      item.platformId == AnimationSource.tvShow
+          ? l.animatedSeries
+          : l.animatedMovie,
     MediaType.visualNovel => l.mediaTypeVisualNovel,
     MediaType.manga => l.mediaTypeManga,
     MediaType.anime => l.mediaTypeAnime,
@@ -155,18 +161,23 @@ List<MediaDetailChip> _creatorChips(CollectionItem item, BuildContext context) {
   final S l = S.of(context);
   final List<(IconData, String, List<String>?)> roles =
       <(IconData, String, List<String>?)>[
-    (Icons.movie_creation_outlined, l.creatorDirector, item.movie?.directors),
-    (Icons.person_outline, l.creatorCreator, item.tvShow?.creators),
-    (Icons.business, l.creatorStudio, item.movie?.studios),
-    (Icons.business, l.creatorStudio, item.tvShow?.studios),
-    (Icons.code, l.creatorDeveloper, item.game?.developers),
-    (Icons.business, l.creatorPublisher, item.game?.publishers),
-    (Icons.person_outline, l.creatorAuthor, item.customMedia?.authors),
-  ];
+        (
+          Icons.movie_creation_outlined,
+          l.creatorDirector,
+          item.movie?.directors,
+        ),
+        (Icons.person_outline, l.creatorCreator, item.tvShow?.creators),
+        (Icons.business, l.creatorStudio, item.movie?.studios),
+        (Icons.business, l.creatorStudio, item.tvShow?.studios),
+        (Icons.code, l.creatorDeveloper, item.game?.developers),
+        (Icons.business, l.creatorPublisher, item.game?.publishers),
+        (Icons.person_outline, l.creatorAuthor, item.customMedia?.authors),
+      ];
   return <MediaDetailChip>[
     for (final (IconData icon, String role, List<String>? names) in roles)
-      for (final String name in (names ?? const <String>[])
-          .take(_maxCreatorChips))
+      for (final String name in (names ?? const <String>[]).take(
+        _maxCreatorChips,
+      ))
         MediaDetailChip(
           icon: icon,
           text: name,
@@ -181,35 +192,45 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
   final S l = S.of(context);
   final List<MediaDetailChip> chips = <MediaDetailChip>[];
   if (item.releaseYear != null) {
-    chips.add(MediaDetailChip(
-      icon: Icons.calendar_today_outlined,
-      text: item.releaseYear.toString(),
-    ));
+    chips.add(
+      MediaDetailChip(
+        icon: Icons.calendar_today_outlined,
+        text: item.releaseYear.toString(),
+      ),
+    );
   }
   if (item.runtime != null) {
-    chips.add(MediaDetailChip(
-      icon: Icons.schedule_outlined,
-      text: formatMinutes(item.runtime!, l),
-    ));
+    chips.add(
+      MediaDetailChip(
+        icon: Icons.schedule_outlined,
+        text: formatMinutes(item.runtime!, l),
+      ),
+    );
   }
   if (item.totalSeasons != null) {
-    chips.add(MediaDetailChip(
-      icon: Icons.video_library_outlined,
-      text: l.totalSeasons(item.totalSeasons!),
-    ));
+    chips.add(
+      MediaDetailChip(
+        icon: Icons.video_library_outlined,
+        text: l.totalSeasons(item.totalSeasons!),
+      ),
+    );
   }
   if (item.totalEpisodes != null) {
-    chips.add(MediaDetailChip(
-      icon: Icons.playlist_play,
-      text: l.totalEpisodes(item.totalEpisodes!),
-    ));
+    chips.add(
+      MediaDetailChip(
+        icon: Icons.playlist_play,
+        text: l.totalEpisodes(item.totalEpisodes!),
+      ),
+    );
   }
   if (item.formattedRating != null) {
-    chips.add(MediaDetailChip(
-      icon: Icons.star,
-      text: '${item.formattedRating}/10',
-      iconColor: AppColors.ratingStar,
-    ));
+    chips.add(
+      MediaDetailChip(
+        icon: Icons.star,
+        text: '${item.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
+      ),
+    );
   }
   chips.addAll(_creatorChips(item, context));
   if (item.mediaType == MediaType.custom && item.customMedia != null) {
@@ -218,49 +239,57 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
       chips.add(MediaDetailChip(icon: Icons.translate, text: c.altTitle!));
     }
     if (c.platformName != null && c.platformName!.isNotEmpty) {
-      chips.add(MediaDetailChip(
-        icon: Icons.sports_esports,
-        text: c.platformName!,
-        onTap: _metaSearchTap(context, c.platformName!),
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.sports_esports,
+          text: c.platformName!,
+          onTap: _metaSearchTap(context, c.platformName!),
+        ),
+      );
     }
   }
   if (item.mediaType == MediaType.audio && item.audioItem != null) {
     final AudioItem a = item.audioItem!;
     if (a.isPodcast) {
       if (a.trackCount != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.podcasts,
-          text: l.podcastEpisodesCount(a.trackCount!),
-        ));
+        chips.add(
+          MediaDetailChip(
+            icon: Icons.podcasts,
+            text: l.podcastEpisodesCount(a.trackCount!),
+          ),
+        );
       }
       if (a.language != null) {
         chips.add(MediaDetailChip(icon: Icons.language, text: a.language!));
       }
     } else {
       if (a.primaryType != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.category_outlined,
-          text: <String>[a.primaryType!, ...a.secondaryTypes].join(' · '),
-        ));
+        chips.add(
+          MediaDetailChip(
+            icon: Icons.category_outlined,
+            text: <String>[a.primaryType!, ...a.secondaryTypes].join(' · '),
+          ),
+        );
       }
       if (a.trackCount != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.queue_music,
-          text: l.musicTracksCount(a.trackCount!),
-        ));
+        chips.add(
+          MediaDetailChip(
+            icon: Icons.queue_music,
+            text: l.musicTracksCount(a.trackCount!),
+          ),
+        );
       }
       if (a.label != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.business,
-          text: a.label!,
-          onTap: _metaSearchTap(context, a.label!),
-        ));
+        chips.add(
+          MediaDetailChip(
+            icon: Icons.business,
+            text: a.label!,
+            onTap: _metaSearchTap(context, a.label!),
+          ),
+        );
       }
       if (a.format != null) {
-        chips.add(
-          MediaDetailChip(icon: Icons.album_outlined, text: a.format!),
-        );
+        chips.add(MediaDetailChip(icon: Icons.album_outlined, text: a.format!));
       }
     }
   }
@@ -268,45 +297,48 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
     final Manga m = item.manga!;
     chips.add(MediaDetailChip(icon: Icons.menu_book, text: m.progressString));
     if (m.formatLabel != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: m.formatLabel!,
-      ));
+      chips.add(
+        MediaDetailChip(icon: Icons.category_outlined, text: m.formatLabel!),
+      );
     }
     for (final String author in m.authors ?? const <String>[]) {
-      chips.add(MediaDetailChip(
-        icon: Icons.person_outline,
-        text: author,
-        onTap: _metaSearchTap(context, author),
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.person_outline,
+          text: author,
+          onTap: _metaSearchTap(context, author),
+        ),
+      );
     }
   }
   if (item.mediaType == MediaType.anime && item.anime != null) {
     final Anime a = item.anime!;
     if (a.formatLabel != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: a.formatLabel!,
-      ));
+      chips.add(
+        MediaDetailChip(icon: Icons.category_outlined, text: a.formatLabel!),
+      );
     }
-    chips.add(MediaDetailChip(
-      icon: Icons.playlist_play,
-      text: a.episodesString,
-    ));
+    chips.add(
+      MediaDetailChip(icon: Icons.playlist_play, text: a.episodesString),
+    );
     if (a.durationString != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.schedule_outlined,
-        text: a.durationString!,
-      ));
+      chips.add(
+        MediaDetailChip(icon: Icons.schedule_outlined, text: a.durationString!),
+      );
     }
     for (final String studio in a.studios ?? const <String>[]) {
-      chips.add(MediaDetailChip(
-        icon: Icons.business,
-        text: studio,
-        onTap: () => ProviderScope.containerOf(context, listen: false)
-            .read(searchTabRequestProvider.notifier)
-            .state = studioSearchRequest(studio),
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.business,
+          text: studio,
+          onTap: () =>
+              ProviderScope.containerOf(context, listen: false)
+                  .read(searchTabRequestProvider.notifier)
+                  .state = studioSearchRequest(
+                studio,
+              ),
+        ),
+      );
     }
     if (a.seasonLabel != null) {
       chips.add(MediaDetailChip(icon: Icons.date_range, text: a.seasonLabel!));
@@ -316,18 +348,19 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
     }
   }
   if (item.mediaStatus != null) {
-    chips.add(MediaDetailChip(
-      icon: Icons.info_outline,
-      text: item.mediaStatus!,
-    ));
+    chips.add(
+      MediaDetailChip(icon: Icons.info_outline, text: item.mediaStatus!),
+    );
   }
   if (item.mediaType != MediaType.manga) {
     for (final String genre in item.genres ?? const <String>[]) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: genre,
-        onTap: _metaSearchTap(context, genre),
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.category_outlined,
+          text: genre,
+          onTap: _metaSearchTap(context, genre),
+        ),
+      );
     }
   }
   const int maxDisplayedTags = 8;
@@ -337,11 +370,13 @@ List<MediaDetailChip> _buildChips(CollectionItem item, BuildContext context) {
     _ => const <String>[],
   };
   for (final String tag in animeMangaTags.take(maxDisplayedTags)) {
-    chips.add(MediaDetailChip(
-      icon: Icons.local_offer_outlined,
-      text: tag,
-      onTap: _metaSearchTap(context, tag),
-    ));
+    chips.add(
+      MediaDetailChip(
+        icon: Icons.local_offer_outlined,
+        text: tag,
+        onTap: _metaSearchTap(context, tag),
+      ),
+    );
   }
   return chips;
 }

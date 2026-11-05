@@ -17,7 +17,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 const int _maxEvents = 100;
 
@@ -189,14 +189,15 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Focus(
+    return FramePage(
+      title: l.settingsGamepadDebug,
+      child: Focus(
       autofocus: true,
       onKeyEvent: _handleKey,
       child: Stack(
         children: <Widget>[
         Column(
           children: <Widget>[
-            SubScreenTitleBar(title: l.settingsGamepadDebug),
             Expanded(
               child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -281,6 +282,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
           ],
         ),
         ],
+      ),
       ),
     );
   }

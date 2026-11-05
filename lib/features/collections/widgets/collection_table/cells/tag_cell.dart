@@ -4,14 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_typography.dart';
+import '../../../../../shared/widgets/glass_panel.dart';
 
 /// Chips of the item's tags; tapping the cell opens the multi-select picker.
 class TagCell extends StatelessWidget {
-  const TagCell({
-    this.tags = const <Tag>[],
-    this.onEditTags,
-    super.key,
-  });
+  const TagCell({this.tags = const <Tag>[], this.onEditTags, super.key});
 
   /// The item's tags in display order.
   final List<Tag> tags;
@@ -44,22 +41,21 @@ class TagCell extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onEditTags,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: content,
-      ),
+      child: MouseRegion(cursor: SystemMouseCursors.click, child: content),
     );
   }
 
   Widget _buildTagChip(Tag t) {
-    final Color chipColor =
-        t.color != null ? Color(t.color!) : AppColors.textSecondary;
-    final Color labelColor =
-        t.textColor != null ? Color(t.textColor!) : chipColor;
+    final Color chipColor = t.color != null
+        ? Color(t.color!)
+        : AppColors.textSecondary;
+    final Color labelColor = t.textColor != null
+        ? Color(t.textColor!)
+        : chipColor;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: chipColor.withAlpha(40),
+        color: glassChipColor(tint: chipColor, tintAlpha: 80),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(color: chipColor.withAlpha(110)),
       ),
@@ -80,7 +76,7 @@ class TagCell extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: glassChipColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(color: AppColors.textTertiary.withAlpha(110)),
       ),

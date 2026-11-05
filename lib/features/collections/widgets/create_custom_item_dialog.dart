@@ -135,22 +135,24 @@ class _CreateCustomItemDialogState
     _selectedType = e?.displayType ?? MediaType.custom;
     _titleController = TextEditingController(text: e?.title ?? '');
     _altTitleController = TextEditingController(text: e?.altTitle ?? '');
-    _descriptionController =
-        TextEditingController(text: e?.description ?? '');
+    _descriptionController = TextEditingController(text: e?.description ?? '');
     _coverUrlController = TextEditingController(text: e?.coverUrl ?? '');
     _genresController = TextEditingController(text: e?.genres ?? '');
-    _authorsController =
-        TextEditingController(text: e?.authors?.join(', ') ?? '');
+    _authorsController = TextEditingController(
+      text: e?.authors?.join(', ') ?? '',
+    );
     _platformController = TextEditingController(text: e?.platformName ?? '');
-    _unitTotalController =
-        TextEditingController(text: e?.unitTotal?.toString() ?? '');
-    _unitGroupTotalController =
-        TextEditingController(text: e?.unitGroupTotal?.toString() ?? '');
-    _externalUrlController =
-        TextEditingController(text: e?.externalUrl ?? '');
+    _unitTotalController = TextEditingController(
+      text: e?.unitTotal?.toString() ?? '',
+    );
+    _unitGroupTotalController = TextEditingController(
+      text: e?.unitGroupTotal?.toString() ?? '',
+    );
+    _externalUrlController = TextEditingController(text: e?.externalUrl ?? '');
     _commentController = TextEditingController();
-    _tagsController =
-        TextEditingController(text: widget.prefillTags.join(', '));
+    _tagsController = TextEditingController(
+      text: widget.prefillTags.join(', '),
+    );
     _selectedYear = e?.year;
     _selectedPlatformId = e?.platformId;
     _selectedFormat = e?.format;
@@ -159,9 +161,9 @@ class _CreateCustomItemDialogState
   }
 
   String get _cachedCoverId => customCoverImageId(
-        id: widget.existing!.id,
-        coverUrl: widget.existing!.coverUrl,
-      );
+    id: widget.existing!.id,
+    coverUrl: widget.existing!.coverUrl,
+  );
 
   Future<void> _loadCachedCover() async {
     if (kIsWebBuild) {
@@ -198,16 +200,16 @@ class _CreateCustomItemDialogState
     _platforms = results[0] as List<model.Platform>;
     final List<Map<String, dynamic>> igdbRows =
         results[1] as List<Map<String, dynamic>>;
-    final List<String> igdbGenres =
-        igdbRows.map((Map<String, dynamic> r) => r['name'] as String).toList();
+    final List<String> igdbGenres = igdbRows
+        .map((Map<String, dynamic> r) => r['name'] as String)
+        .toList();
     final Map<String, String> movieGenres = results[2] as Map<String, String>;
     final Map<String, String> tvGenres = results[3] as Map<String, String>;
     _allGenres = <String>{
       ...igdbGenres,
       ...movieGenres.values,
       ...tvGenres.values,
-    }.toList()
-      ..sort();
+    }.toList()..sort();
     if (mounted) setState(() => _refsLoaded = true);
   }
 
@@ -235,46 +237,50 @@ class _CreateCustomItemDialogState
       return;
     }
 
-    Navigator.of(context).pop(CustomItemData(
-      title: title,
-      mediaType: _selectedType,
-      altTitle: _altTitleController.text.trim().isNotEmpty
-          ? _altTitleController.text.trim()
-          : null,
-      description: _descriptionController.text.trim().isNotEmpty
-          ? _descriptionController.text.trim()
-          : null,
-      year: _selectedYear,
-      coverUrl: _coverUrlController.text.trim().isNotEmpty
-          ? _coverUrlController.text.trim()
-          : null,
-      coverBytes: _coverBytes,
-      genres: _genresController.text.trim().isNotEmpty
-          ? _genresController.text.trim()
-          : null,
-      authors: distinctNames(_authorsController.text.split(',')),
-      platform: _selectedType == MediaType.game &&
-              _platformController.text.trim().isNotEmpty
-          ? _platformController.text.trim()
-          : null,
-      platformId:
-          _selectedType == MediaType.game ? _selectedPlatformId : null,
-      format: _selectedType == MediaType.manga ||
-              _selectedType == MediaType.anime
-          ? _selectedFormat
-          : null,
-      unitTotal: _parsePositiveInt(_unitTotalController.text),
-      unitGroupTotal: CustomProgressUnits.hasGroupAxis(_selectedType)
-          ? _parsePositiveInt(_unitGroupTotalController.text)
-          : null,
-      externalUrl: _externalUrlController.text.trim().isNotEmpty
-          ? _externalUrlController.text.trim()
-          : null,
-      comment: _commentController.text.trim().isNotEmpty
-          ? _commentController.text.trim()
-          : null,
-      tags: Tag.dedupeNames(_tagsController.text.split(',')),
-    ));
+    Navigator.of(context).pop(
+      CustomItemData(
+        title: title,
+        mediaType: _selectedType,
+        altTitle: _altTitleController.text.trim().isNotEmpty
+            ? _altTitleController.text.trim()
+            : null,
+        description: _descriptionController.text.trim().isNotEmpty
+            ? _descriptionController.text.trim()
+            : null,
+        year: _selectedYear,
+        coverUrl: _coverUrlController.text.trim().isNotEmpty
+            ? _coverUrlController.text.trim()
+            : null,
+        coverBytes: _coverBytes,
+        genres: _genresController.text.trim().isNotEmpty
+            ? _genresController.text.trim()
+            : null,
+        authors: distinctNames(_authorsController.text.split(',')),
+        platform:
+            _selectedType == MediaType.game &&
+                _platformController.text.trim().isNotEmpty
+            ? _platformController.text.trim()
+            : null,
+        platformId: _selectedType == MediaType.game
+            ? _selectedPlatformId
+            : null,
+        format:
+            _selectedType == MediaType.manga || _selectedType == MediaType.anime
+            ? _selectedFormat
+            : null,
+        unitTotal: _parsePositiveInt(_unitTotalController.text),
+        unitGroupTotal: CustomProgressUnits.hasGroupAxis(_selectedType)
+            ? _parsePositiveInt(_unitGroupTotalController.text)
+            : null,
+        externalUrl: _externalUrlController.text.trim().isNotEmpty
+            ? _externalUrlController.text.trim()
+            : null,
+        comment: _commentController.text.trim().isNotEmpty
+            ? _commentController.text.trim()
+            : null,
+        tags: Tag.dedupeNames(_tagsController.text.split(',')),
+      ),
+    );
   }
 
   /// Prefills the form from a JSON/CSV file via the bulk-import parser;
@@ -415,10 +421,10 @@ class _CreateCustomItemDialogState
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
+    // No colours of its own: inside the frame the panel is the backing and
+    // the app bar is transparent through the theme.
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         title: Text(
@@ -439,9 +445,7 @@ class _CreateCustomItemDialogState
                 foregroundColor: AppColors.brand,
                 textStyle: const TextStyle(fontWeight: FontWeight.w600),
               ),
-              child: Text(
-                _isEditing ? l.save : l.create,
-              ),
+              child: Text(_isEditing ? l.save : l.create),
             ),
           ),
         ],
@@ -570,7 +574,8 @@ class _CreateCustomItemDialogState
   Future<void> _pickCover() async {
     final String title = _titleController.text.trim();
     // A card posing as a game has no IGDB id, so only the name search fits.
-    final bool offerSteamGridDb = _selectedType == MediaType.game &&
+    final bool offerSteamGridDb =
+        _selectedType == MediaType.game &&
         title.isNotEmpty &&
         ref.read(settingsNotifierProvider).hasSteamGridDbKey;
     final CoverPickResult? result = await pickCustomCoverImage(
@@ -582,8 +587,10 @@ class _CreateCustomItemDialogState
             icon: Icons.grid_view,
             label: S.of(context).steamGridDbPanelTitle,
             pick: (BuildContext ctx) async {
-              final String? url =
-                  await pickSteamGridDbCover(ctx, gameName: title);
+              final String? url = await pickSteamGridDbCover(
+                ctx,
+                gameName: title,
+              );
               return url == null ? null : CoverPickResult.url(url);
             },
           ),
@@ -633,8 +640,9 @@ class _CreateCustomItemDialogState
 
   Widget _buildPlatformChip(S l) {
     final bool hasValue = _platformController.text.isNotEmpty;
-    final VoidCallback? onTap =
-        _refsLoaded && _platforms.isNotEmpty ? _pickPlatform : null;
+    final VoidCallback? onTap = _refsLoaded && _platforms.isNotEmpty
+        ? _pickPlatform
+        : null;
     return ActionChip(
       avatar: const Icon(Icons.sports_esports, size: 14),
       label: Text(hasValue ? _platformController.text : l.platform),
@@ -649,9 +657,7 @@ class _CreateCustomItemDialogState
     final String? result = await SearchableListDialog.show(
       context,
       title: S.of(context).platform,
-      items: _platforms
-          .map((model.Platform p) => p.displayName)
-          .toList(),
+      items: _platforms.map((model.Platform p) => p.displayName).toList(),
       allowCustom: false,
       currentValue: _platformController.text,
     );
@@ -843,9 +849,7 @@ class _CreateCustomItemDialogState
             });
           },
           selectedColor: typeColor.withValues(alpha: 0.3),
-          side: isSelected
-              ? BorderSide(color: typeColor, width: 1.5)
-              : null,
+          side: isSelected ? BorderSide(color: typeColor, width: 1.5) : null,
           labelStyle: TextStyle(
             color: isSelected ? typeColor : null,
             fontWeight: isSelected ? FontWeight.w600 : null,
@@ -869,8 +873,7 @@ class _CreateCustomItemDialogState
   /// with a sub-division (series → seasons, manga → volumes).
   Widget _buildCountsSection(S l) {
     final bool showGroup = CustomProgressUnits.hasGroupAxis(_selectedType);
-    final String? groupLabel =
-        CustomProgressUnits.groupLabel(_selectedType, l);
+    final String? groupLabel = CustomProgressUnits.groupLabel(_selectedType, l);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
