@@ -4777,6 +4777,21 @@ class SPt extends S {
   String get settingsIntegrations => 'Integrações';
 
   @override
+  String get settingsTabProfile => 'Perfil';
+
+  @override
+  String get settingsTabData => 'Dados';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Tema e idioma';
+
+  @override
+  String get settingsAppearanceLibrary => 'Biblioteca';
+
+  @override
+  String get settingsAppearanceScale => 'Escala';
+
+  @override
   String get settingsKodiSubtitle =>
       'Sincronização de visualizações do reprodutor Kodi';
 

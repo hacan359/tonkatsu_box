@@ -19,6 +19,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/widgets/glass_tab_bar.dart';
 import '../../../shared/widgets/whats_new_dialog.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -91,8 +92,13 @@ const Color _kDiscordColor = Color(
 const Color _kAboutColor = Color(0xFF8E8E93);
 const Color _kDebugColor = Color(0xFFAB47BC);
 
-/// One grouped-list layout for every platform; from 800px up the content is
-/// centred at maxWidth 600.
+/// Content width on wide screens; the tab bar shares it.
+const double _wideContentWidth = 720;
+
+enum _SettingsTab { profile, data, appearance, integrations, about }
+
+/// One grouped list on phones; from 800px up the groups are split across tabs
+/// so the page fits without scrolling.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -102,6 +108,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _appVersion = '';
+  _SettingsTab _tab = _SettingsTab.profile;
 
   @override
   void initState() {
@@ -123,29 +130,104 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= _desktopBreakpoint;
     final String searchQuery = ref.watch(settingsSearchQueryProvider);
+    final S l = S.of(context);
 
-    List<Widget> sections = _buildSections();
-    if (searchQuery.isNotEmpty) {
-      sections = _filterSections(sections, searchQuery.toLowerCase());
+    final Map<_SettingsTab, List<Widget>> tabs = _buildTabs(split: isWide);
+
+    // A search spans every tab: the query, not the tab, picks what shows.
+    final bool searching = searchQuery.isNotEmpty;
+    List<Widget> groups = searching || !isWide
+        ? tabs.values.expand((List<Widget> g) => g).toList()
+        : tabs[_tab] ?? const <Widget>[];
+    if (searching) {
+      groups = _filterSections(groups, searchQuery.toLowerCase());
     }
+
+    final Widget list = ListView(
+      padding: EdgeInsets.symmetric(
+        horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      children: _withGaps(groups),
+    );
 
     return Material(
       color: Colors.transparent,
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
-          child: ListView(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            children: sections,
+          constraints: BoxConstraints(
+            maxWidth: isWide ? _wideContentWidth : double.infinity,
           ),
+          child: isWide && !searching
+              ? Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.sm,
+                        AppSpacing.lg,
+                        AppSpacing.xs,
+                      ),
+                      child: GlassTabBar<_SettingsTab>(
+                        options: <GlassTabOption<_SettingsTab>>[
+                          for (final _SettingsTab tab in tabs.keys)
+                            _tabOption(l, tab),
+                        ],
+                        selected: _tab,
+                        onChanged: (_SettingsTab tab) =>
+                            setState(() => _tab = tab),
+                      ),
+                    ),
+                    Expanded(child: list),
+                  ],
+                )
+              : list,
         ),
       ),
     );
   }
+
+  static GlassTabOption<_SettingsTab> _tabOption(S l, _SettingsTab tab) =>
+      switch (tab) {
+        _SettingsTab.profile => GlassTabOption<_SettingsTab>(
+          value: tab,
+          label: l.settingsTabProfile,
+          icon: Icons.person_outline,
+          selectedIcon: Icons.person,
+        ),
+        _SettingsTab.data => GlassTabOption<_SettingsTab>(
+          value: tab,
+          label: l.settingsTabData,
+          icon: Icons.cloud_outlined,
+          selectedIcon: Icons.cloud,
+        ),
+        _SettingsTab.appearance => GlassTabOption<_SettingsTab>(
+          value: tab,
+          label: l.settingsAppearance,
+          icon: Icons.palette_outlined,
+          selectedIcon: Icons.palette,
+        ),
+        _SettingsTab.integrations => GlassTabOption<_SettingsTab>(
+          value: tab,
+          label: l.settingsIntegrations,
+          icon: Icons.extension_outlined,
+          selectedIcon: Icons.extension,
+        ),
+        _SettingsTab.about => GlassTabOption<_SettingsTab>(
+          value: tab,
+          label: l.settingsAbout,
+          icon: Icons.info_outline,
+          selectedIcon: Icons.info,
+        ),
+      };
+
+  static List<Widget> _withGaps(List<Widget> groups) => <Widget>[
+    for (final Widget group in groups) ...<Widget>[
+      group,
+      const SizedBox(height: AppSpacing.md),
+    ],
+  ];
 
   /// Keeps only [SettingsGroup]s whose title or any child [SettingsTile]
   /// matches the query.
@@ -174,7 +256,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return result;
   }
 
-  List<Widget> _buildSections() {
+  /// Groups per tab, in display order. [split] breaks Appearance into its
+  /// three sub-groups — on phones it stays one list.
+  Map<_SettingsTab, List<Widget>> _buildTabs({required bool split}) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final SettingsNotifier notifier = ref.read(
       settingsNotifierProvider.notifier,
@@ -182,608 +266,627 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final S l = S.of(context);
     final Profile currentProfile = ref.watch(currentProfileProvider);
 
-    const Widget gap = SizedBox(height: AppSpacing.md);
-
-    return <Widget>[
-      SettingsGroup(
-        title: l.profiles,
-        titleIcon: Icons.person_outline,
-        children: <Widget>[
-          // The server owns one database, so a profile switch in the browser
-          // would rename the label and change nothing else.
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingIcon: Icons.switch_account,
-              leadingColor: _kProfileColor,
-              title: l.currentProfile(currentProfile.name),
-              value: '',
-              onTap: () => _pushScreen(const ProfilesScreen()),
-            ),
-          Builder(
-            builder: (BuildContext ctx) {
-              final bool compact = isCompactScreen(ctx);
-              final double bubble = compact ? 24 : 28;
-              final double iconSize = compact ? 14 : 17;
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      width: bubble,
-                      height: bubble,
-                      decoration: BoxDecoration(
-                        color: _kProfileColor,
-                        borderRadius: BorderRadius.circular(bubble * 0.25),
-                      ),
-                      child: Icon(
-                        Icons.drive_file_rename_outline,
-                        size: iconSize,
-                        color: AppColors.onOverlay,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: InlineTextField(
-                        label: l.settingsAuthorName,
-                        value: settings.authorName,
-                        placeholder: l.defaultAuthor,
-                        compact: true,
-                        onChanged: (String value) {
-                          ref
-                              .read(settingsNotifierProvider.notifier)
-                              .setDefaultAuthor(value);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      gap,
-
-      // Data group sits above Appearance per user feedback.
-      SettingsGroup(
-        title: l.settingsBackup,
-        subtitle: l.settingsBackupSubtitle,
-        titleIcon: Icons.cloud_outlined,
-        children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.cloud_upload_outlined,
-            leadingColor: _kBackupColor,
-            title: l.settingsBackupAll,
-            subtitle: l.settingsBackupAllSubtitle,
-            onTap: () => _handleBackup(context, ref, l),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.cloud_download_outlined,
-            leadingColor: _kBackupColor,
-            title: l.settingsRestoreBackup,
-            subtitle: l.settingsRestoreBackupSubtitle,
-            onTap: () => _handleRestore(context, ref, l),
-          ),
-        ],
-      ),
-      gap,
-      SettingsGroup(
-        title: l.settingsImport,
-        subtitle: l.settingsImportSubtitle,
-        titleIcon: Icons.download_outlined,
-        children: <Widget>[
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconGithub,
-            leadingAssetColored: true,
-            title: l.settingsBrowseCollections,
-            subtitle: l.settingsBrowseCollectionsSubtitle,
-            onTap: () => _pushScreen(const BrowseCollectionsScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconTraktColor,
-            leadingAssetColored: true,
-            title: l.traktTitle,
-            subtitle: l.settingsTraktImportSubtitle,
-            onTap: () => _pushScreen(const TraktImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconSimklColor,
-            leadingAssetColored: true,
-            title: l.simklImportTitle,
-            subtitle: l.settingsSimklImportSubtitle,
-            onTap: () => _pushScreen(const SimklImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconKinoriumColor,
-            leadingAssetColored: true,
-            title: l.settingsKinoriumImport,
-            subtitle: l.settingsKinoriumImportSubtitle,
-            onTap: () => _pushScreen(const KinoriumImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconSteamColor,
-            leadingAssetColored: true,
-            title: l.settingsSteamImport,
-            subtitle: l.settingsSteamImportSubtitle,
-            onTap: () => _pushScreen(const SteamImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconIgdbColor,
-            leadingAssetColored: true,
-            title: l.settingsIgdbImport,
-            subtitle: l.settingsIgdbImportSubtitle,
-            onTap: () => _pushScreen(const IgdbListImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconRaColor,
-            leadingAssetColored: true,
-            title: l.settingsRaImport,
-            subtitle: l.settingsRaImportSubtitle,
-            onTap: () => _pushScreen(const RaImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconMalColor,
-            leadingAssetColored: true,
-            title: l.settingsMalImport,
-            subtitle: l.settingsMalImportSubtitle,
-            onTap: () => _pushScreen(const MalImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconAnilistColor,
-            leadingAssetColored: true,
-            title: l.settingsAniListImport,
-            subtitle: l.settingsAniListImportSubtitle,
-            onTap: () => _pushScreen(const AniListImportScreen()),
-          ),
-          SettingsTile(
-            leadingAssetPath: AppAssets.iconHardcoverColor,
-            leadingAssetColored: true,
-            title: l.hardcoverImportTitle,
-            subtitle: l.settingsHardcoverImportSubtitle,
-            onTap: () => _pushScreen(const HardcoverImportScreen()),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.upload_file,
-            title: l.settingsCustomCardsImport,
-            subtitle: l.settingsCustomCardsImportSubtitle,
-            onTap: () => _pushScreen(const CustomCardsImportScreen()),
-          ),
-        ],
-      ),
-      gap,
-      SettingsGroup(
-        title: l.settingsStorage,
-        subtitle: l.settingsStorageSubtitle,
-        titleIcon: Icons.storage_outlined,
-        children: <Widget>[
-          // The disk image cache does not exist on web (always network).
-          if (!kIsWebBuild)
-            SettingsTile(
-              leadingIcon: Icons.image_outlined,
-              leadingColor: _kStorageColor,
-              title: l.cacheTitle,
-              subtitle: l.settingsCacheSubtitle,
-              onTap: () => _pushScreen(const CacheScreen()),
-            ),
-          SettingsTile(
-            leadingIcon: Icons.dataset_outlined,
-            leadingColor: _kStorageColor,
-            title: l.databaseTitle,
-            subtitle: l.settingsDatabaseSubtitle,
-            onTap: () => _pushScreen(const DatabaseScreen()),
-          ),
-        ],
-      ),
-      gap,
-
-      SettingsGroup(
-        title: l.settingsAppearance,
-        subtitle: l.settingsAppearanceSubtitle,
-        titleIcon: Icons.palette_outlined,
-        children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.color_lens_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsTheme,
-            subtitle: l.settingsThemeSubtitle,
-            value: _themeLabel(l, settings.appTheme),
-            onTap: () => _showThemePicker(settings),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.layers_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsSkin,
-            subtitle: l.settingsSkinSubtitle,
-            value: _skinLabel(l, settings.appSkin),
-            onTap: () => _showSkinPicker(settings),
-          ),
-          if (!kIsWebBuild &&
-              settings.appSkin.skin.wallpaper == SkinWallpaper.picture)
-            SettingsTile(
-              leadingIcon: Icons.wallpaper_outlined,
-              leadingColor: _kAppearanceColor,
-              title: l.settingsWallpaper,
-              subtitle: l.settingsWallpaperSubtitle,
-              value: settings.wallpaperPath == null
-                  ? l.settingsWallpaperDefault
-                  : l.settingsWallpaperCustom,
-              onTap: () => _showWallpaperOptions(settings),
-            ),
-          SettingsTile(
-            leadingIcon: Icons.language,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsAppLanguage,
-            subtitle: l.settingsAppLanguageSubtitle,
-            value: _kAppLanguageNames[settings.appLanguage] ?? 'English',
-            onTap: () => _showLanguagePicker(settings),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.translate,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsContentLanguage,
-            subtitle: l.settingsContentLanguageSubtitle,
-            value: _contentLanguageLabel(settings.tmdbLanguage),
-            onTap: () => _showContentLanguagePicker(settings),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.calendar_today_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsDateFormat,
-            subtitle: l.settingsDateFormatSubtitle,
-            value: _dateFormatLabel(settings.dateFormat),
-            onTap: () => _showDateFormatPicker(settings),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.title,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsAnimeMangaTitleLanguage,
-            subtitle: l.settingsAnimeMangaTitleLanguageSubtitle,
-            value: _animeMangaTitleLanguageLabel(
-              l,
-              settings.animeMangaTitleLanguage,
-            ),
-            onTap: () => _showAnimeMangaTitleLanguagePicker(settings),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.thumb_up_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.recommendationsTitle,
-            subtitle: l.settingsShowRecommendationsSubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.showRecommendations,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setShowRecommendations(enabled: value);
-              },
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.filter_alt_off_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsHideEmptyMediaTypeChevrons,
-            subtitle: l.settingsHideEmptyMediaTypeChevronsSubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.hideEmptyMediaTypeChevrons,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setHideEmptyMediaTypeChevrons(enabled: value);
-              },
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.account_tree_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsAlwaysShowSubcategories,
-            subtitle: l.settingsAlwaysShowSubcategoriesSubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.alwaysShowSubcategories,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setAlwaysShowSubcategories(enabled: value);
-              },
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.label_outline,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsShowAllCardTags,
-            subtitle: l.settingsShowAllCardTagsSubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.showAllCardTags,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setShowAllCardTags(enabled: value);
-              },
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.videogame_asset_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsShowPlatformOverlay,
-            subtitle: l.settingsShowPlatformOverlaySubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.showPlatformOverlay,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setShowPlatformOverlay(enabled: value);
-              },
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.album_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsShowBlurayOverlay,
-            subtitle: l.settingsShowBlurayOverlaySubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.showBlurayOverlay,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setShowBlurayOverlay(enabled: value);
-              },
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.auto_awesome_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsRichCollections,
-            subtitle: l.settingsRichCollectionsSubtitle,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.richCollectionsEnabled,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setRichCollectionsEnabled(enabled: value);
-              },
-            ),
-          ),
-          if (settings.richCollectionsEnabled)
-            SettingsTile(
-              leadingIcon: Icons.style_outlined,
-              leadingColor: _kAppearanceColor,
-              title: l.settingsRichHeroStyle,
-              subtitle: l.settingsRichHeroStyleSubtitle,
-              value: settings.richHeroStyle.localizedLabel(l),
-              onTap: () => _showRichHeroStylePicker(settings),
-            ),
-          SettingsTile(
-            leadingIcon: Icons.photo_size_select_large_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsCardScale,
-            subtitle: l.settingsCardScaleSubtitle,
-            showChevron: false,
-            trailing: _ScaleSlider(
-              scale: settings.cardScale,
-              min: SettingsKeys.cardScaleMin,
-              max: SettingsKeys.cardScaleMax,
-              step: SettingsKeys.cardScaleStep,
-              onChanged: (double value) =>
-                  notifier.setCardScale(value, persist: false),
-              onChangeEnd: notifier.setCardScale,
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.text_fields,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsTextScale,
-            subtitle: l.settingsTextScaleSubtitle,
-            showChevron: false,
-            trailing: _ScaleSlider(
-              scale: settings.textScale,
-              min: SettingsKeys.textScaleMin,
-              max: SettingsKeys.textScaleMax,
-              step: SettingsKeys.textScaleStep,
-              onChanged: (double value) =>
-                  notifier.setTextScale(value, persist: false),
-              onChangeEnd: notifier.setTextScale,
-            ),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.zoom_in_outlined,
-            leadingColor: _kAppearanceColor,
-            title: l.settingsUiScale,
-            subtitle: l.settingsUiScaleSubtitle,
-            showChevron: false,
-            trailing: _ScaleSlider(
-              scale: settings.uiScale,
-              min: SettingsKeys.uiScaleMin,
-              max: SettingsKeys.uiScaleMax,
-              step: SettingsKeys.uiScaleStep,
-              onChanged: (double value) =>
-                  notifier.setUiScale(value, persist: false),
-              onChangeEnd: notifier.setUiScale,
-            ),
-          ),
-        ],
-      ),
-      gap,
-
-      SettingsGroup(
-        title: l.settingsDataSources,
-        subtitle: l.settingsDataSourcesSubtitle,
-        titleIcon: Icons.vpn_key_outlined,
-        children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.key,
-            leadingColor: _kApiKeysColor,
-            title: l.settingsApiKeys,
-            subtitle: l.settingsApiKeysSubtitle,
-            value: _apiKeysValue(settings),
-            valueColor: _apiKeysAllSet(settings) ? AppColors.success : null,
-            onTap: () => _pushScreen(const CredentialsScreen()),
-          ),
-        ],
-      ),
-      gap,
-      // Kodi is LAN-only and Discord RPC is desktop-only, so on web the group
-      // would render as a bare header.
-      if (!kIsWebBuild)
+    return <_SettingsTab, List<Widget>>{
+      _SettingsTab.profile: <Widget>[
         SettingsGroup(
-          title: l.settingsIntegrations,
-          titleIcon: Icons.link,
+          title: l.profiles,
+          titleIcon: Icons.person_outline,
+          children: <Widget>[
+            // The server owns one database, so a profile switch in the browser
+            // would rename the label and change nothing else.
+            if (!kIsWebBuild)
+              SettingsTile(
+                leadingIcon: Icons.switch_account,
+                leadingColor: _kProfileColor,
+                title: l.currentProfile(currentProfile.name),
+                value: '',
+                onTap: () => _pushScreen(const ProfilesScreen()),
+              ),
+            Builder(
+              builder: (BuildContext ctx) {
+                final bool compact = isCompactScreen(ctx);
+                final double bubble = compact ? 24 : 28;
+                final double iconSize = compact ? 14 : 17;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        width: bubble,
+                        height: bubble,
+                        decoration: BoxDecoration(
+                          color: _kProfileColor,
+                          borderRadius: BorderRadius.circular(bubble * 0.25),
+                        ),
+                        child: Icon(
+                          Icons.drive_file_rename_outline,
+                          size: iconSize,
+                          color: AppColors.onOverlay,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: InlineTextField(
+                          label: l.settingsAuthorName,
+                          value: settings.authorName,
+                          placeholder: l.defaultAuthor,
+                          compact: true,
+                          onChanged: (String value) {
+                            ref
+                                .read(settingsNotifierProvider.notifier)
+                                .setDefaultAuthor(value);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+      _SettingsTab.data: <Widget>[
+        SettingsGroup(
+          title: l.settingsBackup,
+          subtitle: l.settingsBackupSubtitle,
+          titleIcon: Icons.cloud_outlined,
           children: <Widget>[
             SettingsTile(
-              leadingAssetPath: AppAssets.iconKodiColor,
-              leadingAssetColored: true,
-              title: 'Kodi', // proper noun
-              subtitle: l.settingsKodiSubtitle,
-              statusDotColor: ref.watch(kodiSettingsProvider).enabled
-                  ? AppColors.success
-                  : null,
-              value: ref.watch(kodiSettingsProvider).enabled
-                  ? l.settingsOn
-                  : '',
-              valueColor: ref.watch(kodiSettingsProvider).enabled
-                  ? AppColors.success
-                  : null,
-              onTap: () => _pushScreen(const KodiScreen()),
+              leadingIcon: Icons.cloud_upload_outlined,
+              leadingColor: _kBackupColor,
+              title: l.settingsBackupAll,
+              subtitle: l.settingsBackupAllSubtitle,
+              onTap: () => _handleBackup(context, ref, l),
             ),
-            if (kDiscordRpcAvailable)
+            SettingsTile(
+              leadingIcon: Icons.cloud_download_outlined,
+              leadingColor: _kBackupColor,
+              title: l.settingsRestoreBackup,
+              subtitle: l.settingsRestoreBackupSubtitle,
+              onTap: () => _handleRestore(context, ref, l),
+            ),
+          ],
+        ),
+        SettingsGroup(
+          title: l.settingsImport,
+          subtitle: l.settingsImportSubtitle,
+          titleIcon: Icons.download_outlined,
+          children: <Widget>[
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconGithub,
+              leadingAssetColored: true,
+              title: l.settingsBrowseCollections,
+              subtitle: l.settingsBrowseCollectionsSubtitle,
+              onTap: () => _pushScreen(const BrowseCollectionsScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconTraktColor,
+              leadingAssetColored: true,
+              title: l.traktTitle,
+              subtitle: l.settingsTraktImportSubtitle,
+              onTap: () => _pushScreen(const TraktImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconSimklColor,
+              leadingAssetColored: true,
+              title: l.simklImportTitle,
+              subtitle: l.settingsSimklImportSubtitle,
+              onTap: () => _pushScreen(const SimklImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconKinoriumColor,
+              leadingAssetColored: true,
+              title: l.settingsKinoriumImport,
+              subtitle: l.settingsKinoriumImportSubtitle,
+              onTap: () => _pushScreen(const KinoriumImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconSteamColor,
+              leadingAssetColored: true,
+              title: l.settingsSteamImport,
+              subtitle: l.settingsSteamImportSubtitle,
+              onTap: () => _pushScreen(const SteamImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconIgdbColor,
+              leadingAssetColored: true,
+              title: l.settingsIgdbImport,
+              subtitle: l.settingsIgdbImportSubtitle,
+              onTap: () => _pushScreen(const IgdbListImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconRaColor,
+              leadingAssetColored: true,
+              title: l.settingsRaImport,
+              subtitle: l.settingsRaImportSubtitle,
+              onTap: () => _pushScreen(const RaImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconMalColor,
+              leadingAssetColored: true,
+              title: l.settingsMalImport,
+              subtitle: l.settingsMalImportSubtitle,
+              onTap: () => _pushScreen(const MalImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconAnilistColor,
+              leadingAssetColored: true,
+              title: l.settingsAniListImport,
+              subtitle: l.settingsAniListImportSubtitle,
+              onTap: () => _pushScreen(const AniListImportScreen()),
+            ),
+            SettingsTile(
+              leadingAssetPath: AppAssets.iconHardcoverColor,
+              leadingAssetColored: true,
+              title: l.hardcoverImportTitle,
+              subtitle: l.settingsHardcoverImportSubtitle,
+              onTap: () => _pushScreen(const HardcoverImportScreen()),
+            ),
+            SettingsTile(
+              leadingIcon: Icons.upload_file,
+              title: l.settingsCustomCardsImport,
+              subtitle: l.settingsCustomCardsImportSubtitle,
+              onTap: () => _pushScreen(const CustomCardsImportScreen()),
+            ),
+          ],
+        ),
+        SettingsGroup(
+          title: l.settingsStorage,
+          subtitle: l.settingsStorageSubtitle,
+          titleIcon: Icons.storage_outlined,
+          children: <Widget>[
+            // The disk image cache does not exist on web (always network).
+            if (!kIsWebBuild)
               SettingsTile(
-                leadingAssetPath: AppAssets.iconDiscordColor,
+                leadingIcon: Icons.image_outlined,
+                leadingColor: _kStorageColor,
+                title: l.cacheTitle,
+                subtitle: l.settingsCacheSubtitle,
+                onTap: () => _pushScreen(const CacheScreen()),
+              ),
+            SettingsTile(
+              leadingIcon: Icons.dataset_outlined,
+              leadingColor: _kStorageColor,
+              title: l.databaseTitle,
+              subtitle: l.settingsDatabaseSubtitle,
+              onTap: () => _pushScreen(const DatabaseScreen()),
+            ),
+          ],
+        ),
+      ],
+      _SettingsTab.appearance: split
+          ? <Widget>[
+              SettingsGroup(
+                title: l.settingsAppearanceThemeLanguage,
+                titleIcon: Icons.palette_outlined,
+                children: _appearanceThemeTiles(l, settings),
+              ),
+              SettingsGroup(
+                title: l.settingsAppearanceLibrary,
+                titleIcon: Icons.grid_view_outlined,
+                children: _appearanceLibraryTiles(l, settings),
+              ),
+              SettingsGroup(
+                title: l.settingsAppearanceScale,
+                titleIcon: Icons.zoom_in_outlined,
+                children: _appearanceScaleTiles(l, settings, notifier),
+              ),
+            ]
+          : <Widget>[
+              SettingsGroup(
+                title: l.settingsAppearance,
+                subtitle: l.settingsAppearanceSubtitle,
+                titleIcon: Icons.palette_outlined,
+                children: <Widget>[
+                  ..._appearanceThemeTiles(l, settings),
+                  ..._appearanceLibraryTiles(l, settings),
+                  ..._appearanceScaleTiles(l, settings, notifier),
+                ],
+              ),
+            ],
+      _SettingsTab.integrations: <Widget>[
+        SettingsGroup(
+          title: l.settingsDataSources,
+          subtitle: l.settingsDataSourcesSubtitle,
+          titleIcon: Icons.vpn_key_outlined,
+          children: <Widget>[
+            SettingsTile(
+              leadingIcon: Icons.key,
+              leadingColor: _kApiKeysColor,
+              title: l.settingsApiKeys,
+              subtitle: l.settingsApiKeysSubtitle,
+              value: _apiKeysValue(settings),
+              valueColor: _apiKeysAllSet(settings) ? AppColors.success : null,
+              onTap: () => _pushScreen(const CredentialsScreen()),
+            ),
+          ],
+        ),
+        // Kodi is LAN-only and Discord RPC is desktop-only, so on web the group
+        // would render as a bare header.
+        if (!kIsWebBuild)
+          SettingsGroup(
+            title: l.settingsIntegrations,
+            titleIcon: Icons.link,
+            children: <Widget>[
+              SettingsTile(
+                leadingAssetPath: AppAssets.iconKodiColor,
                 leadingAssetColored: true,
-                title: l.settingsDiscordRpc,
-                subtitle: l.settingsDiscordRpcSubtitle,
-                showChevron: false,
-                trailing: Switch(
-                  value: settings.discordRpcEnabled,
-                  onChanged: (bool value) {
-                    ref
-                        .read(settingsNotifierProvider.notifier)
-                        .setDiscordRpcEnabled(enabled: value);
-                    final DiscordRpcService rpc = ref.read(
-                      discordRpcServiceProvider,
-                    );
-                    if (value) {
-                      rpc.enable();
-                    } else {
-                      rpc.disableRaSync();
+                title: 'Kodi', // proper noun
+                subtitle: l.settingsKodiSubtitle,
+                statusDotColor: ref.watch(kodiSettingsProvider).enabled
+                    ? AppColors.success
+                    : null,
+                value: ref.watch(kodiSettingsProvider).enabled
+                    ? l.settingsOn
+                    : '',
+                valueColor: ref.watch(kodiSettingsProvider).enabled
+                    ? AppColors.success
+                    : null,
+                onTap: () => _pushScreen(const KodiScreen()),
+              ),
+              if (kDiscordRpcAvailable)
+                SettingsTile(
+                  leadingAssetPath: AppAssets.iconDiscordColor,
+                  leadingAssetColored: true,
+                  title: l.settingsDiscordRpc,
+                  subtitle: l.settingsDiscordRpcSubtitle,
+                  showChevron: false,
+                  trailing: Switch(
+                    value: settings.discordRpcEnabled,
+                    onChanged: (bool value) {
                       ref
                           .read(settingsNotifierProvider.notifier)
-                          .setDiscordRaSyncEnabled(enabled: false);
-                      rpc.disable();
-                    }
-                  },
-                ),
-              ),
-            if (kDiscordRpcAvailable &&
-                settings.discordRpcEnabled &&
-                ref.read(raApiProvider).hasCredentials)
-              SettingsTile(
-                leadingIcon: Icons.sync,
-                leadingColor: _kDiscordColor,
-                title: l.settingsDiscordRaSync,
-                subtitle: l.settingsDiscordRaSyncSubtitle,
-                showChevron: false,
-                trailing: Switch(
-                  value: settings.discordRaSyncEnabled,
-                  onChanged: (bool value) {
-                    ref
-                        .read(settingsNotifierProvider.notifier)
-                        .setDiscordRaSyncEnabled(enabled: value);
-                    final DiscordRpcService rpc = ref.read(
-                      discordRpcServiceProvider,
-                    );
-                    if (value) {
-                      final RaApi raApi = ref.read(raApiProvider);
-                      rpc.enableRaSync(
-                        raApi: raApi,
-                        raUsername: raApi.username!,
+                          .setDiscordRpcEnabled(enabled: value);
+                      final DiscordRpcService rpc = ref.read(
+                        discordRpcServiceProvider,
                       );
-                    } else {
-                      rpc.disableRaSync();
-                    }
-                  },
+                      if (value) {
+                        rpc.enable();
+                      } else {
+                        rpc.disableRaSync();
+                        ref
+                            .read(settingsNotifierProvider.notifier)
+                            .setDiscordRaSyncEnabled(enabled: false);
+                        rpc.disable();
+                      }
+                    },
+                  ),
                 ),
+              if (kDiscordRpcAvailable &&
+                  settings.discordRpcEnabled &&
+                  ref.read(raApiProvider).hasCredentials)
+                SettingsTile(
+                  leadingIcon: Icons.sync,
+                  leadingColor: _kDiscordColor,
+                  title: l.settingsDiscordRaSync,
+                  subtitle: l.settingsDiscordRaSyncSubtitle,
+                  showChevron: false,
+                  trailing: Switch(
+                    value: settings.discordRaSyncEnabled,
+                    onChanged: (bool value) {
+                      ref
+                          .read(settingsNotifierProvider.notifier)
+                          .setDiscordRaSyncEnabled(enabled: value);
+                      final DiscordRpcService rpc = ref.read(
+                        discordRpcServiceProvider,
+                      );
+                      if (value) {
+                        final RaApi raApi = ref.read(raApiProvider);
+                        rpc.enableRaSync(
+                          raApi: raApi,
+                          raUsername: raApi.username!,
+                        );
+                      } else {
+                        rpc.disableRaSync();
+                      }
+                    },
+                  ),
+                ),
+            ],
+          ),
+      ],
+      _SettingsTab.about: <Widget>[
+        SettingsGroup(
+          title: l.settingsAbout,
+          titleIcon: Icons.info_outline,
+          children: <Widget>[
+            SettingsTile(
+              leadingIcon: Icons.waving_hand_outlined,
+              leadingColor: _kAboutColor,
+              title: l.settingsWelcomeGuide,
+              onTap: () => _pushScreen(const WelcomeScreen(fromSettings: true)),
+            ),
+            SettingsTile(
+              leadingIcon: Icons.article_outlined,
+              leadingColor: _kAboutColor,
+              title: l.settingsCreditsLicenses,
+              onTap: () => _pushScreen(const CreditsScreen()),
+            ),
+            SettingsTile(
+              leadingIcon: Icons.celebration_outlined,
+              leadingColor: _kAboutColor,
+              title: l.settingsChangelog,
+              onTap: _showChangelog,
+            ),
+            _buildVersionTile(l),
+          ],
+        ),
+
+        if (kDebugMode)
+          SettingsGroup(
+            title: l.settingsDebug,
+            titleIcon: Icons.bug_report_outlined,
+            children: <Widget>[
+              SettingsTile(
+                leadingIcon: Icons.build_outlined,
+                leadingColor: _kDebugColor,
+                title: l.settingsDebug,
+                value: settings.hasSteamGridDbKey
+                    ? l.settingsDebugSubtitle
+                    : l.settingsDebugSubtitleNoKey,
+                onTap: () => _pushScreen(const DebugHubScreen()),
               ),
-          ],
-        ),
-      gap,
+            ],
+          ),
 
-      SettingsGroup(
-        title: l.settingsAbout,
-        titleIcon: Icons.info_outline,
-        children: <Widget>[
-          SettingsTile(
-            leadingIcon: Icons.waving_hand_outlined,
-            leadingColor: _kAboutColor,
-            title: l.settingsWelcomeGuide,
-            onTap: () => _pushScreen(const WelcomeScreen(fromSettings: true)),
+        // Android-only gamepad button debug, available in release too so
+        // controller key codes can be captured on devices like the Odin 2.
+        if (!kDebugMode && defaultTargetPlatform == TargetPlatform.android)
+          SettingsGroup(
+            title: l.settingsGamepadDebug,
+            titleIcon: Icons.sports_esports_outlined,
+            children: <Widget>[
+              SettingsTile(
+                leadingIcon: Icons.sports_esports_outlined,
+                leadingColor: _kDebugColor,
+                title: l.settingsGamepadDebug,
+                value: l.settingsGamepadDebugSubtitle,
+                onTap: () => _pushScreen(const GamepadDebugScreen()),
+              ),
+            ],
           ),
-          SettingsTile(
-            leadingIcon: Icons.article_outlined,
-            leadingColor: _kAboutColor,
-            title: l.settingsCreditsLicenses,
-            onTap: () => _pushScreen(const CreditsScreen()),
-          ),
-          SettingsTile(
-            leadingIcon: Icons.celebration_outlined,
-            leadingColor: _kAboutColor,
-            title: l.settingsChangelog,
-            onTap: _showChangelog,
-          ),
-          _buildVersionTile(l),
-        ],
-      ),
-
-      if (kDebugMode) ...<Widget>[
-        gap,
-        SettingsGroup(
-          title: l.settingsDebug,
-          titleIcon: Icons.bug_report_outlined,
-          children: <Widget>[
-            SettingsTile(
-              leadingIcon: Icons.build_outlined,
-              leadingColor: _kDebugColor,
-              title: l.settingsDebug,
-              value: settings.hasSteamGridDbKey
-                  ? l.settingsDebugSubtitle
-                  : l.settingsDebugSubtitleNoKey,
-              onTap: () => _pushScreen(const DebugHubScreen()),
-            ),
-          ],
-        ),
       ],
-
-      // Android-only gamepad button debug, available in release too so
-      // controller key codes can be captured on devices like the Odin 2.
-      if (!kDebugMode &&
-          defaultTargetPlatform == TargetPlatform.android) ...<Widget>[
-        gap,
-        SettingsGroup(
-          title: l.settingsGamepadDebug,
-          titleIcon: Icons.sports_esports_outlined,
-          children: <Widget>[
-            SettingsTile(
-              leadingIcon: Icons.sports_esports_outlined,
-              leadingColor: _kDebugColor,
-              title: l.settingsGamepadDebug,
-              value: l.settingsGamepadDebugSubtitle,
-              onTap: () => _pushScreen(const GamepadDebugScreen()),
-            ),
-          ],
-        ),
-      ],
-
-      gap,
-    ];
+    };
   }
+
+  List<Widget> _appearanceThemeTiles(S l, SettingsState settings) => <Widget>[
+    SettingsTile(
+      leadingIcon: Icons.color_lens_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsTheme,
+      subtitle: l.settingsThemeSubtitle,
+      value: _themeLabel(l, settings.appTheme),
+      onTap: () => _showThemePicker(settings),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.layers_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsSkin,
+      subtitle: l.settingsSkinSubtitle,
+      value: _skinLabel(l, settings.appSkin),
+      onTap: () => _showSkinPicker(settings),
+    ),
+    if (!kIsWebBuild &&
+        settings.appSkin.skin.wallpaper == SkinWallpaper.picture)
+      SettingsTile(
+        leadingIcon: Icons.wallpaper_outlined,
+        leadingColor: _kAppearanceColor,
+        title: l.settingsWallpaper,
+        subtitle: l.settingsWallpaperSubtitle,
+        value: settings.wallpaperPath == null
+            ? l.settingsWallpaperDefault
+            : l.settingsWallpaperCustom,
+        onTap: () => _showWallpaperOptions(settings),
+      ),
+    SettingsTile(
+      leadingIcon: Icons.language,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsAppLanguage,
+      subtitle: l.settingsAppLanguageSubtitle,
+      value: _kAppLanguageNames[settings.appLanguage] ?? 'English',
+      onTap: () => _showLanguagePicker(settings),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.translate,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsContentLanguage,
+      subtitle: l.settingsContentLanguageSubtitle,
+      value: _contentLanguageLabel(settings.tmdbLanguage),
+      onTap: () => _showContentLanguagePicker(settings),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.calendar_today_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsDateFormat,
+      subtitle: l.settingsDateFormatSubtitle,
+      value: _dateFormatLabel(settings.dateFormat),
+      onTap: () => _showDateFormatPicker(settings),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.title,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsAnimeMangaTitleLanguage,
+      subtitle: l.settingsAnimeMangaTitleLanguageSubtitle,
+      value: _animeMangaTitleLanguageLabel(l, settings.animeMangaTitleLanguage),
+      onTap: () => _showAnimeMangaTitleLanguagePicker(settings),
+    ),
+  ];
+
+  List<Widget> _appearanceLibraryTiles(S l, SettingsState settings) => <Widget>[
+    SettingsTile(
+      leadingIcon: Icons.thumb_up_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.recommendationsTitle,
+      subtitle: l.settingsShowRecommendationsSubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.showRecommendations,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setShowRecommendations(enabled: value);
+        },
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.filter_alt_off_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsHideEmptyMediaTypeChevrons,
+      subtitle: l.settingsHideEmptyMediaTypeChevronsSubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.hideEmptyMediaTypeChevrons,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setHideEmptyMediaTypeChevrons(enabled: value);
+        },
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.account_tree_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsAlwaysShowSubcategories,
+      subtitle: l.settingsAlwaysShowSubcategoriesSubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.alwaysShowSubcategories,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setAlwaysShowSubcategories(enabled: value);
+        },
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.label_outline,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsShowAllCardTags,
+      subtitle: l.settingsShowAllCardTagsSubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.showAllCardTags,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setShowAllCardTags(enabled: value);
+        },
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.videogame_asset_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsShowPlatformOverlay,
+      subtitle: l.settingsShowPlatformOverlaySubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.showPlatformOverlay,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setShowPlatformOverlay(enabled: value);
+        },
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.album_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsShowBlurayOverlay,
+      subtitle: l.settingsShowBlurayOverlaySubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.showBlurayOverlay,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setShowBlurayOverlay(enabled: value);
+        },
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.auto_awesome_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsRichCollections,
+      subtitle: l.settingsRichCollectionsSubtitle,
+      showChevron: false,
+      trailing: Switch(
+        value: settings.richCollectionsEnabled,
+        onChanged: (bool value) {
+          ref
+              .read(settingsNotifierProvider.notifier)
+              .setRichCollectionsEnabled(enabled: value);
+        },
+      ),
+    ),
+    if (settings.richCollectionsEnabled)
+      SettingsTile(
+        leadingIcon: Icons.style_outlined,
+        leadingColor: _kAppearanceColor,
+        title: l.settingsRichHeroStyle,
+        subtitle: l.settingsRichHeroStyleSubtitle,
+        value: settings.richHeroStyle.localizedLabel(l),
+        onTap: () => _showRichHeroStylePicker(settings),
+      ),
+  ];
+
+  List<Widget> _appearanceScaleTiles(
+    S l,
+    SettingsState settings,
+    SettingsNotifier notifier,
+  ) => <Widget>[
+    SettingsTile(
+      leadingIcon: Icons.photo_size_select_large_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsCardScale,
+      subtitle: l.settingsCardScaleSubtitle,
+      showChevron: false,
+      trailing: _ScaleSlider(
+        scale: settings.cardScale,
+        min: SettingsKeys.cardScaleMin,
+        max: SettingsKeys.cardScaleMax,
+        step: SettingsKeys.cardScaleStep,
+        onChanged: (double value) =>
+            notifier.setCardScale(value, persist: false),
+        onChangeEnd: notifier.setCardScale,
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.text_fields,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsTextScale,
+      subtitle: l.settingsTextScaleSubtitle,
+      showChevron: false,
+      trailing: _ScaleSlider(
+        scale: settings.textScale,
+        min: SettingsKeys.textScaleMin,
+        max: SettingsKeys.textScaleMax,
+        step: SettingsKeys.textScaleStep,
+        onChanged: (double value) =>
+            notifier.setTextScale(value, persist: false),
+        onChangeEnd: notifier.setTextScale,
+      ),
+    ),
+    SettingsTile(
+      leadingIcon: Icons.zoom_in_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsUiScale,
+      subtitle: l.settingsUiScaleSubtitle,
+      showChevron: false,
+      trailing: _ScaleSlider(
+        scale: settings.uiScale,
+        min: SettingsKeys.uiScaleMin,
+        max: SettingsKeys.uiScaleMax,
+        step: SettingsKeys.uiScaleStep,
+        onChanged: (double value) => notifier.setUiScale(value, persist: false),
+        onChangeEnd: notifier.setUiScale,
+      ),
+    ),
+  ];
 
   void _pushScreen(Widget screen) {
     Navigator.of(

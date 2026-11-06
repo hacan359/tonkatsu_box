@@ -85,7 +85,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     shared with lib/core/services/collection_hero_service.dart
     (CollectionHeroService).
   * lib/shared/navigation/app_wallpaper.dart (AppWallpaper): Shows the user's
-    picture; without one, or when the file is unreadable, the palette tile.
+    picture as loaded; without one, or when the file is unreadable, the
+    palette tile.
   * lib/app.dart: Applies the selected skin.
   * lib/shared/theme/palettes/sakura_palette.dart: Deeper text colours.
   * lib/l10n/app_*.arb (settingsSkin, settingsSkinSubtitle, settingsSkinGlass,
@@ -103,6 +104,36 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/splash/screens/splash_screen.dart (SplashScreen): Uses it.
   * assets/images/logo_layers/, pubspec.yaml: Logo layers.
   * README.md, docs/assets/logo_volumetric.png: Static volumetric logo.
+
+- **Settings on tabs for wide windows**
+
+  From 800px up the settings page is split across five tabs — Profile, Data,
+  Appearance, Integrations, About — on a glass capsule whose active marker
+  slides to the chosen tab. Appearance is laid out as three groups: theme and
+  language, library, scale. Searching the settings looks across every tab.
+  Phones keep the single list.
+
+  * lib/shared/widgets/glass_tab_bar.dart (GlassTabBar, GlassTabOption): New.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState.build, _SettingsScreenState._buildTabs,
+    _SettingsScreenState._tabOption, _SettingsScreenState._appearanceThemeTiles,
+    _SettingsScreenState._appearanceLibraryTiles,
+    _SettingsScreenState._appearanceScaleTiles): Groups per tab; the wide
+    content column is 720px.
+  * lib/l10n/app_*.arb (settingsTabProfile, settingsTabData,
+    settingsAppearanceThemeLanguage, settingsAppearanceLibrary,
+    settingsAppearanceScale): New keys.
+
+### Changed
+
+- **Settings descriptions in the secondary text colour**
+
+  Group headers, group captions, tile descriptions and the value on the right
+  of a tile share one colour; only the chevrons stay muted.
+
+  * lib/features/settings/widgets/settings_group.dart (SettingsGroup.build),
+    lib/features/settings/widgets/settings_tile.dart (SettingsTile.build):
+    textTertiary → textSecondary.
 
 ### Removed
 

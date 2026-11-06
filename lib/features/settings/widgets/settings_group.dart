@@ -50,7 +50,7 @@ class SettingsGroup extends StatelessWidget {
                       Icon(
                         titleIcon,
                         size: iconSize,
-                        color: titleIconColor ?? AppColors.textTertiary,
+                        color: titleIconColor ?? AppColors.textSecondary,
                       ),
                       const SizedBox(width: 6),
                     ],
@@ -59,7 +59,7 @@ class SettingsGroup extends StatelessWidget {
                         title!.toUpperCase(),
                         style: AppTypography.bodySmall.copyWith(
                           fontSize: headerSize,
-                          color: titleIconColor ?? AppColors.textTertiary,
+                          color: titleIconColor ?? AppColors.textSecondary,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -73,7 +73,7 @@ class SettingsGroup extends StatelessWidget {
                     subtitle!,
                     style: AppTypography.bodySmall.copyWith(
                       fontSize: subtitleSize,
-                      color: AppColors.textTertiary,
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w400,
                     ),
                   ),

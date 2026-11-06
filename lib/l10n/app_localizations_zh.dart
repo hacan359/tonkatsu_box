@@ -4497,6 +4497,21 @@ class SZh extends S {
   String get settingsIntegrations => '集成';
 
   @override
+  String get settingsTabProfile => '个人资料';
+
+  @override
+  String get settingsTabData => '数据';
+
+  @override
+  String get settingsAppearanceThemeLanguage => '主题与语言';
+
+  @override
+  String get settingsAppearanceLibrary => '媒体库';
+
+  @override
+  String get settingsAppearanceScale => '缩放';
+
+  @override
   String get settingsKodiSubtitle => '从 Kodi 媒体播放器同步观看记录';
 
   @override

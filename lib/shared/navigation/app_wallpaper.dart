@@ -9,8 +9,8 @@ import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_surface.dart';
 
-/// The bottom layer of the frame, what every panel sits on. A wash of the
-/// palette's background keeps text legible over any picture.
+/// The bottom layer of the frame, what every panel sits on. The picture is
+/// shown as loaded: legibility is the panels' job, not a wash over it.
 class AppWallpaper extends ConsumerWidget {
   const AppWallpaper({super.key});
 
@@ -60,8 +60,6 @@ class AppWallpaper extends ConsumerWidget {
     fit: BoxFit.cover,
     width: double.infinity,
     height: double.infinity,
-    color: AppSurface.wallpaperWash(),
-    colorBlendMode: BlendMode.srcOver,
     errorBuilder: (BuildContext _, Object _, StackTrace? _) => _tile(),
   );
 }

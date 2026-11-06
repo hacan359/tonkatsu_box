@@ -80,11 +80,6 @@ abstract final class AppSurface {
     };
   }
 
-  /// Wash over the wallpaper picture so text stays legible on any photo.
-  static Color wallpaperWash([AppPalette? palette]) => _p(
-    palette,
-  ).background.withAlpha(_b(palette) == Brightness.light ? 120 : 70);
-
   static Color sheen([AppPalette? palette]) =>
       Colors.white.withAlpha(skin.sheenAlpha.of(_b(palette)));
 

@@ -4817,6 +4817,21 @@ class SRu extends S {
   String get settingsIntegrations => 'Интеграции';
 
   @override
+  String get settingsTabProfile => 'Профиль';
+
+  @override
+  String get settingsTabData => 'Данные';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Тема и язык';
+
+  @override
+  String get settingsAppearanceLibrary => 'Библиотека';
+
+  @override
+  String get settingsAppearanceScale => 'Масштаб';
+
+  @override
   String get settingsKodiSubtitle => 'Синхронизация просмотров с Kodi';
 
   @override

@@ -11,6 +11,8 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/features/settings/screens/settings_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_tile.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_tab_bar.dart';
 import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
 import '../../../helpers/mocks.dart';
@@ -23,9 +25,14 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  Widget createWidget({double width = 400, double height = 2000}) {
+  Widget createWidget({
+    double width = 400,
+    double height = 2000,
+    String searchQuery = '',
+  }) {
     return ProviderScope(
       overrides: <Override>[
+        settingsSearchQueryProvider.overrideWith((Ref ref) => searchQuery),
         sharedPreferencesProvider.overrideWithValue(prefs),
         apiKeysProvider.overrideWithValue(const ApiKeys()),
         profilesDataProvider.overrideWith(
@@ -44,6 +51,10 @@ void main() {
       ),
     );
   }
+
+  final Finder tabBar = find.byWidgetPredicate(
+    (Widget w) => w is GlassTabBar<Object?>,
+  );
 
   Future<Finder> scrollTo(WidgetTester tester, String text) async {
     final Finder finder = find.text(text);
@@ -75,12 +86,70 @@ void main() {
         bool found600 = false;
         for (int i = 0; i < boxes.evaluate().length; i++) {
           final ConstrainedBox box = tester.widget<ConstrainedBox>(boxes.at(i));
-          if (box.constraints.maxWidth == 600) {
+          if (box.constraints.maxWidth == 720) {
             found600 = true;
             break;
           }
         }
         expect(found600, isTrue);
+      });
+
+      testWidgets('narrow layout has no tab bar and lists every group', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(tabBar, findsNothing);
+        expect(find.text('Backup All Data'), findsOneWidget);
+        await scrollTo(tester, 'API Keys');
+        expect(find.text('API Keys'), findsOneWidget);
+      });
+
+      testWidgets('wide layout shows only the selected tab', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(createWidget(width: 1200));
+        await tester.pumpAndSettle();
+
+        expect(tabBar, findsOneWidget);
+        expect(find.text('Author name'), findsOneWidget);
+        expect(find.text('Backup All Data'), findsNothing);
+
+        await tester.tap(find.text('Data'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Backup All Data'), findsOneWidget);
+        expect(find.text('Author name'), findsNothing);
+      });
+
+      testWidgets('wide layout splits Appearance into sub-groups', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(createWidget(width: 1200));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Appearance'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('THEME & LANGUAGE'), findsOneWidget);
+        expect(find.text('Theme'), findsOneWidget);
+        await scrollTo(tester, 'SCALE');
+        expect(find.text('LIBRARY'), findsOneWidget);
+        expect(find.text('SCALE'), findsOneWidget);
+      });
+
+      testWidgets('search on a wide layout spans every tab', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createWidget(width: 1200, searchQuery: 'backup'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tabBar, findsNothing);
+        expect(find.text('Backup All Data'), findsOneWidget);
+        expect(find.text('Author name'), findsNothing);
       });
     });
 

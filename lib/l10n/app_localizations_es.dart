@@ -4793,6 +4793,21 @@ class SEs extends S {
   String get settingsIntegrations => 'Integraciones';
 
   @override
+  String get settingsTabProfile => 'Perfil';
+
+  @override
+  String get settingsTabData => 'Datos';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Tema e idioma';
+
+  @override
+  String get settingsAppearanceLibrary => 'Biblioteca';
+
+  @override
+  String get settingsAppearanceScale => 'Escala';
+
+  @override
   String get settingsKodiSubtitle =>
       'Sincronización de visionados desde el reproductor Kodi';
 

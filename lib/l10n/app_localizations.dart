@@ -8438,6 +8438,36 @@ abstract class S {
   /// **'Integrations'**
   String get settingsIntegrations;
 
+  /// No description provided for @settingsTabProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get settingsTabProfile;
+
+  /// No description provided for @settingsTabData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get settingsTabData;
+
+  /// No description provided for @settingsAppearanceThemeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme & language'**
+  String get settingsAppearanceThemeLanguage;
+
+  /// No description provided for @settingsAppearanceLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get settingsAppearanceLibrary;
+
+  /// No description provided for @settingsAppearanceScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get settingsAppearanceScale;
+
   /// No description provided for @settingsKodiSubtitle.
   ///
   /// In en, this message translates to:

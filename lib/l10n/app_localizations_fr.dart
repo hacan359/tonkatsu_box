@@ -4803,6 +4803,21 @@ class SFr extends S {
   String get settingsIntegrations => 'Intégrations';
 
   @override
+  String get settingsTabProfile => 'Profil';
+
+  @override
+  String get settingsTabData => 'Données';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Thème et langue';
+
+  @override
+  String get settingsAppearanceLibrary => 'Bibliothèque';
+
+  @override
+  String get settingsAppearanceScale => 'Échelle';
+
+  @override
   String get settingsKodiSubtitle =>
       'Synchronisation vidéo depuis le lecteur média Kodi';
 

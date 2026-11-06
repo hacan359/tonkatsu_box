@@ -4729,6 +4729,21 @@ class SEn extends S {
   String get settingsIntegrations => 'Integrations';
 
   @override
+  String get settingsTabProfile => 'Profile';
+
+  @override
+  String get settingsTabData => 'Data';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Theme & language';
+
+  @override
+  String get settingsAppearanceLibrary => 'Library';
+
+  @override
+  String get settingsAppearanceScale => 'Scale';
+
+  @override
   String get settingsKodiSubtitle => 'Watch sync from Kodi media player';
 
   @override
