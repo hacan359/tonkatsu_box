@@ -670,6 +670,39 @@ class SRu extends S {
   String get settingsThemeEva => 'Eva Лазурь';
 
   @override
+  String get settingsSkin => 'Стиль';
+
+  @override
+  String get settingsSkinSubtitle => 'Стекло или классический вид';
+
+  @override
+  String get settingsSkinGlass => 'Стекло';
+
+  @override
+  String get settingsSkinClassic => 'Классика';
+
+  @override
+  String get settingsWallpaper => 'Обои';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Картинка под стеклянной рамкой';
+
+  @override
+  String get settingsWallpaperDefault => 'По умолчанию';
+
+  @override
+  String get settingsWallpaperCustom => 'Своя картинка';
+
+  @override
+  String get settingsWallpaperChoose => 'Выбрать картинку…';
+
+  @override
+  String get settingsWallpaperReset => 'Сбросить';
+
+  @override
+  String get settingsWallpaperError => 'Не удалось сохранить обои';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Язык интерфейса';
 
   @override
@@ -4782,6 +4815,21 @@ class SRu extends S {
 
   @override
   String get settingsIntegrations => 'Интеграции';
+
+  @override
+  String get settingsTabProfile => 'Профиль';
+
+  @override
+  String get settingsTabData => 'Данные';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Тема и язык';
+
+  @override
+  String get settingsAppearanceLibrary => 'Библиотека';
+
+  @override
+  String get settingsAppearanceScale => 'Масштаб';
 
   @override
   String get settingsKodiSubtitle => 'Синхронизация просмотров с Kodi';

@@ -15,6 +15,8 @@ import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../providers/marked_units_provider.dart';
 import '../widgets/marked_group_tile.dart';
+import '../../../shared/widgets/frame_page.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Every liked or noted unit in the library, grouped by title.
 class LikesScreen extends ConsumerStatefulWidget {
@@ -54,13 +56,13 @@ class _LikesScreenState extends ConsumerState<LikesScreen> {
     final S l = S.of(context);
     final LikesFilter filter = ref.watch(likesFilterProvider);
     final List<MediaType> types = ref.watch(markedMediaTypesProvider);
-    final AsyncValue<List<MarkedUnitGroup>> groups =
-        ref.watch(filteredMarkedUnitsProvider);
+    final AsyncValue<List<MarkedUnitGroup>> groups = ref.watch(
+      filteredMarkedUnitsProvider,
+    );
     final bool hasAnyMarks =
         ref.watch(likesEntriesProvider).valueOrNull?.isNotEmpty ?? false;
 
-    return Material(
-      color: AppColors.background,
+    return FramePage(
       child: Column(
         children: <Widget>[
           if (hasAnyMarks) _FilterRow(filter: filter, types: types),
@@ -73,8 +75,9 @@ class _LikesScreenState extends ConsumerState<LikesScreen> {
                   child: Text(
                     '${l.settingsError}: $error',
                     textAlign: TextAlign.center,
-                    style: AppTypography.body
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ),
@@ -220,10 +223,10 @@ class _FilterChip extends StatelessWidget {
             vertical: AppSpacing.xs + 2,
           ),
           decoration: BoxDecoration(
-            color: active ? color.withAlpha(24) : AppColors.surface,
+            color: active ? color.withAlpha(24) : glassTileColor(),
             borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
             border: Border.all(
-              color: active ? color.withAlpha(96) : AppColors.surfaceBorder,
+              color: active ? color.withAlpha(96) : glassTileBorderColor(),
               width: 0.5,
             ),
           ),
@@ -259,7 +262,10 @@ class _GroupList extends StatelessWidget {
         if (!g.isReplayed) _Card(g),
     ];
     return <_Row>[
-      if (replays.isNotEmpty) ...<_Row>[_Heading(l.likesSectionRewatch), ...replays],
+      if (replays.isNotEmpty) ...<_Row>[
+        _Heading(l.likesSectionRewatch),
+        ...replays,
+      ],
       if (marks.isNotEmpty) ...<_Row>[_Heading(l.likesSectionMarks), ...marks],
     ];
   }
@@ -277,14 +283,16 @@ class _GroupList extends StatelessWidget {
           separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
           itemBuilder: (BuildContext context, int index) =>
               switch (rows[index]) {
-            _Heading(:final String title) =>
-              _SectionTitle(title: title, first: index == 0),
-            _Card(:final MarkedUnitGroup group) => MarkedGroupTile(
-                key: ValueKey<int>(group.item.id),
-                group: group,
-                onOpen: () => onOpen(group),
-              ),
-          },
+                _Heading(:final String title) => _SectionTitle(
+                  title: title,
+                  first: index == 0,
+                ),
+                _Card(:final MarkedUnitGroup group) => MarkedGroupTile(
+                  key: ValueKey<int>(group.item.id),
+                  group: group,
+                  onOpen: () => onOpen(group),
+                ),
+              },
         ),
       ),
     );
@@ -362,8 +370,9 @@ class _Empty extends StatelessWidget {
               Text(
                 body,
                 textAlign: TextAlign.center,
-                style: AppTypography.bodySmall
-                    .copyWith(color: AppColors.textSecondary),
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ],

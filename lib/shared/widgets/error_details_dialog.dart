@@ -6,6 +6,8 @@ import '../extensions/snackbar_extension.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'glass_dialog.dart';
+import 'glass_panel.dart';
 
 /// Copies `message\n\ndetail` to the clipboard and confirms with a snack.
 void copyErrorDetails(
@@ -13,8 +15,9 @@ void copyErrorDetails(
   required String message,
   String? detail,
 }) {
-  final String text =
-      (detail == null || detail.isEmpty) ? message : '$message\n\n$detail';
+  final String text = (detail == null || detail.isEmpty)
+      ? message
+      : '$message\n\n$detail';
   Clipboard.setData(ClipboardData(text: text));
   context.showSnack(S.of(context).errorDetailsCopied, type: SnackType.info);
 }
@@ -31,7 +34,7 @@ Future<void> showErrorDetailsDialog(
     context: context,
     builder: (BuildContext dialogContext) {
       final S l = S.of(dialogContext);
-      return AlertDialog(
+      return GlassAlertDialog(
         title: Row(
           children: <Widget>[
             Icon(Icons.error_outline, color: AppColors.error, size: 22),
@@ -51,7 +54,7 @@ Future<void> showErrorDetailsDialog(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: glassTileColor(),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     border: Border.all(color: AppColors.surfaceBorder),
                   ),

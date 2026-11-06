@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Searchable single-select dialog returning the picked string, or the
 /// typed custom value when [allowCustom] is true.
@@ -77,7 +78,7 @@ class _SearchableListDialogState extends State<SearchableListDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Dialog(
+    return GlassDialogFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
         child: Padding(
@@ -85,8 +86,10 @@ class _SearchableListDialogState extends State<SearchableListDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(widget.title,
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                widget.title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _searchController,

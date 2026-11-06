@@ -5,7 +5,6 @@ import '../../features/releases/providers/releases_provider.dart';
 import '../../features/welcome/providers/menu_tour_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../../l10n/app_localizations.dart';
-import '../theme/app_colors.dart';
 import 'liquid_indicator.dart';
 import 'nav_center_button.dart';
 import 'nav_destinations.dart';
@@ -13,7 +12,7 @@ import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 import 'nav_tour_keys.dart';
 
-const double kAppBottomBarHeight = 64;
+const double kAppBottomBarHeight = 60;
 
 /// Horizontal nav bar for narrow screens. Settings lives in [AppTopBar]; the
 /// middle slot is left empty for the centre button.
@@ -62,69 +61,54 @@ class AppBottomBar extends ConsumerWidget {
       centerActive: centerActive,
     );
 
+    // Bare band: the frame wraps it in glass and places it on the edge.
     return SizedBox(
-      height: kAppBottomBarHeight + MediaQuery.paddingOf(context).bottom,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border(
-            top: BorderSide(color: AppColors.surfaceBorder, width: 1),
-          ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final double itemWidth = constraints.maxWidth / slotCount;
-              return SizedBox(
-                height: kAppBottomBarHeight,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: <Widget>[
-                    LiquidIndicator(
-                      selectedIndex: selectedSlot,
-                      itemExtent: itemWidth,
-                      crossExtent: kAppBottomBarHeight,
-                      axis: Axis.horizontal,
-                      // The centre logo is larger than a tab icon, so its
-                      // highlight needs to be bigger too.
-                      size: centerActive ? 50 : 40,
-                      rainbow: centerActive,
-                    ),
-                    Row(
-                      children: <Widget>[
-                        for (int i = 0; i < destinations.length; i++) ...<Widget>[
-                          if (i == kNavCenterSlot)
-                            NavCenterButton(
-                              key: tourActive
-                                  ? tourKeys.personalization
-                                  : null,
-                              width: itemWidth,
-                              height: kAppBottomBarHeight,
-                              tooltip: S.of(context).personalizationTitle,
-                              onTap: onCenterTap,
-                            ),
-                          NavIconButton(
-                            key: tourActive
-                                ? tourKeys.keyFor(destinations[i].tab)
-                                : null,
-                            destination: destinations[i],
-                            active: !centerActive &&
-                                destinations[i].tab == selectedTab,
-                            width: itemWidth,
-                            height: kAppBottomBarHeight,
-                            onTap: () =>
-                                onDestinationSelected(destinations[i].tab),
-                          ),
-                        ],
-                      ],
+      height: kAppBottomBarHeight,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final double itemWidth = constraints.maxWidth / slotCount;
+          final double cellHeight = constraints.maxHeight;
+          return Stack(
+            clipBehavior: Clip.none,
+            children: <Widget>[
+              LiquidIndicator(
+                selectedIndex: selectedSlot,
+                itemExtent: itemWidth,
+                crossExtent: cellHeight,
+                axis: Axis.horizontal,
+                // The centre logo is larger than a tab icon, so its
+                // highlight needs to be bigger too.
+                size: centerActive ? 50 : 40,
+                rainbow: centerActive,
+              ),
+              Row(
+                children: <Widget>[
+                  for (int i = 0; i < destinations.length; i++) ...<Widget>[
+                    if (i == kNavCenterSlot)
+                      NavCenterButton(
+                        key: tourActive ? tourKeys.personalization : null,
+                        width: itemWidth,
+                        height: cellHeight,
+                        tooltip: S.of(context).personalizationTitle,
+                        onTap: onCenterTap,
+                      ),
+                    NavIconButton(
+                      key: tourActive
+                          ? tourKeys.keyFor(destinations[i].tab)
+                          : null,
+                      destination: destinations[i],
+                      active:
+                          !centerActive && destinations[i].tab == selectedTab,
+                      width: itemWidth,
+                      height: cellHeight,
+                      onTap: () => onDestinationSelected(destinations[i].tab),
                     ),
                   ],
-                ),
-              );
-            },
-          ),
-        ),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

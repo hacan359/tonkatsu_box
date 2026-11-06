@@ -8,15 +8,16 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/logo_loader.dart';
 import '../facet_value.dart';
 import '../genre_cloud_layout.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Base text style for a cloud word.
 TextStyle genreWordStyle(double fontSize, Color color) => TextStyle(
-      fontSize: fontSize,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.2,
-      height: 1,
-      color: color,
-    );
+  fontSize: fontSize,
+  fontWeight: FontWeight.w700,
+  letterSpacing: -0.2,
+  height: 1,
+  color: color,
+);
 
 /// Shared by measurement and painting so the laid-out footprint matches what
 /// is drawn; [labelShadows] is paint-only.
@@ -147,31 +148,30 @@ class _GenreCloudViewState extends State<GenreCloudView> {
     final Map<String, Size> cache = <String, Size>{};
     final bool showCount = widget.showCount;
     return (FacetValue word, double fontSize) => cache.putIfAbsent(
-          '${word.label}|${word.count}|$fontSize',
-          () => measureGenreWord(word, fontSize, showCount: showCount),
-        );
+      '${word.label}|${word.count}|$fontSize',
+      () => measureGenreWord(word, fontSize, showCount: showCount),
+    );
   }
 
   GenreCloudLayout _compute(Size canvas) => layoutGenreCloud(
-        words: widget.words,
-        canvasSize: canvas,
-        measure: _memoizedMeasure(),
-        minFontSize: widget.minFontSize,
-        maxFontSize: widget.maxFontSize,
-      );
+    words: widget.words,
+    canvasSize: canvas,
+    measure: _memoizedMeasure(),
+    minFontSize: widget.minFontSize,
+    maxFontSize: widget.maxFontSize,
+  );
 
   Future<GenreCloudLayout> _computeAsync(
     Size canvas,
     List<FacetValue> words,
     MeasureWord measure,
-  ) =>
-      layoutGenreCloudAsync(
-        words: words,
-        canvasSize: canvas,
-        measure: measure,
-        minFontSize: widget.minFontSize,
-        maxFontSize: widget.maxFontSize,
-      );
+  ) => layoutGenreCloudAsync(
+    words: words,
+    canvasSize: canvas,
+    measure: measure,
+    minFontSize: widget.minFontSize,
+    maxFontSize: widget.maxFontSize,
+  );
 
   /// The cached layout when it still matches the current words + viewport.
   GenreCloudLayout? _cachedLayout(Size viewport) {
@@ -307,10 +307,7 @@ class _GenreCloudViewState extends State<GenreCloudView> {
                 bottom: 8,
                 child: Text(
                   widget.hiddenLabel!(layout.hidden),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textTertiary,
-                  ),
+                  style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
                 ),
               ),
           ],
@@ -330,7 +327,7 @@ class _RecenterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget button = Material(
-      color: AppColors.surface,
+      color: glassTileColor(),
       shape: CircleBorder(
         side: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
       ),
@@ -383,10 +380,7 @@ class _GenreCloudPainter extends CustomPainter {
       if (placed.rotated) {
         canvas.rotate(-math.pi / 2);
       }
-      painter.paint(
-        canvas,
-        Offset(-painter.width / 2, -painter.height / 2),
-      );
+      painter.paint(canvas, Offset(-painter.width / 2, -painter.height / 2));
       canvas.restore();
     }
   }

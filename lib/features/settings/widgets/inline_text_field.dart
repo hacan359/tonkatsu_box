@@ -5,6 +5,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Saves only on an explicit tick or Enter — losing focus reverts to [value].
 /// Nothing autosaves: settings must be deliberate.
@@ -38,8 +39,9 @@ class InlineTextField extends StatefulWidget {
 }
 
 class _InlineTextFieldState extends State<InlineTextField> {
-  static final BorderRadius _borderRadius =
-      BorderRadius.circular(AppSpacing.radiusSm);
+  static final BorderRadius _borderRadius = BorderRadius.circular(
+    AppSpacing.radiusSm,
+  );
   static const String _obscuredDots =
       '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
 
@@ -147,12 +149,12 @@ class _InlineTextFieldState extends State<InlineTextField> {
                 duration: AppDurations.fast,
                 height: height,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
+                  color: glassTileColor(),
                   borderRadius: _borderRadius,
                   border: Border.all(
                     color: _editing
                         ? AppColors.brand.withValues(alpha: 0.5)
-                        : AppColors.surfaceBorder,
+                        : glassTileBorderColor(),
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,

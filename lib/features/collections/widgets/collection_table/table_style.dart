@@ -16,12 +16,14 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
     columnSize: const TrinaGridColumnSizeConfig(
       resizeMode: TrinaResizeMode.normal,
     ),
+    // The grid sits on the glass panel, so it paints no backing of its own;
+    // hover and activation are neutral scrims that read on any wallpaper.
     style: TrinaGridStyleConfig.dark(
-      gridBackgroundColor: AppColors.background,
-      rowColor: AppColors.background,
+      gridBackgroundColor: Colors.transparent,
+      rowColor: Colors.transparent,
       enableRowHoverColor: true,
-      rowHoveredColor: AppColors.surfaceLight.withAlpha(50),
-      activatedColor: AppColors.surfaceLight.withAlpha(40),
+      rowHoveredColor: AppColors.textPrimary.withAlpha(18),
+      activatedColor: AppColors.textPrimary.withAlpha(14),
       activatedBorderColor: AppColors.brand.withAlpha(120),
       rowCheckedColor: AppColors.brand.withAlpha(40),
       // Without these the checkmark defaults to activatedColor (a dark
@@ -31,14 +33,14 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
       cellCheckedColor: AppColors.onOverlay,
       columnCheckedColor: AppColors.onOverlay,
       cellColorInReadOnlyState: Colors.transparent,
-      borderColor: AppColors.surfaceBorder.withAlpha(40),
+      borderColor: AppColors.textPrimary.withAlpha(24),
       enableColumnBorderVertical: false,
       enableCellBorderVertical: false,
-      gridBorderColor: AppColors.surfaceBorder.withAlpha(40),
+      gridBorderColor: AppColors.textPrimary.withAlpha(24),
       gridBorderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       iconColor: AppColors.textTertiary,
       disabledIconColor: AppColors.textTertiary.withAlpha(80),
-      menuBackgroundColor: AppColors.surface,
+      menuBackgroundColor: AppColors.surface.withAlpha(215),
       dragTargetColumnColor: AppColors.brand.withAlpha(30),
       columnTextStyle: AppTypography.caption.copyWith(
         color: AppColors.textTertiary,

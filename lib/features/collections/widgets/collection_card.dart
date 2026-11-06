@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/collection_hero_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/glass_panel.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/rich_collections_provider.dart';
 import 'collection_card_shell.dart';
@@ -47,8 +48,9 @@ class CollectionCard extends ConsumerWidget {
     // the classic card and its placeholder.
     if (richEnabled && heroFile != null && !collection.isHidden) {
       try {
-        heroAbsPath =
-            ref.watch(collectionHeroServiceProvider).resolve(heroFile);
+        heroAbsPath = ref
+            .watch(collectionHeroServiceProvider)
+            .resolve(heroFile);
       } on Object {
         heroAbsPath = null;
       }
@@ -77,11 +79,7 @@ class CollectionCard extends ConsumerWidget {
 }
 
 class UncategorizedCard extends StatelessWidget {
-  const UncategorizedCard({
-    required this.count,
-    this.onTap,
-    super.key,
-  });
+  const UncategorizedCard({required this.count, this.onTap, super.key});
 
   final int count;
 
@@ -100,9 +98,10 @@ class UncategorizedCard extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.surfaceLight,
-                borderRadius:
-                    BorderRadius.circular(CollectionCard.mosaicRadius),
+                color: glassTileColor(),
+                borderRadius: BorderRadius.circular(
+                  CollectionCard.mosaicRadius,
+                ),
                 border: Border.all(
                   color: AppColors.error.withValues(alpha: 0.5),
                 ),

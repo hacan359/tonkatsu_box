@@ -10,6 +10,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'tag_picker_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Tag chips; a tap opens the multi-select picker. When editable, chips
 /// drag into a manual per-item order (long-press drag on mobile).
@@ -29,8 +30,9 @@ class ItemTagsSection extends ConsumerWidget {
     final S l = S.of(context);
     final List<Tag> allTags =
         ref.watch(globalTagsProvider).valueOrNull ?? <Tag>[];
-    final List<Tag> itemTags = allTags
-        .orderedFor(ref.watch(itemTagsProvider).valueOrNull?[itemId]);
+    final List<Tag> itemTags = allTags.orderedFor(
+      ref.watch(itemTagsProvider).valueOrNull?[itemId],
+    );
 
     if (itemTags.isEmpty && !isEditable) return const SizedBox.shrink();
 
@@ -40,10 +42,7 @@ class ItemTagsSection extends ConsumerWidget {
       runSpacing: AppSpacing.xs,
       children: <Widget>[
         if (itemTags.isEmpty)
-          _buildChip(
-            label: l.tagNone,
-            icon: Icons.label_outlined,
-          )
+          _buildChip(label: l.tagNone, icon: Icons.label_outlined)
         else
           for (int i = 0; i < itemTags.length; i++)
             if (canReorder)
@@ -57,10 +56,7 @@ class ItemTagsSection extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => _editTags(context, ref),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: content,
-      ),
+      child: MouseRegion(cursor: SystemMouseCursors.click, child: content),
     );
   }
 
@@ -78,12 +74,13 @@ class ItemTagsSection extends ConsumerWidget {
           d.data.itemId == itemId && d.data.tagId != tag.id,
       onAcceptWithDetails: (DragTargetDetails<_TagDragData> d) =>
           _reorder(ref, itemTags, d.data.tagId, index),
-      builder: (
-        BuildContext context,
-        List<_TagDragData?> candidates,
-        List<dynamic> rejected,
-      ) =>
-          candidates.isEmpty ? chip : _buildTagChip(tag, highlighted: true),
+      builder:
+          (
+            BuildContext context,
+            List<_TagDragData?> candidates,
+            List<dynamic> rejected,
+          ) =>
+              candidates.isEmpty ? chip : _buildTagChip(tag, highlighted: true),
     );
 
     final _TagDragData data = _TagDragData(itemId: itemId, tagId: tag.id);
@@ -134,19 +131,18 @@ class ItemTagsSection extends ConsumerWidget {
     Color? textColor,
     bool highlighted = false,
   }) {
-    final Color labelColor =
-        textColor ?? accent ?? AppColors.textTertiary;
+    final Color labelColor = textColor ?? accent ?? AppColors.textTertiary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: accent != null ? accent.withAlpha(30) : AppColors.surface,
+        color: glassChipColor(tint: accent, tintAlpha: 70),
         borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
         border: Border.all(
           color: highlighted
               ? AppColors.brand
               : accent != null
-                  ? accent.withAlpha(80)
-                  : AppColors.surfaceBorder,
+              ? accent.withAlpha(110)
+              : AppColors.surfaceBorder,
           width: highlighted ? 1.5 : 1,
         ),
       ),
@@ -175,9 +171,12 @@ class ItemTagsSection extends ConsumerWidget {
 
   Future<void> _editTags(BuildContext context, WidgetRef ref) async {
     final Set<int> current = Set<int>.of(
-        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[]);
-    final Set<int>? selected =
-        await TagPickerDialog.show(context, initialSelection: current);
+      ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[],
+    );
+    final Set<int>? selected = await TagPickerDialog.show(
+      context,
+      initialSelection: current,
+    );
     if (selected == null) return;
     await ref.read(itemTagsProvider.notifier).setItemTags(itemId, selected);
   }

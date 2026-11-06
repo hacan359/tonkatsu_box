@@ -8,6 +8,7 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../services/search_collection_adder.dart';
 import 'media_action_handler.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Handler shape shared by Anime/Manga/VisualNovel (no platform picker or
 /// animation branch); [T] spares the accessors repeated `as` casts.
@@ -28,9 +29,9 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     this.sourceOf,
     this.enrich,
     this.enrichBeforeDetails,
-  })  : _ref = ref,
-        _adder = adder,
-        _targetCollections = targetCollections;
+  }) : _ref = ref,
+       _adder = adder,
+       _targetCollections = targetCollections;
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
@@ -128,9 +129,11 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   @override
   void showDetails(BuildContext context, Object item, MediaType mediaType) {
     final T typed = item as T;
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      // The details sheet carries its own glass panel.
+      selfBacked: true,
       builder: (BuildContext _) => sheetBuilder(
         typed,
         () => addToAnyCollection(context, typed, mediaType),
@@ -162,8 +165,9 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   /// Placements of [id]; [source] narrows them for multi-source types, whose
   /// providers hand out colliding numeric ids.
   Future<Set<int?>> _collectedCollectionIds(int id, DataSource? source) async {
-    final Map<int, List<CollectedItemInfo>> collected =
-        await _ref.read(collectedProvider.future);
+    final Map<int, List<CollectedItemInfo>> collected = await _ref.read(
+      collectedProvider.future,
+    );
     return (collected[id] ?? <CollectedItemInfo>[])
         .forSource(mediaType, source)
         .map((CollectedItemInfo i) => i.collectionId)

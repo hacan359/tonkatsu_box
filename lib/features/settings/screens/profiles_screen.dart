@@ -13,7 +13,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/draggable_fab.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/create_profile_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
@@ -148,11 +148,12 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     final S l = S.of(context);
     final ProfilesData data = ref.watch(profilesDataProvider);
 
-    return Stack(
+    return FramePage(
+      title: l.profiles,
+      child: Stack(
       children: <Widget>[
         Column(
           children: <Widget>[
-            SubScreenTitleBar(title: l.profiles),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -234,6 +235,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           ),
         ),
       ],
+      ),
     );
   }
 }

@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/services/image_cache_service.dart';
-import '../../theme/app_colors.dart';
 import '../cached_image.dart';
+import '../image_placeholder.dart';
 
 /// Cover image with loading/error placeholders. Uses the local image cache
 /// when both [cacheImageType] and [cacheImageId] are set.
@@ -51,27 +51,7 @@ class MediaCoverImage extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingPlaceholder() {
-    return Container(
-      color: AppColors.surfaceLight,
-      child: const Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ),
-    );
-  }
+  Widget _buildLoadingPlaceholder() => const ImagePlaceholder(showIcon: false);
 
-  Widget _buildPlaceholder() {
-    return Container(
-      color: AppColors.surfaceLight,
-      child: Icon(
-        placeholderIcon,
-        size: 32,
-        color: AppColors.textTertiary,
-      ),
-    );
-  }
+  Widget _buildPlaceholder() => ImagePlaceholder(icon: placeholderIcon);
 }

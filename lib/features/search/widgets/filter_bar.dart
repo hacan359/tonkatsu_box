@@ -6,7 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_segments.dart';
 import '../models/common_filter.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
@@ -54,69 +54,69 @@ class FilterBar extends ConsumerWidget {
     if (sortOptions.isNotEmpty) trailingCount++;
     if (showSheetButton) trailingCount++;
 
-    return ColoredBox(
-      color: AppColors.surface,
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: <Widget>[
-            SizedBox(
-              width: kMediaTypeSegmentWidth,
-              child: MediaTypeChevron(
-                mediaType: state.mediaType,
+    return SizedBox(
+      height: 40,
+      child: Row(
+        children: <Widget>[
+          SizedBox(
+            width: kMediaTypeSegmentWidth,
+            child: MediaTypeChevron(
+              mediaType: state.mediaType,
+              accentColor: accent,
+              isLast: barFilters.isEmpty && trailingCount == 0,
+              onChanged: (MediaType type) =>
+                  ref.read(browseProvider.notifier).setMediaType(type),
+            ),
+          ),
+          for (int i = 0; i < barFilters.length; i++)
+            Expanded(
+              child: FilterChevron(
+                key: ValueKey<String>(
+                  '${state.mediaType.name}_${barFilters[i].cacheKey}',
+                ),
+                filter: barFilters[i],
+                value: _valueOf(state, barFilters[i]),
                 accentColor: accent,
-                isLast: barFilters.isEmpty && trailingCount == 0,
-                onChanged: (MediaType type) =>
-                    ref.read(browseProvider.notifier).setMediaType(type),
+                isLast: trailingCount == 0 && i == barFilters.length - 1,
+                disabledReason: exclusiveBlockReason(
+                  exclusive,
+                  barFilters[i],
+                  l,
+                ),
+                onPick: (Object? value, CommonSelection? selection) {
+                  onBeforeFilterChange?.call();
+                  _apply(ref, state, barFilters[i], value, selection);
+                },
               ),
             ),
-            for (int i = 0; i < barFilters.length; i++)
-              Expanded(
-                child: FilterChevron(
-                  key: ValueKey<String>(
-                    '${state.mediaType.name}_${barFilters[i].cacheKey}',
-                  ),
-                  filter: barFilters[i],
-                  value: _valueOf(state, barFilters[i]),
-                  accentColor: accent,
-                  isLast: trailingCount == 0 && i == barFilters.length - 1,
-                  disabledReason:
-                      exclusiveBlockReason(exclusive, barFilters[i], l),
-                  onPick: (Object? value, CommonSelection? selection) {
-                    onBeforeFilterChange?.call();
-                    _apply(ref, state, barFilters[i], value, selection);
-                  },
-                ),
+          if (showSheetButton)
+            SizedBox(
+              width: 132,
+              child: _SheetButton(
+                accent: accent,
+                count: state.ownFilterCount,
+                total: filters.ownCount,
+                isLast: sortOptions.isEmpty,
+                onTap: () => showFilterSheet(context),
               ),
-            if (showSheetButton)
-              SizedBox(
-                width: 132,
-                child: _SheetButton(
-                  accent: accent,
-                  count: state.ownFilterCount,
-                  total: filters.ownCount,
-                  isLast: sortOptions.isEmpty,
-                  onTap: () => showFilterSheet(context),
-                ),
+            ),
+          if (sortOptions.isNotEmpty)
+            Expanded(
+              child: _SortChevron(
+                options: sortOptions,
+                current: state.effectiveSortBy,
+                disabledReason: _sortDisabledReason(state, l),
+                accentColor: accent,
+                isLast: true,
+                onChanged: (String sortBy) =>
+                    ref.read(browseProvider.notifier).setSort(sortBy),
               ),
-            if (sortOptions.isNotEmpty)
-              Expanded(
-                child: _SortChevron(
-                  options: sortOptions,
-                  current: state.effectiveSortBy,
-                  disabledReason: _sortDisabledReason(state, l),
-                  accentColor: accent,
-                  isLast: true,
-                  onChanged: (String sortBy) =>
-                      ref.read(browseProvider.notifier).setSort(sortBy),
-                ),
-              ),
-            if (state.hasFilters)
-              _ClearButton(
-                onTap: () => ref.read(browseProvider.notifier).clearFilters(),
-              ),
-          ],
-        ),
+            ),
+          if (state.hasFilters)
+            _ClearButton(
+              onTap: () => ref.read(browseProvider.notifier).clearFilters(),
+            ),
+        ],
       ),
     );
   }
@@ -170,7 +170,7 @@ class _SheetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return ChevronSegment(
+    return FilterSegment(
       label: count > 0
           ? '${l.collectionFilterFilters} ($count)'
           : '${l.collectionFilterFilters} · $total',
@@ -242,7 +242,7 @@ class _SortChevron extends StatelessWidget {
     if (reason != null) {
       return Tooltip(
         message: reason,
-        child: ChevronSegment(
+        child: FilterSegment(
           label: currentLabel,
           subtitle: l.sort,
           icon: Icons.sort,
@@ -255,7 +255,7 @@ class _SortChevron extends StatelessWidget {
       );
     }
 
-    return DropdownChevronSegment<Object>(
+    return FilterDropdownSegment<Object>(
       label: currentLabel,
       subtitle: l.sort,
       icon: Icons.sort,

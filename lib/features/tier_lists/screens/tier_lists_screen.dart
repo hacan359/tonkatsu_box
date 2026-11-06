@@ -21,6 +21,7 @@ import '../providers/tier_lists_provider.dart';
 import '../widgets/create_tier_list_dialog.dart';
 import 'tier_list_detail_screen.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// When [collectionId] is set, shows only that collection's tier lists;
 /// when null, shows all tier lists (the global navigation tab).
@@ -30,14 +31,14 @@ class TierListsScreen extends ConsumerStatefulWidget {
   final int? collectionId;
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.shortcutsGroupTierLists,
-        entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateTierList),
-          ShortcutEntry(keys: 'Enter', description: l.shortcutOpenTierList),
-          ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteTierList),
-          ShortcutEntry(keys: 'F2', description: l.rename),
-        ],
-      );
+    title: l.shortcutsGroupTierLists,
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateTierList),
+      ShortcutEntry(keys: 'Enter', description: l.shortcutOpenTierList),
+      ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteTierList),
+      ShortcutEntry(keys: 'F2', description: l.rename),
+    ],
+  );
 
   @override
   ConsumerState<TierListsScreen> createState() => _TierListsScreenState();
@@ -55,8 +56,9 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
         : ref.watch(tierListsProvider);
 
     // Mood grids are not tied to collections — only show in the global tab.
-    final AsyncValue<List<MoodGrid>>? moodGridsAsync =
-        collectionId == null ? ref.watch(moodGridsProvider) : null;
+    final AsyncValue<List<MoodGrid>>? moodGridsAsync = collectionId == null
+        ? ref.watch(moodGridsProvider)
+        : null;
 
     final String searchQuery = ref.watch(tierListsSearchQueryProvider);
 
@@ -64,96 +66,100 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
       bindings: kIsMobile
           ? const <ShortcutActivator, VoidCallback>{}
           : <ShortcutActivator, VoidCallback>{
-              const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-                  () => _showCreateDialog(context),
+              const SingleActivator(
+                LogicalKeyboardKey.keyN,
+                control: true,
+              ): () =>
+                  _showCreateDialog(context),
               const SingleActivator(LogicalKeyboardKey.delete): () {
-                if (_focusedTierList != null) _handleDelete(context, _focusedTierList!);
+                final TierList? focused = _focusedTierList;
+                if (focused != null) _handleDelete(context, focused);
               },
               const SingleActivator(LogicalKeyboardKey.f2): () {
-                if (_focusedTierList != null) _handleRename(context, _focusedTierList!);
+                final TierList? focused = _focusedTierList;
+                if (focused != null) _handleRename(context, focused);
               },
             },
       child: Stack(
         children: <Widget>[
           tierListsAsync.when(
-          loading: () => ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            children: const <Widget>[
-              ShimmerTierListCard(),
-              SizedBox(height: AppSpacing.sm),
-              ShimmerTierListCard(),
-              SizedBox(height: AppSpacing.sm),
-              ShimmerTierListCard(),
-            ],
-          ),
-          error: (Object error, StackTrace stack) => Center(
-            child: Text(l.errorPrefix(error.toString())),
-          ),
-          data: (List<TierList> tierLists) {
-            final List<MoodGrid> grids =
-                moodGridsAsync?.valueOrNull ?? <MoodGrid>[];
-            final List<_BoardEntry> merged = _mergeAndSort(
-              tierLists,
-              grids,
-              searchQuery,
-            );
-            if (merged.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(
-                      Icons.leaderboard_outlined,
-                      size: 64,
-                      color: AppColors.textTertiary.withAlpha(120),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      (tierLists.isEmpty && grids.isEmpty)
-                          ? l.tierListEmpty
-                          : l.allItemsNoMatch,
-                      style: AppTypography.h2.copyWith(
-                        color: AppColors.textTertiary,
+            loading: () => ListView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              children: const <Widget>[
+                ShimmerTierListCard(),
+                SizedBox(height: AppSpacing.sm),
+                ShimmerTierListCard(),
+                SizedBox(height: AppSpacing.sm),
+                ShimmerTierListCard(),
+              ],
+            ),
+            error: (Object error, StackTrace stack) =>
+                Center(child: Text(l.errorPrefix(error.toString()))),
+            data: (List<TierList> tierLists) {
+              final List<MoodGrid> grids =
+                  moodGridsAsync?.valueOrNull ?? <MoodGrid>[];
+              final List<_BoardEntry> merged = _mergeAndSort(
+                tierLists,
+                grids,
+                searchQuery,
+              );
+              if (merged.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.leaderboard_outlined,
+                        size: 64,
+                        color: AppColors.textTertiary.withAlpha(120),
                       ),
-                    ),
-                    if (tierLists.isEmpty && grids.isEmpty) ...<Widget>[
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
-                        l.tierListEmptyHint,
-                        textAlign: TextAlign.center,
-                        style: AppTypography.body.copyWith(
-                          color: AppColors.textSecondary,
+                        (tierLists.isEmpty && grids.isEmpty)
+                            ? l.tierListEmpty
+                            : l.allItemsNoMatch,
+                        style: AppTypography.h2.copyWith(
+                          color: AppColors.textTertiary,
                         ),
                       ),
+                      if (tierLists.isEmpty && grids.isEmpty) ...<Widget>[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          l.tierListEmptyHint,
+                          textAlign: TextAlign.center,
+                          style: AppTypography.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
+                  ),
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                itemCount: merged.length,
+                separatorBuilder: (BuildContext context, int index) =>
+                    const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (BuildContext context, int index) {
+                  final _BoardEntry entry = merged[index];
+                  final TierList? tl = entry.tierList;
+                  if (tl != null) {
+                    return _TierListCard(
+                      tierList: tl,
+                      collectionId: collectionId,
+                      onFocusChanged: (bool focused) {
+                        setState(() {
+                          _focusedTierList = focused ? tl : null;
+                        });
+                      },
+                    );
+                  }
+                  return _MoodGridCard(grid: entry.moodGrid!);
+                },
               );
-            }
-            return ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: merged.length,
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (BuildContext context, int index) {
-                final _BoardEntry entry = merged[index];
-                final TierList? tl = entry.tierList;
-                if (tl != null) {
-                  return _TierListCard(
-                    tierList: tl,
-                    collectionId: collectionId,
-                    onFocusChanged: (bool focused) {
-                      setState(() {
-                        _focusedTierList = focused ? tl : null;
-                      });
-                    },
-                  );
-                }
-                return _MoodGridCard(grid: entry.moodGrid!);
-              },
-            );
-          },
-        ),
+            },
+          ),
           DraggableFab(
             mainAction: DraggableFabItem(
               icon: Icons.add,
@@ -177,15 +183,16 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
   Future<void> _showCreateDialog(BuildContext context) async {
     final TierList? result = await showDialog<TierList>(
       context: context,
-      builder: (BuildContext context) => CreateTierListDialog(
-        preselectedCollectionId: widget.collectionId,
-      ),
+      builder: (BuildContext context) =>
+          CreateTierListDialog(preselectedCollectionId: widget.collectionId),
     );
     if (result != null && context.mounted) {
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            TierListDetailScreen(tierListId: result.id),
-      ));
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) =>
+              TierListDetailScreen(tierListId: result.id),
+        ),
+      );
     }
   }
 
@@ -195,27 +202,29 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
       builder: (BuildContext context) => const CreateMoodGridDialog(),
     );
     if (grid != null && context.mounted) {
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            MoodGridDetailScreen(gridId: grid.id),
-      ));
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) =>
+              MoodGridDetailScreen(gridId: grid.id),
+        ),
+      );
     }
   }
 
   Future<void> _handleRename(BuildContext context, TierList tierList) async {
     final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: tierList.name);
+    final TextEditingController controller = TextEditingController(
+      text: tierList.name,
+    );
     final String? newName = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(l.rename),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(hintText: l.tierListNameHint),
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
+          onSubmitted: (String value) => Navigator.of(ctx).pop(value.trim()),
         ),
         actions: <Widget>[
           TextButton(
@@ -223,8 +232,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             child: Text(l.cancel),
           ),
           TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
             child: Text(l.save),
           ),
         ],
@@ -236,9 +244,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             .read(collectionTierListsProvider(widget.collectionId!).notifier)
             .rename(tierList.id, newName);
       } else {
-        await ref
-            .read(tierListsProvider.notifier)
-            .rename(tierList.id, newName);
+        await ref.read(tierListsProvider.notifier).rename(tierList.id, newName);
       }
     }
   }
@@ -277,31 +283,28 @@ class _TierListCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
-      color: AppColors.surfaceLight,
       child: Focus(
         onFocusChange: onFocusChanged,
         child: InkWell(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute<void>(
-              builder: (BuildContext context) =>
-                  TierListDetailScreen(tierListId: tierList.id),
-            ));
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) =>
+                    TierListDetailScreen(tierListId: tierList.id),
+              ),
+            );
           },
           onLongPress: () => _showContextMenu(context, ref),
           onSecondaryTapUp: kIsMobile
               ? null
               : (TapUpDetails details) =>
-                  _showPopupMenu(context, ref, details.globalPosition),
+                    _showPopupMenu(context, ref, details.globalPosition),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: <Widget>[
-                Icon(
-                  Icons.leaderboard,
-                  color: AppColors.brand,
-                  size: 32,
-                ),
+                Icon(Icons.leaderboard, color: AppColors.brand, size: 32),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -325,10 +328,7 @@ class _TierListCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textTertiary,
-                ),
+                Icon(Icons.chevron_right, color: AppColors.textTertiary),
               ],
             ),
           ),
@@ -365,10 +365,7 @@ class _TierListCard extends ConsumerWidget {
           value: 'delete',
           child: ListTile(
             leading: Icon(Icons.delete, color: AppColors.error),
-            title: Text(
-              l.delete,
-              style: TextStyle(color: AppColors.error),
-            ),
+            title: Text(l.delete, style: TextStyle(color: AppColors.error)),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -385,9 +382,8 @@ class _TierListCard extends ConsumerWidget {
 
   void _showContextMenu(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
       builder: (BuildContext ctx) {
         return SafeArea(
           child: Column(
@@ -403,10 +399,7 @@ class _TierListCard extends ConsumerWidget {
               ),
               ListTile(
                 leading: Icon(Icons.delete, color: AppColors.error),
-                title: Text(
-                  l.delete,
-                  style: TextStyle(color: AppColors.error),
-                ),
+                title: Text(l.delete, style: TextStyle(color: AppColors.error)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _handleDelete(context, ref);
@@ -421,18 +414,18 @@ class _TierListCard extends ConsumerWidget {
 
   Future<void> _handleRename(BuildContext context, WidgetRef ref) async {
     final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: tierList.name);
+    final TextEditingController controller = TextEditingController(
+      text: tierList.name,
+    );
     final String? newName = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(l.rename),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(hintText: l.tierListNameHint),
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
+          onSubmitted: (String value) => Navigator.of(ctx).pop(value.trim()),
         ),
         actions: <Widget>[
           TextButton(
@@ -440,8 +433,7 @@ class _TierListCard extends ConsumerWidget {
             child: Text(l.cancel),
           ),
           TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
             child: Text(l.save),
           ),
         ],
@@ -453,9 +445,7 @@ class _TierListCard extends ConsumerWidget {
             .read(collectionTierListsProvider(collectionId!).notifier)
             .rename(tierList.id, newName);
       } else {
-        await ref
-            .read(tierListsProvider.notifier)
-            .rename(tierList.id, newName);
+        await ref.read(tierListsProvider.notifier).rename(tierList.id, newName);
       }
     }
   }
@@ -488,8 +478,7 @@ class _BoardEntry {
   final TierList? tierList;
   final MoodGrid? moodGrid;
 
-  DateTime get createdAt =>
-      tierList?.createdAt ?? moodGrid!.createdAt;
+  DateTime get createdAt => tierList?.createdAt ?? moodGrid!.createdAt;
 
   String get name => tierList?.name ?? moodGrid!.name;
 }
@@ -523,27 +512,24 @@ class _MoodGridCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
     return Card(
-      color: AppColors.surfaceLight,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (BuildContext context) =>
-              MoodGridDetailScreen(gridId: grid.id),
-        )),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) =>
+                MoodGridDetailScreen(gridId: grid.id),
+          ),
+        ),
         onLongPress: () => _showMoodGridSheet(context, ref),
         onSecondaryTapUp: kIsMobile
             ? null
             : (TapUpDetails d) =>
-                _showMoodGridPopupMenu(context, ref, d.globalPosition),
+                  _showMoodGridPopupMenu(context, ref, d.globalPosition),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: <Widget>[
-              Icon(
-                Icons.grid_view,
-                color: AppColors.brand,
-                size: 32,
-              ),
+              Icon(Icons.grid_view, color: AppColors.brand, size: 32),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -575,9 +561,8 @@ class _MoodGridCard extends ConsumerWidget {
 
   void _showMoodGridSheet(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
       builder: (BuildContext ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -592,10 +577,7 @@ class _MoodGridCard extends ConsumerWidget {
             ),
             ListTile(
               leading: Icon(Icons.delete, color: AppColors.error),
-              title: Text(
-                l.delete,
-                style: TextStyle(color: AppColors.error),
-              ),
+              title: Text(l.delete, style: TextStyle(color: AppColors.error)),
               onTap: () {
                 Navigator.pop(ctx);
                 _deleteGrid(context, ref);
@@ -607,11 +589,7 @@ class _MoodGridCard extends ConsumerWidget {
     );
   }
 
-  void _showMoodGridPopupMenu(
-    BuildContext context,
-    WidgetRef ref,
-    Offset pos,
-  ) {
+  void _showMoodGridPopupMenu(BuildContext context, WidgetRef ref, Offset pos) {
     final S l = S.of(context);
     showMenu<String>(
       context: context,
@@ -629,10 +607,7 @@ class _MoodGridCard extends ConsumerWidget {
           value: 'delete',
           child: ListTile(
             leading: Icon(Icons.delete, color: AppColors.error),
-            title: Text(
-              l.delete,
-              style: TextStyle(color: AppColors.error),
-            ),
+            title: Text(l.delete, style: TextStyle(color: AppColors.error)),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -649,11 +624,12 @@ class _MoodGridCard extends ConsumerWidget {
 
   Future<void> _renameGrid(BuildContext context, WidgetRef ref) async {
     final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: grid.name);
+    final TextEditingController controller = TextEditingController(
+      text: grid.name,
+    );
     final String? newName = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(l.rename),
         content: TextField(
           controller: controller,
@@ -673,9 +649,7 @@ class _MoodGridCard extends ConsumerWidget {
       ),
     );
     if (newName != null && newName.isNotEmpty) {
-      await ref
-          .read(moodGridsProvider.notifier)
-          .rename(grid.id, newName);
+      await ref.read(moodGridsProvider.notifier).rename(grid.id, newName);
     }
   }
 

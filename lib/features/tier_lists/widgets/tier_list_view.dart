@@ -14,6 +14,7 @@ import '../providers/tier_list_detail_provider.dart';
 import 'tier_item_card.dart';
 import 'tier_row.dart';
 import '../../../shared/constants/tier_definition_ui.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Tiers stacked over the Unranked pool, with a vertical drag handle between
 /// them so the user can resize the two regions.
@@ -58,11 +59,13 @@ class _TierListViewState extends ConsumerState<TierListView> {
     final String filterQuery = widget.filterQuery;
     final S l = S.of(context);
     // Granular select avoids rebuilding on every unrelated settings change.
-    final String titleLanguage = ref.watch(settingsNotifierProvider
-        .select((SettingsState s) => s.animeMangaTitleLanguage));
+    final String titleLanguage = ref.watch(
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.animeMangaTitleLanguage,
+      ),
+    );
     final String? Function(CollectionItem) overlayResolver = ref.watch(
-      settingsNotifierProvider
-          .select((SettingsState s) => s.resolveOverlayFor),
+      settingsNotifierProvider.select((SettingsState s) => s.resolveOverlayFor),
     );
 
     final Map<String, List<TierListEntry>> entriesByTier = state.entriesByTier;
@@ -86,8 +89,10 @@ class _TierListViewState extends ConsumerState<TierListView> {
           final double total = constraints.maxHeight;
           final double maxTop = total - _minBottomHeight - _dividerThickness;
           final double defaultTop = total / 3;
-          final double topH = (_topHeight ?? defaultTop)
-              .clamp(_minTopHeight, maxTop > _minTopHeight ? maxTop : _minTopHeight);
+          final double topH = (_topHeight ?? defaultTop).clamp(
+            _minTopHeight,
+            maxTop > _minTopHeight ? maxTop : _minTopHeight,
+          );
           final double bottomH = total - topH - _dividerThickness;
 
           return Column(
@@ -109,7 +114,7 @@ class _TierListViewState extends ConsumerState<TierListView> {
                           definitions: state.definitions,
                           entries:
                               entriesByTier[state.definitions[i].tierKey] ??
-                                  const <TierListEntry>[],
+                              const <TierListEntry>[],
                           itemsMap: itemsMap,
                           titleLanguage: titleLanguage,
                           overlayResolver: overlayResolver,
@@ -155,9 +160,8 @@ class _TierListViewState extends ConsumerState<TierListView> {
       (TierDefinition d) => d.tierKey == def.tierKey,
     );
     final int tierCount = widget.state.definitions.length;
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
       builder: (BuildContext ctx) {
         return SafeArea(
           child: Column(
@@ -233,17 +237,17 @@ class _TierListViewState extends ConsumerState<TierListView> {
     WidgetRef ref,
     TierDefinition def,
   ) async {
-    final TextEditingController controller =
-        TextEditingController(text: def.label);
+    final TextEditingController controller = TextEditingController(
+      text: def.label,
+    );
     final String? newLabel = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(S.of(context).tierListRename),
         content: TextField(
           controller: controller,
           autofocus: true,
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
+          onSubmitted: (String value) => Navigator.of(ctx).pop(value.trim()),
         ),
         actions: <Widget>[
           TextButton(
@@ -251,8 +255,7 @@ class _TierListViewState extends ConsumerState<TierListView> {
             child: Text(S.of(context).cancel),
           ),
           TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
             child: Text(S.of(context).save),
           ),
         ],
@@ -280,7 +283,6 @@ class _TierListViewState extends ConsumerState<TierListView> {
           .updateTierDefinition(def.tierKey, color: picked);
     }
   }
-
 }
 
 /// Tier row wrapped in a drop target for whole-tier (String key) drags.
@@ -321,39 +323,43 @@ class _TierRowDropTarget extends ConsumerWidget {
             .read(tierListDetailProvider(tierListId).notifier)
             .moveTier(from, index);
       },
-      builder: (BuildContext context, List<String?> candidateData,
-          List<dynamic> rejectedData) {
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: candidateData.isNotEmpty
-                  ? AppColors.brand
-                  : Colors.transparent,
-              width: 2,
-            ),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
-          child: TierRow(
-            tierListId: tierListId,
-            definition: _definition,
-            entries: entries,
-            itemsMap: itemsMap,
-            titleLanguage: titleLanguage,
-            overlayResolver: overlayResolver,
-            tierDraggable: true,
-            onDrop: (int collectionItemId, int? dropIndex) {
-              ref
-                  .read(tierListDetailProvider(tierListId).notifier)
-                  .moveToTier(
-                    collectionItemId,
-                    _definition.tierKey,
-                    index: dropIndex,
-                  );
-            },
-            onDefinitionTap: onDefinitionTap,
-          ),
-        );
-      },
+      builder:
+          (
+            BuildContext context,
+            List<String?> candidateData,
+            List<dynamic> rejectedData,
+          ) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: candidateData.isNotEmpty
+                      ? AppColors.brand
+                      : Colors.transparent,
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: TierRow(
+                tierListId: tierListId,
+                definition: _definition,
+                entries: entries,
+                itemsMap: itemsMap,
+                titleLanguage: titleLanguage,
+                overlayResolver: overlayResolver,
+                tierDraggable: true,
+                onDrop: (int collectionItemId, int? dropIndex) {
+                  ref
+                      .read(tierListDetailProvider(tierListId).notifier)
+                      .moveToTier(
+                        collectionItemId,
+                        _definition.tierKey,
+                        index: dropIndex,
+                      );
+                },
+                onDefinitionTap: onDefinitionTap,
+              ),
+            );
+          },
     );
   }
 }
@@ -380,54 +386,59 @@ class _UnrankedPool extends ConsumerWidget {
             .read(tierListDetailProvider(tierListId).notifier)
             .removeFromTier(details.data);
       },
-      builder: (BuildContext context, List<int?> candidateData,
-          List<dynamic> rejectedData) {
-        return Container(
-          decoration: BoxDecoration(
-            border: candidateData.isNotEmpty
-                ? Border.all(color: AppColors.brand, width: 2)
-                : null,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-          child: items.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Text(
-                      S.of(context).tierListAllRanked,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
+      builder:
+          (
+            BuildContext context,
+            List<int?> candidateData,
+            List<dynamic> rejectedData,
+          ) {
+            return Container(
+              decoration: BoxDecoration(
+                border: candidateData.isNotEmpty
+                    ? Border.all(color: AppColors.brand, width: 2)
+                    : null,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              ),
+              child: items.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Text(
+                          S.of(context).tierListAllRanked,
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
                       ),
+                    )
+                  // GridView.builder lazy-renders only visible cards — keeps
+                  // large Unranked pools cheap to scroll and filter.
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: m.cardWidth + AppSpacing.xs,
+                        mainAxisExtent:
+                            m.cardImageHeight + m.cardLabelMinHeight,
+                        crossAxisSpacing: AppSpacing.xs,
+                        mainAxisSpacing: AppSpacing.xs,
+                      ),
+                      itemCount: items.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final CollectionItem item = items[index];
+                        return TierItemCard(
+                          key: ValueKey<int>(item.id),
+                          item: item,
+                          displayName: item.displayName(titleLanguage),
+                          isDraggable: true,
+                          width: m.cardWidth,
+                          height: m.cardImageHeight,
+                          labelHeight: m.cardLabelMinHeight,
+                          platformOverlayAsset: overlayResolver(item),
+                        );
+                      },
                     ),
-                  ),
-                )
-              // GridView.builder lazy-renders only visible cards — keeps
-              // large Unranked pools cheap to scroll and filter.
-              : GridView.builder(
-                  padding: const EdgeInsets.all(AppSpacing.xs),
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: m.cardWidth + AppSpacing.xs,
-                    mainAxisExtent: m.cardImageHeight + m.cardLabelMinHeight,
-                    crossAxisSpacing: AppSpacing.xs,
-                    mainAxisSpacing: AppSpacing.xs,
-                  ),
-                  itemCount: items.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final CollectionItem item = items[index];
-                    return TierItemCard(
-                      key: ValueKey<int>(item.id),
-                      item: item,
-                      displayName: item.displayName(titleLanguage),
-                      isDraggable: true,
-                      width: m.cardWidth,
-                      height: m.cardImageHeight,
-                      labelHeight: m.cardLabelMinHeight,
-                      platformOverlayAsset: overlayResolver(item),
-                    );
-                  },
-                ),
-        );
-      },
+            );
+          },
     );
   }
 }

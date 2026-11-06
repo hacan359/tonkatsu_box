@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import 'glass_panel.dart';
 
 /// One option of a [SegmentedPill].
 class SegmentedPillOption<T> {
@@ -49,7 +50,7 @@ class SegmentedPill<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: glassChipColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(color: AppColors.surfaceBorder),
       ),
@@ -105,11 +106,7 @@ class _Segment<T> extends StatelessWidget {
       option.label,
       maxLines: 1,
       overflow: expand ? TextOverflow.ellipsis : TextOverflow.clip,
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: fg,
-      ),
+      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: fg),
     );
     return GestureDetector(
       onTap: onTap,

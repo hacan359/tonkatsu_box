@@ -6,6 +6,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../../../shared/widgets/segmented_pill.dart';
 import '../../../shared/constants/calendar_recurrence_ui.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Result of [showAddToCalendarDialog].
 class AddToCalendarResult {
@@ -54,7 +55,7 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.calendarAdd),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -96,9 +97,9 @@ class _AddToCalendarDialogState extends State<_AddToCalendarDialog> {
           child: Text(l.cancel),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(
-            AddToCalendarResult(_date, _recurrence),
-          ),
+          onPressed: () => Navigator.of(
+            context,
+          ).pop(AddToCalendarResult(_date, _recurrence)),
           child: Text(l.add),
         ),
       ],

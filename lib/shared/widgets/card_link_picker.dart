@@ -12,13 +12,14 @@ import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
 import '../constants/collection_item_ui.dart';
+import 'glass_dialog.dart';
 
 /// Opens the card picker and returns the chosen item, or `null` if dismissed.
 Future<CollectionItem?> showCardLinkPicker(
   BuildContext context,
   WidgetRef ref,
 ) {
-  return showModalBottomSheet<CollectionItem>(
+  return showGlassSheet<CollectionItem>(
     context: context,
     isScrollControlled: true,
     builder: (BuildContext context) => _CardLinkPickerSheet(ref: ref),
@@ -79,9 +80,7 @@ class _CardLinkPickerSheetState extends State<_CardLinkPickerSheet> {
     final String q = _query.text.trim().toLowerCase();
     final List<CollectionItem> results = <CollectionItem>[];
     if (q.isNotEmpty) {
-      for (int i = 0;
-          i < _all.length && results.length < _maxResults;
-          i++) {
+      for (int i = 0; i < _all.length && results.length < _maxResults; i++) {
         if (_namesLower[i].contains(q)) results.add(_all[i]);
       }
     }
@@ -127,21 +126,23 @@ class _CardLinkPickerSheetState extends State<_CardLinkPickerSheet> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _query.text.trim().isEmpty
-                      ? Center(
-                          child: Text(
-                            l.cardLinkSearchHint,
-                            style: AppTypography.body
-                                .copyWith(color: AppColors.textTertiary),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: items.length,
-                          itemBuilder: (BuildContext context, int index) =>
-                              _CardLinkPickerTile(
-                            item: items[index],
-                            onTap: () => Navigator.of(context).pop(items[index]),
-                          ),
+                  ? Center(
+                      child: Text(
+                        l.cardLinkSearchHint,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textTertiary,
                         ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (BuildContext context, int index) =>
+                          _CardLinkPickerTile(
+                            item: items[index],
+                            onTap: () =>
+                                Navigator.of(context).pop(items[index]),
+                          ),
+                    ),
             ),
           ],
         ),
@@ -194,8 +195,9 @@ class _CardLinkPickerTile extends StatelessWidget {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textTertiary),
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textTertiary,
+              ),
             ),
           ),
         ],

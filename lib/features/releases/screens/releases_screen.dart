@@ -19,6 +19,8 @@ import '../../settings/providers/settings_provider.dart';
 import '../models/release_event.dart';
 import '../providers/releases_provider.dart';
 import '../widgets/releases_empty_state.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 enum _CalendarView { month, week, day }
 
@@ -57,17 +59,21 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     _datePreset = DateFormatPreset.fromId(
-      ref.watch(settingsNotifierProvider.select((SettingsState s) => s.dateFormat)),
+      ref.watch(
+        settingsNotifierProvider.select((SettingsState s) => s.dateFormat),
+      ),
     );
     _localeName = Localizations.localeOf(context).toLanguageTag();
-    final AsyncValue<ReleasesCalendarData> async =
-        ref.watch(releasesProvider);
+    final AsyncValue<ReleasesCalendarData> async = ref.watch(releasesProvider);
 
     return async.when(
       loading: () => const ShimmerList(),
       error: (Object _, StackTrace _) => Center(
-        child: Icon(Icons.error_outline,
-            size: 48, color: AppColors.textTertiary),
+        child: Icon(
+          Icons.error_outline,
+          size: 48,
+          color: AppColors.textTertiary,
+        ),
       ),
       data: (ReleasesCalendarData data) {
         if (data.trackedCount == 0) {
@@ -204,7 +210,6 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     }
   }
 
-
   Widget _toolbar(S l) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -268,10 +273,18 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     await ref.read(releasesProvider.future);
   }
 
-
   void _scheduleSync(S l, List<ReleaseEvent> events) {
-    final int signature = Object.hashAll(events.map((ReleaseEvent e) =>
-        Object.hash(e.externalId, e.season, e.episode, e.watched, e.isUpcoming)));
+    final int signature = Object.hashAll(
+      events.map(
+        (ReleaseEvent e) => Object.hash(
+          e.externalId,
+          e.season,
+          e.episode,
+          e.watched,
+          e.isUpcoming,
+        ),
+      ),
+    );
     if (signature == _syncedSignature) return;
     _syncedSignature = signature;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -343,12 +356,14 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
         }
         final bool overflow = events.length > capacity;
         final int reserve =
-            overflow && (capacity * chipExtent + moreExtent > constraints.maxHeight)
-                ? 1
-                : 0;
+            overflow &&
+                (capacity * chipExtent + moreExtent > constraints.maxHeight)
+            ? 1
+            : 0;
         final int showCount = overflow ? capacity - reserve : events.length;
-        final List<CalendarEventData<Object?>> shown =
-            events.take(showCount < 0 ? 0 : showCount).toList();
+        final List<CalendarEventData<Object?>> shown = events
+            .take(showCount < 0 ? 0 : showCount)
+            .toList();
         final int extra = events.length - shown.length;
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -442,9 +457,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                     fontSize: 12,
                     height: 1.1,
                     fontWeight: FontWeight.w500,
-                    color: dim
-                        ? AppColors.textTertiary
-                        : AppColors.textPrimary,
+                    color: dim ? AppColors.textTertiary : AppColors.textPrimary,
                     decoration: dim ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -456,13 +469,15 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     );
   }
 
-
   Widget _agenda(S l, ReleasesCalendarData data, {required bool week}) {
     final Map<DateTime, List<ReleaseEvent>> byDay = _groupByDay(data.events);
-    final List<DateTime> days =
-        week ? _weekDays(_focusedDay) : <DateTime>[_dateOnly(_focusedDay)];
-    final int total =
-        days.fold(0, (int sum, DateTime d) => sum + (byDay[d]?.length ?? 0));
+    final List<DateTime> days = week
+        ? _weekDays(_focusedDay)
+        : <DateTime>[_dateOnly(_focusedDay)];
+    final int total = days.fold(
+      0,
+      (int sum, DateTime d) => sum + (byDay[d]?.length ?? 0),
+    );
 
     return Column(
       children: <Widget>[
@@ -489,14 +504,13 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
                       AppSpacing.lg,
                     ),
                     children: <Widget>[
-                      for (final DateTime day in days)
-                        ...<Widget>[
-                          if (week && (byDay[day]?.isNotEmpty ?? false))
-                            _dayHeader(day),
-                          for (final ReleaseEvent e
-                              in byDay[day] ?? const <ReleaseEvent>[])
-                            _eventTile(l, e),
-                        ],
+                      for (final DateTime day in days) ...<Widget>[
+                        if (week && (byDay[day]?.isNotEmpty ?? false))
+                          _dayHeader(day),
+                        for (final ReleaseEvent e
+                            in byDay[day] ?? const <ReleaseEvent>[])
+                          _eventTile(l, e),
+                      ],
                     ],
                   ),
           ),
@@ -515,10 +529,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: _goPrev,
-          ),
+          IconButton(icon: const Icon(Icons.chevron_left), onPressed: _goPrev),
           Expanded(
             child: Material(
               type: MaterialType.transparency,
@@ -536,14 +547,8 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: _goNext,
-          ),
-          TextButton(
-            onPressed: _goToday,
-            child: Text(l.releasesToday),
-          ),
+          IconButton(icon: const Icon(Icons.chevron_right), onPressed: _goNext),
+          TextButton(onPressed: _goToday, child: Text(l.releasesToday)),
         ],
       ),
     );
@@ -554,11 +559,13 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       case _CalendarView.month:
         _monthKey.currentState?.previousPage();
       case _CalendarView.week:
-        setState(() =>
-            _focusedDay = _focusedDay.subtract(const Duration(days: 7)));
+        setState(
+          () => _focusedDay = _focusedDay.subtract(const Duration(days: 7)),
+        );
       case _CalendarView.day:
-        setState(() =>
-            _focusedDay = _focusedDay.subtract(const Duration(days: 1)));
+        setState(
+          () => _focusedDay = _focusedDay.subtract(const Duration(days: 1)),
+        );
     }
   }
 
@@ -575,8 +582,9 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
 
   /// Opens the full calendar picker to jump the current view to any date.
   Future<void> _pickJumpDate() async {
-    final DateTime initial =
-        _view == _CalendarView.month ? _monthAnchor : _focusedDay;
+    final DateTime initial = _view == _CalendarView.month
+        ? _monthAnchor
+        : _focusedDay;
     final DateTime? picked = await showDualDatePicker(
       context: context,
       initialDate: initial,
@@ -625,7 +633,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Material(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -642,11 +650,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _thumb(
-                  e,
-                  width: inSheet ? 60 : 46,
-                  height: inSheet ? 90 : 69,
-                ),
+                _thumb(e, width: inSheet ? 60 : 46, height: inSheet ? 90 : 69),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -713,26 +717,24 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(Icons.event_busy,
-              size: 48, color: AppColors.textTertiary.withAlpha(120)),
+          Icon(
+            Icons.event_busy,
+            size: 48,
+            color: AppColors.textTertiary.withAlpha(120),
+          ),
           const SizedBox(height: AppSpacing.sm),
-          Text(l.releasesNoEpisodes,
-              style: TextStyle(color: AppColors.textTertiary)),
+          Text(
+            l.releasesNoEpisodes,
+            style: TextStyle(color: AppColors.textTertiary),
+          ),
         ],
       ),
     );
   }
 
-
   void _showPreview(ReleaseEvent e) {
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusLg),
-        ),
-      ),
       builder: (BuildContext sheetContext) {
         final S l = S.of(sheetContext);
         return SafeArea(
@@ -759,19 +761,21 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     );
   }
 
-
-  Widget _thumb(ReleaseEvent? e, {required double width, required double height}) {
+  Widget _thumb(
+    ReleaseEvent? e, {
+    required double width,
+    required double height,
+  }) {
     final Widget placeholder = ColoredBox(
-      color: AppColors.surface,
+      color: glassTileColor(),
       child: Icon(
         _placeholderIcon(e?.mediaType),
         size: 14,
         color: AppColors.textTertiary,
       ),
     );
-    final bool cacheable = e?.posterUrl != null &&
-        e?.imageType != null &&
-        e?.cacheImageId != null;
+    final bool cacheable =
+        e?.posterUrl != null && e?.imageType != null && e?.cacheImageId != null;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
       child: SizedBox(
@@ -806,16 +810,16 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     if (payload is! ReleaseEvent) return;
     final int? itemId = payload.itemId;
     if (itemId == null) return;
-    final MetaSearchRequest? request =
-        await Navigator.of(context).push<MetaSearchRequest?>(
-      MaterialPageRoute<MetaSearchRequest?>(
-        builder: (BuildContext context) => ItemDetailScreen(
-          collectionId: payload.collectionId,
-          itemId: itemId,
-          isEditable: true,
-        ),
-      ),
-    );
+    final MetaSearchRequest? request = await Navigator.of(context)
+        .push<MetaSearchRequest?>(
+          MaterialPageRoute<MetaSearchRequest?>(
+            builder: (BuildContext context) => ItemDetailScreen(
+              collectionId: payload.collectionId,
+              itemId: itemId,
+              isEditable: true,
+            ),
+          ),
+        );
     if (request == null || !mounted) return;
     ref.read(homeMetaSearchRequestProvider.notifier).state = request;
   }
@@ -824,8 +828,9 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
 
   List<DateTime> _weekDays(DateTime anchor) {
     final DateTime date = _dateOnly(anchor);
-    final DateTime start =
-        date.subtract(Duration(days: date.weekday - DateTime.monday));
+    final DateTime start = date.subtract(
+      Duration(days: date.weekday - DateTime.monday),
+    );
     return <DateTime>[for (int i = 0; i < 7; i++) start.add(Duration(days: i))];
   }
 
@@ -839,13 +844,13 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
   /// Dark weekday header tile. [index] 0 = Monday (matches `startDay`).
   Widget _weekDayTile(int index) {
     // 2024-01-01 was a Monday; offset by the column index for the localized name.
-    final String name = DateFormat.E(_localeName)
-        .format(DateTime(2024, 1, 1).add(Duration(days: index)))
-        .toUpperCase();
+    final String name = DateFormat.E(
+      _localeName,
+    ).format(DateTime(2024, 1, 1).add(Duration(days: index))).toUpperCase();
     return Container(
       height: 34,
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         border: Border(
           bottom: BorderSide(color: AppColors.surfaceBorder),
           right: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
@@ -876,8 +881,10 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       (map[_dateOnly(e.airDate)] ??= <ReleaseEvent>[]).add(e);
     }
     for (final List<ReleaseEvent> list in map.values) {
-      list.sort((ReleaseEvent a, ReleaseEvent b) =>
-          a.showTitle.toLowerCase().compareTo(b.showTitle.toLowerCase()));
+      list.sort(
+        (ReleaseEvent a, ReleaseEvent b) =>
+            a.showTitle.toLowerCase().compareTo(b.showTitle.toLowerCase()),
+      );
     }
     return map;
   }

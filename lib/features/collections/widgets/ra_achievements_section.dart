@@ -46,8 +46,7 @@ class RaAchievementsSection extends ConsumerStatefulWidget {
       _RaAchievementsSectionState();
 }
 
-class _RaAchievementsSectionState
-    extends ConsumerState<RaAchievementsSection> {
+class _RaAchievementsSectionState extends ConsumerState<RaAchievementsSection> {
   bool _isRefreshing = false;
   _AchievementFilter _filter = _AchievementFilter.all;
 
@@ -56,7 +55,12 @@ class _RaAchievementsSectionState
     setState(() => _isRefreshing = true);
     try {
       await ref
-          .read(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)).notifier)
+          .read(
+            trackerDetailProvider((
+              gameId: widget.gameId,
+              platformId: widget.platformId,
+            )).notifier,
+          )
           .refreshAchievements();
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
@@ -65,8 +69,12 @@ class _RaAchievementsSectionState
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<TrackerDetailState> asyncState =
-        ref.watch(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)));
+    final AsyncValue<TrackerDetailState> asyncState = ref.watch(
+      trackerDetailProvider((
+        gameId: widget.gameId,
+        platformId: widget.platformId,
+      )),
+    );
 
     return asyncState.when(
       loading: () => const Padding(
@@ -85,7 +93,13 @@ class _RaAchievementsSectionState
 
         if (state.achievements == null && !state.isLoadingAchievements) {
           Future<void>.microtask(() {
-            ref.read(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)).notifier)
+            ref
+                .read(
+                  trackerDetailProvider((
+                    gameId: widget.gameId,
+                    platformId: widget.platformId,
+                  )).notifier,
+                )
                 .loadAchievements();
           });
         }
@@ -130,9 +144,12 @@ class _RaAchievementsSectionState
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Center(
               child: SizedBox(
-                width: 18, height: 18,
+                width: 18,
+                height: 18,
                 child: CircularProgressIndicator(
-                  strokeWidth: 1.5, color: _raBlue),
+                  strokeWidth: 1.5,
+                  color: _raBlue,
+                ),
               ),
             ),
           )
@@ -141,8 +158,9 @@ class _RaAchievementsSectionState
             spacing: _AchievementTile.gap,
             runSpacing: _AchievementTile.gap,
             children: <Widget>[
-              for (final TrackerAchievement a
-                  in _filterAchievements(state.achievements!))
+              for (final TrackerAchievement a in _filterAchievements(
+                state.achievements!,
+              ))
                 _AchievementTile(
                   key: ValueKey<String>(a.achievementId),
                   achievement: a,
@@ -166,10 +184,12 @@ class _RaAchievementsSectionState
       return const SizedBox.shrink();
     }
 
-    final int progEarned =
-        progression.where((TrackerAchievement a) => a.earned).length;
-    final int winEarned =
-        winCondition.where((TrackerAchievement a) => a.earned).length;
+    final int progEarned = progression
+        .where((TrackerAchievement a) => a.earned)
+        .length;
+    final int winEarned = winCondition
+        .where((TrackerAchievement a) => a.earned)
+        .length;
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -274,7 +294,7 @@ class _RaAchievementsSectionState
         Container(
           height: 4,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: AppColors.textPrimary.withAlpha(30),
             borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
           ),
           child: FractionallySizedBox(
@@ -294,48 +314,61 @@ class _RaAchievementsSectionState
 
   Widget _buildFilterChips(List<TrackerAchievement> achievements) {
     final S l = S.of(context);
-    final bool hasMissable =
-        achievements.any((TrackerAchievement a) => a.isMissable);
-    final bool hasProgression =
-        achievements.any((TrackerAchievement a) => a.isProgression);
-    final bool hasWinCondition =
-        achievements.any((TrackerAchievement a) => a.isWinCondition);
+    final bool hasMissable = achievements.any(
+      (TrackerAchievement a) => a.isMissable,
+    );
+    final bool hasProgression = achievements.any(
+      (TrackerAchievement a) => a.isProgression,
+    );
+    final bool hasWinCondition = achievements.any(
+      (TrackerAchievement a) => a.isWinCondition,
+    );
 
     return Row(
       children: <Widget>[
         _filterChip(
-          icon: Icons.list, tooltip: l.all,
+          icon: Icons.list,
+          tooltip: l.all,
           filter: _AchievementFilter.all,
         ),
         const SizedBox(width: 4),
         _filterChip(
-          icon: Icons.lock_open, tooltip: l.raFilterEarned,
-          filter: _AchievementFilter.earned, color: AppColors.success,
+          icon: Icons.lock_open,
+          tooltip: l.raFilterEarned,
+          filter: _AchievementFilter.earned,
+          color: AppColors.success,
         ),
         const SizedBox(width: 4),
         _filterChip(
-          icon: Icons.lock_outline, tooltip: l.raFilterLocked,
+          icon: Icons.lock_outline,
+          tooltip: l.raFilterLocked,
           filter: _AchievementFilter.locked,
         ),
         if (hasMissable) ...<Widget>[
           const SizedBox(width: 4),
           _filterChip(
-            icon: Icons.error_outline, tooltip: l.raFilterMissable,
-            filter: _AchievementFilter.missable, color: AppColors.warning,
+            icon: Icons.error_outline,
+            tooltip: l.raFilterMissable,
+            filter: _AchievementFilter.missable,
+            color: AppColors.warning,
           ),
         ],
         if (hasProgression) ...<Widget>[
           const SizedBox(width: 4),
           _filterChip(
-            icon: Icons.check_circle_outline, tooltip: l.raFilterProgression,
-            filter: _AchievementFilter.progression, color: _raBlue,
+            icon: Icons.check_circle_outline,
+            tooltip: l.raFilterProgression,
+            filter: _AchievementFilter.progression,
+            color: _raBlue,
           ),
         ],
         if (hasWinCondition) ...<Widget>[
           const SizedBox(width: 4),
           _filterChip(
-            icon: Icons.stars_outlined, tooltip: l.raFilterWinCondition,
-            filter: _AchievementFilter.winCondition, color: _raGold,
+            icon: Icons.stars_outlined,
+            tooltip: l.raFilterWinCondition,
+            filter: _AchievementFilter.winCondition,
+            color: _raGold,
           ),
         ],
       ],
@@ -433,9 +466,7 @@ class _RaAchievementsSectionState
               Flexible(
                 child: Text(
                   'RetroAchievements',
-                  style: AppTypography.h3.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -479,12 +510,18 @@ class _RaAchievementsSectionState
       child: isLoading
           ? const Padding(
               padding: EdgeInsets.all(6),
-              child: CircularProgressIndicator(strokeWidth: 1.5, color: _raBlue),
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                color: _raBlue,
+              ),
             )
           : IconButton(
               padding: EdgeInsets.zero,
               iconSize: 15,
-              icon: Icon(icon, color: color ?? AppColors.textTertiary.withAlpha(150)),
+              icon: Icon(
+                icon,
+                color: color ?? AppColors.textTertiary.withAlpha(150),
+              ),
               tooltip: tooltip,
               onPressed: onTap,
             ),
@@ -499,9 +536,7 @@ class _RaAchievementsSectionState
     final int earned = data.achievementsEarned ?? 0;
     final int total = data.achievementsTotal ?? 0;
     final int hardcore = data.achievementsEarnedHardcore ?? 0;
-    final String pct = total > 0
-        ? '${(earned / total * 100).ceil()}%'
-        : '0%';
+    final String pct = total > 0 ? '${(earned / total * 100).ceil()}%' : '0%';
 
     int earnedPoints = 0;
     int totalPoints = 0;
@@ -513,9 +548,12 @@ class _RaAchievementsSectionState
     }
 
     final TextStyle dim = AppTypography.caption.copyWith(
-        color: AppColors.textTertiary);
+      color: AppColors.textTertiary,
+    );
     final TextStyle bold = AppTypography.caption.copyWith(
-        fontWeight: FontWeight.w600, color: AppColors.textPrimary);
+      fontWeight: FontWeight.w600,
+      color: AppColors.textPrimary,
+    );
 
     final S l = S.of(context);
 
@@ -524,15 +562,17 @@ class _RaAchievementsSectionState
       children: <Widget>[
         // Line 1: "67 achievements worth 446 points"
         Text.rich(
-          TextSpan(children: <InlineSpan>[
-            TextSpan(text: '$total', style: bold),
-            TextSpan(text: ' ${l.raStatsAchievements}', style: dim),
-            if (totalPoints > 0) ...<InlineSpan>[
-              TextSpan(text: ' ${l.raStatsWorth} ', style: dim),
-              TextSpan(text: '$totalPoints', style: bold),
-              TextSpan(text: ' ${l.raStatsPoints}', style: dim),
+          TextSpan(
+            children: <InlineSpan>[
+              TextSpan(text: '$total', style: bold),
+              TextSpan(text: ' ${l.raStatsAchievements}', style: dim),
+              if (totalPoints > 0) ...<InlineSpan>[
+                TextSpan(text: ' ${l.raStatsWorth} ', style: dim),
+                TextSpan(text: '$totalPoints', style: bold),
+                TextSpan(text: ' ${l.raStatsPoints}', style: dim),
+              ],
             ],
-          ]),
+          ),
         ),
         const SizedBox(height: 2),
         // Line 2: "Unlocked 12 worth 98  HC 12" + award badge
@@ -540,30 +580,38 @@ class _RaAchievementsSectionState
           children: <Widget>[
             Expanded(
               child: Text.rich(
-                TextSpan(children: <InlineSpan>[
-                  TextSpan(text: '${l.raStatsUnlocked} ', style: dim),
-                  TextSpan(
-                    text: '$earned',
-                    style: AppTypography.caption.copyWith(
-                      fontWeight: FontWeight.w600, color: _raBlue),
-                  ),
-                  if (totalPoints > 0) ...<InlineSpan>[
-                    TextSpan(text: ' ${l.raStatsWorth} ', style: dim),
+                TextSpan(
+                  children: <InlineSpan>[
+                    TextSpan(text: '${l.raStatsUnlocked} ', style: dim),
                     TextSpan(
-                      text: '$earnedPoints',
+                      text: '$earned',
                       style: AppTypography.caption.copyWith(
-                        fontWeight: FontWeight.w600, color: _raGold),
+                        fontWeight: FontWeight.w600,
+                        color: _raBlue,
+                      ),
                     ),
+                    if (totalPoints > 0) ...<InlineSpan>[
+                      TextSpan(text: ' ${l.raStatsWorth} ', style: dim),
+                      TextSpan(
+                        text: '$earnedPoints',
+                        style: AppTypography.caption.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _raGold,
+                        ),
+                      ),
+                    ],
+                    if (hardcore > 0 && hardcore != earned) ...<InlineSpan>[
+                      TextSpan(text: '  HC ', style: dim),
+                      TextSpan(
+                        text: '$hardcore',
+                        style: AppTypography.caption.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _hardcoreColor,
+                        ),
+                      ),
+                    ],
                   ],
-                  if (hardcore > 0 && hardcore != earned) ...<InlineSpan>[
-                    TextSpan(text: '  HC ', style: dim),
-                    TextSpan(
-                      text: '$hardcore',
-                      style: AppTypography.caption.copyWith(
-                        fontWeight: FontWeight.w600, color: _hardcoreColor),
-                    ),
-                  ],
-                ]),
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -590,8 +638,9 @@ class _RaAchievementsSectionState
   }
 
   Widget _buildAwardBadge(TrackerGameData data) {
-    final ({String label, Color color, bool filled}) badge =
-        _getAwardBadge(data);
+    final ({String label, Color color, bool filled}) badge = _getAwardBadge(
+      data,
+    );
     return Tooltip(
       message: badge.label,
       child: Container(
@@ -615,8 +664,7 @@ class _RaAchievementsSectionState
     final TextStyle base = AppTypography.caption.copyWith(
       color: AppColors.textSecondary,
     );
-    final ({Color color, String label})? type =
-        _typeBadge(achievement);
+    final ({Color color, String label})? type = _typeBadge(achievement);
     final String? description = achievement.description;
     final DateTime? earnedAt = achievement.earnedDateTime;
     return TextSpan(
@@ -694,31 +742,25 @@ class _RaAchievementsSectionState
     if (!confirmed || !context.mounted) return;
 
     await ref
-        .read(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)).notifier)
+        .read(
+          trackerDetailProvider((
+            gameId: widget.gameId,
+            platformId: widget.platformId,
+          )).notifier,
+        )
         .unlinkRaGame();
   }
 
-  ({Color color, String label})? _typeBadge(
-    TrackerAchievement achievement,
-  ) {
+  ({Color color, String label})? _typeBadge(TrackerAchievement achievement) {
     final S l = S.of(context);
     if (achievement.isMissable) {
-      return (
-        color: AppColors.warning,
-        label: l.raFilterMissable,
-      );
+      return (color: AppColors.warning, label: l.raFilterMissable);
     }
     if (achievement.isProgression) {
-      return (
-        color: _raBlue,
-        label: l.raFilterProgression,
-      );
+      return (color: _raBlue, label: l.raFilterProgression);
     }
     if (achievement.isWinCondition) {
-      return (
-        color: _raGold,
-        label: l.raFilterWinCondition,
-      );
+      return (color: _raGold, label: l.raFilterWinCondition);
     }
     return null;
   }
@@ -759,8 +801,9 @@ class _AchievementTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool earned = achievement.earned;
-    final String? url =
-        earned ? achievement.badgeUrl : achievement.lockedBadgeUrl;
+    final String? url = earned
+        ? achievement.badgeUrl
+        : achievement.lockedBadgeUrl;
     return Tooltip(
       richMessage: tooltip,
       triggerMode: TooltipTriggerMode.tap,
@@ -768,7 +811,7 @@ class _AchievementTile extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 280),
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: AppColors.surface.withAlpha(225),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(color: AppColors.surfaceBorder),
       ),

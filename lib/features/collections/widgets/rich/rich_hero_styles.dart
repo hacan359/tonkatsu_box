@@ -18,6 +18,7 @@ import '../hero_image.dart';
 import 'default_hero_assets.dart';
 import 'hero_back_button.dart';
 import 'rich_collection_body.dart';
+import '../../../../shared/widgets/image_placeholder.dart';
 
 // Paper-and-ink palette for the comic / sticker styles: those looks need
 // fixed physical colors, not theme tokens.
@@ -55,8 +56,7 @@ class RichCollectionHero extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
 
   @override
-  ConsumerState<RichCollectionHero> createState() =>
-      _RichCollectionHeroState();
+  ConsumerState<RichCollectionHero> createState() => _RichCollectionHeroState();
 }
 
 class _RichCollectionHeroState extends ConsumerState<RichCollectionHero> {
@@ -96,30 +96,30 @@ class _RichCollectionHeroState extends ConsumerState<RichCollectionHero> {
       // Unreachable — classic returned above — but keeps the switch total.
       RichHeroStyle.classic => const SizedBox.shrink(),
       RichHeroStyle.comic => _ComicHero(
-          collection: widget.collection,
-          stats: stats,
-          hero: hero,
-          onBack: widget.onBack,
-        ),
+        collection: widget.collection,
+        stats: stats,
+        hero: hero,
+        onBack: widget.onBack,
+      ),
       RichHeroStyle.stickers => _StickerHero(
-          collection: widget.collection,
-          stats: stats,
-          items: widget.items,
-          hero: hero,
-          onBack: widget.onBack,
-        ),
+        collection: widget.collection,
+        stats: stats,
+        items: widget.items,
+        hero: hero,
+        onBack: widget.onBack,
+      ),
       RichHeroStyle.brutalist => _BrutalistHero(
-          collection: widget.collection,
-          stats: stats,
-          hero: hero,
-          onBack: widget.onBack,
-        ),
+        collection: widget.collection,
+        stats: stats,
+        hero: hero,
+        onBack: widget.onBack,
+      ),
       RichHeroStyle.slats => _SlatsHero(
-          collection: widget.collection,
-          stats: stats,
-          hero: hero,
-          onBack: widget.onBack,
-        ),
+        collection: widget.collection,
+        stats: stats,
+        hero: hero,
+        onBack: widget.onBack,
+      ),
     };
   }
 }
@@ -147,9 +147,10 @@ class _HeroStats {
     }
     final List<MapEntry<ItemStatus, int>> byStatus =
         <MapEntry<ItemStatus, int>>[
-      for (final ItemStatus s in _statusDisplayOrder)
-        if ((statuses[s] ?? 0) > 0) MapEntry<ItemStatus, int>(s, statuses[s]!),
-    ];
+          for (final ItemStatus s in _statusDisplayOrder)
+            if ((statuses[s] ?? 0) > 0)
+              MapEntry<ItemStatus, int>(s, statuses[s]!),
+        ];
     final List<MapEntry<MediaType, int>> byType = types.entries.toList()
       ..sort(
         (MapEntry<MediaType, int> a, MapEntry<MediaType, int> b) =>
@@ -182,7 +183,7 @@ class _StatusBar extends StatelessWidget {
       child: SizedBox(
         height: height,
         child: stats.byStatus.isEmpty
-            ? ColoredBox(color: AppColors.surfaceLight)
+            ? const ImagePlaceholder(showIcon: false)
             : Row(
                 children: <Widget>[
                   for (final MapEntry<ItemStatus, int> e in stats.byStatus)
@@ -408,7 +409,8 @@ class _ComicHero extends StatelessWidget {
                   child: Container(
                     constraints: BoxConstraints(
                       // Leave room for the back plate so the row never clips.
-                      maxWidth: MediaQuery.sizeOf(context).width * 0.7 -
+                      maxWidth:
+                          MediaQuery.sizeOf(context).width * 0.7 -
                           (onBack != null
                               ? HeroBackButton.defaultSize + AppSpacing.sm
                               : 0),
@@ -554,9 +556,9 @@ class _StickerHero extends StatelessWidget {
     final List<CollectionItem> withCovers = isCompact
         ? const <CollectionItem>[]
         : items
-            .where((CollectionItem i) => i.thumbnailUrl != null)
-            .take(7)
-            .toList();
+              .where((CollectionItem i) => i.thumbnailUrl != null)
+              .take(7)
+              .toList();
     const double stickerW = 72;
 
     final Widget polaroid = Transform.rotate(
@@ -581,10 +583,7 @@ class _StickerHero extends StatelessWidget {
               height: isCompact ? 120 : 165,
               width: double.infinity,
               child: hero != null
-                  ? HeroCoverImage(
-                      provider: hero!,
-                      alignment: Alignment.center,
-                    )
+                  ? HeroCoverImage(provider: hero!, alignment: Alignment.center)
                   : ColoredBox(color: stats.dominantAccent),
             ),
             Padding(
@@ -644,8 +643,8 @@ class _StickerHero extends StatelessWidget {
                       // past the fixed hero height — drop the covers.
                       final List<CollectionItem> covers =
                           c.maxWidth < _kMinStickerColumnsWidth
-                              ? const <CollectionItem>[]
-                              : withCovers;
+                          ? const <CollectionItem>[]
+                          : withCovers;
                       // The badges wrap too on very narrow heroes; the
                       // unbounded box plus clip beats an overflow stripe.
                       return ClipRect(
@@ -778,8 +777,7 @@ class _DotGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DotGridPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(_DotGridPainter oldDelegate) => oldDelegate.color != color;
 }
 
 // Brutalist: loud accent block, hard offset shadows, boxy status counters.
@@ -965,10 +963,7 @@ class _SlatsHero extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: <Widget>[
-                HeroCoverImage(
-                  provider: image,
-                  alignment: Alignment.center,
-                ),
+                HeroCoverImage(provider: image, alignment: Alignment.center),
                 CustomPaint(
                   painter: _PanelCutsPainter(
                     color: AppColors.background,
@@ -996,8 +991,9 @@ class _SlatsHero extends StatelessWidget {
                       onTap: onBack!,
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusXs),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusXs,
+                        ),
                       ),
                       iconColor: AppColors.textPrimary,
                       size: 32,

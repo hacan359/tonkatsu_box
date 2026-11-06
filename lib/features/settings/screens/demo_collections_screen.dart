@@ -16,7 +16,7 @@ import '../../../core/api/igdb_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../providers/settings_provider.dart';
 
 /// IGDB platform IDs.
@@ -650,11 +650,9 @@ class _DemoCollectionsScreenState
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
 
-    return Column(
-      children: <Widget>[
-        const SubScreenTitleBar(title: 'Demo Collections'),
-        Expanded(
-          child: Padding(
+    return FramePage(
+      title: 'Demo Collections',
+      child: Padding(
             padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,8 +773,6 @@ class _DemoCollectionsScreenState
               ],
             ),
           ),
-        ),
-      ],
     );
   }
 }

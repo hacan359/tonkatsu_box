@@ -611,6 +611,39 @@ class SZh extends S {
   String get settingsThemeEva => 'Eva 蔚蓝';
 
   @override
+  String get settingsSkin => '风格';
+
+  @override
+  String get settingsSkinSubtitle => '玻璃或经典外观';
+
+  @override
+  String get settingsSkinGlass => '玻璃';
+
+  @override
+  String get settingsSkinClassic => '经典';
+
+  @override
+  String get settingsWallpaper => '壁纸';
+
+  @override
+  String get settingsWallpaperSubtitle => '玻璃框架后的图片';
+
+  @override
+  String get settingsWallpaperDefault => '默认';
+
+  @override
+  String get settingsWallpaperCustom => '自定义图片';
+
+  @override
+  String get settingsWallpaperChoose => '选择图片…';
+
+  @override
+  String get settingsWallpaperReset => '恢复默认';
+
+  @override
+  String get settingsWallpaperError => '无法保存壁纸';
+
+  @override
   String get settingsAppLanguageSubtitle => '界面语言';
 
   @override
@@ -4462,6 +4495,21 @@ class SZh extends S {
 
   @override
   String get settingsIntegrations => '集成';
+
+  @override
+  String get settingsTabProfile => '个人资料';
+
+  @override
+  String get settingsTabData => '数据';
+
+  @override
+  String get settingsAppearanceThemeLanguage => '主题与语言';
+
+  @override
+  String get settingsAppearanceLibrary => '媒体库';
+
+  @override
+  String get settingsAppearanceScale => '缩放';
 
   @override
   String get settingsKodiSubtitle => '从 Kodi 媒体播放器同步观看记录';

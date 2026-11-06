@@ -14,6 +14,9 @@ import '../../../shared/widgets/focusable_surface.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 
 /// Returns `true` when the collection text was copied to the clipboard.
 Future<bool?> showCopyAsTextDialog({
@@ -73,14 +76,14 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
   }
 
   List<CollectionItem> get _sortedItems {
-    final List<CollectionItem> sorted =
-        List<CollectionItem>.of(widget.items);
+    final List<CollectionItem> sorted = List<CollectionItem>.of(widget.items);
     switch (_sortMode) {
       case TextExportSortMode.current:
         break;
       case TextExportSortMode.name:
-        final String lang =
-            ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
+        final String lang = ref
+            .read(sharedPreferencesProvider)
+            .animeMangaTitleLanguage;
         sorted.sort(
           (CollectionItem a, CollectionItem b) => a
               .displayName(lang)
@@ -119,8 +122,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     return <int, String>{
       for (final CollectionItem item in items)
         if (itemTags[item.id] case final List<int> ids when ids.isNotEmpty)
-          item.id:
-              tags.orderedFor(ids).map((Tag t) => t.name).join(', '),
+          item.id: tags.orderedFor(ids).map((Tag t) => t.name).join(', '),
     };
   }
 
@@ -134,8 +136,9 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     final String result = _service.applyTemplate(
       template,
       previewItems,
-      animeMangaTitleLanguage:
-          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+      animeMangaTitleLanguage: ref
+          .read(sharedPreferencesProvider)
+          .animeMangaTitleLanguage,
       tagsByItemId: _tagsByItemId(previewItems),
     );
     if (items.length > _previewMaxLines) {
@@ -152,13 +155,10 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
 
     // Insert at the caret when the selection is valid, otherwise append.
     if (start >= 0 && end >= 0) {
-      final String newText =
-          value.text.replaceRange(start, end, tokenStr);
+      final String newText = value.text.replaceRange(start, end, tokenStr);
       _templateController.value = TextEditingValue(
         text: newText,
-        selection: TextSelection.collapsed(
-          offset: start + tokenStr.length,
-        ),
+        selection: TextSelection.collapsed(offset: start + tokenStr.length),
       );
     } else {
       _templateController.text += tokenStr;
@@ -176,8 +176,9 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     final String text = _service.applyTemplate(
       template,
       items,
-      animeMangaTitleLanguage:
-          ref.read(sharedPreferencesProvider).animeMangaTitleLanguage,
+      animeMangaTitleLanguage: ref
+          .read(sharedPreferencesProvider)
+          .animeMangaTitleLanguage,
       tagsByItemId: _tagsByItemId(items),
     );
     await Clipboard.setData(ClipboardData(text: text));
@@ -192,7 +193,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
     final S l = S.of(context);
     final String preview = _preview;
 
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(l.copyAsText, style: AppTypography.h3),
       content: ConstrainedBox(
@@ -212,9 +213,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
                 isDense: true,
                 border: OutlineInputBorder(),
               ),
-              style: AppTypography.body.copyWith(
-                fontFamily: 'monospace',
-              ),
+              style: AppTypography.body.copyWith(fontFamily: 'monospace'),
             ),
 
             const SizedBox(height: AppSpacing.sm),
@@ -255,18 +254,17 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
               children: <Widget>[
                 Text(l.textExportSortBy, style: AppTypography.body),
                 FocusableSurface(
-                  child: PopupMenuButton<TextExportSortMode>(
-                    initialValue: _sortMode,
+                  child: GlassPopupMenuButton<TextExportSortMode>(
                     onSelected: (TextExportSortMode mode) {
                       setState(() => _sortMode = mode);
                     },
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<TextExportSortMode>>[
+                    rows: (BuildContext _) => <Widget>[
                       for (final TextExportSortMode mode
                           in TextExportSortMode.values)
-                        PopupMenuItem<TextExportSortMode>(
+                        GlassMenuRow<TextExportSortMode>(
                           value: mode,
-                          child: Text(mode.localizedLabel(l)),
+                          label: mode.localizedLabel(l),
+                          checked: mode == _sortMode,
                         ),
                     ],
                     child: Padding(
@@ -304,15 +302,11 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.surfaceLight,
-                borderRadius:
-                    BorderRadius.circular(AppSpacing.radiusSm),
+                color: glassTileColor(),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 border: Border.all(color: AppColors.surfaceBorder),
               ),
-              constraints: const BoxConstraints(
-                minHeight: 60,
-                maxHeight: 140,
-              ),
+              constraints: const BoxConstraints(minHeight: 60, maxHeight: 140),
               child: SingleChildScrollView(
                 child: Text(
                   preview.isNotEmpty ? preview : l.textExportEmptyTemplate,
@@ -334,9 +328,7 @@ class _CopyAsTextDialogState extends ConsumerState<_CopyAsTextDialog> {
           child: Text(l.cancel),
         ),
         FilledButton.icon(
-          onPressed: _templateController.text.isNotEmpty
-              ? _copy
-              : null,
+          onPressed: _templateController.text.isNotEmpty ? _copy : null,
           icon: const Icon(Icons.copy, size: 16),
           label: Text(l.copy),
         ),

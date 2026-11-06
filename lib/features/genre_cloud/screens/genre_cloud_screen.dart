@@ -21,6 +21,8 @@ import '../providers/genre_cloud_provider.dart';
 import '../widgets/genre_cloud_export_view.dart';
 import '../widgets/genre_cloud_view.dart';
 import '../../../shared/constants/media_type_ui.dart';
+import '../../../shared/widgets/frame_page.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Preference cloud (genres / platforms / decades) over the whole library,
 /// coloured by media type and filtered by the two chip rows.
@@ -52,21 +54,25 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.watch(genreCloudItemsProvider);
+    final AsyncValue<List<CollectionItem>> itemsAsync = ref.watch(
+      genreCloudItemsProvider,
+    );
     final List<CollectionItem> items =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
 
     final Set<Facet> presentF = presentFacets(items);
     final List<Facet> facets = Facet.values.where(presentF.contains).toList();
     final Set<MediaType> presentT = presentMediaTypes(items);
-    final List<MediaType> types =
-        MediaType.values.where(presentT.contains).toList();
+    final List<MediaType> types = MediaType.values
+        .where(presentT.contains)
+        .toList();
 
-    final Set<Facet> includedFacets =
-        presentF.where((Facet f) => !_hiddenFacets.contains(f)).toSet();
-    final Set<MediaType> includedTypes =
-        presentT.where((MediaType t) => !_hiddenTypes.contains(t)).toSet();
+    final Set<Facet> includedFacets = presentF
+        .where((Facet f) => !_hiddenFacets.contains(f))
+        .toSet();
+    final Set<MediaType> includedTypes = presentT
+        .where((MediaType t) => !_hiddenTypes.contains(t))
+        .toSet();
 
     final List<FacetValue> words = aggregateFacets(
       items,
@@ -75,8 +81,7 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
     );
     final bool hasWords = words.isNotEmpty;
 
-    return Material(
-      color: AppColors.background,
+    return FramePage(
       child: Stack(
         children: <Widget>[
           Column(
@@ -215,8 +220,9 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
             Text(
               l.genreCloudEmptyHint,
               textAlign: TextAlign.center,
-              style:
-                  AppTypography.body.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -306,10 +312,7 @@ class _ChipRowState extends State<_ChipRow> {
             controller: _controller,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              spacing: AppSpacing.sm,
-              children: widget.children,
-            ),
+            child: Row(spacing: AppSpacing.sm, children: widget.children),
           ),
         ),
       ),
@@ -340,7 +343,7 @@ class _LegendChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: glassTileColor(),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.surfaceBorder, width: 0.5),
         ),
@@ -363,10 +366,12 @@ class _LegendChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color:
-                    hidden ? AppColors.textTertiary : AppColors.textSecondary,
-                decoration:
-                    hidden ? TextDecoration.lineThrough : TextDecoration.none,
+                color: hidden
+                    ? AppColors.textTertiary
+                    : AppColors.textSecondary,
+                decoration: hidden
+                    ? TextDecoration.lineThrough
+                    : TextDecoration.none,
               ),
             ),
           ],

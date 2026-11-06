@@ -7,14 +7,13 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../../shared/utils/color_hex.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Returns the entered name and color, or null when cancelled.
 class CreateProfileDialog extends StatefulWidget {
   const CreateProfileDialog({super.key});
 
-  static Future<({String name, String color})?> show(
-    BuildContext context,
-  ) {
+  static Future<({String name, String color})?> show(BuildContext context) {
     return showDialog<({String name, String color})>(
       context: context,
       builder: (BuildContext context) => const CreateProfileDialog(),
@@ -41,7 +40,7 @@ class _CreateProfileDialogState extends State<CreateProfileDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(l.createProfile),
       content: ConstrainedBox(
@@ -124,9 +123,7 @@ class _ProfileColorPickerButton extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.textPrimary.withAlpha(40),
-                ),
+                border: Border.all(color: AppColors.textPrimary.withAlpha(40)),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),

@@ -14,7 +14,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/utils/media_format.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_segments.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_filters.dart';
@@ -22,6 +22,8 @@ import '../providers/collections_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'collection_filter_sheet.dart';
 import '../../../shared/constants/collection_sort_mode_ui.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
+import '../../../shared/widgets/media_type_icon_strip.dart';
 
 class CollectionFilterBar extends ConsumerStatefulWidget {
   const CollectionFilterBar({
@@ -74,7 +76,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   /// Show only favourites.
   final bool filterFavoriteOnly;
 
-  /// Drives chevron counts when it diverges from [filterStatuses] (e.g. the
+  /// Drives tile counts when it diverges from [filterStatuses] (e.g. the
   /// table header cycled a local filter); falls back to it when null.
   final Set<ItemStatus>? effectiveStatusesForCounts;
 
@@ -107,9 +109,6 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 }
 
 class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
-  /// Below this width segments show icons instead of text labels.
-  static const double _compactBreakpoint = 700;
-
   /// Cached platform list, recomputed only when the identity of the
   /// items list (AsyncValue.value) changes.
   List<Platform>? _cachedPlatforms;
@@ -134,7 +133,15 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        _buildTypeChevronBar(l, stats),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.xs,
+          ),
+          child: _buildTypeStrip(l, stats),
+        ),
         SubfilterBar(
           groups: _subfilterGroups(alwaysShow: alwaysShowSubcategories),
         ),
@@ -142,7 +149,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
   }
 
-  /// A group normally appears only once its media-type chevron is selected;
+  /// A group normally appears only once its media-type tile is selected;
   /// with [alwaysShow] every group whose type has items is shown upfront.
   List<List<SubfilterChipData>> _subfilterGroups({required bool alwaysShow}) {
     return <List<SubfilterChipData>>[
@@ -191,7 +198,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     ];
   }
 
-  Widget _buildTypeChevronBar(S l, CollectionStats? stats) {
+  Widget _buildTypeStrip(S l, CollectionStats? stats) {
     final List<_TypeEntry> entries = _typeEntries(l, stats);
     final bool hideEmpty = ref.watch(
       settingsNotifierProvider.select(
@@ -200,91 +207,68 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     );
     // Visibility uses effective totals ignoring the status filter so a chevron
     // never vanishes just because the current status hides its only items.
-    final Map<MediaType, int> effectiveTotals =
-        _effectiveTotals(widget.itemsAsync.valueOrNull);
-    final List<_TypeEntry> visibleEntries =
-        (hideEmpty && stats != null)
-            ? entries
-                .where((_TypeEntry e) =>
+    final Map<MediaType, int> effectiveTotals = _effectiveTotals(
+      widget.itemsAsync.valueOrNull,
+    );
+    final List<_TypeEntry> visibleEntries = (hideEmpty && stats != null)
+        ? entries
+              .where(
+                (_TypeEntry e) =>
                     (effectiveTotals[e.type] ??
                             _totalCountFor(e.type, stats) ??
                             0) >
                         0 ||
-                    widget.filterTypes.contains(e.type))
-                .toList()
-            : entries;
-    final bool compact =
-        MediaQuery.sizeOf(context).width < _compactBreakpoint;
+                    widget.filterTypes.contains(e.type),
+              )
+              .toList()
+        : entries;
     // Narrow screens hide the TagTopBar, so a button opens a sheet with tags
-    // and sorting; wide screens keep the compact sort segment.
+    // and sorting; wide screens keep the sort tile.
     final bool useTagSheetButton = isCompactScreen(context);
 
-    return ColoredBox(
-      color: AppColors.surface,
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: <Widget>[
-            for (int i = 0; i < visibleEntries.length; i++)
-              Expanded(
-                child: ChevronSegment(
-                  label: visibleEntries[i].count != null &&
-                          visibleEntries[i].count! > 0
-                      ? '${visibleEntries[i].label} (${visibleEntries[i].count})'
-                      : visibleEntries[i].label,
-                  icon: MediaTypeTheme.iconFor(visibleEntries[i].type),
-                  selected:
-                      widget.filterTypes.contains(visibleEntries[i].type),
-                  accentColor:
-                      MediaTypeTheme.colorFor(visibleEntries[i].type),
-                  isFirst: i == 0,
-                  isLast: false,
-                  onTap: () => widget.onTypeToggled(visibleEntries[i].type),
-                  compact: compact,
-                  tintWhenInactive: true,
-                ),
-              ),
-            Expanded(
-              child: StatusDropdownSegment(
-                statuses: widget.filterStatuses,
-                compact: compact,
-                subtitle: l.status,
-                onChanged: widget.onStatusChanged,
-              ),
-            ),
-            Expanded(
-              child: ChevronSegment(
-                label: l.favorite,
-                icon: Icons.favorite,
-                selected: widget.filterFavoriteOnly,
-                accentColor: AppColors.favorite,
-                isFirst: false,
-                isLast: false,
-                onTap: widget.onFavoriteToggled,
-                compact: compact,
-                tintWhenInactive: true,
-              ),
-            ),
-            if (useTagSheetButton)
-              SizedBox(width: 44, child: _buildTagSheetButton(context))
-            else
-              SizedBox(width: 40, child: _buildSortSegment(context)),
-          ],
+    return MediaTypeIconStrip(
+      children: <Widget>[
+        for (final _TypeEntry e in visibleEntries)
+          MediaTypeIconTile(
+            label: e.label,
+            count: e.count ?? 0,
+            icon: MediaTypeTheme.iconFor(e.type),
+            accent: MediaTypeTheme.colorFor(e.type),
+            selected: widget.filterTypes.contains(e.type),
+            onTap: () => widget.onTypeToggled(e.type),
+          ),
+        const SizedBox(width: AppSpacing.sm),
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: StatusDropdownSegment(
+            statuses: widget.filterStatuses,
+            compact: false,
+            onChanged: widget.onStatusChanged,
+          ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.sm),
+        MediaTypeIconTile(
+          label: l.favorite,
+          icon: Icons.favorite,
+          accent: AppColors.favorite,
+          selected: widget.filterFavoriteOnly,
+          onTap: widget.onFavoriteToggled,
+        ),
+        if (useTagSheetButton)
+          _buildTagSheetButton(context)
+        else
+          _buildSortSegment(context),
+      ],
     );
   }
 
   Widget _buildTagSheetButton(BuildContext context) {
-    final bool active = widget.filterTagIds.isNotEmpty;
-    final int count = widget.filterTagIds.length;
-    return ChevronSegment(
-      label: count > 0 ? '$count' : '',
+    return MediaTypeIconTile(
+      label: S.of(context).tagsLabel,
+      count: widget.filterTagIds.length,
       icon: Icons.tune,
-      selected: active,
-      accentColor: AppColors.brand,
-      isFirst: false,
-      isLast: true,
+      accent: AppColors.brand,
+      selected: widget.filterTagIds.isNotEmpty,
       onTap: () => showCollectionFilterSheet(
         context,
         collectionId: widget.collectionId,
@@ -294,8 +278,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         onTagToggled: widget.onTagToggled,
         onGroupToggled: widget.onGroupToggled,
       ),
-      tintWhenInactive: true,
-      compact: true,
     );
   }
 
@@ -315,89 +297,43 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   }
 
   Widget _buildSortSegment(BuildContext context) {
-    final CollectionSortMode currentSort =
-        ref.watch(collectionSortProvider(widget.collectionId));
-    final bool isDescending =
-        ref.watch(collectionSortDescProvider(widget.collectionId));
+    final CollectionSortMode currentSort = ref.watch(
+      collectionSortProvider(widget.collectionId),
+    );
+    final bool isDescending = ref.watch(
+      collectionSortDescProvider(widget.collectionId),
+    );
 
-    return PopupMenuButton<String>(
+    return GlassPopupMenuButton<void>(
       tooltip: S.of(context).sort,
-      onSelected: (String value) {
-        if (value == 'toggle_direction') {
-          ref
-              .read(collectionSortDescProvider(widget.collectionId).notifier)
-              .toggle();
-        } else {
-          ref
-              .read(collectionSortProvider(widget.collectionId).notifier)
-              .setSortMode(CollectionSortMode.fromString(value));
-        }
-      },
-      offset: const Offset(0, 40),
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      itemBuilder: (BuildContext ctx) {
+      rows: (BuildContext ctx) {
         final S sl = S.of(ctx);
-        return <PopupMenuEntry<String>>[
-          ...CollectionSortMode.values.map(
-            (CollectionSortMode mode) => PopupMenuItem<String>(
-              value: mode.value,
-              height: 36,
-              child: Row(
-                children: <Widget>[
-                  if (mode == currentSort)
-                    Icon(Icons.check, size: 16, color: AppColors.brand)
-                  else
-                    const SizedBox(width: 16),
-                  const SizedBox(width: 8),
-                  Text(mode.localizedDisplayLabel(sl)),
-                ],
-              ),
+        return <Widget>[
+          for (final CollectionSortMode mode in CollectionSortMode.values)
+            GlassMenuRow<void>(
+              label: mode.localizedDisplayLabel(sl),
+              icon: mode == currentSort ? Icons.check : null,
+              iconColor: AppColors.brand,
+              onTap: () => ref
+                  .read(collectionSortProvider(widget.collectionId).notifier)
+                  .setSortMode(mode),
             ),
-          ),
-          const PopupMenuDivider(height: 8),
-          PopupMenuItem<String>(
-            value: 'toggle_direction',
-            height: 36,
-            child: Row(
-              children: <Widget>[
-                Icon(
-                  isDescending ? Icons.arrow_downward : Icons.arrow_upward,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(width: 8),
-                Text(currentSort.localizedDirectionLabel(
-                  sl,
-                  descending: isDescending,
-                )),
-              ],
+          const GlassMenuDivider(),
+          GlassMenuRow<void>(
+            label: currentSort.localizedDirectionLabel(
+              sl,
+              descending: isDescending,
             ),
+            icon: isDescending ? Icons.arrow_downward : Icons.arrow_upward,
+            iconColor: AppColors.textSecondary,
+            onTap: () => ref
+                .read(collectionSortDescProvider(widget.collectionId).notifier)
+                .toggle(),
           ),
         ];
       },
-      child: ClipPath(
-        clipper: const ChevronClipper(
-          chevronWidth: ChevronSegment.chevronWidth,
-          hasLeftNotch: true,
-          hasRightPoint: false,
-        ),
-        child: Container(
-          color: AppColors.surface,
-          padding: const EdgeInsets.only(
-            left: ChevronSegment.chevronWidth + 1,
-            right: 4,
-          ),
-          child: Center(
-            child: Icon(
-              isDescending ? Icons.arrow_downward : Icons.arrow_upward,
-              size: 18,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
+      child: StripActionTile(
+        icon: isDescending ? Icons.arrow_downward : Icons.arrow_upward,
       ),
     );
   }
@@ -432,20 +368,44 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   List<_TypeEntry> _typeEntries(S l, CollectionStats? stats) {
     final Map<MediaType, int?> counts = _typeCounts(stats);
     return <_TypeEntry>[
-      _TypeEntry(MediaType.game, l.collectionFilterGames, counts[MediaType.game]),
-      _TypeEntry(MediaType.movie, l.collectionFilterMovies, counts[MediaType.movie]),
-      _TypeEntry(MediaType.tvShow, l.collectionFilterTvShows, counts[MediaType.tvShow]),
-      _TypeEntry(MediaType.animation, l.mediaTypeAnimation, counts[MediaType.animation]),
-      _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, counts[MediaType.visualNovel]),
+      _TypeEntry(
+        MediaType.game,
+        l.collectionFilterGames,
+        counts[MediaType.game],
+      ),
+      _TypeEntry(
+        MediaType.movie,
+        l.collectionFilterMovies,
+        counts[MediaType.movie],
+      ),
+      _TypeEntry(
+        MediaType.tvShow,
+        l.collectionFilterTvShows,
+        counts[MediaType.tvShow],
+      ),
+      _TypeEntry(
+        MediaType.animation,
+        l.mediaTypeAnimation,
+        counts[MediaType.animation],
+      ),
+      _TypeEntry(
+        MediaType.visualNovel,
+        l.collectionFilterVisualNovels,
+        counts[MediaType.visualNovel],
+      ),
       _TypeEntry(MediaType.manga, l.mediaTypeManga, counts[MediaType.manga]),
       _TypeEntry(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
-      _TypeEntry(MediaType.book, l.collectionFilterBooks, counts[MediaType.book]),
+      _TypeEntry(
+        MediaType.book,
+        l.collectionFilterBooks,
+        counts[MediaType.book],
+      ),
       _TypeEntry(MediaType.audio, l.mediaTypeAudio, counts[MediaType.audio]),
       _TypeEntry(MediaType.custom, l.mediaTypeCustom, counts[MediaType.custom]),
     ];
   }
 
-  /// Per-type totals ignoring every filter — drives chevron visibility.
+  /// Per-type totals ignoring every filter — drives tile visibility.
   /// Empty before items load, so callers fall back to raw stats buckets.
   static Map<MediaType, int> _effectiveTotals(List<CollectionItem>? items) {
     if (items == null) return const <MediaType, int>{};
@@ -480,23 +440,25 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     }
     // Apply every active filter except the type one, so picking a subfilter
     // narrows the chevron numbers instead of showing the unfiltered total.
-    final List<CollectionItem> visible = CollectionFilters(
-      platformIds: widget.filterPlatformIds,
-      mangaFormats: widget.filterMangaFormats,
-      animeFormats: widget.filterAnimeFormats,
-      tagIds: widget.filterTagIds,
-      statuses: statusFilter,
-      favoriteOnly: widget.filterFavoriteOnly,
-      searchQuery: widget.searchQuery,
-    ).apply(
-      items,
-      widget.tags,
-      ref.watch(itemTagsProvider).valueOrNull ?? const <int, List<int>>{},
-      animeMangaTitleLanguage: ref.watch(
-        settingsNotifierProvider
-            .select((SettingsState s) => s.animeMangaTitleLanguage),
-      ),
-    );
+    final List<CollectionItem> visible =
+        CollectionFilters(
+          platformIds: widget.filterPlatformIds,
+          mangaFormats: widget.filterMangaFormats,
+          animeFormats: widget.filterAnimeFormats,
+          tagIds: widget.filterTagIds,
+          statuses: statusFilter,
+          favoriteOnly: widget.filterFavoriteOnly,
+          searchQuery: widget.searchQuery,
+        ).apply(
+          items,
+          widget.tags,
+          ref.watch(itemTagsProvider).valueOrNull ?? const <int, List<int>>{},
+          animeMangaTitleLanguage: ref.watch(
+            settingsNotifierProvider.select(
+              (SettingsState s) => s.animeMangaTitleLanguage,
+            ),
+          ),
+        );
 
     // Count by effective type so a custom item that masquerades as e.g. anime
     // is tallied under Anime, matching what the type filter will show.

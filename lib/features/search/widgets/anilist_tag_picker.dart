@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// [initialSelection] and the result are tag names, matching the multi-select
 /// filter contract; an empty list clears, `null` means cancelled.
@@ -21,26 +22,17 @@ Future<Object?> showAniListTagPicker(
     final String single => <String>[single],
     _ => const <String>[],
   };
-  return showModalBottomSheet<Object?>(
+  return showGlassSheet<Object?>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: AppColors.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (BuildContext ctx) => _AniListTagPicker(
-      initialSelection: initial,
-      l: l,
-    ),
+    builder: (BuildContext ctx) =>
+        _AniListTagPicker(initialSelection: initial, l: l),
   );
 }
 
 class _AniListTagPicker extends ConsumerStatefulWidget {
-  const _AniListTagPicker({
-    required this.initialSelection,
-    required this.l,
-  });
+  const _AniListTagPicker({required this.initialSelection, required this.l});
 
   final List<String> initialSelection;
   final S l;
@@ -65,9 +57,7 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
 
   Future<void> _refresh() async {
     try {
-      await ref
-          .read(aniListTagsRepositoryProvider)
-          .getTags(forceRefresh: true);
+      await ref.read(aniListTagsRepositoryProvider).getTags(forceRefresh: true);
     } on Object {
       // Refresh failures fall back to the cached set; surfacing the error
       // here would just spawn a snackbar over the picker.
@@ -77,14 +67,14 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
 
   Map<String, List<AniListTag>> _groupAndFilter(List<AniListTag> all) {
     final String q = _query.trim().toLowerCase();
-    final Map<String, List<AniListTag>> grouped =
-        <String, List<AniListTag>>{};
+    final Map<String, List<AniListTag>> grouped = <String, List<AniListTag>>{};
     for (final AniListTag t in all) {
       if (!_showAdult && t.isAdult) continue;
       if (!_showSpoilers && t.isGeneralSpoiler) continue;
       if (q.isNotEmpty && !t.name.toLowerCase().contains(q)) continue;
-      final String cat =
-          (t.category == null || t.category!.isEmpty) ? '—' : t.category!;
+      final String cat = (t.category == null || t.category!.isEmpty)
+          ? '—'
+          : t.category!;
       grouped.putIfAbsent(cat, () => <AniListTag>[]).add(t);
     }
     return grouped;
@@ -93,16 +83,14 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
   @override
   Widget build(BuildContext context) {
     final S l = widget.l;
-    final AsyncValue<List<AniListTag>> tagsAsync =
-        ref.watch(aniListTagsProvider);
+    final AsyncValue<List<AniListTag>> tagsAsync = ref.watch(
+      aniListTagsProvider,
+    );
     final Size screen = MediaQuery.sizeOf(context);
     final double height = screen.height * 0.85;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: height,
-        maxWidth: screen.width,
-      ),
+      constraints: BoxConstraints(maxHeight: height, maxWidth: screen.width),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.md,
@@ -132,8 +120,9 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
                           child: Text(
                             e.toString(),
                             textAlign: TextAlign.center,
-                            style: AppTypography.bodySmall
-                                .copyWith(color: AppColors.error),
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.error,
+                            ),
                           ),
                         ),
                       ),
@@ -154,8 +143,9 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
                 children: <Widget>[
                   Text(
                     l.selectedCount(_selected.length),
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   if (_selected.isNotEmpty)
                     TextButton(
@@ -168,9 +158,7 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(context).pop(
-                      _selected.isEmpty
-                          ? const <String>[]
-                          : _selected.toList(),
+                      _selected.isEmpty ? const <String>[] : _selected.toList(),
                     ),
                     child: Text(l.apply),
                   ),
@@ -189,9 +177,7 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
       children: <Widget>[
         Row(
           children: <Widget>[
-            Expanded(
-              child: Text(l.tagPickerTitle, style: AppTypography.h3),
-            ),
+            Expanded(child: Text(l.tagPickerTitle, style: AppTypography.h3)),
             IconButton(
               icon: const Icon(Icons.refresh),
               tooltip: l.tagPickerRefresh,
@@ -218,8 +204,10 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 dense: true,
-                title: Text(l.tagPickerShowSpoilers,
-                    style: AppTypography.bodySmall),
+                title: Text(
+                  l.tagPickerShowSpoilers,
+                  style: AppTypography.bodySmall,
+                ),
                 value: _showSpoilers,
                 onChanged: (bool v) => setState(() => _showSpoilers = v),
               ),
@@ -228,8 +216,10 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 dense: true,
-                title: Text(l.tagPickerShowAdult,
-                    style: AppTypography.bodySmall),
+                title: Text(
+                  l.tagPickerShowAdult,
+                  style: AppTypography.bodySmall,
+                ),
                 value: _showAdult,
                 onChanged: (bool v) => setState(() => _showAdult = v),
               ),
@@ -249,8 +239,9 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
         child: Center(
           child: Text(
             l.tagPickerEmpty,
-            style: AppTypography.bodySmall
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       );
@@ -297,8 +288,9 @@ class _AniListTagPickerState extends ConsumerState<_AniListTagPicker> {
                     ),
                     Text(
                       tags.length.toString(),
-                      style: AppTypography.caption
-                          .copyWith(color: AppColors.textTertiary),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ],
                 ),

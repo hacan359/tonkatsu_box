@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'collection_picker_dialog.dart';
+import 'glass_panel.dart';
 
 /// Opens the shared collection picker — the same dialog as "Move to" and
 /// "Add to collection", so the visual language stays in one place.
@@ -70,10 +71,11 @@ class CollectionPickerField extends ConsumerWidget {
     final bool showsNullSummary = value == null && nullLabel != null;
     final bool hasSummary = hasCollection || showsNullSummary;
     final Color border = enabled
-        ? AppColors.surfaceBorder
-        : AppColors.surfaceBorder.withAlpha(120);
-    final Color textColor =
-        hasSummary ? AppColors.textPrimary : AppColors.textTertiary;
+        ? glassTileBorderColor()
+        : glassTileBorderColor().withAlpha(60);
+    final Color textColor = hasSummary
+        ? AppColors.textPrimary
+        : AppColors.textTertiary;
 
     return Material(
       color: Colors.transparent,
@@ -82,7 +84,7 @@ class CollectionPickerField extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: glassTileColor(),
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             border: Border.all(color: border),
           ),
@@ -93,11 +95,7 @@ class CollectionPickerField extends ConsumerWidget {
           child: Row(
             children: <Widget>[
               if (leadingIcon != null) ...<Widget>[
-                Icon(
-                  leadingIcon,
-                  size: 20,
-                  color: AppColors.textSecondary,
-                ),
+                Icon(leadingIcon, size: 20, color: AppColors.textSecondary),
                 const SizedBox(width: AppSpacing.sm),
               ],
               Expanded(
@@ -118,9 +116,7 @@ class CollectionPickerField extends ConsumerWidget {
                     Text(
                       hasCollection
                           ? selected.name
-                          : (showsNullSummary
-                              ? nullLabel!
-                              : (hint ?? '')),
+                          : (showsNullSummary ? nullLabel! : (hint ?? '')),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.body.copyWith(color: textColor),

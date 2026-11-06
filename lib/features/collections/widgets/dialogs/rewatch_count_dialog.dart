@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Pops `(count: N)` on save, `(count: null)` when cleared back to
 /// "not tracked", or `null` when cancelled.
@@ -52,8 +52,7 @@ class _RewatchCountDialogState extends State<RewatchCountDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
+    return GlassAlertDialog(
       title: Text(l.rewatchCountEdit, style: AppTypography.h2),
       content: SingleChildScrollView(
         child: TextField(
@@ -75,10 +74,7 @@ class _RewatchCountDialogState extends State<RewatchCountDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        FilledButton(
-          onPressed: _save,
-          child: Text(l.save),
-        ),
+        FilledButton(onPressed: _save, child: Text(l.save)),
       ],
     );
   }

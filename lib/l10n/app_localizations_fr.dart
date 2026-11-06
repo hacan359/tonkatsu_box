@@ -663,6 +663,40 @@ class SFr extends S {
   String get settingsThemeEva => 'Eva Azur';
 
   @override
+  String get settingsSkin => 'Style';
+
+  @override
+  String get settingsSkinSubtitle => 'Verre ou aspect classique';
+
+  @override
+  String get settingsSkinGlass => 'Verre';
+
+  @override
+  String get settingsSkinClassic => 'Classique';
+
+  @override
+  String get settingsWallpaper => 'Fond d\'écran';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Image derrière le cadre en verre';
+
+  @override
+  String get settingsWallpaperDefault => 'Par défaut';
+
+  @override
+  String get settingsWallpaperCustom => 'Votre image';
+
+  @override
+  String get settingsWallpaperChoose => 'Choisir une image…';
+
+  @override
+  String get settingsWallpaperReset => 'Réinitialiser';
+
+  @override
+  String get settingsWallpaperError =>
+      'Impossible d\'enregistrer le fond d\'écran';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Langue de l\'interface';
 
   @override
@@ -4767,6 +4801,21 @@ class SFr extends S {
 
   @override
   String get settingsIntegrations => 'Intégrations';
+
+  @override
+  String get settingsTabProfile => 'Profil';
+
+  @override
+  String get settingsTabData => 'Données';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Thème et langue';
+
+  @override
+  String get settingsAppearanceLibrary => 'Bibliothèque';
+
+  @override
+  String get settingsAppearanceScale => 'Échelle';
 
   @override
   String get settingsKodiSubtitle =>

@@ -5,12 +5,14 @@ import 'package:core/models/data_source.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/media_type.dart';
+import 'package:core/models/movie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/fantlab_api.dart';
 import 'package:tonkatsu_box/core/api/igdb_api.dart';
+import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/features/collections/helpers/item_refresh.dart';
@@ -53,10 +55,12 @@ void main() {
 
     test('should accept audio only when the cached row is loaded', () {
       expect(
-        canRefreshFromSource(createTestCollectionItem(
-          mediaType: MediaType.audio,
-          audioItem: createTestAudioItem(),
-        )),
+        canRefreshFromSource(
+          createTestCollectionItem(
+            mediaType: MediaType.audio,
+            audioItem: createTestAudioItem(),
+          ),
+        ),
         isTrue,
       );
       expect(
@@ -76,28 +80,34 @@ void main() {
         DataSource.hardcover,
       ]) {
         expect(
-          canRefreshFromSource(createTestCollectionItem(
-            mediaType: MediaType.book,
-            source: source,
-            book: createTestBook(source: source),
-          )),
+          canRefreshFromSource(
+            createTestCollectionItem(
+              mediaType: MediaType.book,
+              source: source,
+              book: createTestBook(source: source),
+            ),
+          ),
           isTrue,
           reason: source.name,
         );
       }
       expect(
-        canRefreshFromSource(createTestCollectionItem(
-          mediaType: MediaType.book,
-          source: DataSource.tmdb,
-          book: createTestBook(),
-        )),
+        canRefreshFromSource(
+          createTestCollectionItem(
+            mediaType: MediaType.book,
+            source: DataSource.tmdb,
+            book: createTestBook(),
+          ),
+        ),
         isFalse,
       );
       expect(
-        canRefreshFromSource(createTestCollectionItem(
-          mediaType: MediaType.book,
-          source: DataSource.openLibrary,
-        )),
+        canRefreshFromSource(
+          createTestCollectionItem(
+            mediaType: MediaType.book,
+            source: DataSource.openLibrary,
+          ),
+        ),
         isFalse,
       );
     });
@@ -108,24 +118,31 @@ void main() {
     late MockGameDao gameDao;
     late MockBookDao bookDao;
     late MockImageCacheService cache;
+    late MockMovieDao movieDao;
     late MockIgdbApi igdb;
     late MockFantlabApi fantlab;
+    late MockTmdbApi tmdb;
     WidgetRef? capturedRef;
 
     setUp(() {
       db = MockDatabaseService();
       gameDao = MockGameDao();
       bookDao = MockBookDao();
+      movieDao = MockMovieDao();
       cache = MockImageCacheService();
       igdb = MockIgdbApi();
       fantlab = MockFantlabApi();
+      tmdb = MockTmdbApi();
       when(() => db.gameDao).thenReturn(gameDao);
       when(() => db.bookDao).thenReturn(bookDao);
+      when(() => db.movieDao).thenReturn(movieDao);
       when(() => gameDao.upsertGame(any())).thenAnswer((_) async {});
       when(() => bookDao.upsertBook(any())).thenAnswer((_) async {});
+      when(() => movieDao.upsertMovie(any())).thenAnswer((_) async {});
       when(() => cache.deleteImage(any(), any())).thenAnswer((_) async {});
-      when(() => cache.evictDecodedImage(any(), any()))
-          .thenAnswer((_) async {});
+      when(
+        () => cache.evictDecodedImage(any(), any()),
+      ).thenAnswer((_) async {});
       capturedRef = null;
     });
 
@@ -142,13 +159,33 @@ void main() {
           imageCacheServiceProvider.overrideWithValue(cache),
           igdbApiProvider.overrideWithValue(igdb),
           fantlabApiProvider.overrideWithValue(fantlab),
+          tmdbApiProvider.overrideWithValue(tmdb),
         ],
       );
       return capturedRef!;
     }
 
-    testWidgets('should upsert and drop the cached cover on success',
-        (WidgetTester tester) async {
+    testWidgets('should refetch an animated movie from the movie endpoint', (
+      WidgetTester tester,
+    ) async {
+      final WidgetRef ref = await pumpRef(tester);
+      final Movie movie = createTestMovie();
+      when(() => tmdb.getMovie(100)).thenAnswer((_) async => movie);
+      final CollectionItem item = createTestCollectionItem(
+        mediaType: MediaType.animation,
+        platformId: AnimationSource.movie,
+        source: DataSource.tmdb,
+      );
+
+      final RefreshOutcome outcome = await refreshItemFromSource(ref, item);
+
+      expect(outcome.kind, RefreshOutcomeKind.success);
+      verify(() => movieDao.upsertMovie(movie)).called(1);
+    });
+
+    testWidgets('should upsert and drop the cached cover on success', (
+      WidgetTester tester,
+    ) async {
       final WidgetRef ref = await pumpRef(tester);
       final Game game = createTestGame();
       when(() => igdb.getGameById(100)).thenAnswer((_) async => game);
@@ -158,58 +195,72 @@ void main() {
 
       expect(outcome.kind, RefreshOutcomeKind.success);
       verify(() => gameDao.upsertGame(game)).called(1);
-      verify(() => cache.deleteImage(
-            item.cachedImageType,
-            item.cachedCoverImageId,
-          )).called(1);
-      verify(() => cache.evictDecodedImage(
-            item.cachedImageType,
-            item.cachedCoverImageId,
-          )).called(1);
+      verify(
+        () => cache.deleteImage(item.cachedImageType, item.cachedCoverImageId),
+      ).called(1);
+      verify(
+        () => cache.evictDecodedImage(
+          item.cachedImageType,
+          item.cachedCoverImageId,
+        ),
+      ).called(1);
     });
 
-    testWidgets('should keep the cover when the source has no row',
-        (WidgetTester tester) async {
+    testWidgets('should keep the cover when the source has no row', (
+      WidgetTester tester,
+    ) async {
       final WidgetRef ref = await pumpRef(tester);
       when(() => igdb.getGameById(100)).thenAnswer((_) async => null);
 
-      final RefreshOutcome outcome =
-          await refreshItemFromSource(ref, createTestCollectionItem());
+      final RefreshOutcome outcome = await refreshItemFromSource(
+        ref,
+        createTestCollectionItem(),
+      );
 
       expect(outcome.kind, RefreshOutcomeKind.notFound);
       verifyNever(() => gameDao.upsertGame(any()));
       verifyNever(() => cache.deleteImage(any(), any()));
     });
 
-    testWidgets('should report a thrown request as failed without touching the cover',
-        (WidgetTester tester) async {
-      final WidgetRef ref = await pumpRef(tester);
-      when(() => igdb.getGameById(100)).thenThrow(Exception('boom'));
+    testWidgets(
+      'should report a thrown request as failed without touching the cover',
+      (WidgetTester tester) async {
+        final WidgetRef ref = await pumpRef(tester);
+        when(() => igdb.getGameById(100)).thenThrow(Exception('boom'));
 
-      final RefreshOutcome outcome =
-          await refreshItemFromSource(ref, createTestCollectionItem());
+        final RefreshOutcome outcome = await refreshItemFromSource(
+          ref,
+          createTestCollectionItem(),
+        );
+
+        expect(outcome.kind, RefreshOutcomeKind.failed);
+        expect(outcome.error, contains('boom'));
+        verifyNever(() => cache.deleteImage(any(), any()));
+      },
+    );
+
+    testWidgets('should report a failing cover cleanup as failed, not throw', (
+      WidgetTester tester,
+    ) async {
+      final WidgetRef ref = await pumpRef(tester);
+      when(
+        () => igdb.getGameById(100),
+      ).thenAnswer((_) async => createTestGame());
+      when(
+        () => cache.deleteImage(any(), any()),
+      ).thenThrow(const FileSystemException('locked'));
+
+      final RefreshOutcome outcome = await refreshItemFromSource(
+        ref,
+        createTestCollectionItem(),
+      );
 
       expect(outcome.kind, RefreshOutcomeKind.failed);
-      expect(outcome.error, contains('boom'));
-      verifyNever(() => cache.deleteImage(any(), any()));
     });
 
-    testWidgets('should report a failing cover cleanup as failed, not throw',
-        (WidgetTester tester) async {
-      final WidgetRef ref = await pumpRef(tester);
-      when(() => igdb.getGameById(100))
-          .thenAnswer((_) async => createTestGame());
-      when(() => cache.deleteImage(any(), any()))
-          .thenThrow(const FileSystemException('locked'));
-
-      final RefreshOutcome outcome =
-          await refreshItemFromSource(ref, createTestCollectionItem());
-
-      expect(outcome.kind, RefreshOutcomeKind.failed);
-    });
-
-    testWidgets('should refuse a custom card without any request',
-        (WidgetTester tester) async {
+    testWidgets('should refuse a custom card without any request', (
+      WidgetTester tester,
+    ) async {
       final WidgetRef ref = await pumpRef(tester);
 
       final RefreshOutcome outcome = await refreshItemFromSource(
@@ -221,26 +272,31 @@ void main() {
       verifyNever(() => cache.deleteImage(any(), any()));
     });
 
-    testWidgets('should keep a Fantlab cover in a bulk run and drop it otherwise',
-        (WidgetTester tester) async {
-      final WidgetRef ref = await pumpRef(tester);
-      final Book fresh = createTestBook(source: DataSource.fantlab);
-      when(() => fantlab.getWork(any())).thenAnswer((_) async => fresh);
-      final CollectionItem item = createTestCollectionItem(
-        mediaType: MediaType.book,
-        source: DataSource.fantlab,
-        book: createTestBook(source: DataSource.fantlab),
-      );
+    testWidgets(
+      'should keep a Fantlab cover in a bulk run and drop it otherwise',
+      (WidgetTester tester) async {
+        final WidgetRef ref = await pumpRef(tester);
+        final Book fresh = createTestBook(source: DataSource.fantlab);
+        when(() => fantlab.getWork(any())).thenAnswer((_) async => fresh);
+        final CollectionItem item = createTestCollectionItem(
+          mediaType: MediaType.book,
+          source: DataSource.fantlab,
+          book: createTestBook(source: DataSource.fantlab),
+        );
 
-      final RefreshOutcome bulk =
-          await refreshItemFromSource(ref, item, bulk: true);
-      expect(bulk.kind, RefreshOutcomeKind.success);
-      verify(() => bookDao.upsertBook(fresh)).called(1);
-      verifyNever(() => cache.deleteImage(any(), any()));
+        final RefreshOutcome bulk = await refreshItemFromSource(
+          ref,
+          item,
+          bulk: true,
+        );
+        expect(bulk.kind, RefreshOutcomeKind.success);
+        verify(() => bookDao.upsertBook(fresh)).called(1);
+        verifyNever(() => cache.deleteImage(any(), any()));
 
-      final RefreshOutcome single = await refreshItemFromSource(ref, item);
-      expect(single.kind, RefreshOutcomeKind.success);
-      verify(() => cache.deleteImage(any(), any())).called(1);
-    });
+        final RefreshOutcome single = await refreshItemFromSource(ref, item);
+        expect(single.kind, RefreshOutcomeKind.success);
+        verify(() => cache.deleteImage(any(), any())).called(1);
+      },
+    );
   });
 }

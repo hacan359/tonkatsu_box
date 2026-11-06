@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../content/browse_collections_content.dart';
 
 class BrowseCollectionsScreen extends StatelessWidget {
@@ -9,11 +9,9 @@ class BrowseCollectionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsBrowseCollections),
-        const Expanded(child: BrowseCollectionsContent()),
-      ],
+    return FramePage(
+      title: S.of(context).settingsBrowseCollections,
+      child: const BrowseCollectionsContent(),
     );
   }
 }

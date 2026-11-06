@@ -11,6 +11,7 @@ import '../../collections/providers/collections_provider.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'media_action_handler.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Handles [MediaType.tvShow] and [MediaType.animation]. A successful add
 /// warms the seasons cache so the detail screen opens without a network trip.
@@ -19,9 +20,9 @@ class TvShowHandler implements MediaActionHandler {
     required WidgetRef ref,
     required SearchCollectionAdder adder,
     required Set<int> Function() targetCollections,
-  })  : _ref = ref,
-        _adder = adder,
-        _targetCollections = targetCollections;
+  }) : _ref = ref,
+       _adder = adder,
+       _targetCollections = targetCollections;
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
@@ -82,7 +83,9 @@ class TvShowHandler implements MediaActionHandler {
         source: tvShow.source,
       ),
       imageUrl: tvShow.posterUrl,
-      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
+      afterAdd: () => _ref
+          .read(tvShowCacheWarmerProvider)
+          .warm(tvShow.tmdbId, tvShow.source),
     );
   }
 
@@ -90,9 +93,10 @@ class TvShowHandler implements MediaActionHandler {
   void showDetails(BuildContext context, Object item, MediaType mediaType) {
     final TvShow tvShow = item as TvShow;
     final bool isAnim = mediaType == MediaType.animation;
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      selfBacked: true,
       builder: (BuildContext _) => ItemDetailsSheet.tvShow(
         tvShow,
         isAnimation: isAnim,
@@ -125,7 +129,9 @@ class TvShowHandler implements MediaActionHandler {
         source: tvShow.source,
       ),
       imageUrl: tvShow.posterUrl,
-      afterAdd: () => _ref.read(tvShowCacheWarmerProvider).warm(tvShow.tmdbId, tvShow.source),
+      afterAdd: () => _ref
+          .read(tvShowCacheWarmerProvider)
+          .warm(tvShow.tmdbId, tvShow.source),
     );
   }
 }

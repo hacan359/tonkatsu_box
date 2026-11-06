@@ -7,6 +7,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Reading-progress for books. Reuses `currentEpisode` for the page read, the
 /// way [AnimeProgressSection] reuses it for episodes.
@@ -30,7 +31,8 @@ class BookProgressSection extends ConsumerWidget {
   final Color accentColor;
 
   /// Comics track issues read, prose books track pages.
-  String _unitLabel(S l) => (book?.isComic ?? false) ? l.bookIssues : l.bookPages;
+  String _unitLabel(S l) =>
+      (book?.isComic ?? false) ? l.bookIssues : l.bookPages;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,7 +106,7 @@ class BookProgressSection extends ConsumerWidget {
 
     final String? result = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(_unitLabel(l)),
         content: TextField(
           controller: controller,

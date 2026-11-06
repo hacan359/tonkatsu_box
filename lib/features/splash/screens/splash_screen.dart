@@ -15,7 +15,7 @@ import 'server_token_screen.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/navigation/app_shell.dart';
-import '../../../shared/theme/app_assets.dart';
+import '../../../shared/widgets/volumetric_logo.dart';
 import '../../../shared/theme/app_durations.dart';
 
 /// Navigation waits for both the animation and the pre-warmed DB open, so the
@@ -34,6 +34,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late final CurvedAnimation _scaleCurve;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
+  late final CurvedAnimation _liftAnimation;
 
   bool _animationDone = false;
 
@@ -41,33 +42,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   bool _navigated = false;
 
-  /// 1.5s animation + 0.5s hold.
+  /// 1.9s animation + 0.1s hold, the same 2s the flat splash took.
   static const Duration _totalDuration = Duration(milliseconds: 2000);
 
-  /// Animation fraction of total duration (1.5 / 2.0).
-  static const double _animationEnd = 0.75;
+  /// The logo fades in flat, then lifts while it is already readable.
+  static const double _appearEnd = 0.4;
+  static const Interval _liftInterval = Interval(0.35, 0.95);
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: _totalDuration,
-    );
+    _controller = AnimationController(vsync: this, duration: _totalDuration);
 
-    // Fade and scale run in the first 75% of the controller's time.
     _fadeCurve = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, _animationEnd, curve: Curves.easeIn),
+      curve: const Interval(0.0, _appearEnd, curve: Curves.easeIn),
     );
     _fadeAnimation = _fadeCurve;
 
     _scaleCurve = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, _animationEnd, curve: Curves.easeOutCubic),
+      curve: const Interval(0.0, _appearEnd, curve: Curves.easeOutCubic),
     );
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(_scaleCurve);
+    _liftAnimation = CurvedAnimation(parent: _controller, curve: _liftInterval);
 
     _controller.addStatusListener((AnimationStatus status) {
       if (status == AnimationStatus.completed) {
@@ -78,20 +77,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _controller.forward();
 
     final DatabaseService db = ref.read(databaseServiceProvider);
-    db.warmUp().then((_) {
-      _dbDone = true;
-      _tryNavigate();
-    }).catchError((Object error, StackTrace stack) {
-      // The server wants a token this browser does not hold yet: ask for it
-      // instead of painting the fatal screen nobody can get past.
-      if (error is RpcException && error.kind == kRpcErrorKindAuth) {
-        _navigateToServerToken();
-        return;
-      }
-      // A failed migration, or on web a server that did not answer. Without
-      // this the future just rejects and the splash hangs forever.
-      recordStartupError('database', error, stack);
-    });
+    db
+        .warmUp()
+        .then((_) {
+          _dbDone = true;
+          _tryNavigate();
+        })
+        .catchError((Object error, StackTrace stack) {
+          // The server wants a token this browser does not hold yet: ask for it
+          // instead of painting the fatal screen nobody can get past.
+          if (error is RpcException && error.kind == kRpcErrorKindAuth) {
+            _navigateToServerToken();
+            return;
+          }
+          // A failed migration, or on web a server that did not answer. Without
+          // this the future just rejects and the splash hangs forever.
+          recordStartupError('database', error, stack);
+        });
   }
 
   void _tryNavigate() {
@@ -106,16 +108,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
 
       final ProfilesData data = ref.read(profilesDataProvider);
-      final bool skipPicker =
-          prefs.getBool(kSkipProfilePickerKey) ?? false;
-      final bool skipOnce =
-          prefs.getBool(SettingsKeys.skipPickerOnce) ?? false;
+      final bool skipPicker = prefs.getBool(kSkipProfilePickerKey) ?? false;
+      final bool skipOnce = prefs.getBool(SettingsKeys.skipPickerOnce) ?? false;
       if (skipOnce) {
         prefs.remove(SettingsKeys.skipPickerOnce);
       }
 
       // Profiles are a native concept: the server hands out one database.
-      if (!kIsWebBuild && data.profiles.length > 1 && !skipPicker && !skipOnce) {
+      if (!kIsWebBuild &&
+          data.profiles.length > 1 &&
+          !skipPicker &&
+          !skipOnce) {
         _navigateToProfilePicker();
       } else {
         _navigateToHome();
@@ -128,24 +131,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _navigated = true;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
-          return const ServerTokenScreen();
-        },
-        transitionsBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child,
-        ) {
-          return FadeTransition(
-            opacity: animation,
-            child: _withBackdrop(child),
-          );
-        },
+        pageBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+            ) {
+              return const ServerTokenScreen();
+            },
+        transitionsBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child,
+            ) {
+              return FadeTransition(
+                opacity: animation,
+                child: _withBackdrop(child),
+              );
+            },
         transitionDuration: AppDurations.slower,
       ),
     );
@@ -155,27 +160,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
-          return const ProfilePickerScreen();
-        },
-        transitionsBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child,
-        ) {
-          return FadeTransition(
-            opacity: animation,
-            child: _withBackdrop(child),
-          );
-        },
-        transitionDuration: Duration(
-          milliseconds: kIsMobile ? 200 : 500,
-        ),
+        pageBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+            ) {
+              return const ProfilePickerScreen();
+            },
+        transitionsBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child,
+            ) {
+              return FadeTransition(
+                opacity: animation,
+                child: _withBackdrop(child),
+              );
+            },
+        transitionDuration: Duration(milliseconds: kIsMobile ? 200 : 500),
       ),
     );
   }
@@ -185,29 +190,30 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
-          return const AppShell();
-        },
-        transitionsBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child,
-        ) {
-          return FadeTransition(
-            opacity: animation,
-            child: _withBackdrop(child),
-          );
-        },
+        pageBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+            ) {
+              return const AppShell();
+            },
+        transitionsBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child,
+            ) {
+              return FadeTransition(
+                opacity: animation,
+                child: _withBackdrop(child),
+              );
+            },
         transitionDuration: Duration(milliseconds: kIsMobile ? 200 : 500),
       ),
     );
   }
-
 
   /// PageRouteBuilder skips PageTransitionsTheme, so on web the route paints
   /// the tiled backdrop itself — the browser's page root is white; native isn't.
@@ -227,33 +233,46 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
-          return const WelcomeScreen();
-        },
-        transitionsBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child,
-        ) {
-          return FadeTransition(
-            opacity: animation,
-            child: _withBackdrop(child),
-          );
-        },
+        pageBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+            ) {
+              return const WelcomeScreen();
+            },
+        transitionsBuilder:
+            (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child,
+            ) {
+              return FadeTransition(
+                opacity: animation,
+                child: _withBackdrop(child),
+              );
+            },
         transitionDuration: AppDurations.slower,
       ),
     );
+  }
+
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_precached) return;
+    _precached = true;
+    VolumetricLogo.precache(context);
   }
 
   @override
   void dispose() {
     _fadeCurve.dispose();
     _scaleCurve.dispose();
+    _liftAnimation.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -266,11 +285,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           opacity: _fadeAnimation,
           child: ScaleTransition(
             scale: _scaleAnimation,
-            child: Image.asset(
-              AppAssets.logo,
-              width: 200,
-              height: 200,
-            ),
+            child: VolumetricLogo(lift: _liftAnimation, size: 200),
           ),
         ),
       ),

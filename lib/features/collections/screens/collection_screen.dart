@@ -26,7 +26,7 @@ import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -65,28 +65,29 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 
 class CollectionScreen extends ConsumerStatefulWidget {
-  const CollectionScreen({
-    required this.collectionId,
-    super.key,
-  });
+  const CollectionScreen({required this.collectionId, super.key});
 
   final int? collectionId;
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.collection,
-        entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItems),
-          ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportCollection),
-          ShortcutEntry(
-              keys: 'Ctrl+I', description: l.shortcutImportIntoCollection),
-          ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
-          ShortcutEntry(keys: 'Ctrl+B', description: l.shortcutToggleBoard),
-          ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteItem),
-          ShortcutEntry(keys: 'Ctrl+M', description: l.shortcutMoveItem),
-          ShortcutEntry(
-              keys: 'Ctrl+Delete', description: l.shortcutDeleteCollection),
-        ],
-      );
+    title: l.collection,
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItems),
+      ShortcutEntry(keys: 'Ctrl+E', description: l.shortcutExportCollection),
+      ShortcutEntry(
+        keys: 'Ctrl+I',
+        description: l.shortcutImportIntoCollection,
+      ),
+      ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
+      ShortcutEntry(keys: 'Ctrl+B', description: l.shortcutToggleBoard),
+      ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteItem),
+      ShortcutEntry(keys: 'Ctrl+M', description: l.shortcutMoveItem),
+      ShortcutEntry(
+        keys: 'Ctrl+Delete',
+        description: l.shortcutDeleteCollection,
+      ),
+    ],
+  );
 
   @override
   ConsumerState<CollectionScreen> createState() => _CollectionScreenState();
@@ -188,10 +189,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       );
     }
 
-    final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.watch(collectionItemsNotifierProvider(widget.collectionId));
-    final AsyncValue<CollectionStats> statsAsync =
-        ref.watch(collectionStatsProvider(widget.collectionId));
+    final AsyncValue<List<CollectionItem>> itemsAsync = ref.watch(
+      collectionItemsNotifierProvider(widget.collectionId),
+    );
+    final AsyncValue<CollectionStats> statsAsync = ref.watch(
+      collectionStatsProvider(widget.collectionId),
+    );
 
     final String searchQuery = ref.watch(collectionsSearchQueryProvider);
     final List<Tag> tags = _visibleTags(itemsAsync);
@@ -212,7 +215,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     // The rich banner carries the back arrow and title itself; the plain
     // title bar would duplicate both and waste a row.
     final bool heroCarriesTitle = _isRich(ref) && !_isCanvasMode;
-    return wrapWithScreenShortcuts(
+    return FramePage(
+      title: heroCarriesTitle
+          ? null
+          : (_isUncategorized ? l.collectionsUncategorized : _collection!.name),
+      child: wrapWithScreenShortcuts(
       bindings: _buildScreenShortcuts(l),
       child: Stack(
         children: <Widget>[
@@ -220,12 +227,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             children: <Widget>[
               if (!_isCanvasMode)
                 _buildFilterBar(itemsAsync, statsAsync, searchQuery, tags),
-              if (!heroCarriesTitle)
-                SubScreenTitleBar(
-                  title: _isUncategorized
-                      ? l.collectionsUncategorized
-                      : _collection!.name,
-                ),
               if (_canEdit && !_isCanvasMode)
                 CollectionBulkActionBar(
                   collectionId: widget.collectionId,
@@ -251,18 +252,22 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                         },
                         onAddVgMapsImage:
                             (String url, int? width, int? height) {
-                          CollectionActions.addVgMapsImage(
-                            context: context,
-                            ref: ref,
-                            collectionId: widget.collectionId,
-                            url: url,
-                            width: width,
-                            height: height,
-                          );
-                        },
+                              CollectionActions.addVgMapsImage(
+                                context: context,
+                                ref: ref,
+                                collectionId: widget.collectionId,
+                                url: url,
+                                width: width,
+                                height: height,
+                              );
+                            },
                       )
                     : _buildListLayout(
-                        itemsAsync, activeFilters, tags, itemTags),
+                        itemsAsync,
+                        activeFilters,
+                        tags,
+                        itemTags,
+                      ),
               ),
             ],
           ),
@@ -285,6 +290,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -292,11 +298,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
     return <ShortcutActivator, VoidCallback>{
       if (_canEdit && !_isUncategorized)
-        const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-            () => CollectionActions.addItems(ref: ref, collectionId: widget.collectionId),
+        const SingleActivator(LogicalKeyboardKey.keyN, control: true): () =>
+            CollectionActions.addItems(
+              ref: ref,
+              collectionId: widget.collectionId,
+            ),
       if (!_isUncategorized && _collection != null)
-        const SingleActivator(LogicalKeyboardKey.keyE, control: true):
-            () => CollectionActions.exportCollection(context: context, ref: ref, collectionId: widget.collectionId, collection: _collection!),
+        const SingleActivator(LogicalKeyboardKey.keyE, control: true): () =>
+            CollectionActions.exportCollection(
+              context: context,
+              ref: ref,
+              collectionId: widget.collectionId,
+              collection: _collection!,
+            ),
       if (_canEdit && !_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.keyI, control: true):
             _handleImportIntoCollection,
@@ -306,14 +320,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         shift: true,
       ): _handleCycleViewMode,
       if (kCanvasEnabled && !_isUncategorized)
-        const SingleActivator(LogicalKeyboardKey.keyB, control: true):
-            () => setState(() => _isCanvasMode = !_isCanvasMode),
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true): () =>
+            setState(() => _isCanvasMode = !_isCanvasMode),
       if (_canEdit)
-        const SingleActivator(LogicalKeyboardKey.delete):
-            () { if (_focusedItem != null) _handleRemoveItem(_focusedItem!); },
+        const SingleActivator(LogicalKeyboardKey.delete): () {
+          if (_focusedItem != null) _handleRemoveItem(_focusedItem!);
+        },
       if (_canEdit)
-        const SingleActivator(LogicalKeyboardKey.keyM, control: true):
-            () { if (_focusedItem != null) _handleMoveItem(_focusedItem!); },
+        const SingleActivator(LogicalKeyboardKey.keyM, control: true): () {
+          if (_focusedItem != null) _handleMoveItem(_focusedItem!);
+        },
       if (!_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.delete, control: true):
             _handleDelete,
@@ -397,8 +413,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           if (id == null) {
             _filterPlatformIds = <int>{};
           } else if (_filterPlatformIds.contains(id)) {
-            _filterPlatformIds = Set<int>.from(_filterPlatformIds)
-              ..remove(id);
+            _filterPlatformIds = Set<int>.from(_filterPlatformIds)..remove(id);
           } else {
             _filterPlatformIds = Set<int>.from(_filterPlatformIds)..add(id);
           }
@@ -468,9 +483,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     List<Tag> tags,
     Map<int, List<int>> itemTags,
   ) {
-    final Set<int> validTagIds = <int>{
-      for (final Tag tag in tags) tag.id,
-    };
+    final Set<int> validTagIds = <int>{for (final Tag tag in tags) tag.id};
     if (_filterTagIds.isNotEmpty &&
         !_filterTagIds.every(validTagIds.contains)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -501,12 +514,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       final Widget? banner = heroHeader(const <CollectionItem>[]);
       if (banner == null) return body;
       return Column(
-        children: <Widget>[banner, Expanded(child: body)],
+        children: <Widget>[
+          banner,
+          Expanded(child: body),
+        ],
       );
     }
 
-    final String anilistLang =
-        ref.read(sharedPreferencesProvider).animeMangaTitleLanguage;
+    final String anilistLang = ref
+        .read(sharedPreferencesProvider)
+        .animeMangaTitleLanguage;
     final Widget itemsView = itemsAsync.when(
       data: (List<CollectionItem> items) => CollectionItemsView(
         collectionId: widget.collectionId,
@@ -546,7 +563,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           error: error,
           onRetry: () => ref
               .read(
-                  collectionItemsNotifierProvider(widget.collectionId).notifier)
+                collectionItemsNotifierProvider(widget.collectionId).notifier,
+              )
               .refresh(),
         ),
       ),
@@ -600,16 +618,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Future<void> _showItemDetails(CollectionItem item) async {
     final bool isEditable = _canEdit;
-    final MetaSearchRequest? request =
-        await Navigator.of(context).push<MetaSearchRequest?>(
-      MaterialPageRoute<MetaSearchRequest?>(
-        builder: (BuildContext context) => ItemDetailScreen(
-          collectionId: widget.collectionId,
-          itemId: item.id,
-          isEditable: isEditable,
-        ),
-      ),
-    );
+    final MetaSearchRequest? request = await Navigator.of(context)
+        .push<MetaSearchRequest?>(
+          MaterialPageRoute<MetaSearchRequest?>(
+            builder: (BuildContext context) => ItemDetailScreen(
+              collectionId: widget.collectionId,
+              itemId: item.id,
+              isEditable: isEditable,
+            ),
+          ),
+        );
     if (request == null || !mounted) return;
     applyMetaSearch(ref, collectionsSearchQueryProvider, request.query);
   }
@@ -624,8 +642,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _isTableMode = false;
       }
     });
-    final String colKey =
-        widget.collectionId?.toString() ?? 'uncategorized';
+    final String colKey = widget.collectionId?.toString() ?? 'uncategorized';
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
     prefs.setBool(
       '${SettingsKeys.collectionViewModePrefix}$colKey',
@@ -714,10 +731,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         .create(name);
 
     if (mounted) {
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            TierListDetailScreen(tierListId: tierList.id),
-      ));
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) =>
+              TierListDetailScreen(tierListId: tierList.id),
+        ),
+      );
     }
   }
 
@@ -796,13 +815,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       case SavedImportCancelled():
         return;
       case SavedImportOpenScreen(:final Widget screen):
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (BuildContext _) => screen),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (BuildContext _) => screen));
       case SavedImportReady(
-          :final ImportSource source,
-          :final ImportOptions options,
-        ):
+        :final ImportSource source,
+        :final ImportOptions options,
+      ):
         await _runSavedImport(saved, source, options, title: sourceLabel);
     }
   }
@@ -837,10 +856,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) =>
           ImportProgressDialog<UniversalImportResult?>(
-        title: title,
-        progressNotifier: progressNotifier,
-        importFuture: importFuture,
-      ),
+            title: title,
+            progressNotifier: progressNotifier,
+            importFuture: importFuture,
+          ),
     );
     progressNotifier.dispose();
     if (!mounted) return;
@@ -924,26 +943,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     ImportResult? importResult;
 
-    final Future<ImportResult> importFuture = importService.importFromXcoll(
-      xcoll,
-      collectionId: widget.collectionId,
-      onProgress: (ImportProgress progress) {
-        progressNotifier.value = progress;
-      },
-    ).then((ImportResult result) {
-      importResult = result;
-      return result;
-    });
+    final Future<ImportResult> importFuture = importService
+        .importFromXcoll(
+          xcoll,
+          collectionId: widget.collectionId,
+          onProgress: (ImportProgress progress) {
+            progressNotifier.value = progress;
+          },
+        )
+        .then((ImportResult result) {
+          importResult = result;
+          return result;
+        });
 
     await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) =>
           ImportProgressDialog<ImportResult>(
-        title: S.of(context).collectionsImporting,
-        progressNotifier: progressNotifier,
-        importFuture: importFuture,
-      ),
+            title: S.of(context).collectionsImporting,
+            progressNotifier: progressNotifier,
+            importFuture: importFuture,
+          ),
     );
 
     progressNotifier.dispose();

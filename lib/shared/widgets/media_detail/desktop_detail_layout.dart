@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -5,12 +7,15 @@ import '../../constants/platform_features.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../copyable_text.dart';
 import '../fractional_star_rating.dart';
 import 'detail_sections.dart';
 import 'expandable_description.dart';
 import 'identity_header.dart';
+import 'media_detail_backdrop.dart';
 import 'media_detail_chip.dart';
 import 'progress_tiles.dart';
+import '../glass_panel.dart';
 
 /// Below this width a desktop window keeps the mobile column.
 const double kDesktopDetailMinWidth = 600;
@@ -33,22 +38,24 @@ class _Metrics {
   final EdgeInsets padding;
   final double titleSize;
 
+  // The panel already frames the card, so the outer inset stays small and
+  // the aside block (poster plus its padding) gets the room instead.
   static const _Metrics wide = _Metrics(
-    asideWidth: 230,
-    gap: 36,
-    padding: EdgeInsets.fromLTRB(40, 32, 40, 48),
+    asideWidth: 300,
+    gap: 32,
+    padding: EdgeInsets.fromLTRB(24, 24, 24, 40),
     titleSize: 34,
   );
   static const _Metrics medium = _Metrics(
-    asideWidth: 200,
-    gap: 28,
-    padding: EdgeInsets.fromLTRB(28, 28, 28, 40),
+    asideWidth: 260,
+    gap: 24,
+    padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
     titleSize: 28,
   );
   static const _Metrics narrow = _Metrics(
-    asideWidth: 160,
-    gap: 20,
-    padding: EdgeInsets.all(20),
+    asideWidth: 210,
+    gap: 16,
+    padding: EdgeInsets.all(16),
     titleSize: 24,
   );
 
@@ -75,16 +82,24 @@ class DesktopDetailLayout extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final _Metrics m = _Metrics.of(constraints.maxWidth);
-        // The floating app bar reports its height through the query.
-        final double topInset = MediaQuery.paddingOf(context).top;
+        // The text block fills the window, so a short description does not
+        // leave a stub of a tile next to a tall poster column.
+        final double minHeight = constraints.maxHeight.isFinite
+            ? math.max(0, constraints.maxHeight - m.padding.vertical)
+            : 0;
         return SingleChildScrollView(
-          padding: m.padding.copyWith(top: m.padding.top + topInset),
+          padding: m.padding,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SizedBox(width: m.asideWidth, child: _buildAside()),
+              SizedBox(width: m.asideWidth, child: _buildAside(context)),
               SizedBox(width: m.gap),
-              Expanded(child: _buildMain(m)),
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: minHeight),
+                  child: _buildMain(context, m),
+                ),
+              ),
             ],
           ),
         );
@@ -92,7 +107,7 @@ class DesktopDetailLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildAside() {
+  Widget _buildAside(BuildContext context) {
     final DetailSections s = sections;
     final ValueChanged<double?>? onRatingChanged = s.onRatingChanged;
     final DetailProgress? progress = s.progress;
@@ -117,22 +132,34 @@ class DesktopDetailLayout extends StatelessWidget {
           ),
         ),
         if (onRatingChanged != null)
-          _RatingBlock(value: s.rating, onChanged: onRatingChanged),
-        s.statusList ?? s.status,
+          GlassTile(
+            child: _RatingBlock(value: s.rating, onChanged: onRatingChanged),
+          ),
+        if (s.statusList != null || s.status != null)
+          GlassTile(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: s.statusList ?? s.status!,
+          ),
         if (progress != null)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              for (final ProgressFact fact in progress.facts)
-                ProgressFactRow(fact: fact),
-              ProgressFactRow(fact: progress.added),
-            ],
+          GlassTile(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.xs,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                for (final ProgressFact fact in progress.facts)
+                  ProgressFactRow(fact: fact),
+                ProgressFactRow(fact: progress.added),
+              ],
+            ),
           ),
       ], AppSpacing.md),
     );
   }
 
-  Widget _buildMain(_Metrics m) {
+  Widget _buildMain(BuildContext context, _Metrics m) {
     final DetailSections s = sections;
     final List<MediaDetailChip> creators = <MediaDetailChip>[
       for (final MediaDetailChip c in s.chips)
@@ -144,7 +171,7 @@ class DesktopDetailLayout extends StatelessWidget {
     ];
     final String? description = s.description;
 
-    return Column(
+    final Widget text = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: _spaced(<Widget?>[
         Column(
@@ -152,12 +179,15 @@ class DesktopDetailLayout extends StatelessWidget {
           children: <Widget>[
             s.badges,
             const SizedBox(height: 12),
-            Text(
-              s.title,
-              style: AppTypography.h1.copyWith(
-                fontSize: m.titleSize,
-                fontWeight: FontWeight.w800,
-                height: 1.15,
+            CopyableText(
+              text: s.title,
+              child: Text(
+                s.title,
+                style: AppTypography.h1.copyWith(
+                  fontSize: m.titleSize,
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
               ),
             ),
           ],
@@ -169,8 +199,7 @@ class DesktopDetailLayout extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(maxWidth: _descriptionMaxWidth),
+              constraints: const BoxConstraints(maxWidth: _descriptionMaxWidth),
               child: ExpandableDescription(
                 text: description,
                 collapsedLines: _descriptionLines,
@@ -188,6 +217,16 @@ class DesktopDetailLayout extends StatelessWidget {
         s.gallery,
         ...s.recommendations,
       ], AppSpacing.lg),
+    );
+
+    // The text floats as one block; the poster column stays on the panel.
+    final String? backdropUrl = s.backdropUrl;
+    return GlassTile(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      background: backdropUrl == null
+          ? null
+          : MediaDetailBackdrop(imageUrl: backdropUrl),
+      child: text,
     );
   }
 }

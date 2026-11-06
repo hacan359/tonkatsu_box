@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/logo.png" width="120" alt="Tonkatsu Box">
+  <img src="docs/assets/logo_volumetric.png" width="120" alt="Tonkatsu Box">
 </p>
 
 <h1 align="center">Tonkatsu Box</h1>

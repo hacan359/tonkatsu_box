@@ -6,6 +6,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/focusable_surface.dart';
 import '../models/library_stats.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 
 /// What the picker offers and does. Assembled by the screen, which owns the
 /// provider, so the pages can place it without reaching for `ref`.
@@ -52,30 +53,15 @@ class StatsPeriodPicker extends StatelessWidget {
         // The fill lives under the button's ink; an opaque child used to
         // paint over the hover and focus highlight.
         FocusableSurface(
-          child: PopupMenuButton<StatsPeriod>(
+          child: GlassPopupMenuButton<StatsPeriod>(
             onSelected: data.onChanged,
-            initialValue: data.selected,
             offset: const Offset(0, 40),
-            color: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<StatsPeriod>>[
+            rows: (BuildContext _) => <Widget>[
               for (final StatsPeriod period in data.periods)
-                PopupMenuItem<StatsPeriod>(
+                GlassMenuRow<StatsPeriod>(
                   value: period,
-                  height: 36,
-                  child: Text(
-                    _labelFor(l, period),
-                    style: AppTypography.body.copyWith(
-                      color: period == data.selected
-                          ? AppColors.brand
-                          : AppColors.textPrimary,
-                      fontWeight: period == data.selected
-                          ? FontWeight.w600
-                          : FontWeight.normal,
-                    ),
-                  ),
+                  label: _labelFor(l, period),
+                  checked: period == data.selected,
                 ),
             ],
             // Padding inside the button, so the whole pill opens the menu.

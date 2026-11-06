@@ -662,6 +662,40 @@ class SEs extends S {
   String get settingsThemeEva => 'Eva Azul';
 
   @override
+  String get settingsSkin => 'Estilo';
+
+  @override
+  String get settingsSkinSubtitle => 'Cristal o el aspecto clásico';
+
+  @override
+  String get settingsSkinGlass => 'Cristal';
+
+  @override
+  String get settingsSkinClassic => 'Clásico';
+
+  @override
+  String get settingsWallpaper => 'Fondo de pantalla';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Imagen detrás del marco de cristal';
+
+  @override
+  String get settingsWallpaperDefault => 'Predeterminado';
+
+  @override
+  String get settingsWallpaperCustom => 'Tu imagen';
+
+  @override
+  String get settingsWallpaperChoose => 'Elegir imagen…';
+
+  @override
+  String get settingsWallpaperReset => 'Restablecer';
+
+  @override
+  String get settingsWallpaperError =>
+      'No se pudo guardar el fondo de pantalla';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Idioma de la interfaz';
 
   @override
@@ -4757,6 +4791,21 @@ class SEs extends S {
 
   @override
   String get settingsIntegrations => 'Integraciones';
+
+  @override
+  String get settingsTabProfile => 'Perfil';
+
+  @override
+  String get settingsTabData => 'Datos';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Tema e idioma';
+
+  @override
+  String get settingsAppearanceLibrary => 'Biblioteca';
+
+  @override
+  String get settingsAppearanceScale => 'Escala';
 
   @override
   String get settingsKodiSubtitle =>

@@ -8,6 +8,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/utils/color_hex.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 sealed class EditProfileResult {
   const EditProfileResult();
@@ -44,10 +45,8 @@ class EditProfileDialog extends StatefulWidget {
   }) {
     return showDialog<EditProfileResult>(
       context: context,
-      builder: (BuildContext context) => EditProfileDialog(
-        profile: profile,
-        canDelete: canDelete,
-      ),
+      builder: (BuildContext context) =>
+          EditProfileDialog(profile: profile, canDelete: canDelete),
     );
   }
 
@@ -92,7 +91,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(l.editProfile),
       content: ConstrainedBox(
@@ -146,7 +145,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       l.colorPickerTitle,
-                      style: AppTypography.body.copyWith(color: AppColors.brand),
+                      style: AppTypography.body.copyWith(
+                        color: AppColors.brand,
+                      ),
                     ),
                   ],
                 ),
@@ -159,10 +160,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _confirmDelete,
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: AppColors.error,
-                  ),
+                  icon: Icon(Icons.delete_outline, color: AppColors.error),
                   label: Text(
                     l.deleteProfile,
                     style: TextStyle(color: AppColors.error),
@@ -183,15 +181,16 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
         ),
         FilledButton(
           onPressed: _isValid
-              ? () => Navigator.of(context).pop(ProfileUpdated(
-                  name: _nameController.text.trim(),
-                  color: _selectedColor,
-                ))
+              ? () => Navigator.of(context).pop(
+                  ProfileUpdated(
+                    name: _nameController.text.trim(),
+                    color: _selectedColor,
+                  ),
+                )
               : null,
           child: Text(l.save),
         ),
       ],
     );
   }
-
 }

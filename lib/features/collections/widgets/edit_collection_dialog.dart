@@ -10,6 +10,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
 import 'collection_hero_background.dart';
 import 'hidden_collection_checkbox.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Persists changes directly through `collectionsProvider.notifier`.
 /// Pops `true` if the user pressed Save and the changes were applied.
@@ -154,7 +155,7 @@ class _EditCollectionDialogState extends ConsumerState<EditCollectionDialog> {
     final String? heroFile = _currentHeroFile;
     final String? heroAbsPath = service.resolve(heroFile);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       titlePadding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,

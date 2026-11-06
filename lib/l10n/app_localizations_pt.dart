@@ -662,6 +662,40 @@ class SPt extends S {
   String get settingsThemeEva => 'Eva Azul';
 
   @override
+  String get settingsSkin => 'Estilo';
+
+  @override
+  String get settingsSkinSubtitle => 'Vidro ou o visual clássico';
+
+  @override
+  String get settingsSkinGlass => 'Vidro';
+
+  @override
+  String get settingsSkinClassic => 'Clássico';
+
+  @override
+  String get settingsWallpaper => 'Papel de parede';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Imagem atrás da moldura de vidro';
+
+  @override
+  String get settingsWallpaperDefault => 'Padrão';
+
+  @override
+  String get settingsWallpaperCustom => 'Sua imagem';
+
+  @override
+  String get settingsWallpaperChoose => 'Escolher imagem…';
+
+  @override
+  String get settingsWallpaperReset => 'Redefinir';
+
+  @override
+  String get settingsWallpaperError =>
+      'Não foi possível salvar o papel de parede';
+
+  @override
   String get settingsAppLanguageSubtitle => 'Idioma da interface';
 
   @override
@@ -4741,6 +4775,21 @@ class SPt extends S {
 
   @override
   String get settingsIntegrations => 'Integrações';
+
+  @override
+  String get settingsTabProfile => 'Perfil';
+
+  @override
+  String get settingsTabData => 'Dados';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Tema e idioma';
+
+  @override
+  String get settingsAppearanceLibrary => 'Biblioteca';
+
+  @override
+  String get settingsAppearanceScale => 'Escala';
 
   @override
   String get settingsKodiSubtitle =>

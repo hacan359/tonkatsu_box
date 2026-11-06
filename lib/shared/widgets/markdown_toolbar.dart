@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
+import 'glass_dialog.dart';
 
 class MarkdownToolbar extends StatelessWidget {
   const MarkdownToolbar({
@@ -46,10 +47,7 @@ class MarkdownToolbar extends StatelessWidget {
 
   /// With an empty selection this inserts the bare markers and puts the
   /// caret between them.
-  static void wrapSelection(
-    TextEditingController controller,
-    String marker,
-  ) {
+  static void wrapSelection(TextEditingController controller, String marker) {
     final TextSelection selection = controller.selection;
     final String text = controller.text;
 
@@ -59,11 +57,11 @@ class MarkdownToolbar extends StatelessWidget {
       final int pos = selection.baseOffset;
       controller.text =
           '${text.substring(0, pos)}$marker$marker${text.substring(pos)}';
-      controller.selection =
-          TextSelection.collapsed(offset: pos + marker.length);
+      controller.selection = TextSelection.collapsed(
+        offset: pos + marker.length,
+      );
     } else {
-      final String selected =
-          text.substring(selection.start, selection.end);
+      final String selected = text.substring(selection.start, selection.end);
       controller.text =
           '${text.substring(0, selection.start)}$marker$selected$marker${text.substring(selection.end)}';
       controller.selection = TextSelection(
@@ -82,13 +80,12 @@ class MarkdownToolbar extends StatelessWidget {
 
     final TextSelection selection = controller.selection;
     if (selection.isValid && !selection.isCollapsed) {
-      textCtrl.text =
-          controller.text.substring(selection.start, selection.end);
+      textCtrl.text = controller.text.substring(selection.start, selection.end);
     }
 
     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(S.of(ctx).insertLink),
         content: SingleChildScrollView(
           child: Column(
@@ -129,8 +126,9 @@ class MarkdownToolbar extends StatelessWidget {
 
     if (confirmed != true || urlCtrl.text.isEmpty) return;
 
-    final String linkText =
-        textCtrl.text.isNotEmpty ? textCtrl.text : urlCtrl.text;
+    final String linkText = textCtrl.text.isNotEmpty
+        ? textCtrl.text
+        : urlCtrl.text;
     final String markdown = '[$linkText](${urlCtrl.text})';
 
     final int start = selection.isValid && !selection.isCollapsed
@@ -142,8 +140,9 @@ class MarkdownToolbar extends StatelessWidget {
 
     controller.text =
         '${controller.text.substring(0, start)}$markdown${controller.text.substring(end)}';
-    controller.selection =
-        TextSelection.collapsed(offset: start + markdown.length);
+    controller.selection = TextSelection.collapsed(
+      offset: start + markdown.length,
+    );
   }
 }
 

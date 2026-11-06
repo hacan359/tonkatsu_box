@@ -23,6 +23,7 @@ import '../providers/item_tags_provider.dart';
 import 'bulk_export/bulk_poster_export_dialog.dart';
 import 'tag_picker_dialog.dart';
 import '../../../shared/constants/item_status_ui.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 
 /// Below this width the counter and the actions stop fitting on one line.
 const double _kTwoRowBreakpoint = 620;
@@ -63,8 +64,8 @@ class BulkActionBar extends ConsumerWidget {
     final CollectionSortMode sortMode = collectionId == null
         ? CollectionSortMode.lastActivity
         : ref.watch(collectionSortProvider(collectionId));
-    final bool isManualSort = collectionId != null &&
-        sortMode == CollectionSortMode.manual;
+    final bool isManualSort =
+        collectionId != null && sortMode == CollectionSortMode.manual;
     final int count = items.length;
 
     return Material(
@@ -124,7 +125,8 @@ class BulkActionBar extends ConsumerWidget {
           ),
         ),
       ),
-      if (onSelectAllVisible != null && (visibleCount ?? 0) > count) ...<Widget>[
+      if (onSelectAllVisible != null &&
+          (visibleCount ?? 0) > count) ...<Widget>[
         const SizedBox(width: AppSpacing.sm),
         TextButton(
           onPressed: onSelectAllVisible,
@@ -273,14 +275,14 @@ class BulkActionBar extends ConsumerWidget {
   ) async {
     final S l = S.of(context);
     final List<CollectionItem> snapshot = List<CollectionItem>.of(items);
-    final int changed =
-        await BulkOperations.updateItemsStatus(ref, snapshot, status);
+    final int changed = await BulkOperations.updateItemsStatus(
+      ref,
+      snapshot,
+      status,
+    );
     onClearSelection();
     if (!context.mounted) return;
-    context.showSnack(
-      l.bulkStatusUpdated(changed),
-      type: SnackType.success,
-    );
+    context.showSnack(l.bulkStatusUpdated(changed), type: SnackType.success);
   }
 
   /// Never replaces a whole tag set — that would wipe tags the user
@@ -309,20 +311,14 @@ class BulkActionBar extends ConsumerWidget {
         : await tags.removeTagsFromItems(ids, picked);
     onClearSelection();
     if (!context.mounted) return;
-    context.showSnack(
-      switch (changed) {
-        0 => l.bulkTagsUnchanged,
-        _ when add => l.bulkTagsAdded(changed),
-        _ => l.bulkTagsRemoved(changed),
-      },
-      type: changed == 0 ? SnackType.info : SnackType.success,
-    );
+    context.showSnack(switch (changed) {
+      0 => l.bulkTagsUnchanged,
+      _ when add => l.bulkTagsAdded(changed),
+      _ => l.bulkTagsRemoved(changed),
+    }, type: changed == 0 ? SnackType.info : SnackType.success);
   }
 
-  Future<void> _handleRemove(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _handleRemove(BuildContext context, WidgetRef ref) async {
     final S l = S.of(context);
     final int count = items.length;
     final bool confirmed = await ConfirmDialog.show(
@@ -337,19 +333,18 @@ class BulkActionBar extends ConsumerWidget {
     final int removed = await BulkOperations.removeItems(ref, snapshot);
     onClearSelection();
     if (!context.mounted) return;
-    context.showSnack(
-      l.bulkRemoved(removed),
-      type: SnackType.success,
-    );
+    context.showSnack(l.bulkRemoved(removed), type: SnackType.success);
   }
 
   Future<void> _handleRefresh(BuildContext context, WidgetRef ref) async {
     final S l = S.of(context);
     final List<CollectionItem> snapshot = List<CollectionItem>.of(items);
-    final int skipped =
-        snapshot.where((CollectionItem i) => !canRefreshFromSource(i)).length;
-    final StringBuffer message =
-        StringBuffer(l.bulkRefreshConfirm(snapshot.length - skipped));
+    final int skipped = snapshot
+        .where((CollectionItem i) => !canRefreshFromSource(i))
+        .length;
+    final StringBuffer message = StringBuffer(
+      l.bulkRefreshConfirm(snapshot.length - skipped),
+    );
     if (skipped > 0) {
       message
         ..write('\n\n')
@@ -513,29 +508,20 @@ class _StatusMenuAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return PopupMenuButton<ItemStatus>(
+    return GlassPopupMenuButton<ItemStatus>(
       icon: const Icon(Icons.flag_outlined),
       iconSize: 20,
       tooltip: l.bulkChangeStatus,
       onSelected: onSelected,
-      itemBuilder: (BuildContext context) {
-        return ItemStatus.values.map((ItemStatus s) {
-          return PopupMenuItem<ItemStatus>(
+      rows: (BuildContext _) => <Widget>[
+        for (final ItemStatus s in ItemStatus.values)
+          GlassMenuRow<ItemStatus>(
             value: s,
-            height: 36,
-            child: Row(
-              children: <Widget>[
-                Icon(s.materialIcon, size: 16, color: s.color),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  s.genericLabel(l),
-                  style: AppTypography.body.copyWith(fontSize: 13),
-                ),
-              ],
-            ),
-          );
-        }).toList();
-      },
+            icon: s.materialIcon,
+            iconColor: s.color,
+            label: s.genericLabel(l),
+          ),
+      ],
     );
   }
 }

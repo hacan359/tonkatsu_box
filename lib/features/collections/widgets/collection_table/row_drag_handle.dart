@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
 
+import '../../../../shared/theme/app_colors.dart';
+
 import '../../../../shared/theme/app_spacing.dart';
 
 /// trina_grid's built-in handle loses the gesture arena to grid scroll on
@@ -34,8 +36,9 @@ class RowDragHandle extends StatelessWidget {
     stateManager.eventManager!.addEvent(
       TrinaGridScrollUpdateEvent(offset: details.globalPosition),
     );
-    final int? targetIdx =
-        stateManager.getRowIdxByOffset(details.globalPosition.dy);
+    final int? targetIdx = stateManager.getRowIdxByOffset(
+      details.globalPosition.dy,
+    );
     if (targetIdx != null) {
       stateManager.setDragTargetRowIdx(targetIdx);
     }
@@ -70,7 +73,8 @@ class RowDragHandle extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.xs),
           decoration: BoxDecoration(
-            color: style.gridBackgroundColor,
+            // The grid itself is transparent on the glass panel.
+            color: AppColors.surface,
             border: Border.all(color: style.activatedBorderColor),
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           ),

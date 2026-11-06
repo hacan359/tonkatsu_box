@@ -3,9 +3,11 @@ import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/widgets/glass_panel.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../../../../shared/widgets/focusable_surface.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Comparison used by a table filter rule.
 enum TableFilterCondition {
@@ -17,22 +19,22 @@ enum TableFilterCondition {
   atMost;
 
   TrinaFilterType get trinaType => switch (this) {
-        contains => const TrinaFilterTypeContains(),
-        equals => const TrinaFilterTypeEquals(),
-        startsWith => const TrinaFilterTypeStartsWith(),
-        endsWith => const TrinaFilterTypeEndsWith(),
-        atLeast => const TrinaFilterTypeGreaterThanOrEqualTo(),
-        atMost => const TrinaFilterTypeLessThanOrEqualTo(),
-      };
+    contains => const TrinaFilterTypeContains(),
+    equals => const TrinaFilterTypeEquals(),
+    startsWith => const TrinaFilterTypeStartsWith(),
+    endsWith => const TrinaFilterTypeEndsWith(),
+    atLeast => const TrinaFilterTypeGreaterThanOrEqualTo(),
+    atMost => const TrinaFilterTypeLessThanOrEqualTo(),
+  };
 
   String label(S l) => switch (this) {
-        contains => l.tableFilterCondContains,
-        equals => l.tableFilterCondEquals,
-        startsWith => l.tableFilterCondStartsWith,
-        endsWith => l.tableFilterCondEndsWith,
-        atLeast => l.tableFilterCondAtLeast,
-        atMost => l.tableFilterCondAtMost,
-      };
+    contains => l.tableFilterCondContains,
+    equals => l.tableFilterCondEquals,
+    startsWith => l.tableFilterCondStartsWith,
+    endsWith => l.tableFilterCondEndsWith,
+    atLeast => l.tableFilterCondAtLeast,
+    atMost => l.tableFilterCondAtMost,
+  };
 }
 
 /// One row of the table filter: column + condition + value.
@@ -86,11 +88,8 @@ class TableFilterDialog extends StatefulWidget {
 class _TableFilterDialogState extends State<TableFilterDialog> {
   late final List<_RuleDraft> _drafts = widget.rules
       .map(
-        (TableFilterRule r) => _RuleDraft(
-          field: r.field,
-          condition: r.condition,
-          value: r.value,
-        ),
+        (TableFilterRule r) =>
+            _RuleDraft(field: r.field, condition: r.condition, value: r.value),
       )
       .toList();
 
@@ -161,7 +160,7 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
         MediaQuery.sizeOf(context).width - 2 * AppSpacing.xl;
     final double width = available.clamp(0.0, 560.0);
     final bool stacked = width < 460;
-    return AlertDialog(
+    return GlassAlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.md,
@@ -213,8 +212,7 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          onPressed: () =>
-              Navigator.of(context).pop(const <TableFilterRule>[]),
+          onPressed: () => Navigator.of(context).pop(const <TableFilterRule>[]),
           child: Text(l.filtersClear),
         ),
         TextButton(
@@ -341,7 +339,7 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
     required ValueChanged<T?> onChanged,
   }) {
     return FocusableSurface(
-      color: AppColors.surfaceLight,
+      color: glassTileColor(),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: DropdownButton<T>(
         value: value,
@@ -350,7 +348,7 @@ class _TableFilterDialogState extends State<TableFilterDialog> {
         isExpanded: true,
         isDense: true,
         underline: const SizedBox.shrink(),
-        dropdownColor: AppColors.surface,
+        dropdownColor: AppColors.surface.withAlpha(215),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         style: AppTypography.body,
         iconEnabledColor: AppColors.textTertiary,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Pure dialogs: they return the user's choice and never touch the notifier,
 /// so the screen keeps all side effects in one place.
@@ -11,15 +12,12 @@ class WishlistDialogs {
 
   /// Asks the user for a tag to apply to a bulk selection. Returns null if
   /// cancelled or the entered text was empty after trimming.
-  static Future<String?> promptBulkTag(
-    BuildContext context,
-    int count,
-  ) async {
+  static Future<String?> promptBulkTag(BuildContext context, int count) async {
     final S l = S.of(context);
     final TextEditingController controller = TextEditingController();
     final String? input = await showDialog<String>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext context) => GlassAlertDialog(
         title: Text(l.wishlistBulkApplyTag),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -31,8 +29,7 @@ class WishlistDialogs {
               controller: controller,
               autofocus: true,
               decoration: InputDecoration(hintText: l.tagLabel),
-              onSubmitted: (String v) =>
-                  Navigator.of(context).pop(v.trim()),
+              onSubmitted: (String v) => Navigator.of(context).pop(v.trim()),
             ),
           ],
         ),
@@ -42,8 +39,7 @@ class WishlistDialogs {
             child: Text(l.cancel),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
             child: Text(l.apply),
           ),
         ],
@@ -60,12 +56,13 @@ class WishlistDialogs {
     String? currentTag,
   ) async {
     final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: currentTag ?? '');
+    final TextEditingController controller = TextEditingController(
+      text: currentTag ?? '',
+    );
 
     final String? newTag = await showDialog<String>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext context) => GlassAlertDialog(
         title: Text(l.tagRename),
         content: TextField(
           controller: controller,
@@ -80,8 +77,7 @@ class WishlistDialogs {
             child: Text(l.cancel),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
+            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
             child: Text(l.save),
           ),
         ],
@@ -137,10 +133,7 @@ class WishlistDialogs {
   }
 
   /// Confirms bulk deletion of [count] items.
-  static Future<bool> confirmBulkDelete(
-    BuildContext context,
-    int count,
-  ) async {
+  static Future<bool> confirmBulkDelete(BuildContext context, int count) async {
     final S l = S.of(context);
     return ConfirmDialog.show(
       context,

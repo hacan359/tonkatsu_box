@@ -19,6 +19,7 @@ import 'dual_rating_badge.dart';
 import 'source_logo.dart';
 import '../constants/item_status_ui.dart';
 import '../constants/media_type_ui.dart';
+import 'image_placeholder.dart';
 
 enum CardVariant {
   /// Full-size grid (collection + search).
@@ -257,8 +258,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             animation: _hoverController!,
             builder: (BuildContext context, Widget? child) {
               return Transform.scale(
-                scale:
-                    widget.enableHoverScale ? _scaleAnimation!.value : 1.0,
+                scale: widget.enableHoverScale ? _scaleAnimation!.value : 1.0,
                 child: child,
               );
             },
@@ -267,7 +267,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               onLongPress: widget.onLongPress,
               onSecondaryTapUp: widget.onSecondaryTap != null
                   ? (TapUpDetails details) =>
-                      widget.onSecondaryTap!(details.globalPosition)
+                        widget.onSecondaryTap!(details.globalPosition)
                   : null,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,14 +276,14 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                     child: LayoutBuilder(
                       builder: (BuildContext context, BoxConstraints c) =>
                           _buildGridPoster(
-                        _BadgeMetrics(
-                          compact: _isCompact,
-                          scale: AppSpacing.badgeScale(
-                            cardWidth: c.maxWidth,
-                            compact: _isCompact,
+                            _BadgeMetrics(
+                              compact: _isCompact,
+                              scale: AppSpacing.badgeScale(
+                                cardWidth: c.maxWidth,
+                                compact: _isCompact,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
                     ),
                   ),
                   _buildTitleBlock(context),
@@ -340,19 +340,22 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Widget _buildGridPoster(_BadgeMetrics m) {
     final bool hasOverlay =
         widget.platformOverlayAsset != null && !widget.isInCollection;
-    final double borderRadius =
-        hasOverlay ? 0 : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
+    final double borderRadius = hasOverlay
+        ? 0
+        : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
 
     final bool showFavoriteBadge =
         widget.onToggleFavorite != null || widget.showFavorite;
     final bool showStatusDot =
         widget.status != null && widget.status != ItemStatus.notStarted;
-    final bool showPlatformBadge = widget.platformOverlayAsset == null &&
+    final bool showPlatformBadge =
+        widget.platformOverlayAsset == null &&
         widget.platformLabel != null &&
         widget.platformColor != null;
 
-    final int? primaryTagColor =
-        widget.tags.isEmpty ? null : widget.tags.first.color;
+    final int? primaryTagColor = widget.tags.isEmpty
+        ? null
+        : widget.tags.first.color;
     final Color? glowColor = widget.tagGlow && primaryTagColor != null
         ? Color(primaryTagColor)
         : null;
@@ -365,13 +368,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            _buildCachedImage(
-              placeholder: _buildGridPlaceholder(),
-            ),
+            _buildCachedImage(placeholder: _buildGridPlaceholder()),
 
             // Platform overlay sits above the poster, below the badges.
-            if (widget.platformOverlayAsset != null &&
-                !widget.isInCollection)
+            if (widget.platformOverlayAsset != null && !widget.isInCollection)
               Positioned.fill(
                 child: Image.asset(
                   widget.platformOverlayAsset!,
@@ -404,8 +404,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.scrim.withAlpha(170),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusXs),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusXs,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -417,8 +418,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                             ),
                             SizedBox(width: m.of(1, 2)),
                             Text(
-                              S.of(context).runtimeHours(
-                                  widget.timeToBeatHours!),
+                              S
+                                  .of(context)
+                                  .runtimeHours(widget.timeToBeatHours!),
                               style: TextStyle(
                                 color: AppColors.onOverlay,
                                 fontSize: m.of(7, 9),
@@ -456,10 +458,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                             metrics: m,
                             onTap: widget.onOpenInCollection!,
                           )
-                        : InCollectionBadge(
-                            compact: _isCompact,
-                            scale: m.scale,
-                          )
+                        : InCollectionBadge(compact: _isCompact, scale: m.scale)
                   // Platform text badge — fallback when there's no overlay.
                   else if (showPlatformBadge)
                     Container(
@@ -469,8 +468,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                       ),
                       decoration: BoxDecoration(
                         color: widget.platformColor!.withAlpha(210),
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusXs),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusXs,
+                        ),
                       ),
                       child: Text(
                         widget.platformLabel!,
@@ -511,8 +511,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     // The inline slot also hosts the empty "add a tag" badge.
     final bool inlineTag =
         !tagWrap && (widget.onTagTap != null || widget.tags.isNotEmpty);
-    final bool showRow =
-        showStatusDot || widget.progress != null || inlineTag;
+    final bool showRow = showStatusDot || widget.progress != null || inlineTag;
     if (!showRow && !tagWrap) {
       return const SizedBox.shrink();
     }
@@ -533,8 +532,12 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         children: <Widget>[
           if (tagWrap)
             Padding(
-              padding:
-                  EdgeInsets.fromLTRB(hPad, vPad, hPad, showRow ? 0 : vPad),
+              padding: EdgeInsets.fromLTRB(
+                hPad,
+                vPad,
+                hPad,
+                showRow ? 0 : vPad,
+              ),
               child: _TagTapTarget(
                 onTap: widget.onTagTap,
                 child: Wrap(
@@ -579,10 +582,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                         alignment: Alignment.centerLeft,
                         child: _TagTapTarget(
                           onTap: widget.onTagTap,
-                          child: _InlineTags(
-                            tags: widget.tags,
-                            metrics: m,
-                          ),
+                          child: _InlineTags(tags: widget.tags, metrics: m),
                         ),
                       ),
                     )
@@ -591,10 +591,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   if (widget.progress != null) ...<Widget>[
                     SizedBox(width: m.of(2, 4)),
                     if (inlineTag)
-                      _ProgressLabel(
-                        label: widget.progress!.label,
-                        metrics: m,
-                      )
+                      _ProgressLabel(label: widget.progress!.label, metrics: m)
                     else
                       Expanded(
                         child: Align(
@@ -631,28 +628,24 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   }
 
   Widget _buildGridPlaceholder() {
-    return Container(
-      color: AppColors.surfaceLight,
-      child: Center(
-        child: Icon(
-          widget.placeholderIcon ?? Icons.image_outlined,
-          color: AppColors.textTertiary,
-          size: _isCompact ? 16 : 32,
-        ),
-      ),
+    return ImagePlaceholder(
+      icon: widget.placeholderIcon ?? Icons.image_outlined,
+      iconSize: _isCompact ? 16 : 32,
     );
   }
 
   /// The source logo sits in a [Row], not a [WidgetSpan] — a span grows the
   /// text line past the height the title block budgeted.
   Widget _buildSubtitleRow(BuildContext context) {
-    final TextStyle baseStyle =
-        AppTypography.posterSubtitleFor(compact: _isCompact);
+    final TextStyle baseStyle = AppTypography.posterSubtitleFor(
+      compact: _isCompact,
+    );
     final Widget metaText = _buildMetaText(context, baseStyle);
 
     if (widget.source case final DataSource source) {
-      final double fontSize =
-          MediaQuery.textScalerOf(context).scale(baseStyle.fontSize ?? 11);
+      final double fontSize = MediaQuery.textScalerOf(
+        context,
+      ).scale(baseStyle.fontSize ?? 11);
       return Row(
         children: <Widget>[
           _SourceLogoLink(
@@ -671,8 +664,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Widget _buildMetaText(BuildContext context, TextStyle baseStyle) {
     // The rating star is not in Inter; its fallback font would raise the line
     // past fontSize×height and burst the block budgeted from it.
-    final StrutStyle strut =
-        StrutStyle.fromTextStyle(baseStyle, forceStrutHeight: true);
+    final StrutStyle strut = StrutStyle.fromTextStyle(
+      baseStyle,
+      forceStrutHeight: true,
+    );
 
     // Parts before the type: rating, platform, year.
     final List<String> before = <String>[];
@@ -723,7 +718,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               style: baseStyle.copyWith(color: AppColors.ratingGold),
             ),
             if (all.isNotEmpty)
-              TextSpan(text: ' \u00b7 ${all.join(' \u00b7 ')}', style: baseStyle),
+              TextSpan(
+                text: ' \u00b7 ${all.join(' \u00b7 ')}',
+                style: baseStyle,
+              ),
           ],
         ),
         strutStyle: strut,
@@ -733,7 +731,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     }
 
     final String typeLabel =
-        widget.typeLabelOverride ?? widget.mediaType!.localizedLabel(S.of(context));
+        widget.typeLabelOverride ??
+        widget.mediaType!.localizedLabel(S.of(context));
     final Color typeColor = MediaTypeTheme.colorFor(widget.mediaType!);
 
     return Text.rich(
@@ -793,8 +792,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             ),
 
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               color: colorScheme.surfaceContainerLow,
               child: Text(
                 widget.title,
@@ -813,13 +811,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   }
 
   Widget _buildCanvasPlaceholder(ColorScheme colorScheme) {
-    return Container(
-      color: colorScheme.surfaceContainerHighest,
-      child: Icon(
-        widget.placeholderIcon ?? Icons.image_outlined,
-        size: 32,
-        color: colorScheme.onSurfaceVariant,
-      ),
+    return ImagePlaceholder(
+      icon: widget.placeholderIcon ?? Icons.image_outlined,
     );
   }
 
@@ -978,8 +971,7 @@ class _GlowBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GlowBorderPainter oldDelegate) =>
-      progress != oldDelegate.progress ||
-      color != oldDelegate.color;
+      progress != oldDelegate.progress || color != oldDelegate.color;
 }
 
 /// Badge sizes over the poster: the compact or full base times the factor
@@ -1081,8 +1073,9 @@ class _TagChip extends StatelessWidget {
     final int? color = tag.color;
     final int? textColor = tag.textColor;
     return _TagPill(
-      color: (color != null ? Color(color) : AppColors.textSecondary)
-          .withAlpha(200),
+      color: (color != null ? Color(color) : AppColors.textSecondary).withAlpha(
+        200,
+      ),
       metrics: metrics,
       child: Text(
         tag.name,
@@ -1200,11 +1193,7 @@ TextStyle _tagLabelStyle({
 /// Source brand logo opening the meta line, optionally a link to the item's
 /// page on that source.
 class _SourceLogoLink extends StatelessWidget {
-  const _SourceLogoLink({
-    required this.source,
-    required this.size,
-    this.onTap,
-  });
+  const _SourceLogoLink({required this.source, required this.size, this.onTap});
 
   final DataSource source;
   final double size;
@@ -1296,10 +1285,7 @@ class _FavoriteButton extends StatelessWidget {
 double _tapTarget(_BadgeMetrics metrics) => metrics.of(28, 32);
 
 class _InCollectionButton extends StatelessWidget {
-  const _InCollectionButton({
-    required this.metrics,
-    required this.onTap,
-  });
+  const _InCollectionButton({required this.metrics, required this.onTap});
 
   final _BadgeMetrics metrics;
   final VoidCallback onTap;

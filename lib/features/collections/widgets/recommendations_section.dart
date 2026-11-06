@@ -11,7 +11,6 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/collections_provider.dart';
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -20,7 +19,10 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../search/widgets/item_details_sheet.dart';
-import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
+import '../../settings/providers/settings_provider.dart'
+    show SettingsState, settingsNotifierProvider;
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 FutureProvider<List<Movie>> _createMovieRecProvider(int tmdbId) =>
     FutureProvider<List<Movie>>((Ref ref) async {
@@ -75,8 +77,7 @@ class RecommendationsSection extends ConsumerWidget {
   final void Function(TvShow tvShow)? onAddTvShow;
 
   bool get _isTvBased =>
-      mediaType == MediaType.tvShow ||
-      (mediaType == MediaType.animation);
+      mediaType == MediaType.tvShow || (mediaType == MediaType.animation);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -92,8 +93,9 @@ class RecommendationsSection extends ConsumerWidget {
   }
 
   Widget _buildMovieRecommendations(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<Movie>> asyncRecs =
-        ref.watch(_getMovieRecProvider(tmdbId));
+    final AsyncValue<List<Movie>> asyncRecs = ref.watch(
+      _getMovieRecProvider(tmdbId),
+    );
 
     // TMDB recommendations, so only TMDB placements count: a TheTVDB movie with
     // the same numeric id is a different film.
@@ -138,8 +140,9 @@ class RecommendationsSection extends ConsumerWidget {
   }
 
   Widget _buildTvRecommendations(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<TvShow>> asyncRecs =
-        ref.watch(_getTvRecProvider(tmdbId));
+    final AsyncValue<List<TvShow>> asyncRecs = ref.watch(
+      _getTvRecProvider(tmdbId),
+    );
 
     // TMDB recommendations, so only TMDB placements count: a TVmaze show with
     // the same numeric id is a different show.
@@ -185,25 +188,27 @@ class RecommendationsSection extends ConsumerWidget {
   }
 
   void _showMovieDetails(BuildContext context, Movie movie) {
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      selfBacked: true,
       builder: (BuildContext ctx) => ItemDetailsSheet.movie(
         movie,
-        onAddToCollection:
-            onAddMovie != null ? () => onAddMovie!(movie) : null,
+        onAddToCollection: onAddMovie != null ? () => onAddMovie!(movie) : null,
       ),
     );
   }
 
   void _showTvShowDetails(BuildContext context, TvShow tvShow) {
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      selfBacked: true,
       builder: (BuildContext ctx) => ItemDetailsSheet.tvShow(
         tvShow,
-        onAddToCollection:
-            onAddTvShow != null ? () => onAddTvShow!(tvShow) : null,
+        onAddToCollection: onAddTvShow != null
+            ? () => onAddTvShow!(tvShow)
+            : null,
       ),
     );
   }
@@ -240,10 +245,7 @@ class _RecItem {
 }
 
 class _RecommendationRow extends StatefulWidget {
-  const _RecommendationRow({
-    required this.title,
-    required this.items,
-  });
+  const _RecommendationRow({required this.title, required this.items});
 
   final String title;
   final List<_RecItem> items;
@@ -302,9 +304,7 @@ class _RecommendationRowState extends State<_RecommendationRow> {
                   return SizedBox(
                     width: posterWidth,
                     child: MediaPosterCard(
-                      variant: compact
-                          ? CardVariant.compact
-                          : CardVariant.grid,
+                      variant: compact ? CardVariant.compact : CardVariant.grid,
                       title: item.title,
                       imageUrl: item.posterUrl ?? '',
                       cacheImageType: item.cacheImageType,
@@ -349,7 +349,7 @@ class _RecommendationShimmer extends StatelessWidget {
           width: 150,
           height: 20,
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: glassTileColor(),
             borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
           ),
         ),
@@ -362,8 +362,7 @@ class _RecommendationShimmer extends StatelessWidget {
               vertical: AppSpacing.posterRowVerticalPadding,
             ),
             itemCount: 5,
-            separatorBuilder: (_, _) =>
-                const SizedBox(width: AppSpacing.sm),
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
             itemBuilder: (_, _) => SizedBox(
               width: posterWidth,
               child: ShimmerPosterCard(compact: compact),

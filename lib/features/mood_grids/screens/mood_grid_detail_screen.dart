@@ -11,7 +11,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/draggable_fab.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../providers/mood_grid_detail_provider.dart';
 import '../providers/mood_grid_picker_session_provider.dart';
 import '../providers/mood_grids_provider.dart';
@@ -19,6 +19,8 @@ import '../services/mood_grid_caption.dart';
 import '../widgets/mood_grid_export_view.dart';
 import '../widgets/mood_grid_item_picker.dart';
 import '../widgets/mood_grid_view.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Detail screen for a single mood grid.
 class MoodGridDetailScreen extends ConsumerStatefulWidget {
@@ -70,11 +72,12 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
       error: (Object e, StackTrace s) =>
           Center(child: Text(l.errorPrefix(e.toString()))),
       data: (MoodGridDetailState state) {
-        return Stack(
+        return FramePage(
+          title: state.grid.name,
+          child: Stack(
           children: <Widget>[
             Column(
               children: <Widget>[
-                SubScreenTitleBar(title: state.grid.name),
                 _buildResizeControls(state, l),
                 Expanded(
                   child: Stack(
@@ -152,6 +155,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
               ],
             ),
           ],
+          ),
         );
       },
     );
@@ -330,7 +334,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
     try {
       final String? newLabel = await showDialog<String>(
         context: context,
-        builder: (BuildContext ctx) => AlertDialog(
+        builder: (BuildContext ctx) => GlassAlertDialog(
           title: Text(l.moodGridEditLabel),
           content: TextField(
             controller: controller,
@@ -385,7 +389,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
     try {
       final String? newName = await showDialog<String>(
         context: context,
-        builder: (BuildContext ctx) => AlertDialog(
+        builder: (BuildContext ctx) => GlassAlertDialog(
           title: Text(l.rename),
           content: TextField(
             controller: controller,
@@ -499,18 +503,18 @@ class _Stepper extends StatelessWidget {
   final bool stretch;
 
   _Stepper stretched() => _Stepper(
-        label: label,
-        value: value,
-        onDecrement: onDecrement,
-        onIncrement: onIncrement,
-        stretch: true,
-      );
+    label: label,
+    value: value,
+    onDecrement: onDecrement,
+    onIncrement: onIncrement,
+    stretch: true,
+  );
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(color: AppColors.surfaceBorder, width: 0.5),
       ),
@@ -620,7 +624,7 @@ class _CaptionTemplateDialogState extends State<_CaptionTemplateDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = widget.l;
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(widget.title),
       content: SizedBox(
         width: 420,
