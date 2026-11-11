@@ -1747,258 +1747,258 @@
       "count": {"type": "int"}
     }
   },
-  "tierListTitle": "Tier List",
-  "tierListUnranked": "Unranked",
-  "exportAsImage": "Export as image",
-  "tierListImageSaved": "Tier list saved as image",
-  "tierListRename": "Rename tier",
-  "tierListChangeColor": "Change color",
-  "tierListMoveUp": "Move up",
-  "tierListMoveDown": "Move down",
-  "tierListDeleteTier": "Delete tier",
-  "tierListAddTier": "Add tier",
-  "tierListClearConfirm": "Remove all items from tiers? They will return to Unranked.",
-  "tierListDeleteConfirm": "Delete this tier list?",
-  "tierListEmpty": "No Tier Lists Yet",
-  "tierListEmptyHint": "Tap + to create a tier list and rank items\nfrom your collections.",
-  "tierListAllRanked": "All items ranked!",
-  "tierListErrorEmptyName": "Enter a tier list name",
-  "tierListErrorNoCollection": "Select a collection",
-  "collectionPickerFilter": "Filter collections...",
-  "collectionPickerAlreadyAdded": "✓ Added",
-  "collectionPickerAlreadyInCount": "{count, plural, =1{Already in {count} collection} other{Already in {count} collections}}",
+  "tierListTitle": "ٹائر لسٹ",
+  "tierListUnranked": "بغیر رینک",
+  "exportAsImage": "تصویر کے طور پر ایکسپورٹ کریں",
+  "tierListImageSaved": "ٹائر لسٹ تصویر کے طور پر محفوظ ہو گئی",
+  "tierListRename": "ٹائر کا نام تبدیل کریں",
+  "tierListChangeColor": "رنگ تبدیل کریں",
+  "tierListMoveUp": "اوپر لے جائیں",
+  "tierListMoveDown": "نیچے لے جائیں",
+  "tierListDeleteTier": "ٹائر ڈیلیٹ کریں",
+  "tierListAddTier": "ٹائر شامل کریں",
+  "tierListClearConfirm": "ٹائرز سے تمام آئٹمز ہٹانے ہیں؟ وہ بغیر رینک میں واپس چلے جائیں گے۔",
+  "tierListDeleteConfirm": "کیا یہ ٹائر لسٹ ڈیلیٹ کرنی ہے؟",
+  "tierListEmpty": "ابھی تک کوئی ٹائر لسٹ نہیں",
+  "tierListEmptyHint": "ٹائر لسٹ بنانے اور اپنے مجموعوں کے آئٹمز\nکو رینک کرنے کے لیے + دبائیں۔",
+  "tierListAllRanked": "تمام آئٹمز رینک ہو گئے!",
+  "tierListErrorEmptyName": "ٹائر لسٹ کا نام درج کریں",
+  "tierListErrorNoCollection": "کوئی مجموعہ سلیکٹ کریں",
+  "collectionPickerFilter": "مجموعے فلٹر کریں...",
+  "collectionPickerAlreadyAdded": "✓ شامل ہو چکا",
+  "collectionPickerAlreadyInCount": "{count, plural, =1{پہلے ہی {count} مجموعے میں موجود} other{پہلے ہی {count} مجموعوں میں موجود}}",
   "@collectionPickerAlreadyInCount": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
-  "settingsSteamImport": "Steam Library",
-  "settingsSteamImportSubtitle": "Import games via Steam Web API",
-  "settingsIgdbImport": "IGDB List",
-  "settingsIgdbImportSubtitle": "Import a game list exported from IGDB (CSV)",
-  "igdbImportTitle": "Import IGDB List",
-  "igdbImportDescription": "Pick a CSV list exported from IGDB. Games are matched by their IGDB id; anything IGDB no longer has goes to the wishlist.",
-  "igdbImportSelectCsvFile": "Select CSV file",
-  "igdbImportSelectCsvExport": "Select IGDB CSV export",
-  "igdbImportStatusLabel": "Status for imported games",
-  "igdbImportPlatformSelect": "Select platform",
-  "importIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
-  "importing": "Importing...",
-  "igdbReasonNotFound": "Not found on IGDB",
-  "steamImportTitle": "Import Steam Library",
-  "importIgdbMatchNote": "Games will be matched to IGDB database",
-  "steamImportApiKey": "Steam API Key",
-  "steamImportApiKeyHint": "Get free key at steamcommunity.com/dev/apikey",
-  "steamImportSteamId": "Steam ID (64-bit)",
-  "steamImportSteamIdHint": "Find at steamidfinder.com",
-  "steamImportPublicWarning": "Your Steam profile must be public",
-  "steamImportButton": "Import Library",
-  "steamImportFetchingLibrary": "Fetching Steam library...",
-  "steamImportMatching": "Matching games in IGDB...",
-  "steamImportLookingUp": "Looking up: {name}",
+  "settingsSteamImport": "اسٹیم لائبریری",
+  "settingsSteamImportSubtitle": "گیمز Steam Web API کے ذریعے امپورٹ کریں",
+  "settingsIgdbImport": "لسٹ (IGDB کی)",
+  "settingsIgdbImportSubtitle": "گیمز کی CSV فہرست امپورٹ کریں جو IGDB سے ایکسپورٹ کی گئی ہو",
+  "igdbImportTitle": "گیمز کی IGDB لسٹ امپورٹ کریں",
+  "igdbImportDescription": "وہ CSV لسٹ سلیکٹ کریں جو IGDB سے ایکسپورٹ کی گئی ہو۔ گیمز ان کی IGDB آئی ڈی سے میچ کی جاتی ہیں، اور جو گیم IGDB پر اب موجود نہ ہو وہ خواہش فہرست میں چلی جاتی ہے۔",
+  "igdbImportSelectCsvFile": "سی ایس وی فائل سلیکٹ کریں",
+  "igdbImportSelectCsvExport": "ایکسپورٹ شدہ IGDB سی ایس وی فائل سلیکٹ کریں",
+  "igdbImportStatusLabel": "امپورٹ شدہ گیمز کا اسٹیٹس",
+  "igdbImportPlatformSelect": "پلیٹ فارم سلیکٹ کریں",
+  "importIgdbRequired": "کنکشن (IGDB کا) ضروری ہے۔ پہلے ترتیبات، پھر کریڈنشلز میں API کیز سیٹ کریں۔",
+  "importing": "امپورٹ ہو رہا ہے...",
+  "igdbReasonNotFound": "یہ IGDB پر نہیں ملا",
+  "steamImportTitle": "اسٹیم لائبریری امپورٹ کریں",
+  "importIgdbMatchNote": "گیمز IGDB ڈیٹا بیس سے میچ کی جائیں گی",
+  "steamImportApiKey": "اسٹیم API کی",
+  "steamImportApiKeyHint": "مفت کی steamcommunity.com/dev/apikey سے حاصل کریں",
+  "steamImportSteamId": "اسٹیم آئی ڈی (64 بٹ)",
+  "steamImportSteamIdHint": "اسے steamidfinder.com پر تلاش کریں",
+  "steamImportPublicWarning": "آپ کا اسٹیم پروفائل پبلک ہونا ضروری ہے",
+  "steamImportButton": "لائبریری امپورٹ کریں",
+  "steamImportFetchingLibrary": "اسٹیم لائبریری حاصل کی جا رہی ہے...",
+  "steamImportMatching": "گیمز IGDB میں میچ کی جا رہی ہیں...",
+  "steamImportLookingUp": "تلاش جاری: {name}",
   "@steamImportLookingUp": {
     "placeholders": {
       "name": {"type": "String"}
     }
   },
-  "steamImportImported": "Imported: {count}",
+  "steamImportImported": "امپورٹ ہوئے: {count}",
   "@steamImportImported": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "steamImportWishlisted": "Added to wishlist: {count}",
+  "steamImportWishlisted": "خواہش فہرست میں شامل: {count}",
   "@steamImportWishlisted": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "importCustomSkipped": "Custom cards skipped: {count}",
+  "importCustomSkipped": "کسٹم کارڈز چھوڑ دیے گئے: {count}",
   "@importCustomSkipped": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "steamImportUpdated": "Updated: {count}",
+  "steamImportUpdated": "اپڈیٹ ہوئے: {count}",
   "@steamImportUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "importComplete": "Import complete!",
-  "steamImportGamesImported": "{count} games imported",
+  "importComplete": "امپورٹ مکمل!",
+  "steamImportGamesImported": "{count} گیمز امپورٹ ہوئیں",
   "@steamImportGamesImported": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "steamImportWishlistedInIgdb": "{count} added to wishlist",
+  "steamImportWishlistedInIgdb": "{count} خواہش فہرست میں شامل ہوئیں",
   "@steamImportWishlistedInIgdb": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "steamImportUpdatedDuplicates": "{count} updated (existing)",
+  "steamImportUpdatedDuplicates": "{count} اپڈیٹ ہوئیں (موجودہ)",
   "@steamImportUpdatedDuplicates": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "steamImportPlayedStatus": "Played games marked as \"In Progress\"",
-  "steamImportPlaytimeComment": "Playtime saved in comments",
-  "openCollection": "Open collection",
-  "steamImportRememberCredentials": "Remember credentials",
-  "collectionListSortCreatedDate": "Date Created",
-  "collectionListSortAlphabeticalAZ": "A to Z",
-  "collectionListSortAlphabeticalZA": "Z to A",
-  "collectionListViewGrid": "Grid view",
-  "collectionListViewList": "List view",
-  "collectionListViewTable": "Table view",
-  "collectionTableExternalRating": "External",
-  "collectionCopyToCollection": "Copy to collection",
-  "duplicateAsCustom": "Duplicate as custom item",
-  "coverOverrideChange": "Change cover",
-  "coverOverrideReset": "Restore original cover",
-  "coverOverrideSaveFailed": "Couldn't save the cover",
-  "coverOverrideSetFromGallery": "Make it the cover",
-  "coverPickerLoadFailed": "Couldn't load covers",
-  "coverPickerEmpty": "No covers found",
+  "steamImportPlayedStatus": "کھیلی گئی گیمز کو \"جاری ہے\" کے طور پر نشان زد کیا گیا",
+  "steamImportPlaytimeComment": "کھیلنے کا وقت تبصروں میں محفوظ ہے",
+  "openCollection": "مجموعہ کھولیں",
+  "steamImportRememberCredentials": "کریڈنشلز یاد رکھیں",
+  "collectionListSortCreatedDate": "بنانے کی تاریخ",
+  "collectionListSortAlphabeticalAZ": "الف سے ی",
+  "collectionListSortAlphabeticalZA": "ی سے الف",
+  "collectionListViewGrid": "گرڈ ویو",
+  "collectionListViewList": "لسٹ ویو",
+  "collectionListViewTable": "ٹیبل ویو",
+  "collectionTableExternalRating": "بیرونی",
+  "collectionCopyToCollection": "مجموعے میں کاپی کریں",
+  "duplicateAsCustom": "کسٹم آئٹم کے طور پر ڈپلیکیٹ کریں",
+  "coverOverrideChange": "کور تبدیل کریں",
+  "coverOverrideReset": "اصل کور بحال کریں",
+  "coverOverrideSaveFailed": "کور محفوظ نہیں ہو سکا",
+  "coverOverrideSetFromGallery": "اسے کور بنائیں",
+  "coverPickerLoadFailed": "کورز لوڈ نہیں ہو سکے",
+  "coverPickerEmpty": "کوئی کور نہیں ملا",
   "coverSourceIgdb": "IGDB",
-  "collectionItemCopiedTo": "{name} copied to {collection}",
-  "collectionItemAlreadyInTarget": "{name} is already in {collection}",
-  "openInCollection": "Open in collection",
-  "importResultTitle": "Import Results",
-  "importResultComplete": "{source} import complete!",
+  "collectionItemCopiedTo": "آئٹم {name} کو {collection} میں کاپی کر دیا گیا",
+  "collectionItemAlreadyInTarget": "آئٹم {name} پہلے سے {collection} میں موجود ہے",
+  "openInCollection": "مجموعے میں کھولیں",
+  "importResultTitle": "امپورٹ کے نتائج",
+  "importResultComplete": "امپورٹ مکمل ہو گئی: {source}",
   "@importResultComplete": {
     "placeholders": {
       "source": {"type": "String"}
     }
   },
-  "importResultFailed": "{source} import failed",
+  "importResultFailed": "امپورٹ ناکام ہو گئی: {source}",
   "@importResultFailed": {
     "placeholders": {
       "source": {"type": "String"}
     }
   },
-  "importResultImported": "Imported",
-  "importResultWishlisted": "Added to Wishlist",
-  "importResultUpdated": "Updated",
-  "importResultErrors": "Errors ({count})",
+  "importResultImported": "امپورٹ ہوئے",
+  "importResultWishlisted": "خواہش فہرست میں شامل",
+  "importResultUpdated": "اپڈیٹ ہوئے",
+  "importResultErrors": "خرابیاں ({count})",
   "@importResultErrors": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "importResultErrorsCopied": "Errors copied",
-  "importResultSkipped": "{count} skipped",
+  "importResultErrorsCopied": "خرابیاں کاپی ہو گئیں",
+  "importResultSkipped": "{count} چھوڑ دیے گئے",
   "@importResultSkipped": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "importResultOpenCollection": "Open Collection",
-  "importResultWishlistHint": "Items not found in the database were saved to your Wishlist for later.",
-  "importResultSourceCollectionFile": "Collection File",
-  "settingsBrowseCollections": "Browse Collections",
-  "settingsBrowseCollectionsSubtitle": "Download ready-made collections",
-  "browseCollectionsSummary": "{count} collections, {items} items",
+  "importResultOpenCollection": "مجموعہ کھولیں",
+  "importResultWishlistHint": "جو آئٹمز ڈیٹا بیس میں نہیں ملے انہیں بعد کے لیے آپ کی خواہش فہرست میں محفوظ کر دیا گیا۔",
+  "importResultSourceCollectionFile": "مجموعے کی فائل",
+  "settingsBrowseCollections": "مجموعے براؤز کریں",
+  "settingsBrowseCollectionsSubtitle": "تیار شدہ مجموعے ڈاؤن لوڈ کریں",
+  "browseCollectionsSummary": "{count} مجموعے، {items} آئٹمز",
   "@browseCollectionsSummary": {
     "placeholders": {
       "count": {"type": "int"},
       "items": {"type": "int"}
     }
   },
-  "browseCollectionsSearch": "Search collections...",
-  "browseCollectionsAllCategories": "All Categories",
-  "browseCollectionsItems": "{count} items",
+  "browseCollectionsSearch": "مجموعے تلاش کریں...",
+  "browseCollectionsAllCategories": "تمام کیٹیگریز",
+  "browseCollectionsItems": "{count} آئٹمز",
   "@browseCollectionsItems": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "browseCollectionsFormatLight": "Light (needs API keys)",
-  "browseCollectionsFormatFull": "Full (offline)",
-  "browseCollectionsDownloading": "Downloading...",
-  "browseCollectionsImportSuccess": "Collection imported: {name}",
+  "browseCollectionsFormatLight": "ہلکی (API کیز درکار ہیں)",
+  "browseCollectionsFormatFull": "مکمل (آف لائن)",
+  "browseCollectionsDownloading": "ڈاؤن لوڈ ہو رہا ہے...",
+  "browseCollectionsImportSuccess": "مجموعہ امپورٹ ہو گیا: {name}",
   "@browseCollectionsImportSuccess": {
     "placeholders": {
       "name": {"type": "String"}
     }
   },
-  "browseCollectionsEmpty": "No collections found",
-  "browseCollectionsLoadError": "Failed to load collections",
-  "browseCollectionsImportTarget": "Import to",
-  "browseCollectionsNewCollection": "New collection",
-  "browseCollectionsExistingCollection": "Existing collection",
-  "noCollectionsYet": "No collections yet",
+  "browseCollectionsEmpty": "کوئی مجموعہ نہیں ملا",
+  "browseCollectionsLoadError": "مجموعے لوڈ نہیں ہو سکے",
+  "browseCollectionsImportTarget": "امپورٹ کہاں کریں",
+  "browseCollectionsNewCollection": "نیا مجموعہ",
+  "browseCollectionsExistingCollection": "موجودہ مجموعہ",
+  "noCollectionsYet": "ابھی تک کوئی مجموعہ نہیں",
   "settingsRaImport": "RetroAchievements",
-  "settingsRaImportSubtitle": "Import games from RetroAchievements",
-  "raImportTitle": "RetroAchievements Import",
-  "raGetApiKey": "Get your API key at retroachievements.org/controlpanel.php",
-  "raImportOptionWishlist": "Add unmatched games to Wishlist",
-  "raImportFetchingLibrary": "Fetching RA library...",
-  "raImportSearchingIgdb": "Searching games on IGDB...",
-  "raImportMatching": "Matching: {title}",
+  "settingsRaImportSubtitle": "گیمز RetroAchievements سے امپورٹ کریں",
+  "raImportTitle": "گیمز امپورٹ، RetroAchievements سے",
+  "raGetApiKey": "اپنی API کی retroachievements.org/controlpanel.php سے حاصل کریں",
+  "raImportOptionWishlist": "میچ نہ ہونے والی گیمز کو خواہش فہرست میں شامل کریں",
+  "raImportFetchingLibrary": "لائبریری (RA کی) حاصل کی جا رہی ہے...",
+  "raImportSearchingIgdb": "گیمز IGDB پر تلاش کی جا رہی ہیں...",
+  "raImportMatching": "میچ ہو رہی ہے: {title}",
   "@raImportMatching": {
     "placeholders": {
       "title": {"type": "String"}
     }
   },
-  "raImportAdded": "{count} games added",
+  "raImportAdded": "{count} گیمز شامل ہوئیں",
   "@raImportAdded": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "raImportUpdated": "{count} games updated",
+  "raImportUpdated": "{count} گیمز اپڈیٹ ہوئیں",
   "@raImportUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "raImportToWishlist": "{count} added to Wishlist",
+  "raImportToWishlist": "{count} خواہش فہرست میں شامل ہوئیں",
   "@raImportToWishlist": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "raConnectionFailed": "Connection failed: {error}",
+  "raConnectionFailed": "کنکشن ناکام ہو گیا: {error}",
   "@raConnectionFailed": {
     "placeholders": {
       "error": {"type": "String"}
     }
   },
-  "raProfilePoints": "{points} points",
+  "raProfilePoints": "{points} پوائنٹس",
   "@raProfilePoints": {
     "placeholders": {
       "points": {"type": "int"}
     }
   },
-  "raProfileMemberSince": "Member since {date}",
+  "raProfileMemberSince": "ممبر بننے کی تاریخ: {date}",
   "@raProfileMemberSince": {
     "placeholders": {
       "date": {"type": "String"}
     }
   },
-  "raRefresh": "Refresh achievements",
-  "raOpenOnRa": "Open on RA ↗",
-  "raHardcore": "Hardcore",
-  "raCompletion": "Completion",
-  "raRecentUnlocks": "Recent Unlocks",
-  "raUpNext": "Up Next",
-  "raViewAll": "View All {count} Achievements →",
+  "raRefresh": "اچیومنٹس ریفریش کریں",
+  "raOpenOnRa": "اسے RA پر کھولیں ↗",
+  "raHardcore": "ہارڈ کور",
+  "raCompletion": "تکمیل",
+  "raRecentUnlocks": "حالیہ اَن لاکس",
+  "raUpNext": "اگلے",
+  "raViewAll": "تمام {count} اچیومنٹس دیکھیں ←",
   "@raViewAll": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
-  "raMastered": "Mastered",
-  "raHardcoreMastered": "Hardcore Mastered",
-  "raBeaten": "Beaten",
-  "raBeatenSoftcore": "Beaten Softcore",
-  "raHardcoreBeaten": "Hardcore Beaten",
-  "raYesterday": "Yesterday",
-  "raDaysAgo": "{days}d ago",
+  "raMastered": "ماسٹرڈ",
+  "raHardcoreMastered": "ہارڈ کور ماسٹرڈ",
+  "raBeaten": "ختم کر دی",
+  "raBeatenSoftcore": "سافٹ کور میں ختم",
+  "raHardcoreBeaten": "ہارڈ کور میں ختم",
+  "raYesterday": "کل",
+  "raDaysAgo": "{days} دن پہلے",
   "@raDaysAgo": {
     "placeholders": {
       "days": {"type": "int"}
