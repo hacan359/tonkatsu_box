@@ -1,0 +1,2770 @@
+{
+  "@@locale": "ur",
+  "appName": "Tonkatsu Box",
+  "navMain": "مرکزی",
+  "navCollections": "مجموعے",
+  "navWishlist": "خواہش فہرست",
+  "navSettings": "ترتیبات",
+  "navReleases": "ریلیزز",
+  "releasesEmpty": "ابھی تک کوئی شو ٹریک نہیں کیا گیا",
+  "releasesEmptyHint": "نئی اقساط ٹریک کرنے کے لیے ٹی وی شو یا اینیمے پر گھنٹی کے نشان کو دبائیں۔",
+  "releasesTrackShow": "ریلیزز ٹریک کریں",
+  "releasesUntrackShow": "ٹریک کرنا بند کریں",
+  "releasesViewDay": "دن",
+  "releasesViewWeek": "ہفتہ",
+  "releasesViewMonth": "مہینہ",
+  "releasesTabCalendar": "کیلنڈر",
+  "releasesTabAll": "تمام ریلیزز",
+  "releasesToday": "آج",
+  "refresh": "ریفریش",
+  "releasesNoEpisodes": "کوئی قسط نہیں",
+  "releasesEpisode": "سیزن {season} · قسط {episode}",
+  "@releasesEpisode": {
+    "placeholders": {
+      "season": {"type": "int"},
+      "episode": {"type": "int"}
+    }
+  },
+  "calendarAdd": "کیلنڈر میں شامل کریں",
+  "calendarRemove": "کیلنڈر سے ہٹائیں",
+  "date": "تاریخ",
+  "calendarRepeat": "دہرائیں",
+  "recurrenceOnce": "ایک بار",
+  "recurrenceWeekly": "ہفتہ وار",
+  "recurrenceMonthly": "ماہانہ",
+  "statusNotStarted": "شروع نہیں ہوا",
+  "statusPlaying": "چل رہا ہے",
+  "statusWatching": "دیکھ رہے ہیں",
+  "statusListening": "سن رہے ہیں",
+  "statusInProgress": "جاری ہے",
+  "statusCompleted": "مکمل",
+  "statusDropped": "چھوڑ دیا",
+  "statusPlanned": "منصوبہ بند",
+  "statusReplay": "ری پلے",
+  "statusIgnored": "نظرانداز",
+  "statusFilterSelected": "حالتیں: {count}",
+  "@statusFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "rewatchCountEdit": "دہرانے کی تعداد",
+  "rewatchCountHint": "خالی = ٹریک نہیں ہو رہا",
+  "statusReplaying": "دوبارہ چل رہا ہے",
+  "statusRewatching": "دوبارہ دیکھ رہے ہیں",
+  "statusRereading": "دوبارہ پڑھ رہے ہیں",
+  "statusRelistening": "دوبارہ سن رہے ہیں",
+  "all": "سب",
+  "mediaTypeGame": "گیم",
+  "mediaTypeMovie": "فلم",
+  "mediaTypeTvShow": "ٹی وی شو",
+  "mediaTypeAnimation": "اینیمیشن",
+  "mediaTypeVisualNovel": "ویژول ناول",
+  "mediaTypeManga": "مانگا",
+  "mediaTypeAnime": "اینیمے",
+  "mediaTypeBook": "کتاب",
+  "mediaTypeAudio": "آڈیو",
+  "mediaTypeCustom": "حسب ضرورت",
+  "sortManualDisplay": "مینول",
+  "sortManualDesc": "اپنی ترتیب",
+  "sortDateDisplay": "شامل کرنے کی تاریخ",
+  "sortDateDesc": "تازہ ترین پہلے",
+  "status": "اسٹیٹس",
+  "movieStatusReleased": "ریلیز ہو چکی",
+  "movieStatusCompleted": "مکمل",
+  "movieStatusPostProduction": "فلم بندی / پوسٹ پروڈکشن",
+  "movieStatusPreProduction": "پری پروڈکشن",
+  "movieStatusAnnounced": "اعلان شدہ",
+  "sortStatusDesc": "فعال پہلے",
+  "name": "نام",
+  "sortNameShort": "الف-ی",
+  "rating": "ریٹنگ",
+  "sortRatingDesc": "سب سے زیادہ پہلے",
+  "sortFavoriteDesc": "پسندیدہ پہلے",
+  "sortExternalRatingDisplay": "بیرونی ریٹنگ",
+  "sortExternalRatingShort": "IGDB/TMDB",
+  "sortLastActivityDisplay": "آخری سرگرمی",
+  "sortLastActivityShort": "سرگرمی",
+  "sortLastActivityDesc": "حالیہ پہلے",
+  "sortStartDateDisplay": "شروع کی تاریخ",
+  "sortStartDateShort": "شروع",
+  "sortCompletionDateDisplay": "مکمل ہونے کی تاریخ",
+  "sortCompletionDateShort": "مکمل",
+  "sortReleaseDateDisplay": "ریلیز کی تاریخ",
+  "sortReleaseDateShort": "ریلیز",
+  "sortDateOldest": "پرانا پہلے",
+  "sortStatusFinished": "مکمل شدہ پہلے",
+  "sortRatingLowest": "سب سے کم پہلے",
+  "sortFavoriteLast": "پسندیدہ آخر میں",
+  "searchSortRelevanceShort": "متعلقہ",
+  "searchSortRatingShort": "ریٹ",
+  "searchSortRatingDisplay": "ریٹنگ",
+  "cancel": "کینسل کریں",
+  "confirm": "ٹھیک ہے",
+  "restore": "بحال کریں",
+  "create": "بنائیں",
+  "save": "محفوظ کریں",
+  "add": "شامل کریں",
+  "delete": "ڈیلیٹ کریں",
+  "rename": "نام تبدیل کریں",
+  "retry": "دوبارہ کوشش کریں",
+  "edit": "ایڈیٹ کریں",
+  "done": "ہو گیا",
+  "clear": "صاف کریں",
+  "reset": "ری سیٹ کریں",
+  "search": "تلاش کریں",
+  "open": "کھولیں",
+  "remove": "ہٹائیں",
+  "moveToTop": "اوپر لے جائیں",
+  "moveToBottom": "نیچے لے جائیں",
+  "favorite": "پسندیدہ",
+  "addToFavorites": "پسندیدہ میں شامل کریں",
+  "removeFromFavorites": "پسندیدہ سے ہٹائیں",
+  "bulkSelected": "{count, plural, =1{1 منتخب} other{{count} منتخب}}",
+  "@bulkSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+    "bulkClearSelection": "سلیکشن صاف کریں",
+  "selectAll": "سب سلیکٹ کریں",
+  "bulkMove": "سلیکٹ کیے گئے آئٹمز کو مجموعے میں منتقل کریں",
+  "bulkCopy": "سلیکٹ کیے گئے آئٹمز کو مجموعے میں کاپی کریں",
+  "bulkChangeStatus": "اسٹیٹس تبدیل کریں",
+  "bulkRemoveConfirm": "کیا آپ اس مجموعے سے {count, plural, =1{1 آئٹم} other{{count} آئٹمز}} ہٹانا چاہتے ہیں؟",
+  "@bulkRemoveConfirm": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkResult": "ہو گیا: {done} • ڈپلیکیٹس: {skipped}",
+  "@bulkResult": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "bulkRemoved": "ہٹائے گئے: {count}",
+  "@bulkRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkStatusUpdated": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} کا اسٹیٹس اپڈیٹ ہو گیا",
+  "@bulkStatusUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkAddTags": "ٹیگز شامل کریں",
+  "bulkRemoveTags": "ٹیگز ہٹائیں",
+  "bulkAddTagsTitle": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} میں ٹیگز شامل کریں",
+  "@bulkAddTagsTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkRemoveTagsTitle": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} سے ٹیگز ہٹائیں",
+  "@bulkRemoveTagsTitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsAdded": "ٹیگز شامل ہوئے: {count}",
+  "@bulkTagsAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsRemoved": "ٹیگز ہٹائے گئے: {count}",
+  "@bulkTagsRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkTagsUnchanged": "تبدیل کرنے کے لیے کچھ نہیں",
+  "bulkExportPngTitle": "تصویر کو PNG میں ایکسپورٹ کریں",
+  "columnsCount": "کالمز",
+  "bulkExportPngItemsCount": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}}",
+  "@bulkExportPngItemsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkExportPngItemsCountPreview": "{total, plural, =1{1 آئٹم} other{{total} آئٹمز}} (پریویو میں {preview} دکھائے گئے)",
+  "@bulkExportPngItemsCountPreview": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "preview": {"type": "int"}
+    }
+  },
+  "bulkExportPngPreparing": "کورز تیار ہو رہے ہیں: {done} / {total}",
+  "@bulkExportPngPreparing": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "bulkExportPngSave": "تصویر PNG میں محفوظ کریں",
+  "imageSaved": "تصویر محفوظ ہو گئی",
+  "bulkExportPngFailed": "تصویر محفوظ نہیں ہو سکی",
+  "back": "واپس",
+  "next": "اگلا",
+  "skip": "اسکپ",
+  "update": "اپڈیٹ",
+  "test": "ٹیسٹ",
+  "close": "بند",
+  "keep": "رکھیں",
+  "change": "تبدیل",
+  "settingsProfile": "مجموعہ بنانے والا",
+  "settingsProfileSubtitle": "آپ کے مجموعوں کے لیے بنانے والے کا نام",
+  "settingsAuthorName": "بنانے والے کا نام",
+  "settingsCredentialsSubtitle": "ایپ کے لیے IGDB، SteamGridDB اور TMDB کی API کیز",
+  "settingsCacheSubtitle": "آف لائن موڈ اور کورز کا اسٹوریج",
+  "settingsDatabaseSubtitle": "ایکسپورٹ، امپورٹ، ری سیٹ",
+  "settingsTraktImportSubtitle": "واچ ہسٹری، ریٹنگز، خواہش فہرست",
+  "settingsKinoriumImport": "ڈیٹا Kinorium سے امپورٹ کریں",
+  "settingsKinoriumImportSubtitle": "فلمیں اور شوز CSV ایکسپورٹ سے",
+  "settingsDebug": "ڈیبگ",
+  "settingsDebugSubtitle": "ڈیولپر ٹولز",
+  "settingsDebugSubtitleNoKey": "کچھ ٹولز کے لیے پہلے SteamGridDB API کی سیٹ کریں",
+  "settingsHelp": "مدد",
+  "settingsWelcomeGuide": "ویلکم گائیڈ",
+  "settingsWelcomeGuideSubtitle": "شروعات کریں Tonkatsu Box کے ساتھ",
+  "settingsAbout": "ایپ کے بارے میں",
+  "settingsVersion": "ورژن",
+  "settingsCreditsLicenses": "کریڈٹس اور لائسنس",
+  "settingsChangelog": "نیا کیا ہے",
+  "settingsChangelogEmpty": "ریلیز نوٹس دستیاب نہیں ہیں",
+  "settingsCreditsLicensesSubtitle": "کریڈٹس: TMDB، IGDB، SteamGridDB اور اوپن سورس لائسنس",
+  "settingsError": "خرابی",
+  "settingsAppLanguage": "ایپ کی زبان",
+  "settingsConnections": "کنکشنز",
+  "settingsApiKeys": "اپنی API کیز",
+  "credentialsServerTokenLabel": "سرور ایکسیس ٹوکن",
+  "credentialsServerTokenHint": "صرف اس وقت درکار ہے جب سرور TONKATSU_AUTH=token کے ساتھ چل رہا ہو۔ محفوظ کرنے پر ایپ ری اسٹارٹ ہو جائے گی۔",
+  "credentialsServerTokenSaved": "سرور ٹوکن محفوظ ہو گیا",
+  "serverTokenTitle": "سرور ایکسیس ٹوکن",
+  "serverTokenBody": "یہ سرور ایکسیس ٹوکن مانگتا ہے۔ یہ ہر بار شروع ہونے پر سرور لاگ میں سائن ان لنک کی صورت میں پرنٹ ہوتا ہے اور ڈیٹا فولڈر کی auth_token فائل میں محفوظ رہتا ہے۔",
+  "serverTokenFieldLabel": "ٹوکن",
+  "serverTokenConnect": "کنیکٹ کریں",
+  "serverTokenRejected": "سرور نے یہ ٹوکن قبول نہیں کیا",
+  "credentialsServerManagedTitle": "کیز سرور پر محفوظ ہوتی ہیں",
+  "credentialsServerManagedBody": "ذیل میں درج کردہ کوئی بھی چیز سیلف ہوسٹڈ سرور پر محفوظ کی جاتی ہے، اس براؤزر میں نہیں، کیونکہ APIs کو درخواستیں وہیں سے بھیجی جاتی ہیں۔ آپ انہیں ڈیسک ٹاپ پر ایکسپورٹ کی گئی کنفیگ فائل سے بھی لوڈ کر سکتے ہیں۔",
+  "credentialsUploadFromConfig": "کنفیگ فائل سے کیز لوڈ کریں",
+  "credentialsUploadNoKeys": "اس فائل میں کوئی کیز نہیں ہیں",
+  "credentialsUploadDone": "{count} کیز سرور پر محفوظ ہو گئیں",
+  "@credentialsUploadDone": {"placeholders": {"count": {"type": "int"}}},
+  "settingsApiKeysValue": "{active}/{total}",
+  "@settingsApiKeysValue": {
+    "placeholders": {
+      "active": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "settingsAppearance": "ظاہری شکل",
+  "settingsAppearanceSubtitle": "زبان، ڈسپلے اور مواد",
+  "settingsTheme": "تھیم",
+  "settingsThemeSubtitle": "ایپ کا رنگ تھیم",
+  "settingsThemeDark": "ڈارک",
+  "settingsThemeSakura": "ساکورا",
+  "settingsThemePs1": "ریٹرو PS1 اسٹائل",
+  "settingsThemeEva": "Eva Azure",
+  "settingsAppLanguageSubtitle": "انٹرفیس کی زبان",
+  "settingsContentLanguageSubtitle": "فی الحال صرف TMDB کے لیے (فلمیں اور ٹی وی شوز)",
+  "settingsDataSources": "ڈیٹا سورسز",
+  "settingsDataSourcesSubtitle": "ڈیٹا IGDB، TMDB اور SteamGridDB سے",
+  "settingsApiKeysSubtitle": "ڈیٹا بیسز سے کنکشن سیٹ کریں",
+  "settingsStorage": "اسٹوریج",
+  "settingsStorageSubtitle": "امیج کیش اور ڈیٹا بیس",
+  "settingsBackup": "بیک اپ",
+  "settingsBackupSubtitle": "ڈیٹا کا مکمل بیک اپ اور ریسٹور",
+  "settingsBackupAll": "تمام ڈیٹا کا بیک اپ بنائیں",
+  "settingsBackupAllSubtitle": "تمام مجموعے، خواہش فہرست اور ترتیبات",
+  "settingsRestoreBackup": "بیک اپ سے ریسٹور کریں",
+  "settingsRestoreBackupSubtitle": "بیک اپ آرکائیو امپورٹ کریں",
+  "backupSuccess": "بیک اپ محفوظ ہو گیا: {collections} مجموعے، {items} آئٹمز",
+  "@backupSuccess": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "restoreConfirmTitle": "بیک اپ ریسٹور کریں؟",
+  "restoreConfirmBody": "{collections} مجموعے، {items} آئٹمز، خواہش فہرست کی {wishlist} اندراجات",
+  "@restoreConfirmBody": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"},
+      "wishlist": {"type": "int"}
+    }
+  },
+  "restoreConfirmHint": "موجودہ مجموعے متاثر نہیں ہوں گے",
+  "restoreSettings": "ترتیبات ریسٹور کریں",
+  "restoreWishlist": "خواہش فہرست ریسٹور کریں",
+  "restoreSuccess": "ریسٹور ہو گئے: {collections} مجموعے، {items} آئٹمز",
+  "@restoreSuccess": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "restoreInvalidArchive": "بیک اپ آرکائیو درست نہیں ہے",
+  "restoreProgressTitle": "بیک اپ ریسٹور ہو رہا ہے",
+  "restoreProgressWarning": "ایپ بند نہ کریں۔ بڑے بیک اپ میں کئی منٹ لگ سکتے ہیں۔",
+  "restoreStageReading": "آرکائیو پڑھی جا رہی ہے",
+  "restoreStageCollections": "مجموعے ریسٹور ہو رہے ہیں ({current}/{total})",
+  "@restoreStageCollections": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "restoreStageWishlist": "خواہش فہرست ریسٹور ہو رہی ہے",
+  "restoreStageSettings": "ترتیبات ریسٹور ہو رہی ہیں",
+  "restoreStageFinalizing": "کام مکمل کیا جا رہا ہے",
+  "settingsImport": "امپورٹ",
+  "settingsImportSubtitle": "بیرونی سروسز سے مجموعے امپورٹ کریں",
+  "settingsContentLanguage": "مواد کی زبان",
+  "settingsData": "ڈیٹا",
+  "settingsCacheValue": "{size}",
+  "@settingsCacheValue": {
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "credentialsTitle": "کریڈنشلز",
+  "credentialsWelcome": "ہمارے Tonkatsu Box میں خوش آمدید!",
+  "credentialsWelcomeHint": "شروع کرنے کے لیے، آپ کو اپنے IGDB API اسناد کو ترتیب دینے کی ضرورت ہے۔ Twitch Developer Console سے اپنی کلائنٹ آئی ڈی اور کلائنٹ سیکریٹ حاصل کریں۔",
+  "credentialsCopyTwitchUrl": "کنسول کا Twitch URL کاپی کریں",
+  "credentialsUrlCopied": "لنک کاپی ہو گیا: {url}",
+  "@credentialsUrlCopied": {
+    "placeholders": {
+      "url": {"type": "String"}
+    }
+  },
+  "credentialsIgdbSection": "اپنی IGDB API کریڈنشلز",
+  "credentialsClientId": "کلائنٹ آئی ڈی",
+  "credentialsClientIdHint": "اپنی Twitch کلائنٹ آئی ڈی درج کریں",
+  "credentialsClientSecret": "کلائنٹ سیکریٹ",
+  "credentialsClientSecretHint": "اپنا Twitch کلائنٹ سیکریٹ درج کریں",
+  "credentialsConnectionStatus": "کنکشن اسٹیٹس",
+  "credentialsPlatformsSynced": "پلیٹ فارمز سنک ہو چکے",
+  "credentialsPlatformsAvailable": "دستیاب پلیٹ فارمز",
+  "credentialsLastSync": "آخری سنک",
+  "credentialsVerifyConnection": "کنکشن چیک کریں",
+  "credentialsRefreshPlatforms": "پلیٹ فارمز ریفریش کریں",
+  "credentialsSteamGridDbSection": "SteamGridDB API",
+  "credentialsApiKey": "API کی",
+  "credentialsUsingBuiltInKey": "بلٹ ان کی استعمال ہو رہی ہے",
+  "credentialsEnterSteamGridDbKey": "اپنی SteamGridDB API کی درج کریں",
+  "credentialsTmdbSection": "فلمیں اور ٹی وی: TMDB API کی ترتیب",
+  "credentialsTvdbSection": "فلمیں اور ٹی وی: TheTVDB API کی ترتیب",
+  "credentialsEnterTmdbKey": "اپنی TMDB API کی (v3) درج کریں",
+  "credentialsEnterTvdbKey": "اپنی TheTVDB API کی (v4) درج کریں",
+  "credentialsComicVineSection": "کامکس: ComicVine API کی ترتیب",
+  "credentialsEnterComicVineKey": "اپنی ComicVine API کی درج کریں",
+  "credentialsGoogleBooksSection": "کتابیں: Google Books API کی ترتیب",
+  "credentialsEnterGoogleBooksKey": "اپنی Google Books API کی درج کریں (اختیاری)",
+  "credentialsHardcoverSection": "کتابیں: Hardcover API کی ترتیب",
+  "credentialsEnterHardcoverKey": "اپنا Hardcover API ٹوکن درج کریں",
+  "credentialsOwnKeyHint": "بہتر ریٹ لمٹس کے لیے ہم اپنی ذاتی API کی استعمال کرنے کا مشورہ دیتے ہیں۔",
+  "credentialsConnected": "کنیکٹ ہو گیا",
+  "credentialsConnectionError": "کنکشن میں خرابی",
+  "credentialsChecking": "چیک ہو رہا ہے...",
+  "credentialsNotConnected": "کنیکٹ نہیں ہے",
+  "credentialsEnterBoth": "براہ کرم کلائنٹ آئی ڈی اور کلائنٹ سیکریٹ دونوں درج کریں",
+  "credentialsConnectedSynced": "کنیکٹ ہو گیا اور پلیٹ فارمز سنک ہو گئے!",
+  "credentialsConnectedSyncFailed": "کنیکٹ ہو گیا، لیکن پلیٹ فارمز سنک نہیں ہو سکے",
+  "credentialsPlatformsSyncedOk": "پلیٹ فارمز کامیابی سے سنک ہو گئے!",
+  "credentialsDownloadingLogos": "پلیٹ فارم لوگوز ڈاؤن لوڈ ہو رہے ہیں...",
+  "credentialsDownloadedLogos": "لوگوز ڈاؤن لوڈ ہو گئے: {count}",
+  "@credentialsDownloadedLogos": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "credentialsFailedDownloadLogos": "لوگوز ڈاؤن لوڈ نہیں ہو سکے",
+  "credentialsApiKeySaved": "آپ کی API کی محفوظ ہو گئی",
+  "credentialsNoApiKey": "کوئی API کی نہیں",
+  "credentialsResetToBuiltIn": "بلٹ ان کی پر واپس جائیں",
+  "credentialsSteamGridDbKeyValid": "آپ کی SteamGridDB API کی درست ہے",
+  "credentialsSteamGridDbKeyInvalid": "آپ کی SteamGridDB API کی درست نہیں ہے",
+  "credentialsTmdbKeyValid": "آپ کی TMDB API کی درست ہے",
+  "credentialsTmdbKeyInvalid": "آپ کی TMDB API کی درست نہیں ہے",
+  "credentialsTvdbKeyValid": "آپ کی TheTVDB API کی درست ہے",
+  "credentialsTvdbKeyInvalid": "آپ کی TheTVDB API کی درست نہیں ہے",
+  "credentialsComicVineKeyValid": "آپ کی ComicVine API کی درست ہے",
+  "credentialsComicVineKeyInvalid": "آپ کی ComicVine API کی درست نہیں ہے",
+  "credentialsGoogleBooksKeyValid": "آپ کی Google Books API کی درست ہے",
+  "credentialsGoogleBooksKeyInvalid": "آپ کی Google Books API کی درست نہیں ہے",
+  "credentialsHardcoverKeyValid": "آپ کا Hardcover API ٹوکن درست ہے",
+  "credentialsHardcoverKeyInvalid": "آپ کا Hardcover API ٹوکن درست نہیں ہے یا ایکسپائر ہو چکا ہے",
+  "credentialsEnterSteamGridDbKeyError": "براہ کرم SteamGridDB API کی درج کریں",
+  "credentialsEnterTmdbKeyError": "براہ کرم TMDB API کی درج کریں",
+  "credentialsTmdbKeySaved": "آپ کی TMDB API کی محفوظ ہو گئی",
+  "timeAgo": "{value} {unit} پہلے",
+  "@timeAgo": {
+    "placeholders": {
+      "value": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "timeUnitDays": "{count, plural, =1{دن} other{دن}}",
+  "@timeUnitDays": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "timeUnitHours": "{count, plural, =1{گھنٹہ} other{گھنٹے}}",
+  "@timeUnitHours": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "timeUnitMinutes": "{count, plural, =1{منٹ} other{منٹ}}",
+  "@timeUnitMinutes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "timeJustNow": "ابھی ابھی",
+  "cacheTitle": "کیشے",
+  "cacheImageCache": "امیج کیشے",
+  "cacheOfflineMode": "آف لائن موڈ",
+  "cacheOfflineModeSubtitle": "آف لائن استعمال کے لیے تصاویر مقامی طور پر محفوظ کریں",
+  "cacheCacheFolder": "کیشے فولڈر",
+  "cacheSelectFolder": "فولڈر سلیکٹ کریں",
+  "cacheCacheSize": "کیشے کا سائز",
+  "cacheClearCache": "غیر استعمال شدہ تصاویر ہٹائیں",
+  "cacheClearCacheTitle": "غیر استعمال شدہ تصاویر ہٹائیں؟",
+  "cacheClearCacheMessage": "ان میڈیا کے ڈاؤن لوڈ شدہ کورز ڈیلیٹ ہو جائیں گے جو اب کسی مجموعے میں نہیں ہیں۔ آپ کے اپنے کورز اور بورڈ کی تصاویر محفوظ رہیں گی۔",
+  "cacheFolderUpdated": "کیشے فولڈر اپڈیٹ ہو گیا",
+  "cacheOrphansRemoved": "غیر استعمال شدہ تصاویر ہٹائی گئیں: {count}",
+  "@cacheOrphansRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "cacheSelectFolderDialog": "تصاویر کے لیے کیشے فولڈر سلیکٹ کریں",
+  "cacheCacheStats": "{count} فائلیں، کل سائز {size}",
+  "@cacheCacheStats": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "size": {"type": "String"}
+    }
+  },
+  "databaseTitle": "ڈیٹا بیس",
+  "databaseConfiguration": "کنفیگریشن",
+  "databaseConfigSubtitle": "اپنی API کیز اور ترتیبات ایکسپورٹ یا امپورٹ کریں۔",
+  "databaseExportConfig": "کنفیگ ایکسپورٹ کریں",
+  "databaseImportConfig": "کنفیگ امپورٹ کریں",
+  "databaseDangerZone": "ڈینجر زون",
+  "databaseDangerZoneMessage": "تمام مجموعے، گیمز، فلمیں، ٹی وی شوز اور بورڈ کا ڈیٹا صاف ہو جائے گا۔ ترتیبات اور API کیز محفوظ رہیں گی۔",
+  "databaseResetDatabase": "ڈیٹا بیس ری سیٹ کریں",
+  "databaseResetTitle": "ڈیٹا بیس ری سیٹ کریں؟",
+  "databaseResetMessage": "یہ آپ کے تمام مجموعے، گیمز، فلمیں، ٹی وی شوز، اقساط کی پیش رفت اور بورڈ کا ڈیٹا مستقل طور پر ڈیلیٹ کر دے گا۔\n\nآپ کی API کیز اور ترتیبات محفوظ رہیں گی۔\n\nیہ عمل واپس نہیں ہو سکتا۔",
+  "databaseConfigExported": "کنفیگ یہاں ایکسپورٹ ہو گئی: {path}",
+  "@databaseConfigExported": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "databaseConfigImported": "کنفیگ کامیابی سے امپورٹ ہو گئی",
+  "databaseReset": "ڈیٹا بیس ری سیٹ ہو گیا",
+  "storageLocationTitle": "ڈیٹا کی جگہ",
+  "storageLocationSubtitle": "وہ فولڈر جس میں ڈیٹا بیس اور پروفائلز محفوظ ہوتے ہیں۔ ایسے فولڈرز سے بچیں جنہیں کوئی کلاؤڈ سروس لائیو سنک کرتی ہے (OneDrive، Syncthing)، کیونکہ لکھنے کے دوران ڈیٹا بیس خراب ہو سکتا ہے۔ ڈیوائسز کے درمیان ڈیٹا منتقل کرنے کے لیے ایکسپورٹ استعمال کریں۔",
+  "storageLocationDangerWarning": "خبردار: ڈیٹا فولڈر تبدیل کرنے سے ڈیٹا ضائع ہو سکتا ہے۔ یہ آپ کی اپنی ذمہ داری پر ہے۔",
+  "storageLocationFolder": "ڈیٹا فولڈر",
+  "storageLocationFallbackWarning": "سلیکٹ کیا گیا فولڈر دستیاب نہیں ہے، ڈیفالٹ فولڈر استعمال ہو رہا ہے",
+  "storageLocationChange": "فولڈر تبدیل کریں",
+  "storageLocationReset": "ڈیفالٹ پر واپس جائیں",
+  "storageLocationSelectDialog": "ڈیٹا فولڈر سلیکٹ کریں",
+  "storageLocationNotWritable": "لکھنے کی اجازت نہیں ہے: {path}",
+  "@storageLocationNotWritable": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "storageLocationPermissionTitle": "اسٹوریج تک رسائی درکار ہے",
+  "storageLocationPermissionMessage": "اینڈرائیڈ کو کسٹم ڈیٹا فولڈر کے لیے \"All files access\" کی اجازت درکار ہوتی ہے۔ جو فہرست کھلے اس میں Tonkatsu Box تلاش کریں، رسائی آن کریں، پھر واپس آ کر فولڈر دوبارہ سلیکٹ کریں۔",  "storageLocationLegacyPermissionMessage": "کسٹم ڈیٹا فولڈر کے لیے اسٹوریج کی اجازت درکار ہے۔ اسے ایپ کی ترتیبات میں آن کریں، پھر واپس آ کر فولڈر دوبارہ سلیکٹ کریں۔",
+  "storageLocationOpenSettings": "ترتیبات کھولیں",
+  "storageLocationDbTooNew": "اس فولڈر کا ڈیٹا بیس ایپ کے نئے ورژن نے بنایا ہے۔ پہلے اس ڈیوائس پر ایپ اپڈیٹ کریں۔",
+  "storageLocationDbCorrupted": "اس فولڈر کا ڈیٹا بیس خراب یا نامکمل ہے۔ اگر کوئی سنک ٹول اب بھی اسے کاپی کر رہا ہے تو بعد میں دوبارہ کوشش کریں۔",
+  "storageLocationUseExistingTitle": "موجودہ ڈیٹا مل گیا",
+  "storageLocationUseExistingMessage": "سلیکٹ کیے گئے فولڈر میں پہلے سے ڈیٹا بیس موجود ہے۔ ری اسٹارٹ کے بعد ایپ اسی ڈیٹا پر چلی جائے گی۔",
+  "storageLocationUseExistingConfirm": "یہی استعمال کریں",
+  "storageLocationCopyTitle": "موجودہ ڈیٹا کاپی کریں؟",
+  "storageLocationCopyMessage": "سلیکٹ کیا گیا فولڈر خالی ہے۔ آپ کے مجموعے وہاں کاپی ہو جائیں گے، اور محفوظ شدہ تصاویر ضرورت کے مطابق دوبارہ ڈاؤن لوڈ ہوں گی۔ پرانے فولڈر کا ڈیٹا جوں کا توں رہے گا۔",
+  "copy": "کاپی کریں",
+  "storageLocationCopyImages": "امیج کیش بھی کاپی کریں",
+  "storageLocationCopyImagesHint": "ہیرو بینرز اور محفوظ شدہ کورز۔ سائز میں بڑے ہیں، لیکن نیا فولڈر دوبارہ ڈاؤن لوڈ کیے بغیر آف لائن بھی کام کرے گا",
+  "storageLocationCopyError": "ڈیٹا سلیکٹ کیے گئے فولڈر میں کاپی نہیں ہو سکا",
+  "storageLocationResetTitle": "ڈیٹا فولڈر ری سیٹ کریں؟",
+  "storageLocationResetMessage": "ری اسٹارٹ کے بعد ایپ دوبارہ ڈیفالٹ ڈیٹا فولڈر پر چلی جائے گی۔ کسٹم فولڈر کا ڈیٹا جوں کا توں رہے گا۔",
+  "storageLocationRestartTitle": "ری اسٹارٹ ضروری ہے",
+  "storageLocationRestartMessage": "نیا ڈیٹا فولڈر ری اسٹارٹ کے بعد استعمال ہوگا۔ کیا ابھی ری اسٹارٹ کریں؟",
+  "storageLocationRestartNow": "ری اسٹارٹ کریں",
+  "storageLocationRestartLater": "یہ تبدیلی ری اسٹارٹ کے بعد لاگو ہوگی",
+  "backupRestoreTile": "پچھلا ڈیٹا بیس ریسٹور کریں",
+  "backupNone": "ابھی تک کوئی بیک اپ نہیں",
+  "backupRestoreConfirmTitle": "پچھلا ڈیٹا بیس ریسٹور کریں؟",
+  "backupRestoreConfirmMessage": "موجودہ ڈیٹا کی جگہ {date} کا بیک اپ لے لے گا۔ بدلا گیا ڈیٹا نیا بیک اپ بن جائے گا، اس لیے دوبارہ ریسٹور کرنے سے یہ عمل واپس ہو جائے گا۔",
+  "@backupRestoreConfirmMessage": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "backupRestored": "ڈیٹا بیس ریسٹور ہو گیا",
+  "backupRestoreError": "بیک اپ ریسٹور نہیں ہو سکا",
+  "backupRestartMessage": "ریسٹور کیا گیا ڈیٹا ری اسٹارٹ کے بعد استعمال ہوگا۔ کیا ابھی ری اسٹارٹ کریں؟",
+  "lanSyncTitle": "نیٹ ورک سنک",
+  "lanSyncOpenTile": "قریبی ڈیوائسز",
+  "lanSyncTileSubtitle": "ایک ہی Wi-Fi نیٹ ورک پر موجود ڈیوائسز کے درمیان ڈیٹا براہ راست منتقل کریں",
+  "lanSyncVisibleAs": "یہ ڈیوائس {name} کے نام سے نظر آ رہی ہے",
+  "@lanSyncVisibleAs": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncNoDevices": "کوئی ڈیوائس نہیں ملی۔ یہ اسکرین ایک ہی Wi-Fi نیٹ ورک سے جڑی دونوں ڈیوائسز پر کھولیں۔ ایکسیس پوائنٹ آئسولیشن اور VPN ڈیوائسز کی تلاش کو بلاک کر دیتے ہیں۔",
+  "lanSyncPull": "اس کا ڈیٹا لینے کے لیے ٹیپ کریں",
+  "lanSyncReceiveTitle": "ڈیٹا ریپلیس کریں؟",
+  "lanSyncReceiveMessage": "ڈیوائس {device} سے ڈیٹا، تاریخ {date}: {collections} مجموعے، {items} آئٹمز۔\n\nموجودہ ڈیٹا مکمل طور پر بدل دیا جائے گا۔ ایک بیک اپ کاپی ڈیٹا بیس کے ساتھ رکھی جائے گی۔",
+  "@lanSyncReceiveMessage": {
+    "placeholders": {
+      "device": {"type": "String"},
+      "date": {"type": "String"},
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "lanSyncReplace": "ریپلیس کریں",
+  "lanSyncWaiting": "ڈیوائس {name} پر درخواست کی تصدیق کریں...",
+  "@lanSyncWaiting": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncIncomingTitle": "ڈیٹا کی درخواست",
+  "lanSyncIncomingMessage": "ڈیوائس {name} آپ کے ڈیٹا کی کاپی حاصل کرنا چاہتی ہے۔ اجازت دیں؟",
+  "@lanSyncIncomingMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "lanSyncAllow": "اجازت دیں",
+  "lanSyncDenied": "دوسری ڈیوائس نے درخواست قبول نہیں کی",
+  "lanSyncManifestError": "ڈیوائس نے جواب نہیں دیا",
+  "lanSyncStartError": "نیٹ ورک شیئرنگ شروع نہیں ہو سکی۔ نیٹ ورک کنکشن چیک کریں اور یہ اسکرین دوبارہ کھولیں۔",
+  "lanSyncReceiveError": "ڈیٹا حاصل نہیں ہو سکا",
+  "lanSyncTooNew": "دوسری ڈیوائس کا ڈیٹا ایپ کے نئے ورژن نے بنایا ہے۔ پہلے اس ڈیوائس پر ایپ اپڈیٹ کریں۔",
+  "lanSyncCorrupted": "منتقلی کے دوران ڈیٹا خراب ہو گیا۔ دوبارہ کوشش کریں۔",
+  "lanSyncReceived": "ڈیٹا مل گیا",
+  "lanSyncReceivingImages": "تصاویر منتقل ہو رہی ہیں...",
+  "lanSyncReceivingSettings": "ترتیبات منتقل ہو رہی ہیں...",
+  "lanSyncImportConfig": "ترتیبات بھی منتقل کریں",
+  "lanSyncImportConfigSubtitle": "اس میں API کیز بھی شامل ہیں۔ یا سب کچھ، یا کچھ نہیں۔",
+  "lanSyncImagesWarning": "ڈیٹا بیس مل گیا، لیکن تصاویر منتقل نہیں ہو سکیں",
+  "lanSyncRestartMessage": "موصول ہونے والا ڈیٹا ری اسٹارٹ کے بعد استعمال ہوگا۔ کیا ابھی ری اسٹارٹ کریں؟",
+  "lanSyncFirewallNote": "پہلی بار شروع کرنے پر Windows فائر وال کی اجازت مانگ سکتا ہے، پرائیویٹ نیٹ ورکس پر رسائی کی اجازت دیں۔",
+  "folderPickerNewFolder": "نیا فولڈر",
+  "folderPickerVolumeList": "اسٹوریج ڈیوائسز",
+  "folderPickerInternalStorage": "انٹرنل اسٹوریج",
+  "folderPickerSelect": "سلیکٹ کریں",
+  "folderPickerFolderName": "فولڈر کا نام",
+  "folderPickerInvalidName": "فولڈر کا نام درست نہیں ہے",
+  "folderPickerEmpty": "کوئی سب فولڈر نہیں",
+  "folderPickerReadError": "یہ فولڈر پڑھا نہیں جا سکتا",
+  "folderPickerCreateError": "فولڈر نہیں بن سکا",
+  "traktTitle": "ڈیٹا Trakt سے امپورٹ کریں",
+  "traktImportFrom": "اپنا ڈیٹا Trakt.tv سے امپورٹ کریں",
+  "traktImportDescription": "اپنا ڈیٹا trakt.tv/users/YOU/data سے ڈاؤن لوڈ کریں اور نیچے زپ فائل سلیکٹ کریں۔",
+  "traktZipFile": "زپ فائل",
+  "traktSelectZipFile": "زپ فائل سلیکٹ کریں",
+  "traktSelectZipExport": "ایکسپورٹ شدہ Trakt زپ فائل سلیکٹ کریں",
+  "preview": "پریویو",
+  "traktUser": "ٹریکٹ صارف: {username}",
+  "@traktUser": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "traktWatchedMovies": "دیکھی گئی فلمیں",
+  "traktWatchedShows": "دیکھے گئے شوز",
+  "traktRatedMovies": "ریٹ کی گئی فلمیں",
+  "traktRatedShows": "ریٹ کیے گئے شوز",
+  "traktWatchlist": "واچ لسٹ",
+  "importOptions": "آپشنز",
+  "traktImportWatched": "دیکھے گئے آئٹمز امپورٹ کریں",
+  "traktImportWatchedDesc": "فلمیں اور ٹی وی شوز مکمل کے طور پر",
+  "traktImportRatings": "ریٹنگز امپورٹ کریں",
+  "traktImportRatingsDesc": "صارف کی ریٹنگز لاگو کریں (1 سے 10)",
+  "traktImportWatchlist": "واچ لسٹ امپورٹ کریں",
+  "traktImportWatchlistDesc": "منصوبہ بند کے طور پر یا خواہش فہرست میں شامل کریں",
+  "importTargetCollection": "امپورٹ کے لیے مجموعہ",
+  "importUseExistingCollection": "موجودہ مجموعہ استعمال کریں",
+  "importStart": "امپورٹ شروع کریں",
+  "traktRequiresOwnTmdbKey": "اس امپورٹ کے لیے آپ کی اپنی TMDB API کی ضروری ہے۔ اسے ترتیبات اور پھر کریڈنشلز میں شامل کریں۔",
+  "traktInvalidExport": "ایکسپورٹ شدہ Trakt فائل درست نہیں ہے",
+  "kinoriumImportFrom": "ڈیٹا Kinorium سے امپورٹ کریں",
+  "kinoriumImportDescription": "اپنی فہرست Kinorium سے ایکسپورٹ کریں (یہ ای میل پر CSV کی صورت میں آتی ہے) اور نیچے فائل سلیکٹ کریں۔",
+  "kinoriumSelectCsvFile": "سی ایس وی فائل سلیکٹ کریں",
+  "kinoriumSelectCsvExport": "ایکسپورٹ شدہ Kinorium سی ایس وی فائل سلیکٹ کریں",
+  "kinoriumIsWatchlist": "یہ \"واچ لسٹ\" فائل ہے",
+  "kinoriumIsWatchlistDesc": "ہر ٹائٹل کو دیکھے گئے کے بجائے منصوبہ بند کے طور پر امپورٹ کریں",
+  "kinoriumImportNotes": "کاسٹ اور کریو امپورٹ کریں",
+  "kinoriumImportNotesDesc": "ڈائریکٹرز اور اداکاروں کو آئٹم کے نوٹ میں شامل کریں",
+  "kinoriumImporting": "ڈیٹا Kinorium سے امپورٹ ہو رہا ہے...",
+  "kinoriumRecommendOwnTmdbKey": "مشورہ: بڑی امپورٹس کے لیے ذاتی TMDB API کی تجویز کی جاتی ہے (ترتیبات، پھر API کیز)، لیکن یہ لازمی نہیں، بلٹ ان کی بھی کام کرتی ہے۔",
+  "kinoriumReasonNotFound": "یہ TMDB پر نہیں ملا",
+  "kinoriumReasonApiError": "یہ TMDB کی خرابی یا ریٹ لمٹ ہے، بعد میں دوبارہ کوشش کریں",
+  "kinoriumReasonUnsupportedType": "یہ قسم سپورٹ نہیں ہوتی: {type}",
+  "@kinoriumReasonUnsupportedType": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "kinoriumReasonDuplicate": "یہ \"{title}\" کا ڈپلیکیٹ ہے",
+  "@kinoriumReasonDuplicate": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "traktImportedItems": "امپورٹ ہوئے آئٹمز: {count}",
+  "@traktImportedItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "traktImporting": "ڈیٹا Trakt سے امپورٹ ہو رہا ہے",
+  "creditsTitle": "کریڈٹس",
+  "creditsDataProviders": "ڈیٹا فراہم کرنے والے",
+  "creditsTmdbAttribution": "یہ پروڈکٹ TMDB API استعمال کرتی ہے لیکن TMDB نے اسے منظور یا تصدیق شدہ قرار نہیں دیا۔",
+  "creditsTvdbAttribution": "میٹا ڈیٹا TheTVDB کی طرف سے فراہم کیا گیا ہے۔ براہ کرم گمشدہ معلومات شامل کرنے یا سبسکرائب کرنے پر غور کریں۔",
+  "creditsTvMazeAttribution": "ٹی وی سیریز کا ڈیٹا TVmaze کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsIgdbAttribution": "گیمز کا ڈیٹا IGDB کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsSteamGridDbAttribution": "آرٹ ورک SteamGridDB کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsVndbAttribution": "ویژول ناولز کا ڈیٹا VNDB کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsAniListAttribution": "مانگا کا ڈیٹا AniList کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsMangaBakaAttribution": "مانگا کا ڈیٹا MangaBaka کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsMangaDexAttribution": "مانگا کا ڈیٹا MangaDex کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsKitsuAttribution": "مانگا کا ڈیٹا Kitsu کی طرف سے فراہم کیا گیا ہے۔",
+  "creditsOpenLibraryAttribution": "کتابوں کا ڈیٹا Open Library (CC0 / ODbL) سے لیا گیا ہے۔",
+  "creditsFantlabAttribution": "کتابوں کا ڈیٹا Fantlab سے لیا گیا ہے۔",
+  "creditsComicVineAttribution": "کامکس کا ڈیٹا ComicVine سے لیا گیا ہے (غیر تجارتی استعمال)۔",
+  "creditsMusicBrainzAttribution": "موسیقی کا ڈیٹا MusicBrainz سے، کورز Cover Art Archive سے اور سننے کی گنتی ListenBrainz سے لی گئی ہے۔",
+  "creditsGoogleBooksAttribution": "کتابوں کا ڈیٹا Google Books سے لیا گیا ہے۔",
+  "creditsHardcoverAttribution": "کتابوں کا ڈیٹا Hardcover سے لیا گیا ہے۔",
+  "creditsOpenSource": "اوپن سورس",
+  "creditsOpenSourceDesc": "ایپ Tonkatsu Box مفت اور اوپن سورس سافٹ ویئر ہے، جو MIT لائسنس کے تحت جاری کیا گیا ہے۔",
+  "creditsViewLicenses": "اوپن سورس لائسنس دیکھیں",
+  "creditsDiscord": "ہمارے Discord میں شامل ہوں",
+  "collectionsImportCollection": "مجموعہ امپورٹ کریں",
+  "collectionsNoCollectionsYet": "ابھی تک کوئی مجموعہ نہیں",
+  "collectionsNoCollectionsHint": "اپنا پہلا مجموعہ بنانے کے لیے + دبائیں اور\nاپنی میڈیا لائبریری منظم کرنا شروع کریں۔",
+  "collectionsFailedToLoad": "مجموعے لوڈ نہیں ہو سکے",
+  "collectionsCount": "مجموعے ({count})",
+  "@collectionsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collectionsUncategorized": "بغیر کیٹیگری",
+  "collectionsUncategorizedItems": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}}",
+  "@collectionsUncategorizedItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "editCollection": "مجموعہ ایڈیٹ کریں",
+  "collectionsRenamed": "مجموعہ اپڈیٹ ہو گیا",
+  "collectionsFailedToRename": "محفوظ نہیں ہو سکا: {error}",
+  "@collectionsFailedToRename": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionsDeleted": "مجموعہ ڈیلیٹ ہو گیا",
+  "collectionsFailedToDelete": "ڈیلیٹ نہیں ہو سکا: {error}",
+  "@collectionsFailedToDelete": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionsFailedToCreate": "مجموعہ نہیں بن سکا: {error}",
+  "@collectionsFailedToCreate": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionsImported": "مجموعہ \"{name}\" {count} آئٹمز کے ساتھ امپورٹ ہو گیا",
+  "@collectionsImported": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "collectionsImporting": "مجموعہ امپورٹ ہو رہا ہے",
+  "importTargetTitle": "اس میں امپورٹ کریں...",
+  "importCreateNew": "نیا مجموعہ بنائیں",
+  "importUseExisting": "موجودہ مجموعے میں شامل کریں",
+  "importNoCollections": "کوئی مجموعہ دستیاب نہیں",
+  "importSelectCollection": "مجموعہ سلیکٹ کریں",
+  "importErrorLoadingCollections": "مجموعے لوڈ کرنے میں خرابی",
+  "importStartButton": "امپورٹ کریں",
+  "importUsername": "صارف نام",
+  "importUsernameHint": "مثلاً: yourname",
+  "importMode": "موڈ",
+  "importModeNewOnly": "صرف نیا شامل کریں",
+  "importModeNewOnlySubtitle": "جو آئٹمز مجموعے میں پہلے سے ہیں انہیں چھوڑ دیں",
+  "importModeOverwrite": "موجودہ کو اوور رائٹ کریں",
+  "importModeOverwriteSubtitle": "ماخذ سے پیش رفت، اسٹیٹس اور تاریخیں اپڈیٹ کریں",
+  "importNewCollectionName": "مجموعے کا نام",
+  "importNewCollectionDefault": "امپورٹ از {source}، صارف {username}",
+  "@importNewCollectionDefault": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "username": {"type": "String"}
+    }
+  },
+  "importFetchingBooks": "کتابوں کی لائبریری حاصل کی جا رہی ہے...",
+  "importAddingItems": "اندراجات امپورٹ ہو رہے ہیں",
+  "importProcessingItem": "پروسیس ہو رہا ہے: {title}",
+  "@importProcessingItem": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "importImportedCount": "{count} امپورٹ ہوئے",
+  "@importImportedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUpdatedCount": "{count} اپڈیٹ ہوئے",
+  "@importUpdatedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importUserNotFound": "صارف \"{username}\" نہیں ملا",
+  "@importUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "importEmptyUsername": "صارف نام درج کریں",
+  "importFailed": "امپورٹ ناکام ہو گئی: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionNotFound": "مجموعہ نہیں ملا",
+  "collectionAddItems": "آئٹمز شامل کریں",
+  "collectionSwitchToList": "لسٹ ویو پر جائیں",
+  "collectionSwitchToBoard": "بورڈ ویو پر جائیں",
+  "collectionUnlockBoard": "بورڈ ان لاک کریں",
+  "collectionLockBoard": "بورڈ لاک کریں",
+  "collectionExport": "ایکسپورٹ کریں",
+  "collectionNoItemsYet": "ابھی تک کوئی آئٹم نہیں",
+  "collectionEmpty": "خالی مجموعہ",
+  "collectionEmptyAddHint": "اپنا مجموعہ بنانا شروع کرنے کے لیے آئٹمز شامل کریں۔",
+  "collectionEmptyReadonly": "یہ مجموعہ خالی ہے۔",
+  "collectionDeleteEmptyPrompt": "یہ مجموعہ اب خالی ہو گیا ہے۔ اسے ڈیلیٹ کریں؟",
+  "collectionRemoveItemTitle": "آئٹم ہٹائیں؟",
+  "collectionRemoveItemMessage": "کیا {name} کو اس مجموعے سے ہٹانا ہے؟",
+  "@collectionRemoveItemMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "collectionMoveToCollection": "مجموعے میں منتقل کریں",
+  "collectionExportFormat": "ایکسپورٹ فارمیٹ",
+  "collectionChooseExportFormat": "ایکسپورٹ فارمیٹ سلیکٹ کریں:",
+  "collectionExportLight": "ہلکی (.xcoll) فائل",
+  "collectionExportLightDesc": "صرف آئٹمز، چھوٹی فائل",
+  "collectionExportFull": "مکمل (.xcollx) فائل",
+  "collectionExportFullDesc": "تصاویر اور کینوس کے ساتھ، آف لائن بھی کام کرتی ہے",
+  "collectionExportIncludeUserData": "ذاتی ڈیٹا شامل کریں",
+  "collectionExportIncludeUserDataDesc": "اسٹیٹس، تاریخیں، نوٹس، اقساط کی پیش رفت",
+  "customItemCreate": "کسٹم آئٹم بنائیں",
+  "title": "ٹائٹل",
+  "customItemTitleHint": "مثلاً: My Homebrew Game",
+  "customItemAltTitle": "متبادل ٹائٹل",
+  "customItemAltTitleHint": "اصل زبان کا نام",
+  "customItemCoverUrl": "کور امیج کا لنک",
+  "year": "سال",
+  "genres": "جینرز",
+  "customItemGenresHint": "مثلاً: RPG, Action, Puzzle",
+  "customItemAuthors": "مصنفین",
+  "customItemAuthorsHint": "مثلاً: Hideo Kojima, Yoji Shinkawa",
+  "creatorDirector": "ڈائریکٹر",
+  "creatorCreator": "تخلیق کار",
+  "creatorDeveloper": "ڈیولپر",
+  "creatorPublisher": "پبلشر",
+  "creatorStudio": "اسٹوڈیو",
+  "creatorAuthor": "مصنف",
+  "platform": "پلیٹ فارم",
+  "customItemPlatformHint": "مثلاً: PC, SNES, Custom",
+  "format": "فارمیٹ",
+  "progress": "پیش رفت",
+  "customMarkCompleted": "مکمل کے طور پر نشان زد کریں",
+  "customUnitParts": "حصے",
+  "customUnitEpisodes": "اقساط",
+  "customUnitChapters": "ابواب",
+  "customUnitPages": "صفحات",
+  "customUnitVolumes": "جلدیں",
+  "customUnitSeasons": "سیزنز",
+  "description": "تفصیل",
+  "customItemDescriptionHint": "مختصر تفصیل یا نوٹس",
+  "customItemMyNoteHint": "اس آئٹم کے بارے میں آپ کا نوٹ",
+  "customItemTagsHint": "کاما سے الگ کریں، مثلاً: Backlog, Favorites",
+  "customItemOptionalFields": "مزید فیلڈز",
+  "customItemEdit": "کسٹم آئٹم ایڈیٹ کریں",
+  "customItemFillFromFile": "فائل سے بھریں",
+  "customItemFileMultipleRows": "فائل میں {count} اندراجات ہیں، پہلا استعمال کیا گیا",
+  "@customItemFileMultipleRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customItemFileNoValidRows": "اس فائل میں کوئی درست اندراج نہیں",
+  "customItemAddCover": "کور شامل کریں",
+  "customItemCoverSource": "کور کا ذریعہ",
+  "customItemCoverRatio": "تجویز کردہ اسپیکٹ ریشو 2:3 ہے (مثلاً 600×900)",
+  "customItemCoverFromFile": "فائل سے",
+  "customItemSearchHint": "تلاش کریں یا اپنی مرضی کا لکھیں...",
+  "customItemUseCustom": "اپنی مرضی کی ویلیو استعمال کریں",
+  "customItemExternalUrl": "بیرونی لنک",
+  "customItemErrorEmptyTitle": "ٹائٹل ضروری ہے",
+  "customItemCreated": "کسٹم آئٹم بن گیا",
+  "customItemUpdated": "کسٹم آئٹم اپڈیٹ ہو گیا",
+  "tagLabel": "ٹیگ",
+  "tagsLabel": "ٹیگز",
+  "tagCreate": "نیا ٹیگ",
+  "tagCreateHint": "ٹیگ کا نام",
+  "tagCreateNamed": "ٹیگ \"{name}\" بنائیں",
+  "@tagCreateNamed": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "tagRename": "ٹیگ کا نام تبدیل کریں",
+  "tagDelete": "ٹیگ ڈیلیٹ کریں",
+  "tagDeleteConfirm": "کیا ٹیگ \"{name}\" ڈیلیٹ کرنا ہے؟ آئٹمز سے ٹیگ ہٹ جائے گا۔",
+  "@tagDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "tagManage": "ٹیگز مینج کریں",
+  "tagSortTooltip": "ترتیب",
+  "tagSortManual": "مینول",
+  "tagSortAlphaAsc": "حروف تہجی کے مطابق (الف سے ی)",
+  "tagSortAlphaDesc": "حروف تہجی کے مطابق (ی سے الف)",
+  "tagAssign": "ٹیگز لگائیں",
+  "tagNone": "کوئی ٹیگ نہیں",
+  "tagTextColor": "ٹیکسٹ کا رنگ",
+  "tagCreated": "ٹیگ بن گیا",
+  "tagRenamed": "ٹیگ کا نام تبدیل ہو گیا",
+  "tagDeleted": "ٹیگ ڈیلیٹ ہو گیا",
+  "tagUpdateFailed": "ٹیگ اپڈیٹ نہیں ہو سکا",
+  "refreshItemFromApi": "ماخذ سے ریفریش کریں",
+  "refreshItemSuccess": "آئٹم ماخذ سے اپڈیٹ ہو گیا",
+  "refreshItemNotFound": "ماخذ میں یہ آئٹم اب موجود نہیں",
+  "refreshItemUnsupported": "کسٹم آئٹمز کا کوئی بیرونی ماخذ نہیں ہوتا",
+  "refreshItemFailed": "ریفریش ناکام ہو گیا: {error}",
+  "@refreshItemFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "renameDialogHint": "ڈسپلے نام",
+  "renameOriginalLabel": "اصل نام: {name}",
+  "@renameOriginalLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "renameResetToOriginal": "اصل نام پر واپس جائیں",
+  "renameSaved": "نام تبدیل ہو گیا",
+  "tierListExportFailed": "تصویر ایکسپورٹ نہیں ہو سکی",
+  "browseCollectionsDownloadFailedGeneric": "مجموعہ ڈاؤن لوڈ نہیں ہو سکا",
+  "tagFilterAll": "تمام ٹیگز",
+  "tagSidebarGroup": "گروپ",
+  "colorPickerTitle": "رنگ",
+  "colorPickerNoColor": "کوئی رنگ نہیں",
+  "raLinkButton": "گیم کو RetroAchievements سے لنک کریں",
+  "raLinkTitle": "گیم RetroAchievements پر تلاش کریں",
+  "raLinkSearchHint": "نام سے تلاش کریں...",
+  "raLinkLoading": "پلیٹ فارم {platform} کے گیمز لوڈ ہو رہے ہیں...",
+  "@raLinkLoading": {"placeholders": {"platform": {"type": "String"}}},
+  "raLinkNotFound": "کوئی میچ نہیں ملا",
+  "raLinkSuccess": "گیم RetroAchievements سے لنک ہو گیا",
+  "raLinkAchievements": "اچیومنٹس: {count}",
+  "@raLinkAchievements": {"placeholders": {"count": {"type": "int"}}},
+  "raUnlinkButton": "لنک ہٹائیں",
+  "raUnlinkTitle": "گیم سے RetroAchievements کا لنک ہٹائیں",
+  "raUnlinkConfirm": "کیا اس گیم کا RetroAchievements لنک اور اچیومنٹ ڈیٹا ہٹانا ہے؟",
+  "collectionFilterByType": "قسم کے مطابق فلٹر کریں",
+  "collectionFilterGames": "گیمز",
+  "collectionFilterMovies": "فلمیں",
+  "collectionFilterTvShows": "ٹی وی شوز",
+  "collectionFilterVisualNovels": "ویژول ناولز",
+  "collectionFilterBooks": "کتابیں",
+  "searchHint": "تلاش کریں...",
+  "sort": "ترتیب",
+  "collectionFilterAscending": "بڑھتی ہوئی ترتیب",
+  "collectionFilterDescending": "گھٹتی ہوئی ترتیب",
+  "collectionFilterFilters": "فلٹرز",
+  "collectionFilterClearAll": "سب صاف کریں",
+  "collectionItemMovedTo": "آئٹم {name} کو {collection} میں منتقل کر دیا گیا",
+  "@collectionItemMovedTo": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "collectionItemAlreadyExists": "آئٹم {name} پہلے سے {collection} میں موجود ہے",
+  "@collectionItemAlreadyExists": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "collectionItemRemoved": "آئٹم {name} ہٹا دیا گیا",
+  "@collectionItemRemoved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "boardTab": "بورڈ",
+  "imageAddedToBoard": "تصویر بورڈ میں شامل ہو گئی",
+  "mapAddedToBoard": "نقشہ بورڈ میں شامل ہو گیا",
+  "loading": "لوڈ ہو رہا ہے...",
+  "gameNotFound": "گیم نہیں ملی",
+  "movieNotFound": "فلم نہیں ملی",
+  "tvShowNotFound": "ٹی وی شو نہیں ملا",
+  "animationNotFound": "اینیمیشن نہیں ملی",
+  "visualNovelNotFound": "ویژول ناول نہیں ملا",
+  "mangaNotFound": "مانگا نہیں ملا",
+  "readingProgress": "پڑھنے کی پیش رفت",
+  "mangaChapters": "ابواب",
+  "mangaVolumes": "جلدیں",
+  "mangaMarkCompleted": "مکمل کے طور پر نشان زد کریں",
+  "animeProgress": "دیکھنے کی پیش رفت",
+  "animeEpisodes": "اقساط",
+  "animeMarkCompleted": "مکمل کے طور پر نشان زد کریں",
+  "bookPages": "صفحات",
+  "bookIssues": "شمارے",
+  "bookMarkCompleted": "مکمل کے طور پر نشان زد کریں",
+  "animeNextEpisode": "قسط {episode} جلد نشر ہوگی",
+  "@animeNextEpisode": {
+    "placeholders": {
+      "episode": {"type": "int"}
+    }
+  },
+  "animatedMovie": "اینیمیٹڈ فلم",
+  "animatedSeries": "اینیمیٹڈ سیریز",
+  "runtimeHoursMinutes": "{hours} گھنٹے {minutes} منٹ",
+  "@runtimeHoursMinutes": {
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"}
+    }
+  },
+  "runtimeHours": "{hours} گھنٹے",
+  "@runtimeHours": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "runtimeMinutes": "{minutes} منٹ",
+  "@runtimeMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "totalSeasons": "{count, plural, =1{1 سیزن} other{{count} سیزنز}}",
+  "@totalSeasons": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "totalEpisodes": "{count} قسط",
+  "@totalEpisodes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "seasonName": "سیزن {number}",
+  "@seasonName": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "episodeProgress": "اقساط کی پیش رفت",
+  "episodesWatchedOf": "{watched}/{total} دیکھی گئیں",
+  "@episodesWatchedOf": {
+    "placeholders": {
+      "watched": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "episodesWatched": "{count} دیکھی گئیں",
+  "@episodesWatched": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "seasonEpisodesProgress": "{watched}/{total} اقساط",
+  "@seasonEpisodesProgress": {
+    "placeholders": {
+      "watched": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "noSeasonData": "سیزن کا ڈیٹا دستیاب نہیں",
+  "refreshFromTmdb": "ڈیٹا TMDB سے ریفریش کریں",
+  "markAllWatched": "سب کو دیکھا ہوا نشان زد کریں",
+  "markNextWatched": "اگلی قسط نشان زد کریں",
+  "unmarkAll": "سب کا نشان ہٹائیں",
+  "noEpisodesFound": "کوئی قسط نہیں ملی",
+  "undo": "واپس کریں",
+  "episodeUnmarkedSnack": "قسط کا نشان ہٹا دیا گیا",
+  "seasonUnmarkedSnack": "سیزن کا نشان ہٹا دیا گیا",
+  "episodesClearedSnack": "اقساط کے نشان صاف کر دیے گئے",
+  "episodeWatchedDateEdit": "دیکھنے کی تاریخ",
+  "episodeWatchedDateSelect": "آپ نے اسے کب دیکھا؟",
+  "episodeWatchedDate": "دیکھی گئی: {date}",
+  "@episodeWatchedDate": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "createCollectionTitle": "نیا مجموعہ",
+  "createCollectionNameLabel": "مجموعے کا نام",
+  "createCollectionNameHint": "مثلاً: SNES Classics",
+  "createCollectionEnterName": "براہ کرم نام درج کریں",
+  "createCollectionNameTooShort": "نام کم از کم 2 حروف کا ہونا چاہیے",
+  "createCollectionHiddenLabel": "چھپا ہوا مجموعہ",
+  "createCollectionHiddenHint": "کارڈ پر کوئی کور نہیں ہوگا، اور اس کے آئٹمز تمام آئٹمز میں نظر نہیں آئیں گے",
+  "collectionHide": "مجموعہ چھپائیں",
+  "collectionUnhide": "مجموعہ دکھائیں",
+  "renameCollectionTitle": "مجموعے کا نام تبدیل کریں",
+  "deleteCollectionTitle": "مجموعہ ڈیلیٹ کریں؟",
+  "deleteCollectionMessage": "کیا آپ واقعی {name} کو ڈیلیٹ کرنا چاہتے ہیں؟\n\nیہ عمل واپس نہیں ہو سکتا۔",
+  "@deleteCollectionMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "canvasAddText": "ٹیکسٹ شامل کریں",
+  "canvasAddImage": "تصویر شامل کریں",
+  "canvasAddLink": "لنک شامل کریں",
+  "canvasFindImages": "تصاویر تلاش کریں...",
+  "canvasBrowseMaps": "نقشے دیکھیں...",
+  "canvasConnect": "کنیکٹ کریں",
+  "canvasBringToFront": "سامنے لائیں",
+  "canvasSendToBack": "پیچھے بھیجیں",
+  "canvasEditConnection": "کنکشن ایڈیٹ کریں",
+  "canvasDeleteConnection": "کنکشن ڈیلیٹ کریں",
+  "canvasDeleteElement": "ایلیمنٹ ڈیلیٹ کریں",
+  "canvasDeleteElementMessage": "کیا آپ واقعی اس ایلیمنٹ کو ڈیلیٹ کرنا چاہتے ہیں؟",
+  "canvasAddToBoard": "بورڈ میں شامل کریں",
+  "editTextTitle": "ٹیکسٹ ایڈیٹ کریں",
+  "textContentLabel": "ٹیکسٹ کا مواد",
+  "fontSizeLabel": "فونٹ کا سائز",
+  "fontSizeSmall": "چھوٹا",
+  "fontSizeMedium": "درمیانہ",
+  "fontSizeLarge": "بڑا",
+  "fontSizeTitle": "ٹائٹل",
+  "editImageTitle": "تصویر ایڈیٹ کریں",
+  "imageFromUrl": "لنک سے",
+  "imageFromFile": "فائل سے",
+  "imageUrlLabel": "تصویر کا لنک",
+  "imageUrlHint": "https://example.com/image.png",
+  "imageChooseFile": "فائل سلیکٹ کریں",
+  "imageChooseAnother": "دوسری سلیکٹ کریں",
+  "editLinkTitle": "لنک ایڈیٹ کریں",
+  "linkLabelOptional": "لیبل (اختیاری)",
+  "linkLabelHint": "میرا لنک",
+  "connectionLabelHint": "مثلاً: پر منحصر ہے، سے متعلق ہے...",
+  "connectionStyleLabel": "اسٹائل",
+  "connectionStyleSolid": "سیدھی لائن",
+  "connectionStyleDashed": "ٹوٹی ہوئی لائن",
+  "connectionStyleArrow": "تیر والی لائن",
+  "searchTabTv": "ٹی وی",
+  "searchHintMovies": "فلمیں تلاش کریں...",
+  "searchHintTv": "ٹی وی تلاش کریں...",
+  "searchHintAnime": "اینیمے تلاش کریں...",
+  "searchHintGames": "گیمز تلاش کریں...",
+  "searchHintVisualNovels": "ویژول ناولز تلاش کریں...",
+  "searchSourceVisualNovels": "ویژول ناول",
+  "searchSourceOpenLibrary": "OpenLibrary",
+  "searchSourceFantlab": "Fantlab",
+  "searchSourceComics": "کامکس",
+  "searchHintManga": "مانگا تلاش کریں...",
+  "searchHintBooks": "کتابیں تلاش کریں...",
+  "searchHintComics": "کامکس تلاش کریں...",
+  "searchSourceMusic": "موسیقی",
+  "searchHintMusic": "البمز تلاش کریں...",
+  "musicFilterAlbumsDefault": "البمز",
+  "musicFilterAllTypes": "تمام اقسام",
+  "musicFilterTypeEp": "EP",
+  "musicFilterTypeSingle": "سنگل",
+  "musicFilterTypeBroadcast": "براڈکاسٹ",
+  "musicFilterTypeOther": "دیگر",
+  "musicFilterEdition": "ریلیزز",
+  "musicFilterStudioOnly": "صرف اسٹوڈیو",
+  "musicSheetEditions": "ایڈیشنز",
+  "musicSheetTracks": "ٹریکس",
+  "musicSheetDisc": "ڈسک {number}",
+  "@musicSheetDisc": {"placeholders": {"number": {"type": "int"}}},
+  "musicSheetEditionsUnavailable": "ایڈیشنز دستیاب نہیں",
+  "musicTracksCount": "{count} ٹریکس",
+  "@musicTracksCount": {"placeholders": {"count": {"type": "int"}}},
+  "musicTrackerNoTracks": "ٹریکس کی فہرست نہیں",
+  "musicDiscoverFreshReleases": "نئی ریلیزز",
+  "musicSearchArtist": "آرٹسٹ",
+  "language": "زبان",
+  "bookFilterSearchBy": "اس کے مطابق تلاش کریں",
+  "type": "قسم",
+  "bookSearchAuthor": "مصنف",
+  "bookSearchSubject": "موضوع",
+  "bookSimilarTitle": "ملتی جلتی کتابیں",
+  "bookMoreByAuthorTitle": "اسی مصنف کی مزید کتابیں",
+  "bookTitleCopied": "ٹائٹل کاپی ہو گیا",
+  "editionPickerTitle": "ایڈیشن سلیکٹ کریں",
+  "editionPickerEmpty": "کوئی ایڈیشن نہیں ملا",
+  "fantlabTypeNovel": "ناول",
+  "fantlabTypeNovella": "ناولا",
+  "fantlabTypeShortStory": "مختصر کہانی",
+  "fantlabTypeCycle": "سلسلہ",
+  "searchSelectPlatform": "پلیٹ فارم سلیکٹ کریں",
+  "searchAddToCollection": "مجموعے میں شامل کریں",
+  "searchAddedToCollection": "آئٹم {name} مجموعے میں شامل ہو گیا",
+  "@searchAddedToCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "searchAddedToNamed": "آئٹم {name} کو {collection} میں شامل کر دیا گیا",
+  "@searchAddedToNamed": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "searchAlreadyInCollection": "آئٹم {name} پہلے سے مجموعے میں موجود ہے",
+  "@searchAlreadyInCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "searchAlreadyInNamed": "آئٹم {name} پہلے سے {collection} میں موجود ہے",
+  "@searchAlreadyInNamed": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "searchAddedToCollections": "آئٹم {name} کو {count, plural, =1{1 مجموعے} other{{count} مجموعوں}} میں شامل کر دیا گیا",
+  "@searchAddedToCollections": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "searchAlreadyInCollections": "آئٹم {name} پہلے سے سلیکٹ کیے گئے مجموعوں میں موجود ہے",
+  "@searchAlreadyInCollections": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "goToSettings": "ترتیبات پر جائیں",
+  "searchMinCharsHint": "کم از کم 2 حروف لکھیں اور اینٹر دبائیں",
+  "searchNoResults": "کوئی نتیجہ نہیں ملا",
+  "searchWhatToFind": "کیا تلاش کرنا ہے",
+  "searchSortNeedsSingleSource": "ترتیب صرف ایک ماخذ کے ساتھ دستیاب ہے",
+  "searchSortUnavailableInSearch": "یہ ماخذ سرچ نتائج کو ترتیب نہیں دیتا",
+  "searchSourcesLabel": "ماخذ",
+  "searchTextOnlyHint": "صرف ٹیکسٹ سرچ",
+  "searchSourceNoResponse": "نے جواب نہیں دیا",
+  "searchCommonFilters": "مشترک",
+  "searchShowAll": "سب",
+  "searchNarrowedBySource": "اس ماخذ کے فلٹر سے محدود کیا گیا",
+  "searchSourceLacksValue": "سلیکٹ کی گئی ویلیو کو سپورٹ نہیں کرتا",
+  "searchNothingFoundFor": "تلاش \"{query}\" کے لیے کچھ نہیں ملا",
+  "@searchNothingFoundFor": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "searchNoInternet": "انٹرنیٹ کنکشن نہیں ہے",
+  "searchFailed": "تلاش ناکام ہو گئی",
+  "searchCheckConnection": "اپنا انٹرنیٹ کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+  "copyErrorDetails": "خرابی کی تفصیلات کاپی کریں",
+  "errorDetailsCopied": "خرابی کی تفصیلات کاپی ہو گئیں",
+  "errorDetailsTitle": "خرابی کی تفصیلات",
+  "errorDetailsShow": "تفصیلات",
+  "showMore": "مزید…",
+  "showLess": "سمیٹیں",
+  "platformFilterTitle": "پلیٹ فارمز سلیکٹ کریں",
+  "platformFilterClearAll": "سب صاف کریں",
+  "platformFilterSearchHint": "پلیٹ فارمز تلاش کریں...",
+  "selectedCount": "{count} سلیکٹ ہوئے",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformFilterCount": "{count} پلیٹ فارمز",
+  "@platformFilterCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformFilterShowAll": "سب دکھائیں",
+  "platformFilterApply": "لاگو کریں ({count})",
+  "@platformFilterApply": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformFilterNone": "کوئی پلیٹ فارم نہیں ملا",
+  "platformFilterTryDifferent": "کوئی اور لفظ تلاش کر کے دیکھیں",
+  "wishlistHideResolved": "حل شدہ چھپائیں",
+  "wishlistShowResolved": "حل شدہ دکھائیں",
+  "wishlistClearResolved": "حل شدہ صاف کریں",
+  "wishlistEmpty": "خواہش فہرست میں ابھی تک کچھ نہیں",
+  "wishlistEmptyHint": "بعد میں تلاش کرنے کے لیے کچھ شامل کرنے کو + دبائیں",
+  "wishlistDeleteItem": "آئٹم ڈیلیٹ کریں",
+  "wishlistDeletePrompt": "کیا \"{name}\" کو خواہش فہرست سے ڈیلیٹ کرنا ہے؟",
+  "@wishlistDeletePrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "wishlistClearResolvedMessage": "{count, plural, =1{کیا 1 حل شدہ آئٹم ڈیلیٹ کرنا ہے؟} other{کیا {count} حل شدہ آئٹمز ڈیلیٹ کرنے ہیں؟}}",
+  "@wishlistClearResolvedMessage": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistMarkResolved": "حل شدہ نشان زد کریں",
+  "wishlistUnresolve": "حل شدہ کا نشان ہٹائیں",
+  "wishlistTitleHint": "گیم، فلم یا ٹی وی شو کا نام...",
+  "wishlistTitleMinChars": "کم از کم 2 حروف",
+  "wishlistTypeOptional": "قسم (اختیاری)",
+  "any": "کوئی بھی",
+  "wishlistNoteOptional": "نوٹ (اختیاری)",
+  "wishlistNoteHint": "پلیٹ فارم، سال، کس نے سفارش کی...",
+  "wishlistTagOptional": "ٹیگ (اختیاری)",
+  "wishlistTagHint": "اندراجات کو گروپ کریں، مثلاً کوئی امپورٹ بیچ یا کوئی ماخذ",
+  "wishlistTagUntagged": "بغیر ٹیگ",
+  "wishlistTagFilterLabel": "فہرست",
+  "wishlistTagManage": "ٹیگ مینج کریں",
+  "wishlistTagDelete": "ٹیگ اور تمام اندراجات ڈیلیٹ کریں",
+  "wishlistTagDeleteConfirm": "کیا ٹیگ \"{tag}\" اور {count, plural, =1{1 اندراج} other{{count} اندراجات}} ڈیلیٹ کرنے ہیں؟",
+  "@wishlistTagDeleteConfirm": {
+    "placeholders": {
+      "tag": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkActionsButton": "{count} میچز",
+  "@wishlistBulkActionsButton": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkApplyTag": "نظر آنے والوں پر ٹیگ لگائیں",
+  "wishlistBulkApplyTagHint": "{count, plural, =1{نظر آنے والے 1 اندراج کو یہ ٹیگ دیں} other{نظر آنے والے {count} اندراجات کو یہ ٹیگ دیں}}",
+  "@wishlistBulkApplyTagHint": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkRemoveTag": "نظر آنے والوں سے ٹیگ ہٹائیں",
+  "wishlistBulkDelete": "نظر آنے والے ڈیلیٹ کریں",
+  "wishlistBulkDeleteConfirm": "{count, plural, =1{کیا نظر آنے والا 1 اندراج ڈیلیٹ کرنا ہے؟} other{کیا نظر آنے والے {count} اندراجات ڈیلیٹ کرنے ہیں؟}}",
+  "@wishlistBulkDeleteConfirm": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "apply": "لاگو کریں",
+  "welcomeStepWelcome": "خوش آمدید",
+  "welcomeStepReady": "تیار!",
+  "welcomeNameTitle": "آپ کا نام کیا ہے؟",
+  "welcomeNameSubtitle": "یہ نام آپ کے بنائے گئے مجموعوں پر بنانے والے کے طور پر نظر آئے گا",
+  "welcomeChangeLaterHint": "آپ اسے بعد میں ترتیبات میں تبدیل کر سکتے ہیں",
+  "welcomeLanguageTitle": "اپنی زبان سلیکٹ کریں",
+  "welcomeLanguageSubtitle": "ایپ انٹرفیس کی زبان سلیکٹ کریں",
+  "welcomeTitle": "ہمارے Tonkatsu Box میں خوش آمدید",
+  "welcomeSubtitle": "اپنی گیمز، فلموں،\nٹی وی شوز، اینیمے، ویژول ناولز، مانگا اور کتابوں کے مجموعے منظم کریں",
+  "welcomeWhatYouCanDo": "آپ کیا کر سکتے ہیں",
+  "welcomeFeatureCollections": "پلیٹ فارم، جینر یا کسی بھی تھیم کے مطابق مجموعے بنائیں",
+  "welcomeFeatureSearch": "گیمز، فلمیں، ٹی وی شوز، اینیمے، ویژول ناولز، مانگا اور کتابیں APIs کے ذریعے تلاش کریں",
+  "welcomeFeatureTracking": "پیش رفت ٹریک کریں، 1 سے 10 تک ریٹنگ دیں، نوٹس شامل کریں",
+  "welcomeFeatureBoards": "آرٹ ورک کے ساتھ ویژول کینوس بورڈز",
+  "welcomeFeatureExport": "ایکسپورٹ اور امپورٹ، مجموعے دوستوں کے ساتھ شیئر کریں",
+  "welcomeWorksWithoutKeys": "بغیر API کیز کے بھی کام کرتی ہے",
+  "welcomeChipImport": "امپورٹ .xcoll فائل",
+  "welcomeChipCanvas": "کینوس بورڈز",
+  "welcomeChipRatings": "ریٹنگز اور نوٹس",
+  "welcomeApiKeysHint": "صرف نئی گیمز، فلمیں اور ٹی وی شوز تلاش کرنے کے لیے API کیز درکار ہیں۔ آپ مجموعے امپورٹ کر سکتے ہیں اور انہیں آف لائن استعمال کر سکتے ہیں۔",
+  "welcomeChipGames": "گیمز (IGDB سے)",
+  "welcomeChipMovies": "فلمیں (TMDB سے)",
+  "welcomeChipTvShows": "ٹی وی شوز (TMDB سے)",
+  "welcomeChipAnime": "اینیمے (TMDB سے)",
+  "welcomeChipVisualNovels": "ویژول ناولز (VNDB سے)",
+  "welcomeChipManga": "مانگا (AniList سے)",
+  "welcomeApiTitle": "اپنی API کیز حاصل کریں",
+  "welcomeApiFreeHint": "مفت رجسٹریشن، ہر ایک میں 2 سے 3 منٹ لگتے ہیں",
+  "welcomeApiIgdbTag": "IGDB",
+  "welcomeApiIgdbDesc": "گیم سرچ",
+  "welcomeApiRequired": "لازمی",
+  "welcomeApiTmdbTag": "TMDB",
+  "welcomeApiTmdbDesc": "فلمیں، ٹی وی اور اینیمے",
+  "welcomeApiTvdbDesc": "فلمیں اور ٹی وی، اپنے اقساط کے ڈیٹا کے ساتھ",
+  "welcomeApiComicVineDesc": "کامکس اور گرافک ناولز",
+  "welcomeApiGoogleBooksDesc": "گوگل کا عالمی کتابوں کا کیٹلاگ",
+  "welcomeApiHardcoverDesc": "کمیونٹی کا کتابوں کا کیٹلاگ، ذاتی ٹوکن درکار ہے",
+  "welcomeApiRecommended": "تجویز کردہ",
+  "welcomeApiSgdbTag": "SGDB",
+  "welcomeApiSgdbDesc": "بورڈز کے لیے گیم آرٹ ورک",
+  "welcomeApiOptional": "اختیاری",
+  "welcomeApiBuiltInKey": "بلٹ ان کی",
+  "welcomeApiOwnKeyHint": "زیادہ ریٹ لمٹس کے لیے آپ بعد میں ترتیبات میں اپنی کی شامل کر سکتے ہیں",
+  "welcomeApiEnterKeysHint": "سیٹ اپ کے بعد ترتیبات، پھر کریڈنشلز میں کیز درج کریں",
+  "welcomeApiRateLimitHint": "بلٹ ان کیز تمام صارفین میں مشترک ہوتی ہیں اور ان پر ریٹ لمٹس ہوتی ہیں۔ بہترین تجربے کے لیے اپنی کیز استعمال کریں، یہ مفت ہے اور صرف چند منٹ لیتا ہے۔",
+  "welcomeHowTitle": "یہ کیسے کام کرتا ہے",
+  "welcomeHowAppStructure": "ایپ کی ساخت",
+  "welcomeHowMainDesc": "تمام مجموعوں کے تمام آئٹمز ایک ہی ویو میں۔ قسم کے مطابق فلٹر کریں، ریٹنگ کے مطابق ترتیب دیں۔",
+  "welcomeHowCollectionsDesc": "آپ کے مجموعے۔ بنائیں، منظم کریں، مینج کریں۔ ہر مجموعے میں گرڈ یا لسٹ ویو۔",
+  "welcomeHowTierListsDesc": "اپنی مرضی کی ٹائر لسٹس کے ساتھ مجموعوں کے آئٹمز کو رینک اور موازنہ کریں۔",
+  "welcomeHowWishlistDesc": "بعد میں دیکھنے کے لیے آئٹمز کی فوری فہرست۔ API کی ضرورت نہیں۔",
+  "welcomeHowSearchDesc": "گیمز، فلمیں، ٹی وی شوز، ویژول ناولز اور مانگا API کے ذریعے تلاش کریں۔ کسی بھی مجموعے میں شامل کریں۔",
+  "welcomeHowSettingsDesc": "یہاں API کیز، کیش، ڈیٹا بیس ایکسپورٹ/امپورٹ اور ڈیبگ ٹولز ملتے ہیں۔",
+  "welcomeHowPersonalizationDesc": "آپ کا ذوق ایک جگہ: آپ کی پسندیدہ جینرز کا کلاؤڈ اور آپ کی ریٹنگز کی بنیاد پر چنی گئی تجاویز۔",
+  "@welcomeHowPersonalizationDesc": {
+    "description": "Menu-tour description for the Personalization centre button (genre cloud + recommendations)."
+  },
+  "welcomeHowQuickStart": "فوری آغاز",
+  "welcomeHowStep1": "ترتیبات، پھر کریڈنشلز میں جائیں اور API کیز درج کریں",
+  "welcomeHowStep2": "کنکشن چیک کریں پر کلک کریں اور پلیٹ فارمز کے سنک ہونے کا انتظار کریں",
+  "welcomeHowStep3": "مجموعوں میں جا کر + نیا مجموعہ دبائیں",
+  "welcomeHowStep4": "اسے نام دیں، پھر آئٹمز شامل کریں، پھر تلاش، پھر شامل کریں",
+  "welcomeHowStep5": "ریٹنگ دیں، پیش رفت ٹریک کریں، نوٹس شامل کریں، بس آپ تیار ہیں!",
+  "welcomeHowSharing": "شیئرنگ",
+  "welcomeHowSharingDesc1": "مجموعے ",
+  "welcomeHowSharingDesc2": " (ہلکی، صرف میٹا ڈیٹا) یا ",
+  "welcomeHowSharingDesc3": " (مکمل، تصاویر اور کینوس کے ساتھ، آف لائن بھی کام کرتی ہے) فارمیٹ میں ایکسپورٹ کریں۔ دوستوں سے امپورٹ کریں، API کی ضرورت نہیں!",
+  "welcomeReadyTitle": "آپ بالکل تیار ہیں!",
+  "welcomeReadyMessage": "اپنی API کیز درج کرنے کے لیے ترتیبات، پھر کریڈنشلز میں جائیں، یا کوئی مجموعہ امپورٹ کر کے شروع کریں۔",
+  "welcomeReadySkip": "چھوڑیں اور خود دیکھیں",
+  "welcomeReadyReturnHint": "آپ ترتیبات سے کبھی بھی یہاں واپس آ سکتے ہیں",
+  "welcomeStepSources": "ذرائع",
+  "welcomeStepTour": "ٹور",
+  "welcomeChipBooks": "کتابیں (OpenLibrary، Fantlab سے)",
+  "welcomeSourcesTitle": "ڈیٹا کہاں سے آتا ہے",
+  "welcomeSourcesSubtitle": "یہ پرووائیڈرز پوری ایپ میں سرچ چلاتے ہیں۔ زیادہ تر فوراً کام کرتے ہیں، صرف چند ایک ایسے ہیں جو مفت API کی مانگتے ہیں۔",
+  "welcomeSourcesNoKeyNeeded": "کوئی API کی درکار نہیں",
+  "welcomeSourcesKeySaved": "اب API کی محفوظ ہے",
+  "welcomeSourcesGetKey": "اپنی API کی حاصل کریں",
+  "welcomeSourcesKeyOptionalHint": "اختیاری: اپنی API کی لگانے سے ریٹ لمٹس بڑھ جاتی ہیں۔ اس کے بغیر بھی سرچ کام کرتی ہے۔",
+  "welcomeSourcesTvdbKeyHint": "لازمی: TheTVDB سرچ بغیر API کی کے بند رہتی ہے۔",
+  "welcomeSourcesHardcoverTokenHint": "لازمی: ٹوکن کے بغیر سرچ اور امپورٹ بند رہتے ہیں۔ ٹوکن ہر سال یکم جنوری کو ایکسپائر ہو جاتے ہیں۔",
+  "welcomeSourceDescTmdb": "فلمیں، ٹی وی شوز اور اینیمیشن۔",
+  "welcomeSourceDescTvMaze": "ٹی وی سیریز۔",
+  "welcomeSourceDescTvdb": "فلمیں اور ٹی وی سیریز، اپنے اقساط کے ڈیٹا کے ساتھ۔",
+  "welcomeSourceDescIgdb": "ہر پلیٹ فارم کی ویڈیو گیمز۔",
+  "welcomeSourceDescAniList": "اینیمے اور مانگا، تفصیلی میٹا ڈیٹا کے ساتھ۔",
+  "welcomeSourceDescMangaBaka": "مانگا، manhwa، manhua اور لائٹ ناولز۔",
+  "welcomeSourceDescMangaDex": "مانگا کا ایک بڑا کیٹلاگ، مقامی زبانوں کے ٹائٹلز اور ابواب کی گنتی کے ساتھ۔",
+  "welcomeSourceDescKitsu": "مانگا کا ایک آزاد کیٹلاگ، ریٹنگز اور کورز کے ساتھ۔",
+  "welcomeSourceDescVndb": "ویژول ناولز کا ڈیٹا بیس۔",
+  "welcomeSourceDescOpenLibrary": "لاکھوں کتابوں کا ایک اوپن کیٹلاگ۔",
+  "welcomeSourceDescFantlab": "ایک تفصیلی کتابوں کا کیٹلاگ، ریٹنگز، ایوارڈز اور سیریز کے ساتھ۔",
+  "welcomeSourceDescComicVine": "کامکس اور گرافک ناولز کا ایک وسیع کیٹلاگ۔",
+  "welcomeSourceDescGoogleBooks": "گوگل کے کتابوں کے کیٹلاگ سے لاکھوں ایڈیشنز، ٹائٹل، مصنف یا ISBN سے تلاش کے قابل۔",
+  "welcomeSourceDescHardcover": "کمیونٹی کا کتابوں کا کیٹلاگ، سیریز، جینرز، موڈز اور ریٹنگز کے ساتھ۔ مفت ذاتی ٹوکن درکار ہے۔",
+  "welcomeTourTitle": "مینو سے واقفیت حاصل کریں",
+  "welcomeTourSubtitle": "مرکزی نیویگیشن کا ایک مختصر ٹور، آگے بڑھنے کے لیے اگلا دبائیں۔",
+  "welcomeTourStart": "دیکھنا شروع کریں",
+  "welcomeHowReleasesDesc": "آپ کے ٹریک کیے گئے شوز اور گیمز کی نئی اقساط اور ریلیزز۔",
+  "updateAvailable": "اپڈیٹ دستیاب ہے: v{version}",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "updateCurrent": "موجودہ ورژن: v{version}",
+  "@updateCurrent": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "updateWarningTitle": "اپڈیٹ سے پہلے",
+  "updateWarningBody": "یہ ایپ ایکٹو ڈیولپمنٹ میں ہے۔ اپڈیٹس میں ڈیٹا بیس مائیگریشنز شامل ہو سکتی ہیں جو ڈیٹا کا فارمیٹ بدل دیتی ہیں۔\n\nبراہ کرم اپڈیٹ سے پہلے بیک اپ بنا لیں (ترتیبات، پھر بیک اپ)۔ اس طرح اگر کچھ غلط ہو جائے تو آپ اپنا ڈیٹا ریسٹور کر سکتے ہیں۔",
+  "updateWarningProceed": "ریلیز پر جائیں",
+  "chooseCollection": "مجموعہ سلیکٹ کریں",
+  "withoutCollection": "بغیر مجموعہ",
+  "detailMyRating": "میری ریٹنگ",
+  "detailRatingValue": "{rating}/10",
+  "@detailRatingValue": {
+    "placeholders": {
+      "rating": {"type": "String"}
+    }
+  },
+  "detailActivityProgress": "سرگرمی اور پیش رفت",
+  "detailAuthorReview": "بنانے والے کا ریویو",
+  "detailEditAuthorReview": "بنانے والے کا ریویو ایڈیٹ کریں",
+  "detailWriteReviewHint": "اپنا ریویو لکھیں...",
+  "detailReviewVisibility": "شیئر کرنے پر دوسروں کو نظر آتا ہے۔ اس ٹائٹل پر آپ کا ریویو۔",
+  "detailNoReviewEditable": "ابھی تک کوئی ریویو نہیں۔ شامل کرنے کے لیے ایڈیٹ دبائیں۔",
+  "detailNoReviewReadonly": "بنانے والے کی طرف سے کوئی ریویو نہیں۔",
+  "detailMyNotes": "میرے نوٹس",
+  "detailEditMyNotes": "میرے نوٹس ایڈیٹ کریں",
+  "detailWriteNotesHint": "اپنے ذاتی نوٹس لکھیں...",
+  "detailNoNotesYet": "ابھی تک کوئی نوٹس نہیں۔ اپنے ذاتی نوٹس شامل کرنے کے لیے ایڈیٹ دبائیں۔",
+  "detailNoNotesReadonly": "بنانے والے کی طرف سے کوئی نوٹس نہیں۔",
+  "unknownGame": "نامعلوم گیم",
+  "unknownMovie": "نامعلوم فلم",
+  "unknownTvShow": "نامعلوم ٹی وی شو",
+  "unknownAnimation": "نامعلوم اینیمیشن",
+  "unknownVisualNovel": "نامعلوم ویژول ناول",
+  "unknownManga": "نامعلوم مانگا",
+  "unknownCustom": "نامعلوم کسٹم آئٹم",
+  "unknownPlatform": "نامعلوم پلیٹ فارم",
+  "defaultAuthor": "صارف",
+  "errorPrefix": "خرابی: {error}",
+  "@errorPrefix": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "allItemsRatingAsc": "ریٹنگ ↑",
+  "allItemsRatingDesc": "ریٹنگ ↓",
+  "allItemsNoItems": "ابھی تک کوئی آئٹم نہیں",
+  "allItemsNoMatch": "کوئی آئٹم فلٹر سے میل نہیں کھاتا",
+  "allItemsAddViaCollections": "مجموعوں میں جائیں، نیا مجموعہ بنائیں، آئٹمز شامل کریں\nسرچ کے ذریعے۔ وہ خود بخود یہاں نظر آ جائیں گے۔",
+  "allItemsFailedToLoad": "آئٹمز لوڈ نہیں ہو سکے",
+  "allPlatforms": "تمام پلیٹ فارمز",
+  "allItemsFilterPlatformsTitle": "پلیٹ فارم کے مطابق فلٹر کریں",
+  "debugIgdbMedia": "میڈیا (IGDB سے)",
+  "debugGamepad": "گیم پیڈ",
+  "debugClearLogs": "لاگز صاف کریں",
+  "debugRawEvents": "خام ایونٹس، Gamepads.events سے",
+  "debugServiceEvents": "سروس ایونٹس (فلٹر شدہ)",
+  "debugEventsCount": "{count} ایونٹس",
+  "@debugEventsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "debugPressButton": "گیم پیڈ پر\nکوئی بھی بٹن دبائیں...",
+  "debugExportLog": "لاگ فائل میں ایکسپورٹ کریں",
+  "debugLogExported": "لاگ یہاں ایکسپورٹ ہو گیا: {path}",
+  "@debugLogExported": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "debugLogEmpty": "ایکسپورٹ کرنے کے لیے کوئی ایونٹ نہیں",
+  "settingsGamepadDebug": "گیم پیڈ ڈیبگ",
+  "debugSearchGames": "گیمز تلاش کریں",
+  "debugEnterGameName": "گیم کا نام درج کریں",
+  "debugEnterGameNameHint": "تلاش کرنے کے لیے گیم کا نام درج کریں",
+  "debugGameId": "گیم آئی ڈی",
+  "debugEnterGameId": "گیم آئی ڈی درج کریں (SteamGridDB کی)",
+  "debugLoadTab": "ٹیب {tabName} لوڈ کریں",
+  "@debugLoadTab": {
+    "placeholders": {
+      "tabName": {"type": "String"}
+    }
+  },
+  "debugEnterGameIdHint": "گیم آئی ڈی درج کریں اور ٹیب {tabName} لوڈ کریں دبائیں",
+  "@debugEnterGameIdHint": {
+    "placeholders": {
+      "tabName": {"type": "String"}
+    }
+  },
+  "debugNoImagesFound": "کوئی تصویر نہیں ملی",
+  "collectionTileStats": "{count, plural, =1{1 آئٹم} other{{count} آئٹمز}} · {percent} مکمل",
+  "@collectionTileStats": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "percent": {"type": "String"}
+    }
+  },
+  "collectionTileError": "اعداد و شمار لوڈ کرنے میں خرابی",
+  "activityDatesTitle": "سرگرمی کی تاریخیں",
+  "activityDatesAdded": "شامل کیا گیا",
+  "activityDatesStarted": "شروع کیا",
+  "activityDatesCompleted": "مکمل کیا",
+  "activityDatesSelectStart": "شروع کی تاریخ سلیکٹ کریں",
+  "activityDatesSelectCompletion": "مکمل ہونے کی تاریخ سلیکٹ کریں",
+  "settingsDateFormat": "تاریخ کا فارمیٹ",
+  "settingsDateFormatSubtitle": "پوری ایپ میں تاریخیں کیسے دکھائی جائیں",
+  "settingsAnimeMangaTitleLanguage": "اینیمے اور مانگا کے ٹائٹل کی زبان",
+  "settingsAnimeMangaTitleLanguageSubtitle": "اینیمے اور مانگا کے لیے دکھایا جانے والا ٹائٹل",
+  "settingsAnimeMangaTitleLanguageRomaji": "روماجی",
+  "settingsAnimeMangaTitleLanguageEnglish": "انگریزی",
+  "settingsAnimeMangaTitleLanguageNative": "اصل زبان",
+  "dualDatePickerNoDate": "کوئی تاریخ نہیں",
+  "dualDatePickerBothDates": "اسی دن شروع کیا اور ختم کیا",
+  "dualDatePickerErrorEmpty": "تاریخ درج کریں",
+  "dualDatePickerErrorFormat": "فارمیٹ yyyy-MM-dd میں تاریخ لکھیں",
+  "dualDatePickerErrorRange": "تاریخ حد سے باہر ہے",
+  "activityDatesCompletionTime": "مکمل ہونے کا وقت: {duration}",
+  "@activityDatesCompletionTime": { "placeholders": { "duration": { "type": "String" } } },
+  "timeSpentTitle": "گزارا گیا وقت",
+  "timeSpentAdd": "وقت شامل کریں",
+  "timeSpentEdit": "وقت ایڈیٹ کریں",
+  "timeSpentHours": "گھنٹے",
+  "timeSpentMinutes": "منٹ",
+  "durationLessThanDay": "ایک دن سے کم",
+  "durationOneDay": "1 دن",
+  "durationDays": "{count} دن",
+  "@durationDays": { "placeholders": { "count": { "type": "int" } } },
+  "durationWeeks": "{count} ہفتے",
+  "@durationWeeks": { "placeholders": { "count": { "type": "int" } } },
+  "durationMonths": "{count} مہینے",
+  "@durationMonths": { "placeholders": { "count": { "type": "int" } } },
+  "durationYears": "{count} سال",
+  "@durationYears": { "placeholders": { "count": { "type": "String" } } },
+  "canvasFailedToLoad": "بورڈ لوڈ نہیں ہو سکا",
+  "canvasBoardEmpty": "بورڈ خالی ہے",
+  "canvasBoardEmptyHint": "پہلے مجموعے میں آئٹمز شامل کریں",
+  "canvasCenterView": "ویو سینٹر کریں",
+  "canvasResetPositions": "پوزیشنز ری سیٹ کریں",
+  "canvasVgmapsBrowser": "براؤزر (VGMaps کا)",
+  "canvasSteamGridDbImages": "تصاویر (SteamGridDB سے)",
+  "steamGridDbPanelTitle": "SteamGridDB",
+  "closePanel": "پینل بند کریں",
+  "steamGridDbSearchHint": "گیم تلاش کریں...",
+  "steamGridDbNoApiKey": "ابھی تک SteamGridDB API کی سیٹ نہیں ہے۔ اسے ترتیبات میں سیٹ کریں۔",
+  "steamGridDbBackToSearch": "تلاش پر واپس جائیں",
+  "steamGridDbGrids": "گرڈز",
+  "steamGridDbHeroes": "ہیروز",
+  "steamGridDbLogos": "لوگوز",
+  "steamGridDbIcons": "آئیکنز",
+  "steamGridDbSearchFirst": "پہلے کسی گیم کو تلاش کریں",
+  "vgmapsBack": "پیچھے",
+  "vgmapsForward": "آگے",
+  "vgmapsHome": "ہوم",
+  "vgmapsReload": "ری لوڈ",
+  "vgmapsCaptureImage": "نقشے کی تصویر کیپچر کریں",
+  "vgmapsSearchHint": "گیم کو VGMaps پر تلاش کریں...",
+  "vgmapsDismiss": "بند کریں",
+  "vgmapsFailedInit": "ویب ویو شروع نہیں ہو سکا: {error}",
+  "@vgmapsFailedInit": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "recommendationsTitle": "تجاویز",
+  "reviewsTitle": "ریویوز",
+  "reviewsShowAll": "تمام {count} ریویوز دکھائیں",
+  "@reviewsShowAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "reviewsReadMore": "مزید پڑھیں",
+  "reviewsInEnglish": "انگریزی میں ریویوز",
+  "settingsShowRecommendationsSubtitle": "ڈیٹیل پیج پر ملتی جلتی فلمیں اور ٹی وی شوز",
+  "settingsHideEmptyMediaTypeChevrons": "خالی میڈیا ٹائپ فلٹرز چھپائیں",
+  "settingsHideEmptyMediaTypeChevronsSubtitle": "جب کسی قسم کا کوئی آئٹم نہ ہو تو میڈیا ٹائپ کے بٹنز (گیمز، فلمیں وغیرہ) چھپا دیں",
+  "settingsAlwaysShowSubcategories": "ذیلی کیٹیگریز ہمیشہ دکھائیں",
+  "settingsAlwaysShowSubcategoriesSubtitle": "ذیلی کیٹیگری فلٹرز (گیم پلیٹ فارمز، اینیمے/مانگا اقسام) پہلے میڈیا ٹائپ سلیکٹ کیے بغیر دکھائیں",
+  "settingsShowAllCardTags": "کارڈز پر تمام ٹیگز دکھائیں",
+  "settingsShowAllCardTagsSubtitle": "پوسٹر پر پہلے ٹیگ اور +N کاؤنٹر کی جگہ ہر ٹیگ دکھائیں",
+  "settingsShowPlatformOverlay": "گیم پلیٹ فارم کورز",
+  "settingsShowPlatformOverlaySubtitle": "گیم پوسٹرز پر پلیٹ فارم اوور لے دکھائیں (PS5, Switch وغیرہ)",
+  "settingsShowBlurayOverlay": "بلو رے کورز",
+  "settingsShowBlurayOverlaySubtitle": "فلم اور ٹی وی شو پوسٹرز پر بلو رے اوور لے دکھائیں",
+  "settingsRichCollections": "تفصیلی مجموعہ ویو",
+  "settingsRichCollectionsSubtitle": "مجموعوں کو کور امیج اور تفصیل کے ساتھ اپنی مرضی کے مطابق بنائیں",
+  "settingsRichHeroStyle": "مجموعے کے بینر کا اسٹائل",
+  "settingsRichHeroStyleSubtitle": "تفصیلی مجموعے کا ہیڈر کیسا نظر آئے",
+  "settingsRichHeroStyleClassic": "کلاسک",
+  "settingsRichHeroStyleComic": "کامک",
+  "settingsRichHeroStyleStickers": "اسٹیکر البم",
+  "settingsRichHeroStyleBrutalist": "برٹلسٹ",
+  "settingsRichHeroStyleSlats": "پٹیاں",
+  "settingsCardScale": "کور کا سائز",
+  "settingsCardScaleSubtitle": "مجموعوں کے گرڈ میں کارڈ کا سائز",
+  "settingsTextScale": "ٹیکسٹ کا سائز",
+  "settingsTextScaleSubtitle": "انٹرفیس ٹیکسٹ کا سائز، سسٹم سیٹنگ کے اوپر",
+  "settingsUiScale": "انٹرفیس اسکیل",
+  "settingsUiScaleSubtitle": "پوری ایپ کو براؤزر کی طرح زوم کرتا ہے۔ Ctrl+ وہیل یا Ctrl+ پلس / مائنس استعمال کریں، Ctrl+0 سے ری سیٹ ہو جاتا ہے",
+  "collectionEditHeroImage": "کور امیج",
+  "collectionEditHeroImageHint": "تجویز کردہ سائز 2560×1080 (21:9)۔ مرکزی موضوع دائیں طرف رکھیں، بائیں طرف ٹائٹل سے ڈھک جاتی ہے اور نیچے کا حصہ پس منظر میں مدھم ہو جاتا ہے",
+  "collectionEditHeroPick": "تصویر سلیکٹ کریں",
+  "collectionEditHeroReplace": "تصویر تبدیل کریں",
+  "collectionEditHeroRemove": "تصویر ہٹائیں",
+  "collectionEditDescriptionHint": "کور کے اوپر دکھائی جانے والی مختصر ٹیگ لائن",
+  "collectionEditDialogTitle": "مجموعے کی ترتیبات",
+  "settingsDiscordRpc": "ڈسکورڈ رچ پریزنس",
+  "settingsDiscordRpcSubtitle": "اپنے Discord اسٹیٹس میں فی الحال دیکھا جانے والا آئٹم دکھائیں",
+  "settingsDiscordRaSync": "اپنی RetroAchievements سرگرمی سنک کریں",
+  "settingsDiscordRaSyncSubtitle": "اس کی جگہ Discord میں اپنی RetroAchievements سرگرمی دکھائیں",
+  "uncategorizedBanner": "بورڈ اور اقساط ٹریکنگ استعمال کرنے کے لیے مجموعے میں شامل کریں",
+  "uncategorizedDeprecationNotice": "یہ سسٹم مجموعہ جلد ہٹا دیا جائے گا۔ اپنا مجموعہ بنائیں اور یہاں کے تمام آئٹمز اس میں منتقل کریں۔",
+  "@uncategorizedDeprecationNotice": {
+    "description": "Warns that the Uncategorized system collection is deprecated and will be removed."
+  },
+  "uncategorizedDeprecationBadge": "ہٹا دیا جائے گا",
+  "@uncategorizedDeprecationBadge": {
+    "description": "Short warning shown on the Uncategorized collection card/tile that it will be removed."
+  },
+  "browseFilterGenre": "جینر",
+  "browseFilterLength": "دورانیہ",
+  "vndbLengthVeryShort": "بہت مختصر",
+  "vndbLengthShort": "مختصر",
+  "vndbLengthMedium": "درمیانہ",
+  "vndbLengthLong": "طویل",
+  "vndbLengthVeryLong": "بہت طویل",
+  "browseFilterAnimeAdaptation": "اینیمے ایڈاپٹیشن",
+  "vndbHasAnimeAdaptation": "ایڈاپٹیشن موجود ہے",
+  "tagPickerTitle": "ٹیگز سلیکٹ کریں",
+  "tagPickerSearchHint": "ٹیگز تلاش کریں",
+  "tagPickerShowSpoilers": "اسپوئلر ٹیگز دکھائیں",
+  "tagPickerShowAdult": "بالغوں کے لیے (18+) ٹیگز دکھائیں",
+  "tagPickerRefresh": "کیٹلاگ ریفریش کریں",
+  "tagPickerEmpty": "کوئی ٹیگ نہیں ملا",
+  "studioLabel": "اسٹوڈیو",
+  "studioPickerTitle": "اسٹوڈیو سلیکٹ کریں",
+  "studioPickerSearchHint": "اسٹوڈیوز تلاش کریں",
+  "studioPickerTypeToSearch": "اسٹوڈیو کا نام لکھیں",
+  "studioPickerEmpty": "کوئی اسٹوڈیو نہیں ملا",
+  "studioFilterExclusiveHint": "جب تک اسٹوڈیو سلیکٹ ہے، باقی فلٹرز اور سرچ ٹیکسٹ نظر انداز کیے جاتے ہیں",
+  "filterBlockedBy": "یہ آپشن اس وقت دستیاب نہیں جب {filter} سیٹ ہو",
+  "@filterBlockedBy": {"placeholders": {"filter": {"type": "String"}}},
+  "clearAll": "سب صاف کریں",
+  "browseFilterSeason": "سیزن",
+  "browseFilterGameMode": "گیم موڈ",
+  "browseFilterMinRating": "کم از کم ریٹنگ",
+  "browseFilterMinVotes": "کم از کم ووٹ",
+  "seasonWinter": "سردیاں",
+  "seasonSpring": "بہار",
+  "seasonSummer": "گرمیاں",
+  "seasonFall": "خزاں",
+  "animeFormatTv": "ٹی وی",
+  "animeFormatMovie": "فلم",
+  "animeFormatOva": "OVA",
+  "animeFormatOna": "ONA",
+  "animeFormatSpecial": "اسپیشل",
+  "animeFormatTvShort": "ٹی وی شارٹ",
+  "mangaStatusPublishing": "شائع ہو رہا ہے",
+  "mangaStatusFinished": "مکمل",
+  "mangaStatusNotYetPublished": "ابھی شائع نہیں ہوا",
+  "mangaStatusCancelled": "منسوخ",
+  "mangaStatusHiatus": "وقفہ",
+  "gameModeSinglePlayer": "سنگل پلیئر",
+  "gameModeMultiplayer": "ملٹی پلیئر",
+  "gameModeCoOperative": "کو آپریٹو",
+  "gameModeSplitScreen": "اسپلٹ اسکرین",
+  "gameModeMmo": "MMO",
+  "gameModeBattleRoyale": "بیٹل رائل",
+  "languageEnglish": "انگریزی",
+  "languageJapanese": "جاپانی",
+  "languageKorean": "کوریائی",
+  "languageChinese": "چینی",
+  "languageFrench": "فرانسیسی",
+  "languageSpanish": "ہسپانوی",
+  "languageGerman": "جرمن",
+  "languageRussian": "روسی",
+  "languageItalian": "اطالوی",
+  "languagePortuguese": "پرتگالی",
+  "mangaFormatManhwa": "منہوا (کوریائی)",
+  "mangaFormatManhua": "منہوا (چینی)",
+  "mangaFormatOneShot": "ون شاٹ",
+  "mangaFormatNovel": "ناول",
+  "mangaFormatLightNovel": "لائٹ ناول",
+  "browseFilterContentRating": "مواد کی ریٹنگ",
+  "browseFilterDemographic": "ڈیموگرافک",
+  "contentRatingSafe": "محفوظ",
+  "contentRatingSuggestive": "اشتعال انگیز",
+  "contentRatingErotica": "ایروٹیکا",
+  "contentRatingPornographic": "فحش",
+  "browseSortRelevance": "متعلقہ",
+  "browseSortPopular": "مقبول",
+  "browseSortTopRated": "سب سے زیادہ ریٹنگ والے",
+  "browseSortNewest": "سب سے نیا",
+  "browseSortMostVoted": "سب سے زیادہ ووٹ والے",
+  "browseSortMostRead": "سب سے زیادہ پڑھے گئے",
+  "browseSortTrending": "ٹرینڈنگ",
+  "browseSortNameAsc": "نام (الف سے ی)",
+  "browseSortNameDesc": "نام (ی سے الف)",
+  "browseSortRecentlyUpdated": "حال ہی میں اپڈیٹ ہوئے",
+  "browseSortRecentlyAdded": "حال ہی میں شامل ہوئے",
+  "browseAnimeTypeSeries": "سیریز",
+  "browseAnimeTypeMovies": "فلمیں",
+  "browseEmptyFilters": "کوئی فلٹر سلیکٹ کریں یا تلاش کریں",
+  "browseBackToBrowse": "براؤز پر واپس جائیں",
+  "browseSortDisabledHint": "ٹیکسٹ سرچ کے دوران ترتیب دستیاب نہیں",
+  "animeStatusAiring": "نشر ہو رہا ہے",
+  "animeStatusFinished": "مکمل",
+  "animeStatusNotYetAired": "ابھی نشر نہیں ہوا",
+  "animeStatusCancelled": "منسوخ",
+  "typeToFilterHint": "فلٹر کریں...",
+  "appBarSearchHint": "تلاش کے لیے لکھنا شروع کریں",
+  "appBarMetaSearchHint": "جینر، مصنف، اسٹوڈیو… کاما = اور، / = یا",
+  "searchModeTooltip": "سرچ موڈ",
+  "searchModeTitle": "ٹائٹل کے ذریعے",
+  "searchModeMeta": "تفصیلات کے ذریعے",
+  "insertLink": "لنک ڈالیں",
+  "linkText": "ٹیکسٹ",
+  "linkHint": "گائیڈ",
+  "urlLabel": "لنک",
+  "urlHint": "https://example.com",
+  "markdownBold": "بولڈ",
+  "markdownItalic": "اٹالک",
+  "insert": "ڈالیں",
+  "navTierLists": "ٹائر لسٹس",
+  "tierListCreate": "نئی ٹائر لسٹ",
+  "tierListCreateFromCollection": "ٹائر لسٹ بنائیں",
+  "tierListNameHint": "ٹائر لسٹ کا نام",
+  "tierListScopeAll": "تمام آئٹمز",
+  "tierListScopeCollection": "مجموعے سے",
+  "tierListFromCollection": "ماخذ مجموعہ: {name}",
+  "@tierListFromCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "tierListRankedCount": "{count} رینک کیے گئے",
+  "@tierListRankedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tierListTitle": "ٹائر لسٹ",
+  "tierListUnranked": "بغیر رینک",
+  "exportAsImage": "تصویر کے طور پر ایکسپورٹ کریں",
+  "tierListImageSaved": "ٹائر لسٹ تصویر کے طور پر محفوظ ہو گئی",
+  "tierListRename": "ٹائر کا نام تبدیل کریں",
+  "tierListChangeColor": "رنگ تبدیل کریں",
+  "tierListMoveUp": "اوپر لے جائیں",
+  "tierListMoveDown": "نیچے لے جائیں",
+  "tierListDeleteTier": "ٹائر ڈیلیٹ کریں",
+  "tierListAddTier": "ٹائر شامل کریں",
+  "tierListClearConfirm": "ٹائرز سے تمام آئٹمز ہٹانے ہیں؟ وہ بغیر رینک میں واپس چلے جائیں گے۔",
+  "tierListDeleteConfirm": "کیا یہ ٹائر لسٹ ڈیلیٹ کرنی ہے؟",
+  "tierListEmpty": "ابھی تک کوئی ٹائر لسٹ نہیں",
+  "tierListEmptyHint": "ٹائر لسٹ بنانے اور اپنے مجموعوں کے آئٹمز\nکو رینک کرنے کے لیے + دبائیں۔",
+  "tierListAllRanked": "تمام آئٹمز رینک ہو گئے!",
+  "tierListErrorEmptyName": "ٹائر لسٹ کا نام درج کریں",
+  "tierListErrorNoCollection": "کوئی مجموعہ سلیکٹ کریں",
+  "collectionPickerFilter": "مجموعے فلٹر کریں...",
+  "collectionPickerAlreadyAdded": "✓ شامل ہو چکا",
+  "collectionPickerAlreadyInCount": "{count, plural, =1{پہلے ہی {count} مجموعے میں موجود} other{پہلے ہی {count} مجموعوں میں موجود}}",
+  "@collectionPickerAlreadyInCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settingsSteamImport": "اسٹیم لائبریری",
+  "settingsSteamImportSubtitle": "گیمز Steam Web API کے ذریعے امپورٹ کریں",
+  "settingsIgdbImport": "لسٹ (IGDB کی)",
+  "settingsIgdbImportSubtitle": "گیمز کی CSV فہرست امپورٹ کریں جو IGDB سے ایکسپورٹ کی گئی ہو",
+  "igdbImportTitle": "گیمز کی IGDB لسٹ امپورٹ کریں",
+  "igdbImportDescription": "وہ CSV لسٹ سلیکٹ کریں جو IGDB سے ایکسپورٹ کی گئی ہو۔ گیمز ان کی IGDB آئی ڈی سے میچ کی جاتی ہیں، اور جو گیم IGDB پر اب موجود نہ ہو وہ خواہش فہرست میں چلی جاتی ہے۔",
+  "igdbImportSelectCsvFile": "سی ایس وی فائل سلیکٹ کریں",
+  "igdbImportSelectCsvExport": "ایکسپورٹ شدہ IGDB سی ایس وی فائل سلیکٹ کریں",
+  "igdbImportStatusLabel": "امپورٹ شدہ گیمز کا اسٹیٹس",
+  "igdbImportPlatformSelect": "پلیٹ فارم سلیکٹ کریں",
+  "importIgdbRequired": "کنکشن (IGDB کا) ضروری ہے۔ پہلے ترتیبات، پھر کریڈنشلز میں API کیز سیٹ کریں۔",
+  "importing": "امپورٹ ہو رہا ہے...",
+  "igdbReasonNotFound": "یہ IGDB پر نہیں ملا",
+  "steamImportTitle": "اسٹیم لائبریری امپورٹ کریں",
+  "importIgdbMatchNote": "گیمز IGDB ڈیٹا بیس سے میچ کی جائیں گی",
+  "steamImportApiKey": "اسٹیم API کی",
+  "steamImportApiKeyHint": "مفت کی steamcommunity.com/dev/apikey سے حاصل کریں",
+  "steamImportSteamId": "اسٹیم آئی ڈی (64 بٹ)",
+  "steamImportSteamIdHint": "اسے steamidfinder.com پر تلاش کریں",
+  "steamImportPublicWarning": "آپ کا اسٹیم پروفائل پبلک ہونا ضروری ہے",
+  "steamImportButton": "لائبریری امپورٹ کریں",
+  "steamImportFetchingLibrary": "اسٹیم لائبریری حاصل کی جا رہی ہے...",
+  "steamImportMatching": "گیمز IGDB میں میچ کی جا رہی ہیں...",
+  "steamImportLookingUp": "تلاش جاری: {name}",
+  "@steamImportLookingUp": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "steamImportImported": "امپورٹ ہوئے: {count}",
+  "@steamImportImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportWishlisted": "خواہش فہرست میں شامل: {count}",
+  "@steamImportWishlisted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importCustomSkipped": "کسٹم کارڈز چھوڑ دیے گئے: {count}",
+  "@importCustomSkipped": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportUpdated": "اپڈیٹ ہوئے: {count}",
+  "@steamImportUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importComplete": "امپورٹ مکمل!",
+  "steamImportGamesImported": "{count} گیمز امپورٹ ہوئیں",
+  "@steamImportGamesImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportWishlistedInIgdb": "{count} خواہش فہرست میں شامل ہوئیں",
+  "@steamImportWishlistedInIgdb": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportUpdatedDuplicates": "{count} اپڈیٹ ہوئیں (موجودہ)",
+  "@steamImportUpdatedDuplicates": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportPlayedStatus": "کھیلی گئی گیمز کو \"جاری ہے\" کے طور پر نشان زد کیا گیا",
+  "steamImportPlaytimeComment": "کھیلنے کا وقت تبصروں میں محفوظ ہے",
+  "openCollection": "مجموعہ کھولیں",
+  "steamImportRememberCredentials": "کریڈنشلز یاد رکھیں",
+  "collectionListSortCreatedDate": "بنانے کی تاریخ",
+  "collectionListSortAlphabeticalAZ": "الف سے ی",
+  "collectionListSortAlphabeticalZA": "ی سے الف",
+  "collectionListViewGrid": "گرڈ ویو",
+  "collectionListViewList": "لسٹ ویو",
+  "collectionListViewTable": "ٹیبل ویو",
+  "collectionTableExternalRating": "بیرونی",
+  "collectionCopyToCollection": "مجموعے میں کاپی کریں",
+  "duplicateAsCustom": "کسٹم آئٹم کے طور پر ڈپلیکیٹ کریں",
+  "coverOverrideChange": "کور تبدیل کریں",
+  "coverOverrideReset": "اصل کور بحال کریں",
+  "coverOverrideSaveFailed": "کور محفوظ نہیں ہو سکا",
+  "coverOverrideSetFromGallery": "اسے کور بنائیں",
+  "coverPickerLoadFailed": "کورز لوڈ نہیں ہو سکے",
+  "coverPickerEmpty": "کوئی کور نہیں ملا",
+  "coverSourceIgdb": "IGDB",
+  "collectionItemCopiedTo": "آئٹم {name} کو {collection} میں کاپی کر دیا گیا",
+  "collectionItemAlreadyInTarget": "آئٹم {name} پہلے سے {collection} میں موجود ہے",
+  "openInCollection": "مجموعے میں کھولیں",
+  "importResultTitle": "امپورٹ کے نتائج",
+  "importResultComplete": "امپورٹ مکمل ہو گئی: {source}",
+  "@importResultComplete": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importResultFailed": "امپورٹ ناکام ہو گئی: {source}",
+  "@importResultFailed": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importResultImported": "امپورٹ ہوئے",
+  "importResultWishlisted": "خواہش فہرست میں شامل",
+  "importResultUpdated": "اپڈیٹ ہوئے",
+  "importResultErrors": "خرابیاں ({count})",
+  "@importResultErrors": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultErrorsCopied": "خرابیاں کاپی ہو گئیں",
+  "importResultSkipped": "{count} چھوڑ دیے گئے",
+  "@importResultSkipped": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultOpenCollection": "مجموعہ کھولیں",
+  "importResultWishlistHint": "جو آئٹمز ڈیٹا بیس میں نہیں ملے انہیں بعد کے لیے آپ کی خواہش فہرست میں محفوظ کر دیا گیا۔",
+  "importResultSourceCollectionFile": "مجموعے کی فائل",
+  "settingsBrowseCollections": "مجموعے براؤز کریں",
+  "settingsBrowseCollectionsSubtitle": "تیار شدہ مجموعے ڈاؤن لوڈ کریں",
+  "browseCollectionsSummary": "{count} مجموعے، {items} آئٹمز",
+  "@browseCollectionsSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "browseCollectionsSearch": "مجموعے تلاش کریں...",
+  "browseCollectionsAllCategories": "تمام کیٹیگریز",
+  "browseCollectionsItems": "{count} آئٹمز",
+  "@browseCollectionsItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "browseCollectionsFormatLight": "ہلکی (API کیز درکار ہیں)",
+  "browseCollectionsFormatFull": "مکمل (آف لائن)",
+  "browseCollectionsDownloading": "ڈاؤن لوڈ ہو رہا ہے...",
+  "browseCollectionsImportSuccess": "مجموعہ امپورٹ ہو گیا: {name}",
+  "@browseCollectionsImportSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "browseCollectionsEmpty": "کوئی مجموعہ نہیں ملا",
+  "browseCollectionsLoadError": "مجموعے لوڈ نہیں ہو سکے",
+  "browseCollectionsImportTarget": "امپورٹ کہاں کریں",
+  "browseCollectionsNewCollection": "نیا مجموعہ",
+  "browseCollectionsExistingCollection": "موجودہ مجموعہ",
+  "noCollectionsYet": "ابھی تک کوئی مجموعہ نہیں",
+  "settingsRaImport": "RetroAchievements",
+  "settingsRaImportSubtitle": "گیمز RetroAchievements سے امپورٹ کریں",
+  "raImportTitle": "گیمز امپورٹ، RetroAchievements سے",
+  "raGetApiKey": "اپنی API کی retroachievements.org/controlpanel.php سے حاصل کریں",
+  "raImportOptionWishlist": "میچ نہ ہونے والی گیمز کو خواہش فہرست میں شامل کریں",
+  "raImportFetchingLibrary": "لائبریری (RA کی) حاصل کی جا رہی ہے...",
+  "raImportSearchingIgdb": "گیمز IGDB پر تلاش کی جا رہی ہیں...",
+  "raImportMatching": "میچ ہو رہی ہے: {title}",
+  "@raImportMatching": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "raImportAdded": "{count} گیمز شامل ہوئیں",
+  "@raImportAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raImportUpdated": "{count} گیمز اپڈیٹ ہوئیں",
+  "@raImportUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raImportToWishlist": "{count} خواہش فہرست میں شامل ہوئیں",
+  "@raImportToWishlist": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raConnectionFailed": "کنکشن ناکام ہو گیا: {error}",
+  "@raConnectionFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "raProfilePoints": "{points} پوائنٹس",
+  "@raProfilePoints": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "raProfileMemberSince": "ممبر بننے کی تاریخ: {date}",
+  "@raProfileMemberSince": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "raRefresh": "اچیومنٹس ریفریش کریں",
+  "raOpenOnRa": "اسے RA پر کھولیں ↗",
+  "raHardcore": "ہارڈ کور",
+  "raCompletion": "تکمیل",
+  "raRecentUnlocks": "حالیہ اَن لاکس",
+  "raUpNext": "اگلے",
+  "raViewAll": "تمام {count} اچیومنٹس دیکھیں ←",
+  "@raViewAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raMastered": "ماسٹرڈ",
+  "raHardcoreMastered": "ہارڈ کور ماسٹرڈ",
+  "raBeaten": "ختم کر دی",
+  "raBeatenSoftcore": "سافٹ کور میں ختم",
+  "raHardcoreBeaten": "ہارڈ کور میں ختم",
+  "raYesterday": "کل",
+  "raDaysAgo": "{days} دن پہلے",
+  "@raDaysAgo": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "raPoints": "پوائنٹس",
+  "raAchievements": "اچیومنٹس",
+  "raMissable": "چھوٹ سکتی ہے",
+  "raFilterEarned": "حاصل کیے گئے",
+  "raFilterLocked": "لاکڈ",
+  "raFilterMissable": "چھوٹ سکنے والے",
+  "raFilterProgression": "پروگریشن",
+  "raFilterWinCondition": "جیتنے کی شرط",
+  "raBeatenProgress": "ختم کرنے کی پیش رفت",
+  "raStatsAchievements": "اچیومنٹس",
+  "raStatsWorth": "مالیت",
+  "raStatsPoints": "پوائنٹس",
+  "raStatsUnlocked": "اَن لاکڈ",
+  "copyAsText": "ٹیکسٹ کے طور پر کاپی کریں…",
+  "copiedToClipboard": "کلپ بورڈ پر کاپی ہوئے آئٹمز: {count}",
+  "@copiedToClipboard": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "template": "ٹیمپلیٹ",
+  "textExportTokens": "ٹوکنز",
+  "textExportSortBy": "ترتیب",
+  "textExportSortCurrent": "موجودہ ترتیب",
+  "textExportSortName": "نام (الف سے ی)",
+  "textExportSortYear": "سال ↓",
+  "textExportSortAdded": "شامل کرنے کی تاریخ ↓",
+  "textExportEmptyTemplate": "ٹیمپلیٹ خالی ہے",
+  "filtersClear": "صاف کریں",
+  "collectionTableColumns": "کالمز",
+  "tableFilterHint": "تمام اصول ایک ساتھ لاگو ہوتے ہیں، یعنی AND کی طرح۔",
+  "tableFilterAddRule": "اصول شامل کریں",
+  "tableFilterCondContains": "شامل ہو",
+  "tableFilterCondEquals": "برابر ہو",
+  "tableFilterCondStartsWith": "سے شروع ہو",
+  "tableFilterCondEndsWith": "پر ختم ہو",
+  "tableFilterCondAtLeast": "کم از کم (≥)",
+  "tableFilterCondAtMost": "زیادہ سے زیادہ (≤)",
+  "profiles": "ایپ پروفائلز",
+  "currentProfile": "موجودہ پروفائل: {name}",
+  "@currentProfile": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "switchProfile": "پروفائل تبدیل کریں",
+  "addProfile": "پروفائل شامل کریں",
+  "createProfile": "پروفائل بنائیں",
+  "editProfile": "پروفائل ایڈیٹ کریں",
+  "deleteProfile": "پروفائل ڈیلیٹ کریں",
+  "deleteProfileConfirm": "کیا پروفائل {name} ڈیلیٹ کرنا ہے؟ اس سے تمام مجموعے، خواہش فہرست اور ترتیبات ڈیلیٹ ہو جائیں گی۔ یہ عمل واپس نہیں ہو سکتا۔",
+  "@deleteProfileConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "cannotDeleteLastProfile": "آخری پروفائل ڈیلیٹ نہیں کیا جا سکتا",
+  "profileName": "نام",
+  "whoIsPlayingToday": "آج کون کھیل رہا ہے؟",
+  "dontAskAgain": "دوبارہ نہ پوچھیں",
+  "profileStats": "{collections} مجموعے، {items} آئٹمز",
+  "@profileStats": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "switchingProfile": "پروفائل تبدیل ہو رہا ہے…",
+  "appWillRestart": "تبدیلیاں لاگو کرنے کے لیے ایپ ری اسٹارٹ ہوگی۔",
+  "profileCreated": "پروفائل بن گیا",
+  "profileDeleted": "پروفائل ڈیلیٹ ہو گیا",
+  "settingsIntegrations": "انٹیگریشنز",
+  "settingsKodiSubtitle": "میڈیا پلیئر Kodi سے واچ سنک",
+  "settingsOn": "آن",
+  "kodiConnectionTitle": "کنکشن",
+  "kodiConnectionSubtitle": "کوڈی کا HTTP JSON-RPC، جو Kodi میں Settings، پھر Services، پھر Control میں ملتا ہے",
+  "kodiHost": "ہوسٹ",
+  "kodiPort": "پورٹ",
+  "kodiPassword": "پاس ورڈ",
+  "kodiPasswordHint": "پاس ورڈ درج کریں",
+  "kodiTestConnection": "کنکشن ٹیسٹ کریں",
+  "kodiConnecting": "کنیکٹ ہو رہا ہے…",
+  "kodiPingFailed": "پنگ ناکام ہو گیا، غیر متوقع جواب",
+  "kodiConnectedTo": "کوڈی ورژن {version} \"{name}\" سے کنیکٹ ہو گیا",
+  "@kodiConnectedTo": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "kodiSyncTitle": "سنک",
+  "kodiTargetCollectionSubtitle": "کوڈی کی تمام فلمیں یہاں سنک ہوتی ہیں",
+  "kodiTargetNotSelected": "سلیکٹ نہیں کیا گیا",
+  "kodiTargetDeletedLabel": "ڈیلیٹ شدہ (#{id})",
+  "@kodiTargetDeletedLabel": {
+    "placeholders": {
+      "id": {"type": "int"}
+    }
+  },
+  "kodiEnableSync": "کوڈی سنک آن کریں",
+  "kodiEnableSyncActiveSubtitle": "ایپ چلنے کے دوران ایکٹو رہتا ہے",
+  "kodiEnableSyncDisabledSubtitle": "پہلے ہدف مجموعہ سلیکٹ کریں",
+  "kodiSyncInterval": "سنک کا وقفہ",
+  "kodiCreateSubCollections": "کوڈی سیٹس سے ذیلی مجموعے بنائیں",
+  "kodiCreateSubCollectionsSubtitle": "مثلاً: \"Harry Potter Collection (kodi)\"",
+  "kodiImportRatings": "کوڈی سے ریٹنگز امپورٹ کریں",
+  "kodiImportRatingsSubtitle": "کوڈی کی userrating (1 سے 10) کاپی کریں",
+  "kodiCollectionLibraryName": "کوڈی لائبریری",
+  "kodiCollectionCreated": "مجموعہ \"{name}\" بن گیا",
+  "@kodiCollectionCreated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "kodiTargetDeletedSnack": "ہدف مجموعہ ڈیلیٹ ہو گیا، سنک رک گیا",
+  "kodiSyncStatus": "سنک کی حالت",
+  "kodiSyncRunning": "چل رہا ہے",
+  "kodiSyncStopped": "رکا ہوا",
+  "kodiLastSyncNever": "کبھی نہیں",
+  "kodiClearLastSync": "آخری سنک کا ٹائم اسٹیمپ صاف کریں",
+  "kodiClearLastSyncSubtitle": "اگلا سنک تمام دیکھے گئے آئٹمز حاصل کرے گا",
+  "kodiLastSyncCleared": "آخری سنک کا ٹائم اسٹیمپ صاف ہو گیا",
+  "kodiRequestLog": "ریکویسٹ لاگ ({count})",
+  "@kodiRequestLog": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "kodiCopyLog": "لاگ کاپی کریں",
+  "kodiLogCopied": "لاگ کاپی ہو گیا",
+  "kodiClearLog": "لاگ صاف کریں",
+  "kodiNoRequests": "ابھی تک کوئی ریکویسٹ نہیں",
+  "kodiRawJsonRpc": "خام JSON-RPC ریکویسٹ",
+  "kodiMethod": "میتھڈ",
+  "kodiParams": "پیرامیٹرز (JSON میں)",
+  "kodiSend": "بھیجیں",
+  "kodiCopyToClipboard": "کلپ بورڈ پر کاپی کریں",
+  "kodiCopiedToClipboard": "کلپ بورڈ پر کاپی ہو گیا",
+  "kodiParamsNotObject": "خرابی: پیرامیٹرز JSON آبجیکٹ ہونے چاہییں",
+  "kodiJsonParseError": "پارس کرنے میں JSON کی خرابی: {message}",
+  "@kodiJsonParseError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "kodiRawError": "خرابی: {message}",
+  "@kodiRawError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "settingsMalImport": "MyAnimeList",
+  "settingsMalImportSubtitle": "اینیمے/مانگا لسٹس XML ایکسپورٹ سے امپورٹ کریں",
+  "malImportTitle": "ڈیٹا MyAnimeList سے امپورٹ",
+  "malImportSubtitle": "اینیمے اور مانگا AniList سے میچ کیے جائیں گے",
+  "malImportPickFiles": "فائل (XML) شامل کریں",
+  "malImportFilesHint": "اپنی XML فائل myanimelist.net/panel.php?go=export سے ایکسپورٹ کریں",
+  "importAnimeList": "اینیمے لسٹ",
+  "importMangaList": "مانگا لسٹ",
+  "malImportEntriesCount": "{count, plural, =1{1 اندراج} other{{count} اندراجات}}",
+  "@malImportEntriesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "malImportReadingFiles": "فائلیں پڑھی جا رہی ہیں...",
+  "malImportResolvingAnime": "اینیمے AniList پر تلاش کیے جا رہے ہیں",
+  "malImportResolvingManga": "مانگا AniList پر تلاش کیا جا رہا ہے",
+  "malImportWishlisted": "{count} خواہش فہرست میں",
+  "@malImportWishlisted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "malImportOverwriteExisting": "موجودہ اندراجات اوور رائٹ کریں",
+  "malImportOverwriteExistingHint": "بند ہونے پر، جو آئٹمز مجموعے میں پہلے سے ہیں ان کا آپ کا مقامی اسٹیٹس، ریٹنگ، پیش رفت، تاریخیں اور نوٹس برقرار رہتے ہیں۔ نئے آئٹمز پھر بھی امپورٹ ہوتے ہیں۔",
+  "malImportFailedLookup": "{count} چھوڑ دیے گئے، AniList تک رسائی نہیں ہوئی",
+  "@malImportFailedLookup": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "malImportRateLimitWait": "ریٹ لمٹ (AniList کی) پوری ہو گئی، {seconds} سیکنڈ میں دوبارہ کوشش ہوگی (کوشش {attempt}/{max})",
+  "@malImportRateLimitWait": {
+    "placeholders": {
+      "seconds": {"type": "int"},
+      "attempt": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "malImportInvalidFile": "فائل XML پارس نہیں ہو سکی: {error}",
+  "@malImportInvalidFile": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "malImportFilePicked": "سلیکٹ ہوا: {kind} ({count, plural, =1{1 اندراج} other{{count} اندراجات}})",
+  "@malImportFilePicked": {
+    "placeholders": {
+      "kind": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "settingsAniListImport": "AniList",
+  "settingsAniListImportSubtitle": "پبلک یوزر نیم سے اینیمے/مانگا لسٹس امپورٹ کریں",
+  "settingsHardcoverImportSubtitle": "یوزر نیم کے ذریعے hardcover.app سے کتابوں کی لائبریری امپورٹ کریں",
+  "hardcoverImportTitle": "ڈیٹا Hardcover سے امپورٹ",
+  "hardcoverImportSubtitle": "کسی صارف کی لائبریری hardcover.app سے حاصل کرتا ہے، دوسرے صارفین کا صرف پبلک حصہ اور آپ کے اپنے اکاؤنٹ کا سب کچھ",
+  "hardcoverImportTokenMissing": "ابھی تک Hardcover API ٹوکن سیٹ نہیں ہے۔ اسے ترتیبات، پھر API کریڈنشلز میں شامل کریں۔",
+  "aniListImportTitle": "ڈیٹا AniList سے امپورٹ",
+  "aniListImportSubtitle": "پبلک لسٹس anilist.co سے حاصل کرتا ہے، لاگ اِن کی ضرورت نہیں",
+  "aniListImportUsername": "صارف نام (AniList کا)",
+  "aniListImportInclude": "کیا امپورٹ کرنا ہے",
+  "aniListImportModeOverwriteSubtitle": "پیش رفت، اسٹیٹس اور تاریخیں AniList سے اپڈیٹ کریں",
+  "aniListImportNewCollectionDefault": "امپورٹ از AniList، صارف {username}",
+  "@aniListImportNewCollectionDefault": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportFetchingAnime": "اینیمے لسٹ حاصل کی جا رہی ہے...",
+  "aniListImportFetchingManga": "مانگا لسٹ حاصل کی جا رہی ہے...",
+  "aniListImportUserNotFound": "صارف \"{username}\" AniList پر نہیں ملا",
+  "@aniListImportUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportPrivateProfile": "پروفائل \"{username}\" AniList پر پرائیویٹ ہے",
+  "@aniListImportPrivateProfile": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportEmptyUsername": "اپنا AniList صارف نام درج کریں",
+  "aniListImportSelectAtLeastOne": "امپورٹ کرنے کے لیے اینیمے یا مانگا سلیکٹ کریں",
+  "settingsCustomCardsImport": "کسٹم کارڈز",
+  "settingsCustomCardsImportSubtitle": "کارڈز JSON یا CSV فائل سے امپورٹ کریں",
+  "customImportTitle": "کسٹم کارڈز امپورٹ کریں",
+  "customImportDescription": "اپنے اسکرپٹ یا پارسر سے بنی JSON یا CSV فائل لوڈ کریں۔ ہر قطار ایک کسٹم کارڈ بن جاتی ہے، یا اصل کارڈ جب ماخذ میں تلاش آن ہو۔ تمام سپورٹڈ فیلڈز اور ویلیوز دیکھنے کے لیے ٹیمپلیٹ ڈاؤن لوڈ کریں۔",
+  "customImportSelectFile": "فائل (JSON/CSV) سلیکٹ کریں",
+  "customImportCsvTemplate": "ٹیمپلیٹ، CSV کے لیے",
+  "customImportJsonTemplate": "ٹیمپلیٹ، JSON کے لیے",
+  "customImportTemplateSaved": "ٹیمپلیٹ محفوظ ہو گیا",
+  "customImportPreviewButton": "پریویو اور امپورٹ",
+  "customImportPreviewTitle": "امپورٹ پریویو",
+  "customImportSummary": "پہچانے گئے {valid} · خرابیاں {errors} · ڈپلیکیٹس {duplicates}",
+  "@customImportSummary": {
+    "placeholders": {
+      "valid": {"type": "int"},
+      "errors": {"type": "int"},
+      "duplicates": {"type": "int"}
+    }
+  },
+  "customImportSelectNone": "سب ڈی سلیکٹ کریں",
+  "customImportSelectedCount": "{total} میں سے {selected} سلیکٹ ہوئے",
+  "@customImportSelectedCount": {
+    "placeholders": {
+      "selected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "customImportDuplicate": "ڈپلیکیٹ، مجموعے میں پہلے سے موجود",
+  "customImportRowLabel": "قطار {index}",
+  "@customImportRowLabel": {
+    "placeholders": {
+      "index": {"type": "int"}
+    }
+  },
+  "customImportStart": "سلیکٹ شدہ امپورٹ کریں",
+  "customImportImporting": "کسٹم کارڈز امپورٹ ہو رہے ہیں...",
+  "customImportErrorEmptyFile": "فائل خالی ہے",
+  "customImportErrorInvalidJson": "خراب JSON، فائل پارس نہیں ہو سکی",
+  "customImportErrorMissingColumns": "لازمی ہے کہ CSV میں \"title\" اور \"type\" کالمز ہوں",
+  "customImportIssueNotAnObject": "یہ JSON آبجیکٹ نہیں ہے",
+  "customImportIssueMissingTitle": "\"title\" موجود نہیں",
+  "customImportIssueMissingType": "\"type\" موجود نہیں",
+  "customImportIssueUnknownType": "نامعلوم قسم: {value}",
+  "@customImportIssueUnknownType": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidNumber": "فیلڈ \"{field}\" میں غلط ویلیو: {value}",
+  "@customImportIssueInvalidNumber": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownStatus": "نامعلوم اسٹیٹس: {value}",
+  "@customImportIssueUnknownStatus": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueUnknownFormat": "نامعلوم فارمیٹ: {value}",
+  "@customImportIssueUnknownFormat": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueFormatNotApplicable": "فیلڈ \"format\" صرف مانگا اور اینیمے کے لیے ہے",
+  "customImportIssueInvalidCover": "فیلڈ \"cover\" ایک http(s) لنک ہونا چاہیے",
+  "customImportIssueInvalidDate": "فیلڈ \"{field}\" میں غلط تاریخ: {value} (YYYY-MM-DD فارمیٹ متوقع ہے)",
+  "@customImportIssueInvalidDate": {
+    "placeholders": {
+      "field": {"type": "String"},
+      "value": {"type": "String"}
+    }
+  },
+  "customImportIssueInvalidBool": "فیلڈ \"favorite\" true/false ہونا چاہیے: {value}",
+  "@customImportIssueInvalidBool": {
+    "placeholders": {
+      "value": {"type": "String"}
+    }
+  },
+  "moodGridCreate": "موڈ گرڈ بنائیں",
+  "moodGridCreateTitle": "نیا موڈ گرڈ",
+  "moodGridPresetAboutMe": "میرا تعارف، Tonkatsu Box میں",
+  "moodGridPresetAboutMeSubtitle": "1×5، پسندیدہ گیم، فلم، ٹی وی شو، اینیمے، مانگا",
+  "moodGridPresetBlank": "خالی",
+  "moodGridPresetBlankSubtitle": "آپ کے منتخب کردہ سائز کا خالی گرڈ",
+  "moodGridRows": "قطاریں",
+  "moodGridBadge": "موڈ گرڈ",
+  "moodGridDeleteTitle": "یہ گرڈ ڈیلیٹ کرنا ہے؟",
+  "moodGridDeleteMessage": "گرڈ ہٹا دیا جائے گا۔ یہ عمل واپس نہیں ہو سکتا۔",
+  "moodGridAddRow": "قطار شامل کریں",
+  "moodGridRemoveRow": "قطار ہٹائیں",
+  "moodGridAddCol": "کالم شامل کریں",
+  "moodGridRemoveCol": "کالم ہٹائیں",
+  "moodGridShrinkTitle": "گرڈ چھوٹا کرنا ہے؟",
+  "moodGridShrinkMessage": "نئی حدود سے باہر کے خانے ڈیلیٹ ہو جائیں گے۔",
+  "moodGridShrinkConfirm": "چھوٹا کریں",
+  "moodGridEditLabel": "لیبل ایڈیٹ کریں",
+  "moodGridLabelHint": "کیٹیگری کا نام",
+  "moodGridPickItem": "آئٹم سلیکٹ کریں",
+  "moodGridReplaceItem": "آئٹم تبدیل کریں",
+  "moodGridClearItem": "آئٹم ہٹائیں",
+  "moodGridCaptionTemplate": "قطار کے کیپشنز",
+  "moodGridCaptionTemplateHint": "ہر خانے پر ٹیمپلیٹ لاگو ہوتا ہے۔ name, year, genre, rating ٹوکنز دستیاب ہیں۔",
+  "moodGridCellLabelTemplate": "خانوں کے لیبلز",
+  "moodGridCellSize": "سائز",
+  "collection": "مجموعہ",
+  "moodGridPickerAllCollections": "تمام مجموعے",
+  "moodGridPickerSearchHint": "نام سے تلاش کریں",
+  "moodGridPickerEmpty": "سلیکٹ کرنے کے لیے کچھ نہیں",
+  "screenScraperSection": "ScreenScraper API",
+  "screenScraperSourceDesc": "گیم میٹا ڈیٹا اور میڈیا (کورز، اسکرین شاٹس، آرٹ)",
+  "screenScraperDevCredsHint": "ڈیولپر کریڈنشلز (devid / devpassword)۔ سرور ہر ریکویسٹ ان سے سائن کرتا ہے، ان کے بغیر ScreenScraper انکار کر دیتا ہے۔",
+  "screenScraperDevIdLabel": "devid",
+  "screenScraperDevIdPlaceholder": "ڈیولپر آئی ڈی (ScreenScraper کی)",
+  "screenScraperDevPasswordLabel": "devpassword",
+  "screenScraperDevPasswordPlaceholder": "ڈیولپر پاس ورڈ (ScreenScraper کا)",
+  "screenScraperUserCredsHint": "یوزر کریڈنشلز (ssid / sspassword)۔ کوٹا ہر صارف کا الگ ہے۔",
+  "screenScraperSsidLabel": "ssid",
+  "screenScraperSsidPlaceholder": "آپ کا ScreenScraper لاگ اِن",
+  "screenScraperSspasswordLabel": "sspassword",
+  "screenScraperSspasswordPlaceholder": "آپ کا ScreenScraper پاس ورڈ",
+  "screenScraperCheckQuota": "کوٹا چیک کریں",
+  "screenScraperRequestsToday": "آج کی ریکویسٹس",
+  "screenScraperPerMinLimit": "فی منٹ حد",
+  "screenScraperParallelThreads": "متوازی تھریڈز",
+  "screenScraperAccountLevel": "اکاؤنٹ لیول",
+  "screenScraperGalleryTitle": "میڈیا (ScreenScraper سے)",
+  "screenScraperScreenshotsTitle": "اسکرین شاٹس",
+  "screenScraperLoading": "میڈیا لوڈ ہو رہا ہے (ScreenScraper سے)…",
+  "screenScraperError": "خرابی (ScreenScraper کی): {message}",
+  "@screenScraperError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "screenScraperMediaBox": "باکس",
+  "screenScraperMediaBoxBack": "باکس (پچھلا حصہ)",
+  "screenScraperMediaBox3D": "تھری ڈی باکس",
+  "screenScraperMediaWheel": "ویل",
+  "screenScraperMediaMarquee": "مارکی",
+  "screenScraperMediaTitle": "ٹائٹل",
+  "screenScraperMediaScreenshot": "اسکرین شاٹ",
+  "screenScraperMediaFanart": "فین آرٹ",
+  "screenScraperMediaMix": "مکس",
+  "genreCloudTitle": "جینر کلاؤڈ",
+  "showcaseTitle": "شو کیس",
+  "showcaseHint": "اس وقت کیا ریلیز ہے اور لوگ کیا دیکھ رہے ہیں",
+  "showcaseGroupAiring": "ابھی ریلیز",
+  "showcaseGroupPopular": "مقبول",
+  "showcaseAnimeThisSeason": "اس سیزن کے اینیمے",
+  "showcaseAnimeNextSeason": "اگلے سیزن کے اینیمے",
+  "showcaseNowPlaying": "اب سنیما میں",
+  "showcaseUpcomingMovies": "جلد سنیما میں آ رہی ہیں",
+  "showcaseTvEpisodesThisWeek": "اس ہفتے کی نئی اقساط",
+  "showcaseUpcomingGames": "آنے والی گیمز کی ریلیزز",
+  "showcaseTrendingMovies": "ٹرینڈنگ فلمیں",
+  "showcaseTrendingTvShows": "ٹرینڈنگ ٹی وی شوز",
+  "showcasePopularAnime": "مقبول اینیمے",
+  "showcaseSettingsTitle": "شو کیس اپنی مرضی کا بنائیں",
+  "showcaseSettingsHint": "سلیکٹ کریں کون سی قطاریں دکھانی ہیں",
+  "showcaseResetDefault": "ڈیفالٹ پر واپس جائیں",
+  "showcaseAlreadyInCollection": "مجموعے میں پہلے سے موجود",
+  "showcaseShowWithBadge": "بیج کے ساتھ دکھائیں",
+  "showcaseHideCompletely": "مکمل طور پر چھپائیں",
+  "showcaseRowError": "یہ قطار لوڈ نہیں ہو سکی",
+  "showcaseRetryIn": "ریٹ لمٹ پوری ہو گئی، {seconds} سیکنڈ بعد دوبارہ کوشش کریں",
+  "@showcaseRetryIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "showcaseAllRowsHidden": "تمام قطاریں چھپی ہوئی ہیں۔ شو کیس کی ترتیبات میں کچھ کو آن کریں۔",
+  "showcaseEpisodeShort": "قسط {number}",
+  "@showcaseEpisodeShort": {
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "showcaseSeasonEpisodeShort": "S{season}E{episode}",
+  "@showcaseSeasonEpisodeShort": {
+    "placeholders": {
+      "season": {"type": "int"},
+      "episode": {"type": "int"}
+    }
+  },
+  "showcaseCountdownIn": "{countdown} میں",
+  "@showcaseCountdownIn": {
+    "placeholders": {
+      "countdown": {"type": "String"}
+    }
+  },
+  "showcaseCountdownDaysHours": "{days} دن {hours} گھنٹے",
+  "@showcaseCountdownDaysHours": {
+    "placeholders": {
+      "days": {"type": "int"},
+      "hours": {"type": "int"}
+    }
+  },
+  "showcaseCountdownHoursMinutes": "{hours} گھنٹے {minutes} منٹ",
+  "@showcaseCountdownHoursMinutes": {
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"}
+    }
+  },
+  "showcaseCountdownMinutes": "{minutes} منٹ",
+  "@showcaseCountdownMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "showcaseCountdownDays": "{days} دن",
+  "@showcaseCountdownDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "showcaseOutNow": "ابھی ریلیز",
+  "showcasePremiere": "پریمیئر",
+  "showcaseRelease": "ریلیز",
+  "showcaseEpisodesCount": "{count} قسط",
+  "@showcaseEpisodesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "showcaseViewList": "لسٹ",
+  "showcaseViewByDay": "تاریخ کے مطابق",
+  "showcaseViewByWeekday": "ہفتے کے دن کے مطابق",
+  "showcaseViewByWeek": "ہفتے کے مطابق",
+  "showcaseDateTba": "تاریخ طے ہونا باقی",
+  "showcaseShowAll": "سب دکھائیں ({count})",
+  "@showcaseShowAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalizationTitle": "پرسنلائزیشن",
+  "personalizationStatsHint": "اعداد میں آپ کی لائبریری",
+  "personalizationRecommendationsHint": "جو آپ نے مکمل اور ریٹ کیا اس کی بنیاد پر",
+  "likesTitle": "لائکس، نوٹس اور ری پلے",
+  "personalizationLikesHint": "آپ کی نشان زد اقساط اور ابواب، اور وہ ٹائٹلز جو آپ نے دوبارہ دیکھے",
+  "likesEmptyTitle": "ابھی تک کچھ نشان زد نہیں",
+  "likesEmptyBody": "کسی ٹائٹل کے ٹریکر میں کسی قسط کو لائک کریں یا نوٹ لکھیں، وہ یہاں نظر آئے گا۔",
+  "likesNoMatches": "فلٹر سے کچھ میل نہیں کھاتا",
+  "likesTrackWithDisc": "ٹریک {track} · ڈسک {disc}",
+  "@likesTrackWithDisc": {"placeholders": {"track": {"type": "int"}, "disc": {"type": "int"}}},
+  "likesMarkCount": "{count, plural, =1{1 نشان} other{{count} نشانات}}",
+  "@likesMarkCount": {"placeholders": {"count": {"type": "int"}}},
+  "likesSectionRewatch": "ری پلے",
+  "likesSectionMarks": "لائکس اور نوٹس",
+  "likesRewatchFilter": "ری پلے کے ساتھ",
+  "likesRewatchTimes": "{count, plural, =1{1 ری پلے} other{{count} ری پلے}}",
+  "@likesRewatchTimes": {"placeholders": {"count": {"type": "int"}}},
+  "genreCloudEmpty": "ابھی تک کوئی جینر نہیں",
+  "genreCloudEmptyHint": "کلاؤڈ بنانے کے لیے جینرز والے آئٹمز شامل کریں",
+  "genreCloudExportImage": "تصویر کے طور پر محفوظ کریں",
+  "genreCloudExportFailed": "تصویر محفوظ نہیں ہو سکی",
+  "genreCloudResetView": "ویو ری سیٹ کریں",
+  "genreCloudHidden": "{count, plural, =1{1 چھپا ہوا (جگہ نہیں تھی)} other{{count} چھپے ہوئے (جگہ نہیں تھی)}}",
+  "@genreCloudHidden": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "facetPlatform": "پلیٹ فارمز",
+  "facetDecade": "دہائیاں",
+  "recommendationsEmpty": "ابھی تک کوئی تجویز نہیں",
+  "recommendationsEmptyHint": "ذاتی تجاویز کے لیے کچھ فلمیں یا شوز مکمل کریں اور ریٹ کریں",
+  "recommendationsNoCandidates": "تجویز کرنے کے لیے کچھ نیا نہیں",
+  "recommendationsNoCandidatesHint": "ابھی ہمیں تجویز کرنے کے لیے کچھ نیا نہیں ملا۔ بعد میں دوبارہ کوشش کریں",
+  "recommendationsNoApiKey": "ضروری ہے: TMDB API کی",
+  "recommendationsNoApiKeyHint": "تجاویز حاصل کرنے کے لیے ترتیبات میں اپنی TMDB API کی شامل کریں",
+  "recommendationsBecauseLabel": "کیونکہ آپ کو پسند آیا",
+  "recommendationsCount": "{count, plural, =1{1 تجویز} other{{count} تجاویز}}",
+  "@recommendationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "itemMarkLike": "لائک",
+  "itemMarkNote": "نوٹ",
+  "seasonRate": "سیزن کو ریٹ کریں",
+  "seasonRatingLabel": "سیزن کی ریٹنگ",
+  "itemMarkNoteHint": "نوٹ لکھیں…",
+  "itemMarkSectionTitle": "نوٹس اور لائکس",
+  "itemMarkAdd": "نشان شامل کریں",
+  "itemMarkEmpty": "ابھی تک کوئی نشان نہیں",
+  "itemMarkNumber": "نمبر",
+  "itemMarkNumberHint": "مثلاً: 12",
+  "itemMarkNumberHelper": "محفوظ کرنے کے لیے ضروری",
+  "itemMarkCustomType": "کسٹم قسم",
+  "itemMarkFilterLiked": "لائک کیے گئے",
+  "itemMarkFilterCommented": "نوٹس کے ساتھ",
+  "itemMarkUnitLabel": "{type} {number}",
+  "@itemMarkUnitLabel": {
+    "placeholders": {
+      "type": {"type": "String"},
+      "number": {"type": "int"}
+    }
+  },
+  "itemMarkEpisodeShort": "S{season}·E{episode}",
+  "@itemMarkEpisodeShort": {
+    "placeholders": {
+      "season": {"type": "int"},
+      "episode": {"type": "int"}
+    }
+  },
+  "unitEpisode": "قسط",
+  "unitSeason": "سیزن",
+  "unitChapter": "باب",
+  "unitVolume": "جلد",
+  "unitPage": "صفحہ",
+  "unitPart": "حصہ",
+  "unitTrack": "ٹریک",
+  "unitIssue": "شمارہ",
+  "progressStoppedAt": "یہاں رکے",
+  "cardLinkCopy": "کارڈ کا لنک کاپی کریں",
+  "cardLinkCopied": "کارڈ کا لنک کاپی ہو گیا",
+  "cardLinkNotFound": "کارڈ نہیں ملا",
+  "cardLinkSearchTitle": "کارڈ لنک کریں",
+  "cardLinkSearchHint": "کارڈز تلاش کریں",
+  "shortcutsDialogTitle": "کی بورڈ شارٹ کٹس",
+  "shortcutsGroupNavigation": "نیویگیشن",
+  "shortcutSwitchTab": "ٹیب تبدیل کریں",
+  "shortcutNextTab": "اگلا ٹیب",
+  "shortcutPreviousTab": "پچھلا ٹیب",
+  "shortcutThisHelp": "یہ مدد",
+  "shortcutZoomIn": "زوم ان",
+  "shortcutZoomOut": "زوم آؤٹ",
+  "shortcutZoomReset": "زوم ری سیٹ کریں",
+  "shortcutCreateCollection": "مجموعہ بنائیں",
+  "shortcutImportCollection": "مجموعہ امپورٹ کریں",
+  "shortcutToggleView": "ویو تبدیل کریں",
+  "shortcutDeleteCollection": "مجموعہ ڈیلیٹ کریں",
+  "shortcutRenameCollection": "مجموعے کا نام تبدیل کریں",
+  "shortcutAddItems": "آئٹمز شامل کریں",
+  "shortcutExportCollection": "مجموعہ ایکسپورٹ کریں",
+  "shortcutImportIntoCollection": "مجموعے میں امپورٹ کریں",
+  "shortcutToggleBoard": "بورڈ/کینوس تبدیل کریں",
+  "shortcutDeleteItem": "آئٹم ڈیلیٹ کریں",
+  "shortcutMoveItem": "آئٹم منتقل کریں",
+  "shortcutsGroupItemDetail": "آئٹم کی تفصیل",
+  "shortcutLockCanvas": "کینوس لاک/ان لاک کریں",
+  "shortcutMoveToCollection": "مجموعے میں منتقل کریں",
+  "shortcutSetRating": "ریٹنگ سیٹ کریں",
+  "shortcutResetRating": "ریٹنگ ری سیٹ کریں",
+  "shortcutsGroupTierLists": "ٹائر لسٹس",
+  "shortcutCreateTierList": "ٹائر لسٹ بنائیں",
+  "shortcutOpenTierList": "ٹائر لسٹ کھولیں",
+  "shortcutDeleteTierList": "ٹائر لسٹ ڈیلیٹ کریں",
+  "shortcutsGroupTierList": "ٹائر لسٹ",
+  "shortcutAddItem": "آئٹم شامل کریں",
+  "shortcutToggleCompleted": "مکمل شدہ دکھائیں/چھپائیں",
+  "shortcutClearCompleted": "مکمل شدہ صاف کریں",
+  "shortcutFocusSearchField": "سرچ فیلڈ پر فوکس کریں",
+  "debugKeyEvents": "بٹن کی ایونٹس",
+  "settingsGamepadDebugSubtitle": "کنٹرولر کے بٹن کوڈز کیپچر کریں",
+  "statsTabTitle": "اعداد و شمار",
+  "statsPeriodAllTime": "ہمیشہ",
+  "statsLede": "آپ کے مجموعے میں کل {items} آئٹمز",
+  "@statsLede": {"placeholders": {"items": {"type": "String"}}},
+  "statsMetricMoviesWatched": "فلمیں دیکھی گئیں",
+  "statsMetricMangaChapters": "مانگا کے ابواب",
+  "statsMetricBookPages": "کتابوں کے صفحات",
+  "statsMetricTracks": "سنے گئے ٹریکس",
+  "statsMetricEpisodes": "اقساط",
+  "statsMetricHours": "دیکھنے اور کھیلنے کے گھنٹے",
+  "statsMetricAvgRating": "اوسط ریٹنگ",
+  "statsMetricReplays": "ری پلے",
+  "statsMetricLikedUnits": "لائک کی گئی اقساط",
+  "statsHoursBreakdown": "گھنٹے: دستی {manual} · ٹریکرز {tracker} · اندازہ {estimated}",
+  "@statsHoursBreakdown": {"placeholders": {"manual": {"type": "String"}, "tracker": {"type": "String"}, "estimated": {"type": "String"}}},
+  "statsMonthsTitle": "آپ کا سال، مہینہ بہ مہینہ",
+  "statsMonthsTitleAllTime": "یہ سال، مہینہ بہ مہینہ",
+  "statsMonthsHint": "کور: مہینے کا سب سے زیادہ ریٹنگ والا ٹائٹل",
+  "statsPeakLabel": "پیک",
+  "statsMonthCounts": "{items} شامل · {episodes} اقساط",
+  "@statsMonthCounts": {"placeholders": {"items": {"type": "int"}, "episodes": {"type": "int"}}},
+  "statsVersusTitle": "بہترین اور بدترین",
+  "statsVersusHint": "آپ کی اپنی ریٹنگز کے مطابق",
+  "statsBest": "بہترین",
+  "statsWorst": "بدترین",
+  "statsPlatformsSummary": "{hours} · {games} گیمز",
+  "@statsPlatformsSummary": {"placeholders": {"hours": {"type": "String"}, "games": {"type": "int"}}},
+  "statsPlatformNone": "کوئی پلیٹ فارم نہیں",
+  "statsPlatformsShowAll": "سب دکھائیں ({count})",
+  "@statsPlatformsShowAll": {"placeholders": {"count": {"type": "int"}}},
+  "statsPlatformsCollapse": "سمیٹیں",
+  "statsHoursUnit": "گھنٹے",
+  "statsTypesTitle": "قسم کے مطابق لائبریری",
+  "statsTypesHint": "ہر میڈیا ٹائپ کے لیے لائیو اسٹیٹس کی تقسیم",
+  "statsCompletedPercent": "{percent}% مکمل",
+  "@statsCompletedPercent": {"placeholders": {"percent": {"type": "int"}}},
+  "statsPlatformMostPlayed": "سب سے زیادہ کھیلا گیا",
+  "statsFormatsHint": "فارمیٹ ماخذ کے ڈیٹا سے آتا ہے",
+  "statsSubgenresTitle": "ذیلی جینرز اور ٹیگز",
+  "statsSubgenresHint": "ماخذ کے ٹیگز ہر قسم کے لحاظ سے دکھائے جاتے ہیں",
+  "statsCrowdTitle": "میں بمقابلہ لوگ",
+  "statsCrowdHint": "جہاں میری ریٹنگ ماخذ سے سب سے زیادہ مختلف ہے",
+  "statsCrowdHigher": "میری ریٹنگ زیادہ ہے",
+  "statsCrowdLower": "میری ریٹنگ کم ہے",
+  "statsCrowdMyRating": "میری ریٹنگ",
+  "statsCrowdSource": "ماخذ",
+  "statsTopTitle": "سب سے زیادہ ریٹنگ والے",
+  "statsTopHint": "سب سے زیادہ ریٹنگ والے {count}",
+  "@statsTopHint": {"placeholders": {"count": {"type": "int"}}},
+  "statsEmptyTitle": "ابھی تک کوئی اعداد و شمار نہیں",
+  "statsEmptyBody": "اپنی لائبریری میں آئٹمز شامل کریں، وہ یہاں اعداد کی صورت میں نظر آئیں گے۔",
+  "statsExportTitle": "شیئر کارڈ ایکسپورٹ کریں",
+  "statsExportFailed": "تصویر محفوظ نہیں ہو سکی",
+  "statsShareTitleYear": "میرا {year}",
+  "@statsShareTitleYear": {"placeholders": {"year": {"type": "int"}}},
+  "statsShareTitleAllTime": "میری لائبریری",
+  "statsShareLede": "{items} آئٹمز · {completed} مکمل · اوسط {rating}",
+  "@statsShareLede": {"placeholders": {"items": {"type": "String"}, "completed": {"type": "String"}, "rating": {"type": "String"}}},
+  "statsShareBest": "{title} · {rating}، اس مدت کا بہترین",
+  "@statsShareBest": {"placeholders": {"title": {"type": "String"}, "rating": {"type": "String"}}},
+  "simklImportTitle": "ڈیٹا Simkl سے امپورٹ",
+  "settingsSimklImportSubtitle": "آپ کے Simkl اکاؤنٹ سے فلمیں، ٹی وی شوز اور اینیمے",
+  "simklImportSubtitle": "اپنا Simkl اکاؤنٹ ایک مختصر کوڈ سے کنیکٹ کریں، فلمیں، ٹی وی شوز اور اینیمے ایک ہی امپورٹ میں آ جاتے ہیں، ساتھ میں اقساط کی واچ ہسٹری بھی",
+  "simklClientIdLabel": "ایپ کی، یعنی client_id، Simkl کی",
+  "simklGetClientId": "اپنی client_id simkl.com سے حاصل کریں",
+  "simklRememberClientId": "ایپ کی یاد رکھیں",
+  "simklGetPin": "کوڈ حاصل کریں",
+  "simklGetNewPin": "نیا کوڈ حاصل کریں",
+  "simklPinPrompt": "یہ کوڈ simkl.com/pin پر درج کریں:",
+  "simklPinCopied": "کوڈ کاپی ہو گیا",
+  "simklOpenPinPage": "صفحہ simkl.com/pin کھولیں",
+  "simklWaitingConfirmation": "تصدیق کا انتظار ہے…",
+  "simklPinExpired": "کوڈ کی میعاد ختم ہو گئی ہے۔",
+  "simklConnectedAs": "کنیکٹ شدہ اکاؤنٹ: {name}",
+  "@simklConnectedAs": {"placeholders": {"name": {"type": "String"}}},
+  "simklCheckingAccount": "اکاؤنٹ چیک ہو رہا ہے…",
+  "simklRememberToken": "اس ڈیوائس پر کنیکٹ رہیں",
+  "simklRememberTokenSubtitle": "ایکسیس ٹوکن ترتیبات میں محفوظ ہوتا ہے، اسے ان چیک کریں تو اگلی بار کوڈ مانگا جائے گا",
+  "simklDisconnect": "ڈس کنیکٹ کریں",
+  "simklImportFetching": "لائبریری (Simkl کی) حاصل کی جا رہی ہے…",
+  "simklImportFetchingDetails": "تفصیلات حاصل کی جا رہی ہیں…",
+  "simklImportWatchHistory": "واچ ہسٹری بحال کی جا رہی ہے…",
+  "simklImportNewCollectionDefault": "امپورٹ از Simkl: {name}",
+  "@simklImportNewCollectionDefault": {"placeholders": {"name": {"type": "String"}}},
+  "simklImportModeOverwriteSubtitle": "موجودہ آئٹمز کا اسٹیٹس، ریٹنگ اور نوٹ اپڈیٹ کریں",
+  "simklClientIdRequired": "اس امپورٹ کے لیے Simkl کی ایپ کی ضروری ہے، اپنی client_id درج کریں",
+  "simklImportRateLimitWait": "ریٹ لمٹ پوری ہو گئی، {seconds} سیکنڈ میں دوبارہ کوشش ہوگی (کوشش {attempt}/{max})",
+  "@simklImportRateLimitWait": {"placeholders": {"seconds": {"type": "int"}, "attempt": {"type": "int"}, "max": {"type": "int"}}},
+  "searchSourcePodcasts": "پوڈکاسٹس",
+  "searchHintPodcasts": "پوڈکاسٹس تلاش کریں...",
+  "podcastSheetEpisodes": "اقساط",
+  "podcastSheetNoEpisodes": "اقساط کی فہرست دستیاب نہیں",
+  "podcastEpisodesCount": "{count} اقساط",
+  "@podcastEpisodesCount": {"placeholders": {"count": {"type": "int"}}},
+  "credentialsPodcastIndexSection": "Podcast Index API",
+  "credentialsEnterPodcastIndexKey": "اپنی Podcast Index API کی درج کریں",
+  "credentialsEnterPodcastIndexSecret": "اپنا Podcast Index API سیکریٹ درج کریں",
+  "credentialsPodcastIndexKeyValid": "آپ کی Podcast Index کیز درست ہیں",
+  "credentialsPodcastIndexKeyInvalid": "کیز Podcast Index نے قبول نہیں کیں۔ جوڑی اور سسٹم کی گھڑی چیک کریں",
+  "welcomeApiPodcastIndexDesc": "پوڈکاسٹ سرچ اور اقساط کی ٹریکنگ۔ api.podcastindex.org سے مفت کی اور سیکریٹ کی جوڑی استعمال کرتا ہے۔",
+  "welcomeSourceDescMusicBrainz": "موسیقی کا اوپن انسائیکلوپیڈیا: البمز، آرٹسٹس اور ایڈیشنز۔ کی درکار نہیں۔",
+  "welcomeSourceDescPodcastIndex": "اقساط کی سطح تک ٹریکنگ والا اوپن پوڈکاسٹ کیٹلاگ۔ مفت کی اور سیکریٹ کی جوڑی۔",
+  "creditsPodcastIndexAttribution": "پوڈکاسٹ کا ڈیٹا Podcast Index سے لیا گیا ہے۔",
+  "credentialsApiSecret": "سیکریٹ (API کا)",
+  "markAllListened": "سب کو سنا ہوا نشان زد کریں",
+  "importStageReading": "فائل پڑھی جا رہی ہے...",
+  "importStageFetchingGames": "گیمز کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageFetchingMovies": "فلموں کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageFetchingTvShows": "ٹی وی شوز کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageFetchingVisualNovels": "ویژول ناولز کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageFetchingManga": "مانگا کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageFetchingAnime": "اینیمے کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageFetchingBooks": "کتابوں کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "importStageCachingMedia": "میڈیا کیش کیا جا رہا ہے...",
+  "importStageCreatingCollection": "مجموعہ بنایا جا رہا ہے...",
+  "importStageResolvingTitles": "ماخذ میں تلاش کیا جا رہا ہے...",
+  "importStageAddingItems": "آئٹمز شامل کیے جا رہے ہیں...",
+  "importStageImportingCanvas": "بورڈ امپورٹ ہو رہا ہے...",
+  "importStageRestoringMedia": "میڈیا ڈیٹا بحال کیا جا رہا ہے...",
+  "importStageImportingImages": "تصاویر بحال کی جا رہی ہیں...",
+  "importStageCompleted": "امپورٹ مکمل ہو گئی",
+  "importBreadcrumb": "{title} ← {source}",
+  "@importBreadcrumb": {"placeholders": {"title": {"type": "String"}, "source": {"type": "String"}}},
+  "importTallies": "ملے {found} · کسٹم کارڈز {custom} · مبہم {ambiguous}",
+  "@importTallies": {"placeholders": {"found": {"type": "int"}, "custom": {"type": "int"}, "ambiguous": {"type": "int"}}},
+  "importStageFetchingAudio": "آڈیو کا ڈیٹا حاصل کیا جا رہا ہے...",
+  "refreshTallies": "اپڈیٹ ہوئے {updated} · نہیں ملے {notFound} · خرابیاں {failed} · چھوڑے گئے {skipped}",
+  "@refreshTallies": {"placeholders": {"updated": {"type": "int"}, "notFound": {"type": "int"}, "failed": {"type": "int"}, "skipped": {"type": "int"}}},
+  "bulkRefreshConfirm": "{count, plural, =1{کیا 1 آئٹم کو اس کے ماخذ سے ریفریش کرنا ہے؟} other{کیا {count} آئٹمز کو ان کے ماخذ سے ریفریش کرنا ہے؟}}",
+  "@bulkRefreshConfirm": {"placeholders": {"count": {"type": "int"}}},
+  "bulkRefreshSkippedNote": "{count, plural, =1{سلیکٹ کیے گئے 1 آئٹم کا کوئی ماخذ نہیں، اسے چھوڑ دیا جائے گا۔} other{سلیکٹ کیے گئے {count} آئٹمز کا کوئی ماخذ نہیں، انہیں چھوڑ دیا جائے گا۔}}",
+  "@bulkRefreshSkippedNote": {"placeholders": {"count": {"type": "int"}}},
+  "bulkRefreshStart": "ریفریش کریں",
+  "bulkRefreshProblems": "ریفریش نہیں ہوئے",
+  "stop": "روکیں",
+  "customImportResolveTitle": "ماخذ میں کارڈز تلاش کریں",
+  "customImportResolveHint": "ہر قطار کو اس کی قسم کے ماخذ (TMDB، IGDB، Kitsu اور دیگر) میں ٹائٹل سے تلاش کرتا ہے۔ بالکل ایک میچ ہو تو اصل کارڈ بنتا ہے، ورنہ کسٹم کارڈ بنتا ہے۔ کسٹم اور آڈیو قطاریں کبھی تلاش نہیں کی جاتیں۔",
+  "importResultUnresolved": "کئی ریکارڈ میچ ہوئے، کسٹم کارڈز کے طور پر رکھے گئے",
+  "importResultUnresolvedCopied": "ٹائٹلز کاپی ہو گئے",
+  "collectionImportPickSource": "مجموعے میں امپورٹ کریں",
+  "collectionImportFromFile": "مجموعے کی فائل سے",
+  "collectionImportLastRun": "آخری بار چلایا گیا: {date}",
+  "@collectionImportLastRun": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "collectionImportRerunTitle": "کیا {source} امپورٹ دوبارہ چلانا ہے؟",
+  "@collectionImportRerunTitle": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "collectionImportRerunMessage": "پچھلی بار کی ہی سیٹنگز کے ساتھ {source} کے نئے آئٹمز “{collection}” میں شامل ہو جائیں گے۔",
+  "@collectionImportRerunMessage": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "collectionImportRun": "چلائیں",
+  "collectionImportSynced": "سنک ہو گیا، {source} سے {count} نئے",
+  "@collectionImportSynced": {
+    "placeholders": {
+      "source": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  }
+}
