@@ -124,7 +124,78 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     settingsAppearanceThemeLanguage, settingsAppearanceLibrary,
     settingsAppearanceScale): New keys.
 
+- **Card style setting**
+
+  Settings → Appearance gains "Card style" with ten looks for poster cards in
+  grids. Classic keeps the card as it was. Cinema and Hover sheet drop the
+  caption under the poster and write the title on the picture. Shelf, Minimal
+  and Ribbon move status, progress and tags to new places. Tilt, Curved glass,
+  Slab and Jewel case give the poster depth. The setting shows with the Glass
+  style.
+
+  * lib/shared/widgets/poster_look.dart (PosterLook, PosterLookScope,
+    PosterObject, PosterTilt, PosterCurvedGlass, PosterSlab, PosterJewel): New.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard): Lays the grid
+    card out per look.
+  * lib/shared/utils/poster_grid_delegate.dart (posterGridGeometry): Cinema and
+    Hover sheet cells take the bare poster ratio.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setPosterLook, SettingsKeys.posterLook,
+    SettingsState.posterLook): New setting.
+  * lib/features/settings/screens/settings_screen.dart: "Card style" picker.
+  * lib/app.dart: Hands the selected look to the cards.
+  * lib/l10n/app_*.arb (settingsCardLook, settingsCardLookSubtitle,
+    settingsCardLookClassic, settingsCardLookCurved, settingsCardLookSlab,
+    settingsCardLookJewel, settingsCardLookCinema, settingsCardLookShelf,
+    settingsCardLookTilt, settingsCardLookKino, settingsCardLookMinimal,
+    settingsCardLookRibbon): New keys.
+
+- **HTTP proxy setting**
+
+  Settings → Data sources gains "Proxy": a switch, a host and a port. With it
+  on, the app sends its requests through that HTTP proxy and connects directly
+  when the proxy port is closed. Addresses on your own network (Kodi, LAN sync,
+  a selfhost server) connect directly. Desktop and Android.
+
+  * lib/core/services/app_proxy_config.dart (AppProxyConfig,
+    AppProxyConfig.findProxyForUri, AppProxyConfig.isLocalHost,
+    AppProxyConfig.isValidHost, AppProxyConfig.isValidPort): New.
+  * lib/core/services/app_http_overrides.dart
+    (AppHttpOverrides.createHttpClient): Routes each request by the live
+    proxy config.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setProxyEnabled, SettingsNotifier.setProxyHost,
+    SettingsNotifier.setProxyPort, SettingsKeys.proxyEnabled,
+    SettingsKeys.proxyHost, SettingsKeys.proxyPort, SettingsState.proxyEnabled,
+    SettingsState.proxyHost, SettingsState.proxyPort): New settings.
+  * lib/features/settings/screens/proxy_settings_screen.dart
+    (ProxySettingsScreen): New.
+  * lib/features/settings/screens/settings_screen.dart: "Proxy" tile.
+  * lib/l10n/app_*.arb (settingsProxy, settingsProxySubtitle, settingsProxyHint,
+    settingsProxyEnabled, settingsProxyHost, settingsProxyPort,
+    settingsProxyInvalid): New keys.
+
+- **Search in the collection tag filter**
+
+  A collection with eight or more tags gets a search field in the tag row and
+  in the filter sheet. Typing narrows the chips by name; selected tags stay
+  visible.
+
+  * lib/features/collections/helpers/tag_name_filter.dart (filterTagsByName,
+    kTagSearchMinTags): New.
+  * lib/features/collections/widgets/tag_top_bar.dart (TagTopBar): Search chip
+    that opens an inline field.
+  * lib/features/collections/widgets/collection_filter_sheet.dart
+    (CollectionFilterSheet): Search field above the tag chips.
+
 ### Changed
+
+- **Author review on the wide item card**
+
+  The two-column item card shows the author review under the notes.
+
+  * lib/shared/widgets/media_detail/desktop_detail_layout.dart
+    (DesktopDetailLayout): Adds the author section.
 
 - **Settings descriptions in the secondary text colour**
 

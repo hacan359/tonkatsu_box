@@ -1040,7 +1040,7 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
       });
 
-      testWidgets('should hide the author review but keep the notes', (
+      testWidgets('should show the author review next to the notes', (
         WidgetTester tester,
       ) async {
         await pumpDesktop(
@@ -1054,7 +1054,7 @@ void main() {
           ),
         );
 
-        expect(find.text('Author text'), findsNothing);
+        expect(find.text('Author text'), findsOneWidget);
         expect(find.text('User text'), findsOneWidget);
       });
 

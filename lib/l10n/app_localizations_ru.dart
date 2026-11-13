@@ -682,6 +682,66 @@ class SRu extends S {
   String get settingsSkinClassic => 'Классика';
 
   @override
+  String get settingsCardLook => 'Вид карточек';
+
+  @override
+  String get settingsCardLookSubtitle => 'Как выглядят постеры в сетках';
+
+  @override
+  String get settingsCardLookClassic => 'Классика';
+
+  @override
+  String get settingsCardLookCurved => 'Изогнутое стекло';
+
+  @override
+  String get settingsCardLookSlab => 'Плитка';
+
+  @override
+  String get settingsCardLookJewel => 'Бокс';
+
+  @override
+  String get settingsCardLookCinema => 'Кино';
+
+  @override
+  String get settingsCardLookShelf => 'Полка';
+
+  @override
+  String get settingsCardLookTilt => 'Наклон';
+
+  @override
+  String get settingsCardLookKino => 'Шторка';
+
+  @override
+  String get settingsCardLookMinimal => 'Минимализм';
+
+  @override
+  String get settingsCardLookRibbon => 'Лента';
+
+  @override
+  String get settingsProxy => 'Прокси';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Направляет трафик приложения через локальный HTTP-прокси';
+
+  @override
+  String get settingsProxyHint =>
+      'Укажите локальный HTTP-порт, который открывает ваш VPN (смешанный порт Clash обычно 7890). Адреса вашей локальной сети всегда подключаются напрямую.';
+
+  @override
+  String get settingsProxyEnabled => 'Включить прокси';
+
+  @override
+  String get settingsProxyHost => 'Хост';
+
+  @override
+  String get settingsProxyPort => 'Порт';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Введите имя хоста или IP-адрес и порт от 1 до 65535';
+
+  @override
   String get settingsWallpaper => 'Обои';
 
   @override

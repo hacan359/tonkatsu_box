@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:core/models/data_source.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
@@ -20,6 +22,7 @@ import 'source_logo.dart';
 import '../constants/item_status_ui.dart';
 import '../constants/media_type_ui.dart';
 import 'image_placeholder.dart';
+import 'poster_look.dart';
 
 enum CardVariant {
   /// Full-size grid (collection + search).
@@ -269,26 +272,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ? (TapUpDetails details) =>
                         widget.onSecondaryTap!(details.globalPosition)
                   : null,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (BuildContext context, BoxConstraints c) =>
-                          _buildGridPoster(
-                            _BadgeMetrics(
-                              compact: _isCompact,
-                              scale: AppSpacing.badgeScale(
-                                cardWidth: c.maxWidth,
-                                compact: _isCompact,
-                              ),
-                            ),
-                          ),
-                    ),
-                  ),
-                  _buildTitleBlock(context),
-                ],
-              ),
+              child: _buildLook(context),
             ),
           ),
         ),
@@ -296,9 +280,693 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
+  Widget _buildPosterFor({
+    double? radius,
+    _Stats stats = _Stats.strip,
+    double topLeftShift = 0,
+  }) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints c) => _buildGridPoster(
+        _metrics(c.maxWidth),
+        radiusOverride: radius,
+        stats: stats,
+        topLeftShift: topLeftShift,
+      ),
+    );
+  }
+
+  _BadgeMetrics _metrics(double width) => _BadgeMetrics(
+    compact: _isCompact,
+    scale: AppSpacing.badgeScale(cardWidth: width, compact: _isCompact),
+  );
+
+  Widget _buildLook(BuildContext context) {
+    final PosterLook look = PosterLookScope.of(context);
+    final Animation<double> hover = _hoverController!;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints c) {
+        final _BadgeMetrics m = _metrics(c.maxWidth);
+        switch (look) {
+          case PosterLook.classic:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(child: _buildPosterFor()),
+                _buildTitleBlock(context),
+              ],
+            );
+          case PosterLook.curved:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterTilt(
+                    radius: AppSpacing.radiusLg,
+                    child: PosterObject(
+                      hover: hover,
+                      radius: AppSpacing.radiusLg,
+                      child: PosterCurvedGlass(
+                        child: _buildPosterFor(radius: AppSpacing.radiusLg),
+                      ),
+                    ),
+                  ),
+                ),
+                _buildTitleBlock(context),
+              ],
+            );
+          case PosterLook.slab:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterSlab(
+                    hover: hover,
+                    sideColor:
+                        Color.lerp(_progressColor, AppColors.scrim, 0.35) ??
+                        _progressColor,
+                    child: _buildPosterFor(),
+                  ),
+                ),
+                _buildTitleBlock(context),
+              ],
+            );
+          case PosterLook.jewel:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterObject(
+                    hover: hover,
+                    child: PosterJewel(hover: hover, child: _buildPosterFor()),
+                  ),
+                ),
+                _buildTitleBlock(context),
+              ],
+            );
+          case PosterLook.cinema:
+            return PosterObject(
+              hover: hover,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    _buildPosterFor(stats: _Stats.none),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: _buildCinemaInfo(context, m),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          case PosterLook.shelf:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterObject(
+                    hover: hover,
+                    radius: _shelfRadius,
+                    child: _buildShelfCover(m),
+                  ),
+                ),
+                _buildShelfCaption(context, m),
+              ],
+            );
+          case PosterLook.tilt:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterTilt(
+                    child: PosterObject(hover: hover, child: _buildPosterFor()),
+                  ),
+                ),
+                _buildTitleBlock(context),
+              ],
+            );
+          case PosterLook.kino:
+            return PosterObject(
+              hover: hover,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    _buildPosterFor(stats: _Stats.none),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: _buildKinoSheet(context, m, hover),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          case PosterLook.minimal:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterObject(
+                    hover: hover,
+                    child: _buildPosterFor(stats: _Stats.edgeBar),
+                  ),
+                ),
+                _buildTitleBlock(context, inlineMarks: m),
+              ],
+            );
+          case PosterLook.ribbon:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: PosterObject(
+                    hover: hover,
+                    child: _buildPosterFor(stats: _Stats.ribbon),
+                  ),
+                ),
+                _buildTitleBlock(context),
+              ],
+            );
+        }
+      },
+    );
+  }
+
+  static const double _shelfRadius = 5;
+
+  /// Fades and unrolls [child] from its bottom edge on hover or focus.
+  Widget _revealOnHover(Widget child) {
+    return AnimatedBuilder(
+      animation: _hoverController!,
+      builder: (BuildContext context, Widget? child) {
+        final double t = Curves.easeOut.transform(_hoverController!.value);
+        if (t == 0) return const SizedBox.shrink();
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            heightFactor: t,
+            child: Opacity(opacity: t, child: child),
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+
+  /// Nothing under the picture. Title, meta and status sit on a gradient
+  /// at the poster's foot at all times; the tags unroll above them on hover.
+  Widget _buildCinemaInfo(BuildContext context, _BadgeMetrics m) {
+    final double pad = m.of(5, 8);
+    final TextStyle titleStyle =
+        AppTypography.posterTitleFor(compact: _isCompact).copyWith(
+          color: AppColors.onOverlay,
+          shadows: <Shadow>[
+            Shadow(blurRadius: 4, color: AppColors.scrim.withAlpha(138)),
+          ],
+        );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: <Color>[
+            AppColors.scrim.withAlpha(0),
+            AppColors.scrim.withAlpha(150),
+            AppColors.scrim.withAlpha(225),
+          ],
+          stops: const <double>[0, 0.45, 1],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.fromLTRB(pad, m.of(18, 30), pad, pad),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                if (_hasTags)
+                  _revealOnHover(
+                    Padding(
+                      padding: EdgeInsets.only(bottom: m.of(3, 5)),
+                      child: _TagTapTarget(
+                        onTap: widget.onTagTap,
+                        child: _buildTagWrap(m),
+                      ),
+                    ),
+                  ),
+                Text(
+                  widget.title,
+                  style: titleStyle,
+                  strutStyle: StrutStyle.fromTextStyle(
+                    titleStyle,
+                    forceStrutHeight: true,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                _buildSubtitleRow(
+                  context,
+                  color: AppColors.onOverlay.withAlpha(190),
+                ),
+                if (_showStatusDot || widget.progress != null) ...<Widget>[
+                  SizedBox(height: m.of(2, 4)),
+                  _buildProgressRow(
+                    m,
+                    labelColor: AppColors.onOverlay,
+                    bar: false,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (widget.progress?.fraction != null) _buildProgressBar(m),
+        ],
+      ),
+    );
+  }
+
+  /// The cover as a physical object: a lit spine, a status bookmark
+  /// hanging from the top edge, the tags unrolling from the foot on hover.
+  Widget _buildShelfCover(_BadgeMetrics m) {
+    final double bookmarkLeft = m.of(4, 8);
+    final double bookmarkWidth = m.of(14, 20);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(_shelfRadius),
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          _buildPosterFor(
+            radius: _shelfRadius,
+            stats: _Stats.none,
+            topLeftShift: _showStatusDot ? bookmarkLeft + bookmarkWidth : 0,
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: <Color>[
+                      AppColors.scrim.withAlpha(70),
+                      AppColors.onOverlay.withAlpha(60),
+                      AppColors.scrim.withAlpha(30),
+                      AppColors.scrim.withAlpha(0),
+                    ],
+                    stops: const <double>[0, 0.02, 0.045, 0.08],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_showStatusDot)
+            Positioned(
+              top: 0,
+              left: bookmarkLeft,
+              child: IgnorePointer(
+                child: ClipPath(
+                  clipper: const _BookmarkClipper(),
+                  child: Container(
+                    width: bookmarkWidth,
+                    height: m.of(22, 30),
+                    color: widget.status!.color,
+                    alignment: Alignment.topCenter,
+                    padding: EdgeInsets.only(top: m.of(3, 5)),
+                    child: Icon(
+                      widget.status!.materialIcon,
+                      size: m.of(9, 12),
+                      color: AppColors.onOverlay,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (_hasTags)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _revealOnHover(
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(
+                    m.of(4, 6),
+                    m.of(10, 16),
+                    m.of(4, 6),
+                    m.of(4, 6),
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: <Color>[
+                        AppColors.scrim.withAlpha(0),
+                        AppColors.scrim.withAlpha(190),
+                      ],
+                    ),
+                  ),
+                  child: _TagTapTarget(
+                    onTap: widget.onTagTap,
+                    child: _buildTagWrap(m),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// A progress underline in the status colour, a one-line title, then
+  /// the meta line with the progress label at its end.
+  Widget _buildShelfCaption(BuildContext context, _BadgeMetrics m) {
+    final TextStyle titleStyle = AppTypography.posterTitleFor(
+      compact: _isCompact,
+    );
+    final ItemCardProgress? progress = widget.progress;
+    const double bar = 3;
+    return Tooltip(
+      message: widget.title,
+      waitDuration: AppDurations.tooltipDelay,
+      triggerMode: TooltipTriggerMode.manual,
+      child: SizedBox(
+        height: AppSpacing.cardTitleBlockHeight(
+          compact: _isCompact,
+          textScaler: MediaQuery.textScalerOf(context),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(height: AppSpacing.cardTitleBlockGap(compact: _isCompact)),
+            if (progress?.fraction != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(bar),
+                child: SizedBox(
+                  height: bar,
+                  child: ColoredBox(
+                    color: AppColors.textSecondary.withAlpha(50),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: progress!.fraction,
+                      child: ColoredBox(
+                        color: _showStatusDot
+                            ? widget.status!.color
+                            : _progressColor,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              const SizedBox(height: bar),
+            const SizedBox(height: bar),
+            Text(
+              widget.title,
+              style: titleStyle,
+              strutStyle: StrutStyle.fromTextStyle(
+                titleStyle,
+                forceStrutHeight: true,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (progress != null)
+              Row(
+                children: <Widget>[
+                  Flexible(child: _buildSubtitleRow(context)),
+                  SizedBox(width: m.of(3, 5)),
+                  Text(
+                    progress.label,
+                    style: AppTypography.posterSubtitleFor(
+                      compact: _isCompact,
+                    ).copyWith(fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                  ),
+                ],
+              )
+            else
+              _buildSubtitleRow(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool get _showStatusDot =>
+      widget.status != null && widget.status != ItemStatus.notStarted;
+
+  bool get _hasTags => widget.onTagTap != null || widget.tags.isNotEmpty;
+
+  double _progressRowHeight(_BadgeMetrics m) => m.compact ? 12 : 16;
+
+  double _tagsRowHeight(_BadgeMetrics m) => m.compact ? 16 : 20;
+
+  double _barHeight(_BadgeMetrics m) => m.of(3, 4);
+
+  /// Everything but the picture lives on a frosted sheet that rises on
+  /// hover or focus: title, meta, progress and every tag, wrapped.
+  Widget _buildKinoSheet(
+    BuildContext context,
+    _BadgeMetrics m,
+    Animation<double> hover,
+  ) {
+    final double pad = m.of(5, 8);
+    final Widget sheet = ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(
+          padding: EdgeInsets.all(pad),
+          decoration: BoxDecoration(
+            color: posterFrost(150, 175),
+            border: Border(top: BorderSide(color: posterRim(60))),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                widget.title,
+                style: AppTypography.posterTitleFor(compact: _isCompact),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              _buildSubtitleRow(context),
+              if (_showStatusDot || widget.progress != null) ...<Widget>[
+                SizedBox(height: m.of(2, 4)),
+                _buildProgressRow(m, labelColor: AppColors.textSecondary),
+              ],
+              if (widget.tags.isNotEmpty) ...<Widget>[
+                SizedBox(height: m.of(2, 4)),
+                _TagTapTarget(onTap: widget.onTagTap, child: _buildTagWrap(m)),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+    return AnimatedBuilder(
+      animation: hover,
+      builder: (BuildContext context, Widget? child) {
+        final double t = Curves.easeOut.transform(hover.value);
+        if (t == 0) return const SizedBox.shrink();
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, (1 - t) * 16),
+            child: child,
+          ),
+        );
+      },
+      child: sheet,
+    );
+  }
+
+  Widget _buildTagWrap(_BadgeMetrics m) {
+    if (widget.tags.isEmpty) return _EmptyTagBadge(metrics: m);
+    return Wrap(
+      spacing: m.of(2, 3),
+      runSpacing: m.of(2, 3),
+      children: <Widget>[
+        for (final Tag tag in widget.tags)
+          _TagChip(key: ValueKey<int>(tag.id), tag: tag, metrics: m),
+      ],
+    );
+  }
+
+  /// Status dot, the bar taking the free width, the label at the right.
+  Widget _buildProgressRow(
+    _BadgeMetrics m, {
+    required Color labelColor,
+    bool bar = true,
+  }) {
+    final ItemCardProgress? progress = widget.progress;
+    return SizedBox(
+      height: _progressRowHeight(m),
+      child: Row(
+        children: <Widget>[
+          if (_showStatusDot) ...<Widget>[
+            _buildStatusDot(m),
+            SizedBox(width: m.of(3, 5)),
+          ],
+          if (bar && progress?.fraction != null)
+            Expanded(child: _buildProgressBar(m, rounded: true))
+          else
+            const Spacer(),
+          if (progress != null) ...<Widget>[
+            SizedBox(width: m.of(3, 5)),
+            Text(
+              progress.label,
+              style: TextStyle(
+                color: labelColor,
+                fontSize: m.of(7, 9),
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagsRow(_BadgeMetrics m) {
+    return SizedBox(
+      height: _tagsRowHeight(m),
+      child: _TagTapTarget(
+        onTap: widget.onTagTap,
+        child: _TagMarquee(tags: widget.tags, metrics: m),
+      ),
+    );
+  }
+
+  Widget _buildStatusDot(_BadgeMetrics m) {
+    return Container(
+      padding: EdgeInsets.all(m.of(2, 3)),
+      decoration: BoxDecoration(
+        color: widget.status!.color,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        widget.status!.materialIcon,
+        size: m.of(7, 10),
+        color: AppColors.onOverlay,
+      ),
+    );
+  }
+
+  Color get _progressColor => widget.mediaType != null
+      ? MediaTypeTheme.colorFor(widget.mediaType!)
+      : AppColors.brand;
+
+  Widget _buildProgressBar(_BadgeMetrics m, {bool rounded = false}) {
+    final double h = _barHeight(m);
+    final Widget bar = SizedBox(
+      height: h,
+      child: ColoredBox(
+        color: AppColors.scrim.withAlpha(110),
+        child: FractionallySizedBox(
+          alignment: Alignment.centerLeft,
+          widthFactor: widget.progress!.fraction,
+          child: ColoredBox(color: _progressColor),
+        ),
+      ),
+    );
+    if (!rounded) return bar;
+    return ClipRRect(borderRadius: BorderRadius.circular(h), child: bar);
+  }
+
+  /// A frosted ribbon over the picture's bottom, only as tall as what it
+  /// carries: a progress row, a tag line, both, or nothing at all.
+  Widget _buildRibbon(_BadgeMetrics m) {
+    final bool showProgress = _showStatusDot || widget.progress != null;
+    if (!showProgress && !_hasTags) return const SizedBox.shrink();
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: m.of(4, 6),
+            vertical: m.of(2, 3),
+          ),
+          decoration: BoxDecoration(
+            color: posterFrost(110, 140),
+            border: Border(top: BorderSide(color: posterRim(50))),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (showProgress)
+                _buildProgressRow(m, labelColor: AppColors.textPrimary),
+              if (_hasTags) _buildTagsRow(m),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The picture keeps only a hairline progress bar on its bottom edge.
+  Widget _buildEdgeBar(_BadgeMetrics m) {
+    if (widget.progress?.fraction == null) return const SizedBox.shrink();
+    return _buildProgressBar(m);
+  }
+
+  /// The status as a dot before the title, the tags as colour dots after
+  /// it, the progress label at the end of the meta line.
+  Widget _buildInlineTitle(_BadgeMetrics m) {
+    final TextStyle style = AppTypography.posterTitleFor(compact: _isCompact);
+    final double dot = m.of(6, 8);
+    Widget circle(Color color) => Container(
+      width: dot,
+      height: dot,
+      margin: EdgeInsets.only(right: m.of(2, 4)),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+    return Text.rich(
+      TextSpan(
+        children: <InlineSpan>[
+          if (_showStatusDot)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: circle(widget.status!.color),
+            ),
+          TextSpan(text: widget.title),
+          if (widget.tags.isNotEmpty) const TextSpan(text: '  '),
+          for (final Tag tag in widget.tags)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: _TagTapTarget(
+                onTap: widget.onTagTap,
+                child: Tooltip(
+                  message: tag.name,
+                  child: circle(
+                    tag.color != null
+                        ? Color(tag.color!)
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      style: style,
+      strutStyle: StrutStyle.fromTextStyle(style, forceStrutHeight: true),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
   /// Title + subtitle under the poster. The height is fixed so grid rows stay
   /// aligned, and the text hugs its top so a one-line title leaves no gap.
-  Widget _buildTitleBlock(BuildContext context) {
+  Widget _buildTitleBlock(BuildContext context, {_BadgeMetrics? inlineMarks}) {
     return Tooltip(
       message: widget.title,
       waitDuration: AppDurations.tooltipDelay,
@@ -317,19 +985,37 @@ class _MediaPosterCardState extends State<MediaPosterCard>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                widget.title,
-                style: AppTypography.posterTitleFor(compact: _isCompact),
-                // Fallback glyphs (CJK titles) raise the line past
-                // fontSize×height and burst the block budgeted from it.
-                strutStyle: StrutStyle.fromTextStyle(
-                  AppTypography.posterTitleFor(compact: _isCompact),
-                  forceStrutHeight: true,
+              if (inlineMarks != null)
+                _buildInlineTitle(inlineMarks)
+              else
+                Text(
+                  widget.title,
+                  style: AppTypography.posterTitleFor(compact: _isCompact),
+                  // Fallback glyphs (CJK titles) raise the line past
+                  // fontSize×height and burst the block budgeted from it.
+                  strutStyle: StrutStyle.fromTextStyle(
+                    AppTypography.posterTitleFor(compact: _isCompact),
+                    forceStrutHeight: true,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              _buildSubtitleRow(context),
+              if (inlineMarks != null && widget.progress != null)
+                Row(
+                  children: <Widget>[
+                    Flexible(child: _buildSubtitleRow(context)),
+                    SizedBox(width: inlineMarks.of(3, 5)),
+                    Text(
+                      widget.progress!.label,
+                      style: AppTypography.posterSubtitleFor(
+                        compact: _isCompact,
+                      ).copyWith(fontWeight: FontWeight.w700),
+                      maxLines: 1,
+                    ),
+                  ],
+                )
+              else
+                _buildSubtitleRow(context),
             ],
           ),
         ),
@@ -337,17 +1023,22 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  Widget _buildGridPoster(_BadgeMetrics m) {
+  Widget _buildGridPoster(
+    _BadgeMetrics m, {
+    double? radiusOverride,
+    _Stats stats = _Stats.strip,
+    double topLeftShift = 0,
+  }) {
     final bool hasOverlay =
         widget.platformOverlayAsset != null && !widget.isInCollection;
     final double borderRadius = hasOverlay
         ? 0
-        : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
+        : radiusOverride ??
+              (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
 
     final bool showFavoriteBadge =
         widget.onToggleFavorite != null || widget.showFavorite;
-    final bool showStatusDot =
-        widget.status != null && widget.status != ItemStatus.notStarted;
+    final bool showStatusDot = _showStatusDot;
     final bool showPlatformBadge =
         widget.platformOverlayAsset == null &&
         widget.platformLabel != null &&
@@ -385,7 +1076,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 widget.timeToBeatHours != null)
               Positioned(
                 top: m.of(2, AppSpacing.xs),
-                left: m.of(2, AppSpacing.xs),
+                left: m.of(2, AppSpacing.xs) + topLeftShift,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -488,12 +1179,27 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
             // Bottom strip: status, progress and tag only — the title and its
             // meta line live under the poster.
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildStatsStrip(m),
-            ),
+            switch (stats) {
+              _Stats.strip => Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildStatsStrip(m),
+              ),
+              _Stats.edgeBar => Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildEdgeBar(m),
+              ),
+              _Stats.ribbon => Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildRibbon(m),
+              ),
+              _Stats.none => const SizedBox.shrink(),
+            },
           ],
         ),
       ),
@@ -505,8 +1211,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Widget _buildStatsStrip(_BadgeMetrics m) {
     final double hPad = m.of(4, 6);
     final double vPad = m.of(2, 4);
-    final bool showStatusDot =
-        widget.status != null && widget.status != ItemStatus.notStarted;
+    final bool showStatusDot = _showStatusDot;
     final bool tagWrap = widget.showAllTags && widget.tags.isNotEmpty;
     // The inline slot also hosts the empty "add a tag" badge.
     final bool inlineTag =
@@ -540,18 +1245,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               ),
               child: _TagTapTarget(
                 onTap: widget.onTagTap,
-                child: Wrap(
-                  spacing: m.of(2, 3),
-                  runSpacing: m.of(2, 3),
-                  children: <Widget>[
-                    for (final Tag tag in widget.tags)
-                      _TagChip(
-                        key: ValueKey<int>(tag.id),
-                        tag: tag,
-                        metrics: m,
-                      ),
-                  ],
-                ),
+                child: _buildTagWrap(m),
               ),
             ),
           if (showRow)
@@ -560,18 +1254,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               child: Row(
                 children: <Widget>[
                   if (showStatusDot) ...<Widget>[
-                    Container(
-                      padding: EdgeInsets.all(m.of(2, 3)),
-                      decoration: BoxDecoration(
-                        color: widget.status!.color,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        widget.status!.materialIcon,
-                        size: m.of(7, 10),
-                        color: AppColors.onOverlay,
-                      ),
-                    ),
+                    _buildStatusDot(m),
                     SizedBox(width: m.of(2, 4)),
                   ],
                   // The tag takes the free space so the label lands on the
@@ -636,10 +1319,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
   /// The source logo sits in a [Row], not a [WidgetSpan] — a span grows the
   /// text line past the height the title block budgeted.
-  Widget _buildSubtitleRow(BuildContext context) {
+  Widget _buildSubtitleRow(BuildContext context, {Color? color}) {
     final TextStyle baseStyle = AppTypography.posterSubtitleFor(
       compact: _isCompact,
-    );
+    ).copyWith(color: color);
     final Widget metaText = _buildMetaText(context, baseStyle);
 
     if (widget.source case final DataSource source) {
@@ -974,6 +1657,25 @@ class _GlowBorderPainter extends CustomPainter {
       progress != oldDelegate.progress || color != oldDelegate.color;
 }
 
+/// What the poster carries along its bottom edge.
+enum _Stats { strip, none, edgeBar, ribbon }
+
+// A ribbon with a V notch cut into its foot.
+class _BookmarkClipper extends CustomClipper<Path> {
+  const _BookmarkClipper();
+
+  @override
+  Path getClip(Size size) => Path()
+    ..lineTo(size.width, 0)
+    ..lineTo(size.width, size.height)
+    ..lineTo(size.width / 2, size.height - size.width * 0.4)
+    ..lineTo(0, size.height)
+    ..close();
+
+  @override
+  bool shouldReclip(_BookmarkClipper oldClipper) => false;
+}
+
 /// Badge sizes over the poster: the compact or full base times the factor
 /// the poster's real width gives ([AppSpacing.badgeScale]).
 class _BadgeMetrics {
@@ -1058,6 +1760,99 @@ class _InlineTags extends StatelessWidget {
         // No room for both: the count alone says more than a clipped name.
         return _MoreTagsBadge(count: count, metrics: metrics);
       },
+    );
+  }
+}
+
+// Every tag on one line; when they overflow the line drifts to the
+// end, waits and drifts back, so nothing is ever clipped for good.
+class _TagMarquee extends StatefulWidget {
+  const _TagMarquee({required this.tags, required this.metrics});
+
+  final List<Tag> tags;
+  final _BadgeMetrics metrics;
+
+  @override
+  State<_TagMarquee> createState() => _TagMarqueeState();
+}
+
+class _TagMarqueeState extends State<_TagMarquee> {
+  final ScrollController _controller = ScrollController();
+  bool _running = false;
+
+  static const double _pxPerSecond = 18;
+  static const Duration _pause = Duration(milliseconds: 1400);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStart());
+  }
+
+  @override
+  void didUpdateWidget(_TagMarquee oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStart());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _maybeStart() async {
+    // An endless drift per card would run a grid of tickers on battery.
+    if (kIsMobile || _running || !mounted || !_controller.hasClients) return;
+    if (_controller.position.maxScrollExtent <= 0) return;
+    _running = true;
+    while (mounted && _controller.hasClients) {
+      final double max = _controller.position.maxScrollExtent;
+      if (max <= 0) break;
+      await Future<void>.delayed(_pause);
+      if (!mounted || !_controller.hasClients) break;
+      await _controller.animateTo(
+        max,
+        duration: Duration(milliseconds: (max / _pxPerSecond * 1000).round()),
+        curve: Curves.linear,
+      );
+      if (!mounted || !_controller.hasClients) break;
+      await Future<void>.delayed(_pause);
+      if (!mounted || !_controller.hasClients) break;
+      await _controller.animateTo(
+        0,
+        duration: Duration(milliseconds: (max / _pxPerSecond * 1000).round()),
+        curve: Curves.linear,
+      );
+    }
+    _running = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.tags.isEmpty) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: _EmptyTagBadge(metrics: widget.metrics),
+      );
+    }
+    final double gap = widget.metrics.of(2, 3);
+    return SingleChildScrollView(
+      controller: _controller,
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: Row(
+        children: <Widget>[
+          for (int i = 0; i < widget.tags.length; i++) ...<Widget>[
+            if (i > 0) SizedBox(width: gap),
+            _TagChip(
+              key: ValueKey<int>(widget.tags[i].id),
+              tag: widget.tags[i],
+              metrics: widget.metrics,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

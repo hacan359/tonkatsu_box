@@ -670,6 +670,66 @@ class SEn extends S {
   String get settingsSkinClassic => 'Classic';
 
   @override
+  String get settingsCardLook => 'Card style';
+
+  @override
+  String get settingsCardLookSubtitle => 'How posters look in grids';
+
+  @override
+  String get settingsCardLookClassic => 'Classic';
+
+  @override
+  String get settingsCardLookCurved => 'Curved glass';
+
+  @override
+  String get settingsCardLookSlab => 'Slab';
+
+  @override
+  String get settingsCardLookJewel => 'Jewel case';
+
+  @override
+  String get settingsCardLookCinema => 'Cinema';
+
+  @override
+  String get settingsCardLookShelf => 'Shelf';
+
+  @override
+  String get settingsCardLookTilt => 'Tilt';
+
+  @override
+  String get settingsCardLookKino => 'Hover sheet';
+
+  @override
+  String get settingsCardLookMinimal => 'Minimal';
+
+  @override
+  String get settingsCardLookRibbon => 'Ribbon';
+
+  @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Send the app\'s traffic through a local HTTP proxy';
+
+  @override
+  String get settingsProxyHint =>
+      'Enter the local HTTP port your VPN app opens (the Clash mixed port is usually 7890). Addresses on your own network always connect directly.';
+
+  @override
+  String get settingsProxyEnabled => 'Enable proxy';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Port';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Enter a host name or IP address and a port from 1 to 65535';
+
+  @override
   String get settingsWallpaper => 'Wallpaper';
 
   @override

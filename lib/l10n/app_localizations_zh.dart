@@ -623,6 +623,64 @@ class SZh extends S {
   String get settingsSkinClassic => '经典';
 
   @override
+  String get settingsCardLook => '卡片样式';
+
+  @override
+  String get settingsCardLookSubtitle => '海报在网格中的外观';
+
+  @override
+  String get settingsCardLookClassic => '经典';
+
+  @override
+  String get settingsCardLookCurved => '曲面玻璃';
+
+  @override
+  String get settingsCardLookSlab => '厚块';
+
+  @override
+  String get settingsCardLookJewel => '光盘盒';
+
+  @override
+  String get settingsCardLookCinema => '影院';
+
+  @override
+  String get settingsCardLookShelf => '书架';
+
+  @override
+  String get settingsCardLookTilt => '倾斜';
+
+  @override
+  String get settingsCardLookKino => '悬停面板';
+
+  @override
+  String get settingsCardLookMinimal => '极简';
+
+  @override
+  String get settingsCardLookRibbon => '条带';
+
+  @override
+  String get settingsProxy => '代理设置';
+
+  @override
+  String get settingsProxySubtitle => '通过本地 HTTP 代理转发应用流量';
+
+  @override
+  String get settingsProxyHint =>
+      '填写你的 VPN 应用开放的本地 HTTP 端口（Clash 混合端口通常为 7890）。本地网络地址始终直连。';
+
+  @override
+  String get settingsProxyEnabled => '启用代理';
+
+  @override
+  String get settingsProxyHost => '主机';
+
+  @override
+  String get settingsProxyPort => '端口';
+
+  @override
+  String get settingsProxyInvalid => '请输入主机名或 IP 地址，以及 1 到 65535 之间的端口';
+
+  @override
   String get settingsWallpaper => '壁纸';
 
   @override

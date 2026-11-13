@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/theme/app_spacing.dart';
 import 'package:tonkatsu_box/shared/utils/poster_grid_delegate.dart';
+import 'package:tonkatsu_box/shared/widgets/poster_look.dart';
 
 void main() {
   /// Resolves the geometry at [size] the way a real grid would.
@@ -9,16 +10,20 @@ void main() {
     WidgetTester tester,
     Size size, {
     double cardScale = 1.0,
+    PosterLook look = PosterLook.classic,
   }) async {
     late ({SliverGridDelegate delegate, double padding}) result;
     await tester.pumpWidget(
       MediaQuery(
         data: MediaQueryData(size: size),
-        child: Builder(
-          builder: (BuildContext context) {
-            result = posterGridGeometry(context, cardScale: cardScale);
-            return const SizedBox.shrink();
-          },
+        child: PosterLookScope(
+          look: look,
+          child: Builder(
+            builder: (BuildContext context) {
+              result = posterGridGeometry(context, cardScale: cardScale);
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
@@ -26,6 +31,37 @@ void main() {
   }
 
   group('posterGridGeometry', () {
+    for (final PosterLook look in <PosterLook>[
+      PosterLook.cinema,
+      PosterLook.kino,
+    ]) {
+      testWidgets('should size cells as a bare poster for ${look.id}', (
+        WidgetTester tester,
+      ) async {
+        final ({SliverGridDelegate delegate, double padding}) g =
+            await geometryAt(tester, const Size(1400, 900), look: look);
+
+        expect(
+          (g.delegate as SliverGridDelegateWithMaxCrossAxisExtent)
+              .childAspectRatio,
+          AppSpacing.posterAspectRatio,
+        );
+      });
+    }
+
+    testWidgets('should keep room for the caption on the classic look', (
+      WidgetTester tester,
+    ) async {
+      final ({SliverGridDelegate delegate, double padding}) g =
+          await geometryAt(tester, const Size(1400, 900));
+
+      expect(
+        (g.delegate as SliverGridDelegateWithMaxCrossAxisExtent)
+            .childAspectRatio,
+        AppSpacing.posterCardAspectRatio,
+      );
+    });
+
     testWidgets('should use fixed mobile columns on a phone-width screen',
         (WidgetTester tester) async {
       final ({SliverGridDelegate delegate, double padding}) g =

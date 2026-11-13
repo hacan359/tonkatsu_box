@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/widgets/settings_tile.dart';
+import '../helpers/tag_name_filter.dart';
 import '../providers/collections_provider.dart';
 import '../../../shared/constants/collection_sort_mode_ui.dart';
 import '../../../shared/widgets/glass_panel.dart';
@@ -85,6 +87,15 @@ class CollectionFilterSheet extends ConsumerStatefulWidget {
 class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
   late final Set<int> _selectedTagIds = <int>{...widget.selectedTagIds};
   late bool _groupByTags = widget.groupByTags;
+  final TextEditingController _tagQuery = TextEditingController();
+  final FocusNode _tagQueryFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _tagQuery.dispose();
+    _tagQueryFocus.dispose();
+    super.dispose();
+  }
 
   void _handleTagToggle(int? id) {
     setState(() {
@@ -118,6 +129,12 @@ class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
       collectionSortDescProvider(widget.collectionId),
     );
     final bool hasTagFilter = _selectedTagIds.isNotEmpty;
+    final bool searchableTags = widget.tags.length >= kTagSearchMinTags;
+    final List<Tag> visibleTags = filterTagsByName(
+      widget.tags,
+      _tagQuery.text,
+      keepIds: _selectedTagIds,
+    );
 
     return GlassPanel(
       borderRadius: const BorderRadius.vertical(
@@ -226,6 +243,20 @@ class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
                           ),
                         ),
                       ),
+                      if (searchableTags)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.md,
+                            0,
+                            AppSpacing.md,
+                            AppSpacing.sm,
+                          ),
+                          child: _TagSearchField(
+                            controller: _tagQuery,
+                            focusNode: _tagQueryFocus,
+                            onChanged: () => setState(() {}),
+                          ),
+                        ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.md,
@@ -233,18 +264,27 @@ class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
                           AppSpacing.md,
                           AppSpacing.sm,
                         ),
-                        child: Wrap(
-                          spacing: AppSpacing.xs,
-                          runSpacing: AppSpacing.xs,
-                          children: <Widget>[
-                            for (final Tag tag in widget.tags)
-                              _TagChip(
-                                tag: tag,
-                                selected: _selectedTagIds.contains(tag.id),
-                                onTap: () => _handleTagToggle(tag.id),
+                        child: visibleTags.isEmpty
+                            ? Text(
+                                l.tagNone,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              )
+                            : Wrap(
+                                spacing: AppSpacing.xs,
+                                runSpacing: AppSpacing.xs,
+                                children: <Widget>[
+                                  for (final Tag tag in visibleTags)
+                                    _TagChip(
+                                      tag: tag,
+                                      selected: _selectedTagIds.contains(
+                                        tag.id,
+                                      ),
+                                      onTap: () => _handleTagToggle(tag.id),
+                                    ),
+                                ],
                               ),
-                          ],
-                        ),
                       ),
                       SettingsTile(
                         title: l.tagSidebarGroup,
@@ -336,6 +376,48 @@ class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TagSearchField extends StatelessWidget {
+  const _TagSearchField({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasQuery = controller.text.isNotEmpty;
+    return TextField(
+      key: const ValueKey<String>('filterSheetTagSearch'),
+      controller: controller,
+      focusNode: focusNode,
+      // Touch keeps focus on an outside tap, so the keyboard would stick to
+      // the sheet while the user is picking chips.
+      onTapOutside: kIsMobile ? (_) => focusNode.unfocus() : null,
+      style: AppTypography.bodySmall,
+      decoration: InputDecoration(
+        hintText: S.of(context).tagPickerSearchHint,
+        prefixIcon: const Icon(Icons.search, size: 18),
+        suffixIcon: hasQuery
+            ? IconButton(
+                icon: const Icon(Icons.clear, size: 16),
+                visualDensity: VisualDensity.compact,
+                onPressed: () {
+                  controller.clear();
+                  onChanged();
+                },
+              )
+            : null,
+        isDense: true,
+      ),
+      onChanged: (_) => onChanged(),
     );
   }
 }

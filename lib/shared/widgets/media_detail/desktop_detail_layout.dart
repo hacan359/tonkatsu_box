@@ -212,6 +212,7 @@ class DesktopDetailLayout extends StatelessWidget {
           ),
         s.tags,
         s.notes,
+        s.author,
         s.tracker,
         ...s.extras,
         s.gallery,

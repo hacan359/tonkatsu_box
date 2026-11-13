@@ -19,6 +19,7 @@ import 'shared/constants/platform_features.dart';
 import 'shared/theme/app_skin_id.dart';
 import 'shared/theme/app_theme_id.dart';
 import 'shared/widgets/ui_scale_scope.dart';
+import 'shared/widgets/poster_look.dart';
 
 /// Root app widget. A top-level [Listener] watches mouse movement to switch
 /// [InputMode] (gamepad ↔ mouse).
@@ -77,6 +78,9 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
     final AppSkinId skinId = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.appSkin),
     );
+    final PosterLook posterLook = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.posterLook),
+    );
     // AppColors and AppSurface read statics, so both must be swapped before
     // the subtree builds; the ValueKey below remounts everything on switch.
     AppColors.palette = themeId.palette;
@@ -108,9 +112,12 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
             valueListenable: startupError,
             builder: (BuildContext context, StartupErrorInfo? info, _) {
               if (info == null) {
-                return UiScaleScope(
-                  child: _TextScaleScope(
-                    child: child ?? const SizedBox.shrink(),
+                return PosterLookScope(
+                  look: posterLook,
+                  child: UiScaleScope(
+                    child: _TextScaleScope(
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   ),
                 );
               }

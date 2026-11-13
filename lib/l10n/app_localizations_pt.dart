@@ -674,6 +674,66 @@ class SPt extends S {
   String get settingsSkinClassic => 'Clássico';
 
   @override
+  String get settingsCardLook => 'Estilo dos cartões';
+
+  @override
+  String get settingsCardLookSubtitle => 'Como os pôsteres aparecem nas grades';
+
+  @override
+  String get settingsCardLookClassic => 'Clássico';
+
+  @override
+  String get settingsCardLookCurved => 'Vidro curvo';
+
+  @override
+  String get settingsCardLookSlab => 'Bloco';
+
+  @override
+  String get settingsCardLookJewel => 'Estojo';
+
+  @override
+  String get settingsCardLookCinema => 'Cinema';
+
+  @override
+  String get settingsCardLookShelf => 'Estante';
+
+  @override
+  String get settingsCardLookTilt => 'Inclinação';
+
+  @override
+  String get settingsCardLookKino => 'Painel ao passar';
+
+  @override
+  String get settingsCardLookMinimal => 'Minimalista';
+
+  @override
+  String get settingsCardLookRibbon => 'Faixa';
+
+  @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Envia o tráfego do app por um proxy HTTP local';
+
+  @override
+  String get settingsProxyHint =>
+      'Informe a porta HTTP local aberta pelo seu app de VPN (a porta mista do Clash costuma ser 7890). Endereços da sua rede local sempre conectam diretamente.';
+
+  @override
+  String get settingsProxyEnabled => 'Ativar proxy';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Porta';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Informe um nome de host ou endereço IP e uma porta de 1 a 65535';
+
+  @override
   String get settingsWallpaper => 'Papel de parede';
 
   @override

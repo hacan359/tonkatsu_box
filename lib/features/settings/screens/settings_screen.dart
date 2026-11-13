@@ -38,6 +38,7 @@ import '../widgets/settings_tile.dart';
 import '../../welcome/screens/welcome_screen.dart';
 import 'cache_screen.dart';
 import 'credentials_screen.dart';
+import 'proxy_settings_screen.dart';
 import 'credits_screen.dart';
 import 'database_screen.dart';
 import '../../../core/services/backup_service.dart';
@@ -66,6 +67,7 @@ import '../providers/profile_provider.dart';
 import '../../../shared/constants/rich_hero_style.dart';
 import '../../../shared/constants/rich_hero_style_ui.dart';
 import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/poster_look.dart';
 
 /// Breakpoint for switching content width.
 const double _desktopBreakpoint = 800;
@@ -86,6 +88,7 @@ const Map<String, String> _kAppLanguageNames = <String, String>{
   'fr': 'Français',
 };
 const Color _kApiKeysColor = Color(0xFFEF5350);
+const Color _kProxyColor = Color(0xFF26A69A);
 const Color _kDiscordColor = Color(
   0xFF5865F2,
 ); // Discord blurple (used for RA-sync Icons.sync tile)
@@ -504,6 +507,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               valueColor: _apiKeysAllSet(settings) ? AppColors.success : null,
               onTap: () => _pushScreen(const CredentialsScreen()),
             ),
+            // A browser routes its own traffic; the app has no say there.
+            if (!kIsWebBuild)
+              SettingsTile(
+                leadingIcon: Icons.lan_outlined,
+                leadingColor: _kProxyColor,
+                title: l.settingsProxy,
+                subtitle: l.settingsProxySubtitle,
+                value: settings.proxyEnabled ? l.settingsOn : '',
+                valueColor: settings.proxyEnabled ? AppColors.success : null,
+                onTap: () => _pushScreen(const ProxySettingsScreen()),
+              ),
           ],
         ),
         // Kodi is LAN-only and Discord RPC is desktop-only, so on web the group
@@ -671,6 +685,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       value: _skinLabel(l, settings.appSkin),
       onTap: () => _showSkinPicker(settings),
     ),
+    // The looks are drawn for glass; other skins keep the plain card.
+    if (settings.appSkin == AppSkinId.glass)
+      SettingsTile(
+        leadingIcon: Icons.style_outlined,
+        leadingColor: _kAppearanceColor,
+        title: l.settingsCardLook,
+        subtitle: l.settingsCardLookSubtitle,
+        value: _posterLookLabel(l, settings.posterLook),
+        onTap: () => _showPosterLookPicker(settings),
+      ),
     if (!kIsWebBuild &&
         settings.appSkin.skin.wallpaper == SkinWallpaper.picture)
       SettingsTile(
@@ -1010,6 +1034,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       label: (AppSkinId skin) => _skinLabel(l, skin),
       onSelected: (AppSkinId skin) =>
           ref.read(settingsNotifierProvider.notifier).setAppSkin(skin),
+    );
+  }
+
+  String _posterLookLabel(S l, PosterLook look) => switch (look) {
+    PosterLook.classic => l.settingsCardLookClassic,
+    PosterLook.curved => l.settingsCardLookCurved,
+    PosterLook.slab => l.settingsCardLookSlab,
+    PosterLook.jewel => l.settingsCardLookJewel,
+    PosterLook.cinema => l.settingsCardLookCinema,
+    PosterLook.shelf => l.settingsCardLookShelf,
+    PosterLook.tilt => l.settingsCardLookTilt,
+    PosterLook.kino => l.settingsCardLookKino,
+    PosterLook.minimal => l.settingsCardLookMinimal,
+    PosterLook.ribbon => l.settingsCardLookRibbon,
+  };
+
+  void _showPosterLookPicker(SettingsState settings) {
+    final S l = S.of(context);
+    _showChoicePicker<PosterLook>(
+      title: l.settingsCardLook,
+      values: PosterLook.values,
+      isSelected: (PosterLook look) => settings.posterLook == look,
+      label: (PosterLook look) => _posterLookLabel(l, look),
+      onSelected: (PosterLook look) =>
+          ref.read(settingsNotifierProvider.notifier).setPosterLook(look),
     );
   }
 

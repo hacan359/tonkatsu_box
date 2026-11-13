@@ -8,6 +8,8 @@ import '../../../shared/constants/api_defaults.dart';
 import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_skin_id.dart';
+import '../../../core/services/app_proxy_config.dart';
+import '../../../shared/widgets/poster_look.dart';
 import '../../../shared/theme/app_theme_id.dart';
 import '../../../shared/constants/rich_hero_style.dart';
 import '../../../core/services/discord_rpc_service.dart';
@@ -151,6 +153,15 @@ abstract class SettingsKeys {
   /// Surface style id (see [AppSkinId]).
   static const String appSkin = 'app_skin';
 
+  static const String proxyEnabled = 'proxy_enabled';
+
+  static const String proxyHost = 'proxy_host';
+
+  static const String proxyPort = 'proxy_port';
+
+  /// Poster card look id (see [PosterLook]).
+  static const String posterLook = 'poster_look';
+
   /// Absolute path of the user's wallpaper copy; absent = bundled picture.
   static const String wallpaperPath = 'wallpaper_path';
 
@@ -232,6 +243,10 @@ class SettingsState {
     this.uiScale = SettingsKeys.uiScaleDefault,
     this.appTheme = AppThemeId.dark,
     this.appSkin = AppSkinId.glass,
+    this.posterLook = PosterLook.classic,
+    this.proxyEnabled = false,
+    this.proxyHost = AppProxyConfig.defaultHost,
+    this.proxyPort = AppProxyConfig.defaultPort,
     this.wallpaperPath,
   });
 
@@ -345,6 +360,14 @@ class SettingsState {
 
   /// Selected surface style; pairs with any theme.
   final AppSkinId appSkin;
+
+  final PosterLook posterLook;
+
+  final bool proxyEnabled;
+
+  final String proxyHost;
+
+  final int proxyPort;
 
   final String? wallpaperPath;
 
@@ -468,6 +491,10 @@ class SettingsState {
     double? uiScale,
     AppThemeId? appTheme,
     AppSkinId? appSkin,
+    PosterLook? posterLook,
+    bool? proxyEnabled,
+    String? proxyHost,
+    int? proxyPort,
     String? wallpaperPath,
     bool clearWallpaperPath = false,
   }) {
@@ -519,6 +546,10 @@ class SettingsState {
       uiScale: uiScale ?? this.uiScale,
       appTheme: appTheme ?? this.appTheme,
       appSkin: appSkin ?? this.appSkin,
+      posterLook: posterLook ?? this.posterLook,
+      proxyEnabled: proxyEnabled ?? this.proxyEnabled,
+      proxyHost: proxyHost ?? this.proxyHost,
+      proxyPort: proxyPort ?? this.proxyPort,
       wallpaperPath: clearWallpaperPath
           ? null
           : (wallpaperPath ?? this.wallpaperPath),
@@ -727,6 +758,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final AppSkinId appSkin = AppSkinId.fromId(
       _prefs.getString(SettingsKeys.appSkin),
     );
+    final PosterLook posterLook = PosterLook.fromId(
+      _prefs.getString(SettingsKeys.posterLook),
+    );
+    final AppProxyConfig proxy = AppProxyConfig(
+      enabled: _prefs.getBool(SettingsKeys.proxyEnabled) ?? false,
+      host:
+          _prefs.getString(SettingsKeys.proxyHost) ??
+          AppProxyConfig.defaultHost,
+      port: _prefs.getInt(SettingsKeys.proxyPort) ?? AppProxyConfig.defaultPort,
+    );
+    AppProxyConfig.current = proxy;
     final String? wallpaperPath = _prefs.getString(SettingsKeys.wallpaperPath);
 
     // Valid token → connected immediately (skip verify);
@@ -778,6 +820,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
       uiScale: uiScale,
       appTheme: appTheme,
       appSkin: appSkin,
+      posterLook: posterLook,
+      proxyEnabled: proxy.enabled,
+      proxyHost: proxy.host,
+      proxyPort: proxy.port,
       wallpaperPath: wallpaperPath,
     );
 
@@ -1186,6 +1232,45 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(appSkin: skin);
   }
 
+  Future<void> setPosterLook(PosterLook look) async {
+    if (look == state.posterLook) return;
+    await _prefs.setString(SettingsKeys.posterLook, look.id);
+    state = state.copyWith(posterLook: look);
+  }
+
+  Future<void> setProxyEnabled({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.proxyEnabled, enabled);
+    state = state.copyWith(proxyEnabled: enabled);
+    _applyProxy();
+  }
+
+  /// False rejects a malformed host and keeps the stored one.
+  Future<bool> setProxyHost(String host) async {
+    final String trimmed = host.trim();
+    if (!AppProxyConfig.isValidHost(trimmed)) return false;
+    await _prefs.setString(SettingsKeys.proxyHost, trimmed);
+    state = state.copyWith(proxyHost: trimmed);
+    _applyProxy();
+    return true;
+  }
+
+  /// False rejects a port outside 1..65535 and keeps the stored one.
+  Future<bool> setProxyPort(int port) async {
+    if (!AppProxyConfig.isValidPort(port)) return false;
+    await _prefs.setInt(SettingsKeys.proxyPort, port);
+    state = state.copyWith(proxyPort: port);
+    _applyProxy();
+    return true;
+  }
+
+  void _applyProxy() {
+    AppProxyConfig.current = AppProxyConfig(
+      enabled: state.proxyEnabled,
+      host: state.proxyHost,
+      port: state.proxyPort,
+    );
+  }
+
   /// Returns false when the user cancels the picker; a failed copy throws
   /// [WallpaperSaveException] and leaves the current wallpaper in place.
   Future<bool> pickWallpaper({required String dialogTitle}) async {
@@ -1425,6 +1510,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.uiScale);
     await _prefs.remove(SettingsKeys.appTheme);
     await _prefs.remove(SettingsKeys.appSkin);
+    await _prefs.remove(SettingsKeys.posterLook);
+    await _prefs.remove(SettingsKeys.proxyEnabled);
+    await _prefs.remove(SettingsKeys.proxyHost);
+    await _prefs.remove(SettingsKeys.proxyPort);
     await resetWallpaper();
     await _writeCredential(SettingsKeys.raUsername, '');
     await _writeCredential(SettingsKeys.raApiKey, '');
@@ -1439,5 +1528,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _podcastIndexApi.clearCredentials();
 
     state = const SettingsState();
+    _applyProxy();
   }
 }
