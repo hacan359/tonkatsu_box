@@ -1,5 +1,5 @@
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/theme/app_colors.dart';

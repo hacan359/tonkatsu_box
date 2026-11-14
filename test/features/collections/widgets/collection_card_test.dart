@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:core/models/collection.dart';
 import 'package:core/models/cover_info.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
@@ -11,6 +11,7 @@ import 'package:tonkatsu_box/features/collections/providers/collection_covers_pr
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_card.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/constants/media_type_theme.dart';
 
 Collection _makeCollection({
@@ -93,7 +94,7 @@ Widget _buildTestApp({
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: SizedBox(
@@ -608,7 +609,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Center(

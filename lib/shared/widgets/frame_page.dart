@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../navigation/frame_chrome.dart';
 import '../navigation/frame_metrics.dart';

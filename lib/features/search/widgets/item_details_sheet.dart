@@ -10,7 +10,7 @@ import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../shared/widgets/copyable_text.dart';

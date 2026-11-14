@@ -28,10 +28,9 @@ class TmdbMatch {
 class TmdbMatcher {
   TmdbMatcher(
     this._api, {
-    RateLimitedRetry retry = const RateLimitedRetry(),
-    Duration throttle = const Duration(milliseconds: 150),
-  })  : _retry = retry,
-        _throttle = throttle;
+    this._retry = const RateLimitedRetry(),
+    this._throttle = const Duration(milliseconds: 150),
+  });
 
   final TmdbApi _api;
   final RateLimitedRetry _retry;

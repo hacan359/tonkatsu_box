@@ -2,7 +2,7 @@ import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';

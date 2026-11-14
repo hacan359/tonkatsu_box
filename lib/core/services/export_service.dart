@@ -76,19 +76,15 @@ class ExportResult {
 
 /// Exports collections to the .xcoll / .xcollx formats.
 class ExportService {
-  /// [canvasRepository], [imageCacheService] and [database] are only needed
+  /// [_canvasRepository], [_imageCacheService] and [_database] are only needed
   /// for full export (.xcollx): canvas data, covers and season data.
   ExportService({
-    CanvasRepository? canvasRepository,
-    ImageCacheService? imageCacheService,
-    DatabaseService? database,
-    TrackerDao? trackerDao,
-    CollectionHeroService? heroService,
-  })  : _canvasRepository = canvasRepository,
-        _imageCacheService = imageCacheService,
-        _database = database,
-        _trackerDao = trackerDao,
-        _heroService = heroService;
+    this._canvasRepository,
+    this._imageCacheService,
+    this._database,
+    this._trackerDao,
+    this._heroService,
+  });
 
   static final Logger _log = Logger('ExportService');
 

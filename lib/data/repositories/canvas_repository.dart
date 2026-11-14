@@ -26,7 +26,7 @@ final Provider<CanvasRepository> canvasRepositoryProvider =
 });
 
 class CanvasRepository {
-  CanvasRepository({required DatabaseService db}) : _db = db;
+  CanvasRepository({required this._db});
 
   final DatabaseService _db;
 

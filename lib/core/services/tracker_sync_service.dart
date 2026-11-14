@@ -75,10 +75,9 @@ class TrackerSyncResult {
 /// load lazily per game, and the profile sync updates `tracker_profiles`.
 class TrackerSyncService {
   TrackerSyncService({
-    required TrackerDao trackerDao,
-    required RaApi raApi,
-  })  : _trackerDao = trackerDao,
-        _raApi = raApi;
+    required this._trackerDao,
+    required this._raApi,
+  });
 
   static final Logger _log = Logger('TrackerSyncService');
 

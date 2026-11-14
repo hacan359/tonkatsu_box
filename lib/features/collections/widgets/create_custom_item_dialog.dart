@@ -8,7 +8,7 @@ import 'package:core/models/tag.dart';
 import 'package:core/utils/cover_image_id.dart';
 import 'package:core/utils/json_list.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

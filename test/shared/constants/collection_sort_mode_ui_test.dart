@@ -1,7 +1,8 @@
 import 'package:core/models/collection_sort_mode.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/constants/collection_sort_mode_ui.dart';
 
 void main() {
@@ -11,7 +12,7 @@ void main() {
         late S l;
         await tester.pumpWidget(
           MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (BuildContext context) {

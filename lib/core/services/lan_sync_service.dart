@@ -46,9 +46,7 @@ class LanPeer {
 /// Pull model over UDP discovery + HTTP: peers download snapshots via
 /// [DbSyncService]; every snapshot download is approved on the serving device.
 class LanSyncService {
-  LanSyncService({required DbSyncService sync, required ConfigService config})
-      : _sync = sync,
-        _config = config;
+  LanSyncService({required this._sync, required this._config});
 
   static const int discoveryPort = 47813;
 

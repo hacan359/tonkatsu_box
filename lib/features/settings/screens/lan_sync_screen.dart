@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:core/models/sync_manifest.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 

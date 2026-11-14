@@ -100,7 +100,7 @@ class CollectionStats {
 /// Thin orchestrator over [DatabaseService] for collections and their items;
 /// a `null` collectionId everywhere means "uncategorized".
 class CollectionRepository {
-  CollectionRepository({required DatabaseService db}) : _db = db;
+  CollectionRepository({required this._db});
 
   final DatabaseService _db;
 

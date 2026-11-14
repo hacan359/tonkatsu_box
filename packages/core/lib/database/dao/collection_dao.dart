@@ -32,24 +32,16 @@ import 'visual_novel_dao.dart';
 class CollectionDao {
   const CollectionDao(
     this._getDatabase, {
-    required GameDao gameDao,
-    required MovieDao movieDao,
-    required TvShowDao tvShowDao,
-    required VisualNovelDao visualNovelDao,
-    required AnimeDao animeDao,
-    required MangaDao mangaDao,
-    required BookDao bookDao,
-    required AudioDao audioDao,
-    required CustomMediaDao customMediaDao,
-  })  : _gameDao = gameDao,
-        _movieDao = movieDao,
-        _tvShowDao = tvShowDao,
-        _visualNovelDao = visualNovelDao,
-        _animeDao = animeDao,
-        _mangaDao = mangaDao,
-        _bookDao = bookDao,
-        _audioDao = audioDao,
-        _customMediaDao = customMediaDao;
+    required this._gameDao,
+    required this._movieDao,
+    required this._tvShowDao,
+    required this._visualNovelDao,
+    required this._animeDao,
+    required this._mangaDao,
+    required this._bookDao,
+    required this._audioDao,
+    required this._customMediaDao,
+  });
 
   /// The media DAOs are always the same nine over the same connection, so
   /// every host (app, server, tests) would otherwise repeat the wiring.

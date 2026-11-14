@@ -5,7 +5,7 @@ import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,6 +16,7 @@ import 'package:tonkatsu_box/features/collections/providers/collections_provider
 import 'package:tonkatsu_box/features/collections/screens/collection_screen.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 import 'package:tonkatsu_box/shared/widgets/media_type_icon_strip.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
@@ -184,7 +185,7 @@ void main() {
         collectionsSearchQueryProvider.overrideWith((Ref ref) => searchQuery),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: CollectionScreen(collectionId: collectionId)),
       ),

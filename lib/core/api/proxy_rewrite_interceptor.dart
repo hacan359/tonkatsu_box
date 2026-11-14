@@ -6,7 +6,7 @@ import '../selfhost/server_origin.dart';
 /// Routes an allowlisted upstream through the selfhost server, which a browser
 /// cannot reach itself: no CORS header, no `User-Agent`, no keys.
 class ProxyRewriteInterceptor extends Interceptor {
-  ProxyRewriteInterceptor({String? baseUrl}) : _baseUrl = baseUrl;
+  ProxyRewriteInterceptor({this._baseUrl});
 
   final String? _baseUrl;
 

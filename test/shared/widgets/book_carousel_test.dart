@@ -1,9 +1,10 @@
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/widgets/book_carousel.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
@@ -19,7 +20,7 @@ Book gbook({required String id, required String title}) => createTestBook(
 Widget host(Widget child) => ProviderScope(
       child: MaterialApp(
         locale: const Locale('en'),
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: child),
       ),

@@ -1,6 +1,6 @@
 import 'package:core/models/data_source.dart';
 import 'package:core/models/image_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_spacing.dart';

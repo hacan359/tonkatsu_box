@@ -17,15 +17,13 @@ class WhatsNewContent {
 
 /// Decides whether the "What's new" dialog is due after an app update.
 class WhatsNewService {
-  /// [currentVersionOverride] replaces `PackageInfo.fromPlatform()` and
-  /// [notesLoader] replaces the bundled-asset read in tests.
+  /// [_currentVersionOverride] replaces `PackageInfo.fromPlatform()` and
+  /// [_notesLoader] replaces the bundled-asset read in tests.
   WhatsNewService({
-    required SharedPreferences prefs,
-    String? currentVersionOverride,
-    Future<String> Function()? notesLoader,
-  })  : _prefs = prefs,
-        _currentVersionOverride = currentVersionOverride,
-        _notesLoader = notesLoader;
+    required this._prefs,
+    this._currentVersionOverride,
+    this._notesLoader,
+  });
 
   final SharedPreferences _prefs;
   final String? _currentVersionOverride;

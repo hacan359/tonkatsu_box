@@ -234,22 +234,15 @@ class BackupManifest {
 /// data), the wishlist and settings, restorable in a single operation.
 class BackupService {
   BackupService({
-    required DatabaseService database,
-    required ExportService exportService,
-    required ImportService importService,
-    required ConfigService configService,
-    required CollectionRepository collectionRepo,
-    required WishlistRepository wishlistRepo,
-    TrackerDao? trackerDao,
-    MoodGridDao? moodGridDao,
-  })  : _database = database,
-        _exportService = exportService,
-        _importService = importService,
-        _configService = configService,
-        _collectionRepo = collectionRepo,
-        _wishlistRepo = wishlistRepo,
-        _trackerDao = trackerDao,
-        _moodGridDao = moodGridDao;
+    required this._database,
+    required this._exportService,
+    required this._importService,
+    required this._configService,
+    required this._collectionRepo,
+    required this._wishlistRepo,
+    this._trackerDao,
+    this._moodGridDao,
+  });
 
   static final Logger _log = Logger('BackupService');
 

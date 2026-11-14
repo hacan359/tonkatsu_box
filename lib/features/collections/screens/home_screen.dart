@@ -1,7 +1,7 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_list_sort_mode.dart';
 import 'package:core/models/xcoll_file.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

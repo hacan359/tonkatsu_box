@@ -9,7 +9,7 @@ import 'package:core/models/tag_sort_mode.dart';
 import 'package:core/models/tier_list.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:core/models/xcoll_file.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';

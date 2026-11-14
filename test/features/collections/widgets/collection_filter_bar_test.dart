@@ -5,7 +5,7 @@ import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as p;
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
@@ -13,6 +13,7 @@ import 'package:tonkatsu_box/features/collections/providers/collections_provider
 import 'package:tonkatsu_box/features/collections/widgets/collection_filter_bar.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/widgets/media_type_icon_strip.dart';
 import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 
@@ -180,7 +181,7 @@ Widget _buildTestApp({
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(body: child),
     ),
