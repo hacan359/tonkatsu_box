@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../shared/theme/app_colors.dart';
@@ -16,12 +16,14 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
     columnSize: const TrinaGridColumnSizeConfig(
       resizeMode: TrinaResizeMode.normal,
     ),
+    // The grid sits on the glass panel, so it paints no backing of its own;
+    // hover and activation are neutral scrims that read on any wallpaper.
     style: TrinaGridStyleConfig.dark(
-      gridBackgroundColor: AppColors.background,
-      rowColor: AppColors.background,
+      gridBackgroundColor: Colors.transparent,
+      rowColor: Colors.transparent,
       enableRowHoverColor: true,
-      rowHoveredColor: AppColors.surfaceLight.withAlpha(50),
-      activatedColor: AppColors.surfaceLight.withAlpha(40),
+      rowHoveredColor: AppColors.textPrimary.withAlpha(18),
+      activatedColor: AppColors.textPrimary.withAlpha(14),
       activatedBorderColor: AppColors.brand.withAlpha(120),
       rowCheckedColor: AppColors.brand.withAlpha(40),
       // Without these the checkmark defaults to activatedColor (a dark
@@ -31,14 +33,14 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
       cellCheckedColor: AppColors.onOverlay,
       columnCheckedColor: AppColors.onOverlay,
       cellColorInReadOnlyState: Colors.transparent,
-      borderColor: AppColors.surfaceBorder.withAlpha(40),
+      borderColor: AppColors.textPrimary.withAlpha(24),
       enableColumnBorderVertical: false,
       enableCellBorderVertical: false,
-      gridBorderColor: AppColors.surfaceBorder.withAlpha(40),
+      gridBorderColor: AppColors.textPrimary.withAlpha(24),
       gridBorderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       iconColor: AppColors.textTertiary,
       disabledIconColor: AppColors.textTertiary.withAlpha(80),
-      menuBackgroundColor: AppColors.surface,
+      menuBackgroundColor: AppColors.surface.withAlpha(215),
       dragTargetColumnColor: AppColors.brand.withAlpha(30),
       columnTextStyle: AppTypography.caption.copyWith(
         color: AppColors.textTertiary,
@@ -47,9 +49,61 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
         fontSize: 10.5,
       ),
       cellTextStyle: AppTypography.body,
+      // The stock glyphs sit 12px inside the header and cover short titles.
+      columnResizeWidget: const _HeaderEdge(child: _ResizeGrip()),
+      columnAscendingIcon: _HeaderEdge(
+        child: Icon(
+          Icons.arrow_upward,
+          size: _sortIconSize,
+          color: AppColors.brand,
+        ),
+      ),
+      columnDescendingIcon: _HeaderEdge(
+        child: Icon(
+          Icons.arrow_downward,
+          size: _sortIconSize,
+          color: AppColors.brand,
+        ),
+      ),
       rowHeight: 72,
       columnHeight: 40,
       columnFilterHeight: 40,
     ),
   );
+}
+
+const double _sortIconSize = 14;
+
+// The grid centres its header icon in a box that ends 12px before the column
+// edge; this shift moves the content out to the edge itself.
+const double _headerEdgeShift = 10;
+
+class _HeaderEdge extends StatelessWidget {
+  const _HeaderEdge({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(_headerEdgeShift, 0),
+      child: Align(alignment: Alignment.centerRight, child: child),
+    );
+  }
+}
+
+class _ResizeGrip extends StatelessWidget {
+  const _ResizeGrip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 2,
+      height: 14,
+      decoration: BoxDecoration(
+        color: AppColors.textPrimary.withAlpha(40),
+        borderRadius: BorderRadius.circular(1),
+      ),
+    );
+  }
 }

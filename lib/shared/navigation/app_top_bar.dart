@@ -1,5 +1,5 @@
 import 'package:core/utils/meta_search.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/update_service.dart';
@@ -10,18 +10,18 @@ import '../constants/search_mode_ui.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import 'nav_icon_button.dart';
+import 'frame_chrome.dart';
 import 'nav_tab.dart';
 import 'nav_tour_keys.dart';
 import 'search_providers.dart';
 import 'service_badges.dart';
+import '../widgets/glass_popup_menu.dart';
+import 'frame_metrics.dart';
+import 'zone_icon_button.dart';
 
 const double kAppTopBarHeight = 56;
 
-const double _kIdleSearchMaxWidth = 280;
-
-  /// Wrap in [PreferredSize] with `kAppTopBarHeight + MediaQuery.paddingOf(context).top`
-  /// so Scaffold reserves room for the Android status bar.
+/// The frame's top panel: back + title, the always-open search, actions.
 class AppTopBar extends ConsumerStatefulWidget {
   const AppTopBar({
     required this.activeTab,
@@ -75,17 +75,17 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
       _controller.text = initial;
     }
 
-    _querySub = ref.listenManual<String>(
-      ctx.queryProvider,
-      (String? previous, String next) {
-        if (_controller.text != next) {
-          _controller.value = TextEditingValue(
-            text: next,
-            selection: TextSelection.collapsed(offset: next.length),
-          );
-        }
-      },
-    );
+    _querySub = ref.listenManual<String>(ctx.queryProvider, (
+      String? previous,
+      String next,
+    ) {
+      if (_controller.text != next) {
+        _controller.value = TextEditingValue(
+          text: next,
+          selection: TextSelection.collapsed(offset: next.length),
+        );
+      }
+    });
   }
 
   /// Rebuilds on focus change — the empty field narrows and widens with it.
@@ -128,8 +128,6 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
         ref.watch(updateCheckProvider).valueOrNull?.hasUpdate ?? false;
     final bool settingsActive = widget.activeTab == NavTab.settings;
 
-    final bool isIdle =
-        !focusNode.hasFocus && _controller.text.isEmpty;
     final bool metaSearchAvailable = ctx?.supportsMetaSearch ?? false;
     final SearchMode mode = metaSearchAvailable
         ? ref.watch(searchModeProvider)
@@ -137,111 +135,87 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
     final String hint = mode == SearchMode.meta
         ? S.of(context).appBarMetaSearchHint
         : ctx?.hint ?? '';
-    final double statusBarHeight = MediaQuery.paddingOf(context).top;
+    final FrameChrome? chrome = FrameChromeScope.watch(context)?.current;
+    final VoidCallback? onBack = chrome?.onBack;
+    final String? title = chrome?.title;
+    final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
+    final bool tourActive = ref.watch(menuTourControllerProvider);
 
-    return Container(
-      height: kAppTopBarHeight + statusBarHeight,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
-        ),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm + statusBarHeight,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: isIdle ? _kIdleSearchMaxWidth : double.infinity,
-                ),
-                child: _SearchField(
-                  controller: _controller,
-                  focusNode: focusNode,
-                  enabled: enabled,
-                  hint: hint,
-                  mode: mode,
-                  onModeChanged: metaSearchAvailable
-                      ? (SearchMode value) => ref
-                          .read(searchModeProvider.notifier)
-                          .state = value
-                      : null,
-                  onChanged: (String value) {
-                    if (ctx == null) return;
-                    ref.read(ctx.queryProvider.notifier).state = value;
-                  },
-                  onClear: () {
-                    if (ctx == null) return;
-                    _controller.clear();
-                    ref.read(ctx.queryProvider.notifier).state = '';
-                  },
+    final Widget searchField = _SearchField(
+      controller: _controller,
+      focusNode: focusNode,
+      enabled: enabled,
+      hint: hint,
+      mode: mode,
+      onModeChanged: metaSearchAvailable
+          ? (SearchMode value) =>
+                ref.read(searchModeProvider.notifier).state = value
+          : null,
+      onChanged: (String value) {
+        if (ctx == null) return;
+        ref.read(ctx.queryProvider.notifier).state = value;
+      },
+      onClear: () {
+        if (ctx == null) return;
+        _controller.clear();
+        ref.read(ctx.queryProvider.notifier).state = '';
+        focusNode.unfocus();
+      },
+    );
+
+    // One row in the top panel: back + title, the open search, then the
+    // sub-screen's actions, service badges and settings.
+    return Row(
+      children: <Widget>[
+        if (onBack != null)
+          ZoneIconButton(icon: Icons.arrow_back, onTap: onBack),
+        if (title != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kFrameTitleMaxWidth),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xs,
+                0,
+                AppSpacing.md,
+                0,
+              ),
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.body.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          const ServiceBadges(),
-          const SizedBox(width: AppSpacing.sm),
-          _SettingsButton(
-            // Tour key only while the menu tour runs — otherwise two shells
-            // alive at once (DB-reset `pushReplacement`) reuse it and crash.
-            key: ref.watch(menuTourControllerProvider)
-                ? ref.watch(navTourKeysProvider).keyFor(NavTab.settings)
-                : null,
-            active: settingsActive,
-            pulsing: hasUpdate,
-            onTap: widget.onSettingsTap,
+        Expanded(
+          child: Container(
+            height: kFrameSearchFieldHeight,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.background.withAlpha(110),
+              borderRadius: BorderRadius.circular(kFrameSearchFieldHeight / 2),
+              border: Border.all(color: AppColors.surfaceBorder),
+            ),
+            child: searchField,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Gear icon with an optional pulsing badge when an update is available.
-class _SettingsButton extends StatelessWidget {
-  const _SettingsButton({
-    required this.active,
-    required this.pulsing,
-    required this.onTap,
-    super.key,
-  });
-
-  final bool active;
-  final bool pulsing;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color color = active ? AppColors.brand : AppColors.textTertiary;
-
-    Widget icon = Icon(
-      active ? Icons.settings : Icons.settings_outlined,
-      size: kTopBarIconSize,
-      color: color,
-    );
-
-    if (pulsing) {
-      icon = NavPulsingBadge(child: icon);
-    }
-
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 24,
-        containedInkWell: false,
-        highlightShape: BoxShape.circle,
-        child: Center(child: icon),
-      ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        ...?chrome?.actions,
+        const ServiceBadges(),
+        ZoneIconButton(
+          // Tour key only while the menu tour runs — otherwise two shells
+          // alive at once (DB-reset `pushReplacement`) reuse it and crash.
+          key: tourActive ? tourKeys.keyFor(NavTab.settings) : null,
+          icon: settingsActive ? Icons.settings : Icons.settings_outlined,
+          color: settingsActive ? AppColors.brand : AppColors.textTertiary,
+          badge: hasUpdate,
+          onTap: widget.onSettingsTap,
+        ),
+      ],
     );
   }
 }
@@ -271,8 +245,9 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color iconColor =
-        enabled ? AppColors.textTertiary : AppColors.textTertiary.withAlpha(120);
+    final Color iconColor = enabled
+        ? AppColors.textTertiary
+        : AppColors.textTertiary.withAlpha(120);
     final bool compact = isCompactScreen(context);
     final double textSize = compact ? 12 : 13;
     final double searchIconSize = compact ? 16 : 18;
@@ -360,26 +335,16 @@ class _SearchModeMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return PopupMenuButton<SearchMode>(
+    return GlassPopupMenuButton<SearchMode>(
       tooltip: l.searchModeTooltip,
-      padding: EdgeInsets.zero,
       offset: const Offset(0, AppSpacing.xl),
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
       onSelected: onSelected,
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<SearchMode>>[
+      rows: (BuildContext _) => <Widget>[
         for (final SearchMode value in SearchMode.values)
-          CheckedPopupMenuItem<SearchMode>(
+          GlassMenuRow<SearchMode>(
             value: value,
+            label: value.localizedLabel(l),
             checked: value == mode,
-            child: Text(
-              value.localizedLabel(l),
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textPrimary,
-              ),
-            ),
           ),
       ],
       child: Row(

@@ -10,7 +10,7 @@ import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../shared/widgets/copyable_text.dart';
@@ -27,6 +27,7 @@ import '../../../shared/constants/screenscraper_systemes.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../../collections/widgets/screenscraper_gallery_section.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Unified bottom sheet for game / movie / TV / manga / anime / VN details.
 class ItemDetailsSheet extends StatelessWidget {
@@ -65,8 +66,7 @@ class ItemDetailsSheet extends StatelessWidget {
     VoidCallback? onAddToCollection,
     bool isAnimation = false,
   }) {
-    final IconData icon =
-        isAnimation ? Icons.animation : Icons.movie_outlined;
+    final IconData icon = isAnimation ? Icons.animation : Icons.movie_outlined;
     return ItemDetailsSheet(
       title: movie.title,
       icon: icon,
@@ -95,8 +95,7 @@ class ItemDetailsSheet extends StatelessWidget {
     VoidCallback? onAddToCollection,
     bool isAnimation = false,
   }) {
-    final IconData icon =
-        isAnimation ? Icons.animation : Icons.tv_outlined;
+    final IconData icon = isAnimation ? Icons.animation : Icons.tv_outlined;
     return ItemDetailsSheet(
       title: tvShow.title,
       icon: icon,
@@ -170,8 +169,8 @@ class ItemDetailsSheet extends StatelessWidget {
       subtitle: displayTitle != manga.title
           ? manga.title
           : (manga.titleEnglish != null && manga.titleEnglish != manga.title
-              ? manga.titleEnglish
-              : null),
+                ? manga.titleEnglish
+                : null),
       infoChips: <MediaDetailChip>[
         if (manga.authorsString != null)
           MediaDetailChip(
@@ -218,8 +217,8 @@ class ItemDetailsSheet extends StatelessWidget {
       subtitle: displayTitle != anime.title
           ? anime.title
           : (anime.titleEnglish != null && anime.titleEnglish != anime.title
-              ? anime.titleEnglish
-              : null),
+                ? anime.titleEnglish
+                : null),
       infoChips: <MediaDetailChip>[
         if (onStudioTap != null)
           for (final String studio in anime.studios ?? const <String>[])
@@ -305,8 +304,7 @@ class ItemDetailsSheet extends StatelessWidget {
       rating: book.formattedRating,
       genres: book.subjects,
       maxGenres: _defaultMaxChips,
-      subtitle: book.originalTitle != null &&
-              book.originalTitle != book.title
+      subtitle: book.originalTitle != null && book.originalTitle != book.title
           ? book.originalTitle
           : null,
       infoChips: <MediaDetailChip>[
@@ -361,8 +359,10 @@ class ItemDetailsSheet extends StatelessWidget {
         if (album.primaryType != null)
           MediaDetailChip(
             icon: Icons.album_outlined,
-            text: <String>[album.primaryType!, ...album.secondaryTypes]
-                .join(' · '),
+            text: <String>[
+              album.primaryType!,
+              ...album.secondaryTypes,
+            ].join(' · '),
           ),
         if (album.label != null)
           MediaDetailChip(icon: Icons.business, text: album.label!),
@@ -478,20 +478,12 @@ class ItemDetailsSheet extends StatelessWidget {
       maxChildSize: 0.95,
       expand: false,
       builder: (BuildContext context, ScrollController scrollController) {
-        return Material(
-          color: AppColors.background,
-          elevation: 16,
-          shadowColor: AppColors.shadow,
+        return GlassPanel(
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppSpacing.radiusLg),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              image: AppColors.tileImage,
-            ),
-            child: Stack(
-              children: <Widget>[
+          child: Stack(
+            children: <Widget>[
               // Falls back to the poster with a heavy blur when backdrop is missing.
               if (backdropUrl != null || posterUrl != null) ...<Widget>[
                 Positioned.fill(
@@ -547,13 +539,8 @@ class ItemDetailsSheet extends StatelessWidget {
                 controller: scrollController,
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface.withAlpha(80),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusMd),
-                    border: Border.all(
-                      color: AppColors.surfaceBorder.withAlpha(40),
-                    ),
+                  decoration: pictureTileDecoration(
+                    radius: AppSpacing.radiusMd,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -577,7 +564,10 @@ class ItemDetailsSheet extends StatelessWidget {
                       if (moreByAuthorSection != null)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+                            AppSpacing.lg,
+                            0,
+                            AppSpacing.lg,
+                            AppSpacing.lg,
                           ),
                           child: moreByAuthorSection,
                         ),
@@ -585,8 +575,7 @@ class ItemDetailsSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              ],
-            ),
+            ],
           ),
         );
       },
@@ -606,7 +595,10 @@ class ItemDetailsSheet extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.sm,
       ),
       child: Stack(
         children: <Widget>[
@@ -624,8 +616,7 @@ class ItemDetailsSheet extends StatelessWidget {
                 ),
               ),
               LayoutBuilder(
-                builder:
-                    (BuildContext context, BoxConstraints constraints) {
+                builder: (BuildContext context, BoxConstraints constraints) {
                   final bool stacked =
                       constraints.maxWidth < _stackedLayoutBreakpoint;
                   if (stacked) {
@@ -700,9 +691,7 @@ class ItemDetailsSheet extends StatelessWidget {
           width: width,
           height: height,
           color: AppColors.surfaceLight,
-          child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         ),
         errorWidget: Container(
           width: width,
@@ -722,21 +711,21 @@ class ItemDetailsSheet extends StatelessWidget {
           text: title,
           iconSize: 16,
           child: Text.rich(
-            TextSpan(children: <InlineSpan>[
-              TextSpan(
-                text: title,
-                style: AppTypography.h2.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (year != null)
+            TextSpan(
+              children: <InlineSpan>[
                 TextSpan(
-                  text: '  $year',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
+                  text: title,
+                  style: AppTypography.h2.copyWith(fontWeight: FontWeight.bold),
                 ),
-            ]),
+                if (year != null)
+                  TextSpan(
+                    text: '  $year',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
         if (subtitle != null) ...<Widget>[
@@ -760,16 +749,14 @@ class ItemDetailsSheet extends StatelessWidget {
             ),
             if (rating != null) ...<Widget>[
               const SizedBox(width: AppSpacing.sm),
-              Icon(Icons.star,
-                  size: 14, color: AppColors.ratingStar),
+              Icon(Icons.star, size: 14, color: AppColors.ratingStar),
               const SizedBox(width: 2),
               Text(rating!, style: AppTypography.bodySmall),
             ],
             if (extraInfo != null) ...<Widget>[
               const SizedBox(width: AppSpacing.sm),
               if (extraInfoIcon != null) ...<Widget>[
-                Icon(extraInfoIcon,
-                    size: 14, color: AppColors.brand),
+                Icon(extraInfoIcon, size: 14, color: AppColors.brand),
                 const SizedBox(width: 2),
               ],
               Flexible(
@@ -799,10 +786,8 @@ class ItemDetailsSheet extends StatelessWidget {
           Wrap(
             spacing: 6,
             runSpacing: 4,
-            children: (maxGenres != null
-                    ? genres!.take(maxGenres!)
-                    : genres!)
-                .map(_buildGenreChip)
+            children: (maxGenres != null ? genres!.take(maxGenres!) : genres!)
+                .map((String g) => _buildGenreChip(context, g))
                 .toList(),
           ),
         ],
@@ -812,7 +797,7 @@ class ItemDetailsSheet extends StatelessWidget {
             spacing: 6,
             runSpacing: 4,
             children: (maxTags != null ? tags!.take(maxTags!) : tags!)
-                .map(_buildTagChip)
+                .map((String t) => _buildTagChip(context, t))
                 .toList(),
           ),
         ],
@@ -855,28 +840,26 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildGenreChip(String genre) {
+  Widget _buildGenreChip(BuildContext context, String genre) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       child: Text(
         genre,
-        style: AppTypography.caption.copyWith(
-          color: AppColors.textSecondary,
-        ),
+        style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
       ),
     );
   }
 
-  Widget _buildTagChip(String tag) {
+  Widget _buildTagChip(BuildContext context, String tag) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.surfaceLight),
+        border: Border.all(color: glassTileBorderColor()),
       ),
       child: Text(
         tag,
@@ -893,7 +876,10 @@ class ItemDetailsSheet extends StatelessWidget {
   static Widget _overviewSection(BuildContext context, Widget body) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -974,9 +960,7 @@ class _AddButtonState extends State<_AddButton> {
         scale: _hovered ? 1.1 : 1.0,
         duration: AppDurations.fast,
         child: Material(
-          color: _hovered
-              ? AppColors.brand.withAlpha(240)
-              : AppColors.brand,
+          color: _hovered ? AppColors.brand.withAlpha(240) : AppColors.brand,
           shape: const CircleBorder(),
           elevation: _hovered ? 8 : 4,
           shadowColor: AppColors.brand.withAlpha(100),

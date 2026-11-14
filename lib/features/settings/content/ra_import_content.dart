@@ -5,7 +5,7 @@ import 'package:core/models/collection_import.dart';
 import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/ra_user_profile.dart';
 import 'package:core/models/universal_import_result.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';

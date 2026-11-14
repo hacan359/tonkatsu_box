@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/canvas_connection.dart';
 import 'package:core/models/canvas_item.dart';
 
@@ -235,7 +237,7 @@ mixin CanvasOperationsMixin {
 
       final CanvasItem item = items[i].copyWith(x: x, y: y, zIndex: 0);
       updated.add(item);
-      operationsRepository.updateItemPosition(item.id, x: x, y: y);
+      unawaited(operationsRepository.updateItemPosition(item.id, x: x, y: y));
     }
 
     state = state.copyWith(items: updated);

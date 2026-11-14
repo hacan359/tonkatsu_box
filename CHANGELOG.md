@@ -7,6 +7,253 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Glass app frame**
+
+  The app is laid out as glass panels over a wallpaper: a search row on top,
+  the menu rail on the left (a bottom band on phones) and the content panel.
+  A sub-screen's back button, title and actions sit in the top row instead of
+  a second bar; pages switch with a shrink-and-grow transition.
+
+  * lib/shared/navigation/app_frame.dart (AppFrame, frameChromeHeight): New.
+  * lib/shared/navigation/frame_chrome.dart (FrameChrome, FrameChromeController,
+    FrameChromeScope, FrameChromeBinding): New; a page lends its title, back
+    button, actions and filter strip to the top row.
+  * lib/shared/navigation/app_wallpaper.dart (AppWallpaper),
+    lib/shared/navigation/frame_metrics.dart,
+    lib/shared/navigation/zone_icon_button.dart (ZoneIconButton): New.
+  * lib/shared/widgets/frame_page.dart (FramePage): New; the body of every tab
+    and sub-screen.
+  * lib/shared/widgets/glass_panel.dart (GlassPanel, GlassTile),
+    lib/shared/widgets/chip_tile.dart (ChipTile),
+    lib/shared/widgets/image_placeholder.dart (ImagePlaceholder): New.
+  * lib/shared/navigation/app_shell.dart, lib/shared/navigation/app_top_bar.dart:
+    Render through AppFrame; the top bar hosts the lent chrome.
+  * lib/features/collections/screens/collection_screen.dart, lib/features/collections/screens/item_detail_screen.dart, lib/features/genre_cloud/screens/genre_cloud_screen.dart, lib/features/likes/screens/likes_screen.dart, lib/features/mood_grids/screens/mood_grid_detail_screen.dart, lib/features/personalization/screens/personalization_hub_screen.dart, lib/features/personalization/widgets/personalization_sub_screen.dart, lib/features/recommendations/screens/recommendations_screen.dart, lib/features/showcase/screens/showcase_screen.dart, lib/features/tier_lists/screens/tier_list_detail_screen.dart, and every screen under lib/features/settings/screens/: Moved onto FramePage.
+  * lib/shared/widgets/media_detail_view.dart,
+    lib/shared/widgets/media_detail/desktop_detail_layout.dart,
+    lib/shared/widgets/media_detail/mobile_detail_layout.dart,
+    lib/shared/widgets/media_detail/media_detail_backdrop.dart,
+    lib/shared/widgets/media_detail/detail_sections.dart,
+    lib/features/collections/widgets/item_detail/item_detail_app_bar.dart:
+    The title card lays out on glass tiles and lends its buttons to the top row.
+
+- **Dialogs, sheets and menus on glass**
+
+  * lib/shared/widgets/glass_dialog.dart (GlassDialog, GlassDialogOption,
+    GlassAlertDialog, GlassSheet, showGlassSheet, GlassDialogFrame): New.
+  * lib/shared/widgets/glass_popup_menu.dart (GlassPopupMenuButton,
+    GlassMenuRow, GlassMenuDivider): New.
+  * Dialog, bottom sheet and popup menu call sites under lib/features/ and
+    lib/shared/widgets/: Switched to the glass variants.
+
+- **Media-type filters as an icon strip with count badges**
+
+  * lib/shared/widgets/media_type_icon_strip.dart (MediaTypeIconStrip,
+    MediaTypeIconTile, StripActionTile): New.
+  * lib/shared/widgets/filter_segments.dart (FilterSegment,
+    StatusDropdownSegment, FilterDropdownSegment): Renamed from
+    chevron_filter_bar.dart; dropdowns open an arrowed glass menu.
+  * lib/features/collections/widgets/collection_filter_bar.dart,
+    lib/features/home/screens/all_items_screen.dart,
+    lib/features/search/widgets/filter_bar.dart,
+    lib/features/search/widgets/filter_bar_compact.dart,
+    lib/features/search/widgets/filter_control.dart: Use the strip.
+
+- **Style setting: Glass or Classic**
+
+  Settings → Appearance gains "Style" next to "Theme". Glass puts translucent
+  panels over the palette background or a blurred photo of your own; Classic keeps the opaque tiled look of 0.46. Either works
+  with any palette. With Glass, "Wallpaper" sets your own picture behind the
+  frame or resets it to the palette background (desktop and Android).
+
+  * lib/shared/theme/app_skin.dart (AppSkin, SkinAlpha),
+    lib/shared/theme/app_skin_id.dart (AppSkinId),
+    lib/shared/theme/app_surface.dart (AppSurface),
+    lib/shared/theme/skins/glass_skin.dart,
+    lib/shared/theme/skins/classic_skin.dart: New.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setAppSkin, SettingsKeys.appSkin,
+    SettingsNotifier.pickWallpaper, SettingsNotifier.resetWallpaper,
+    SettingsKeys.wallpaperPath, SettingsState.wallpaperPath): New settings.
+  * lib/features/settings/screens/settings_screen.dart: "Style" picker and
+    "Wallpaper" options.
+  * lib/core/services/wallpaper_service.dart (WallpaperService,
+    WallpaperSaveException): New; keeps a copy of the picked image.
+  * lib/core/services/image_extension.dart (sanitizeImageExtension): New;
+    shared with lib/core/services/collection_hero_service.dart
+    (CollectionHeroService).
+  * lib/shared/navigation/app_wallpaper.dart (AppWallpaper): Shows the user's
+    picture as loaded; without one, or when the file is unreadable, the
+    palette tile.
+  * lib/app.dart: Applies the selected skin.
+  * lib/shared/theme/palettes/sakura_palette.dart: Deeper text colours.
+  * lib/l10n/app_*.arb (settingsSkin, settingsSkinSubtitle, settingsSkinGlass,
+    settingsSkinClassic, settingsWallpaper, settingsWallpaperSubtitle,
+    settingsWallpaperDefault, settingsWallpaperCustom, settingsWallpaperChoose,
+    settingsWallpaperReset, settingsWallpaperError): New keys.
+  * docs/THEMES.md: New.
+
+- **Volumetric logo on the splash screen**
+
+  The logo appears flat, then the clapperboard and tonkatsu pieces rise over
+  the backing with a side, a shadow and a highlight.
+
+  * lib/shared/widgets/volumetric_logo.dart (VolumetricLogo): New.
+  * lib/features/splash/screens/splash_screen.dart (SplashScreen): Uses it.
+  * assets/images/logo_layers/, pubspec.yaml: Logo layers.
+  * README.md, docs/assets/logo_volumetric.png: Static volumetric logo.
+
+- **Settings on tabs for wide windows**
+
+  From 800px up the settings page is split across five tabs — Profile, Data,
+  Appearance, Integrations, About — on a glass capsule whose active marker
+  slides to the chosen tab. Appearance is laid out as three groups: theme and
+  language, library, scale. Searching the settings looks across every tab.
+  Phones keep the single list.
+
+  * lib/shared/widgets/glass_tab_bar.dart (GlassTabBar, GlassTabOption): New.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState.build, _SettingsScreenState._buildTabs,
+    _SettingsScreenState._tabOption, _SettingsScreenState._appearanceThemeTiles,
+    _SettingsScreenState._appearanceLibraryTiles,
+    _SettingsScreenState._appearanceScaleTiles): Groups per tab; the wide
+    content column is 720px.
+  * lib/l10n/app_*.arb (settingsTabProfile, settingsTabData,
+    settingsAppearanceThemeLanguage, settingsAppearanceLibrary,
+    settingsAppearanceScale): New keys.
+
+- **Card style setting**
+
+  Settings → Appearance gains "Card style" with ten looks for poster cards in
+  grids. Classic keeps the card as it was. Cinema and Hover sheet drop the
+  caption under the poster and write the title on the picture. Shelf, Minimal
+  and Ribbon move status, progress and tags to new places. Tilt, Curved glass,
+  Slab and Jewel case give the poster depth. The setting shows with the Glass
+  style.
+
+  * lib/shared/widgets/poster_look.dart (PosterLook, PosterLookScope,
+    PosterObject, PosterTilt, PosterCurvedGlass, PosterSlab, PosterJewel): New.
+  * lib/shared/widgets/media_poster_card.dart (MediaPosterCard): Lays the grid
+    card out per look.
+  * lib/shared/utils/poster_grid_delegate.dart (posterGridGeometry): Cinema and
+    Hover sheet cells take the bare poster ratio.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setPosterLook, SettingsKeys.posterLook,
+    SettingsState.posterLook): New setting.
+  * lib/features/settings/screens/settings_screen.dart: "Card style" picker.
+  * lib/app.dart: Hands the selected look to the cards.
+  * lib/l10n/app_*.arb (settingsCardLook, settingsCardLookSubtitle,
+    settingsCardLookClassic, settingsCardLookCurved, settingsCardLookSlab,
+    settingsCardLookJewel, settingsCardLookCinema, settingsCardLookShelf,
+    settingsCardLookTilt, settingsCardLookKino, settingsCardLookMinimal,
+    settingsCardLookRibbon): New keys.
+
+- **HTTP proxy setting**
+
+  Settings → Data sources gains "Proxy": a switch, a host and a port. With it
+  on, the app sends its requests through that HTTP proxy and connects directly
+  when the proxy port is closed. Addresses on your own network (Kodi, LAN sync,
+  a selfhost server) connect directly. Desktop and Android.
+
+  * lib/core/services/app_proxy_config.dart (AppProxyConfig,
+    AppProxyConfig.findProxyForUri, AppProxyConfig.isLocalHost,
+    AppProxyConfig.isValidHost, AppProxyConfig.isValidPort): New.
+  * lib/core/services/app_http_overrides.dart
+    (AppHttpOverrides.createHttpClient): Routes each request by the live
+    proxy config.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsNotifier.setProxyEnabled, SettingsNotifier.setProxyHost,
+    SettingsNotifier.setProxyPort, SettingsKeys.proxyEnabled,
+    SettingsKeys.proxyHost, SettingsKeys.proxyPort, SettingsState.proxyEnabled,
+    SettingsState.proxyHost, SettingsState.proxyPort): New settings.
+  * lib/features/settings/screens/proxy_settings_screen.dart
+    (ProxySettingsScreen): New.
+  * lib/features/settings/screens/settings_screen.dart: "Proxy" tile.
+  * lib/l10n/app_*.arb (settingsProxy, settingsProxySubtitle, settingsProxyHint,
+    settingsProxyEnabled, settingsProxyHost, settingsProxyPort,
+    settingsProxyInvalid): New keys.
+
+- **Search in the collection tag filter**
+
+  A collection with eight or more tags gets a search field in the tag row and
+  in the filter sheet. Typing narrows the chips by name; selected tags stay
+  visible.
+
+  * lib/features/collections/helpers/tag_name_filter.dart (filterTagsByName,
+    kTagSearchMinTags): New.
+  * lib/features/collections/widgets/tag_top_bar.dart (TagTopBar): Search chip
+    that opens an inline field.
+  * lib/features/collections/widgets/collection_filter_sheet.dart
+    (CollectionFilterSheet): Search field above the tag chips.
+
+### Changed
+
+- **Flutter 3.50, Dart 3.14 and current package versions**
+
+  The app builds on Flutter 3.50 with Material widgets from the `material_ui`
+  package. Save dialogs write the file themselves on every platform, and a
+  name typed without its extension gets the extension added on desktop.
+
+  * pubspec.yaml: Dart `^3.14.0`, Flutter `>=3.50.0`; adds `material_ui`; moves
+    `file_picker` to 13, `device_info_plus` to 13, `package_info_plus` to 10,
+    `sensors_plus` to 7, `permission_handler` to 13, `android_intent_plus` to 6,
+    `cached_network_image` to 4, `xml` to 7, `trina_grid` to 2.4 and
+    `shadcn_ui` to 0.57.
+  * packages/core/pubspec.yaml, server/pubspec.yaml: Dart `^3.14.0`.
+  * android/settings.gradle.kts, android/gradle/wrapper/gradle-wrapper.properties,
+    android/gradle.properties, android/app/build.gradle.kts: Gradle 9.5.0,
+    Android Gradle Plugin 9.3.1, Kotlin 2.4.20, compile SDK 37.
+  * analysis_options.yaml: Adds `unawaited_futures` and the async, web and
+    likely-mistake rule groups; drops `avoid_null_checks_in_equality_operators`.
+  * lib/shared/services/file_dialogs.dart (saveBytesWithDialog,
+    PickedFileBytes.readBytesOrNull): New; every save and pick site goes
+    through them.
+  * lib/shared/constants/localization_delegates.dart
+    (kAppLocalizationsDelegates): New.
+  * lib/shared/widgets/legacy_material_bridge.dart (LegacyMaterialBridge),
+    lib/features/collections/widgets/collection_table/legacy_grid_scope.dart
+    (LegacyGridScope): New; theme and Material ancestors for packages still
+    built on the in-SDK Material library.
+  * lib/features/collections/widgets/collection_table/table_style.dart
+    (collectionTableConfiguration): Column resize grip and sort arrows sit at
+    the column edge instead of over the header text.
+
+- **Author review on the wide item card**
+
+  The two-column item card shows the author review under the notes.
+
+  * lib/shared/widgets/media_detail/desktop_detail_layout.dart
+    (DesktopDetailLayout): Adds the author section.
+
+- **Settings descriptions in the secondary text colour**
+
+  Group headers, group captions, tile descriptions and the value on the right
+  of a tile share one colour; only the chevrons stay muted.
+
+  * lib/features/settings/widgets/settings_group.dart (SettingsGroup.build),
+    lib/features/settings/widgets/settings_tile.dart (SettingsTile.build):
+    textTertiary → textSecondary.
+
+### Removed
+
+- **Old per-screen chrome**
+
+  * lib/shared/widgets/glass_app_bar.dart (GlassAppBar),
+    lib/shared/widgets/sub_screen_title_bar.dart (SubScreenTitleBar),
+    lib/shared/widgets/frame_inset.dart,
+    lib/shared/extensions/bottom_inset_extension.dart,
+    lib/features/search/widgets/platform_filter_sheet.dart (PlatformFilterSheet):
+    Removed.
+
+### Fixed
+
+- **"Refresh from source" works for TMDB animated movies**
+
+  * lib/features/collections/helpers/item_refresh.dart: An animation item
+    without the series flag is refetched as a movie.
+
 ## [0.46.0] - 2026-11-01
 
 ### Added

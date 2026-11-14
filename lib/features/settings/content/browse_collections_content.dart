@@ -1,6 +1,6 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/xcoll_file.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -19,6 +19,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 class BrowseCollectionsContent extends ConsumerStatefulWidget {
   const BrowseCollectionsContent({super.key});
@@ -60,8 +61,9 @@ class _BrowseCollectionsContentState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<CollectionsIndex> indexAsync =
-        ref.watch(collectionsIndexProvider);
+    final AsyncValue<CollectionsIndex> indexAsync = ref.watch(
+      collectionsIndexProvider,
+    );
 
     return indexAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -98,8 +100,9 @@ class _BrowseCollectionsContentState
   }
 
   Widget _buildBody(S l, CollectionsIndex index) {
-    final List<RemoteCollection> collections =
-        ref.watch(filteredRemoteCollectionsProvider);
+    final List<RemoteCollection> collections = ref.watch(
+      filteredRemoteCollectionsProvider,
+    );
 
     return Column(
       children: <Widget>[
@@ -116,8 +119,9 @@ class _BrowseCollectionsContentState
               index.totalCollections,
               index.totalItems,
             ),
-            style: AppTypography.bodySmall
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -176,8 +180,9 @@ class _BrowseCollectionsContentState
               ? Center(
                   child: Text(
                     l.browseCollectionsEmpty,
-                    style: AppTypography.body
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -217,10 +222,8 @@ class _BrowseCollectionsContentState
   Future<void> _showPlatformPicker(S l, CollectionsIndex index) async {
     final List<_PickerItem> items = <_PickerItem>[
       ...index.platforms.map(
-        (RemotePlatform p) => _PickerItem(
-          id: p.id,
-          label: '${p.shortName} — ${p.name}',
-        ),
+        (RemotePlatform p) =>
+            _PickerItem(id: p.id, label: '${p.shortName} — ${p.name}'),
       ),
       ...index.mediaTypes.map(
         (RemoteMediaType m) => _PickerItem(id: m.id, label: m.name),
@@ -239,9 +242,7 @@ class _BrowseCollectionsContentState
 
   Future<void> _showCategoryPicker(S l, CollectionsIndex index) async {
     final List<_PickerItem> items = index.categories
-        .map(
-          (CollectionCategory c) => _PickerItem(id: c.id, label: c.name),
-        )
+        .map((CollectionCategory c) => _PickerItem(id: c.id, label: c.name))
         .toList();
 
     final String? result = await _showSearchablePicker(
@@ -289,8 +290,9 @@ class _BrowseCollectionsContentState
                 ? l.browseCollectionsFormatFull
                 : l.browseCollectionsFormatLight,
           ].join(' · '),
-          style: AppTypography.bodySmall
-              .copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
         trailing: isDownloading
             ? const SizedBox(
@@ -311,17 +313,17 @@ class _BrowseCollectionsContentState
 
     final _ImportTarget? target = await showDialog<_ImportTarget>(
       context: context,
-      builder: (BuildContext context) => _ImportTargetDialog(
-        collectionName: collection.name,
-      ),
+      builder: (BuildContext context) =>
+          _ImportTargetDialog(collectionName: collection.name),
     );
     if (target == null || !mounted) return;
 
     setState(() => _downloadingIds.add(collection.id));
 
     try {
-      final CollectionBrowserService service =
-          ref.read(collectionBrowserServiceProvider);
+      final CollectionBrowserService service = ref.read(
+        collectionBrowserServiceProvider,
+      );
       final XcollFile xcoll = await service.downloadCollection(collection);
 
       if (!mounted) return;
@@ -348,9 +350,7 @@ class _BrowseCollectionsContentState
           type: SnackType.success,
         );
       } else if (result.error != null) {
-        _log.warning(
-          'Collection import returned error: ${result.error}',
-        );
+        _log.warning('Collection import returned error: ${result.error}');
         context.showSnack(
           l.browseCollectionsDownloadFailedGeneric,
           type: SnackType.error,
@@ -395,15 +395,13 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.watch(collectionsProvider);
+    final AsyncValue<List<Collection>> collectionsAsync = ref.watch(
+      collectionsProvider,
+    );
 
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(widget.collectionName, style: AppTypography.h3),
-      contentPadding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        bottom: 0,
-      ),
+      contentPadding: const EdgeInsets.only(top: AppSpacing.sm, bottom: 0),
       content: SizedBox(
         width: 300,
         child: Column(
@@ -445,9 +443,7 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
             ),
             if (!_useNew)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: collectionsAsync.when(
                   data: (List<Collection> collections) {
                     if (collections.isEmpty) {
@@ -461,16 +457,14 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
                         ),
                       );
                     }
-                    final bool selectedExists = _selectedId != null &&
-                        collections.any(
-                          (Collection c) => c.id == _selectedId,
-                        );
+                    final bool selectedExists =
+                        _selectedId != null &&
+                        collections.any((Collection c) => c.id == _selectedId);
                     return CollectionPickerField(
                       value: selectedExists ? _selectedId : null,
                       hint: l.importSelectCollection,
                       title: l.importSelectCollection,
-                      onChanged: (int? id) =>
-                          setState(() => _selectedId = id),
+                      onChanged: (int? id) => setState(() => _selectedId = id),
                     );
                   },
                   loading: () => const Padding(
@@ -495,11 +489,9 @@ class _ImportTargetDialogState extends ConsumerState<_ImportTargetDialog> {
         ),
         FilledButton(
           onPressed: _useNew || _selectedId != null
-              ? () => Navigator.of(context).pop(
-                    _ImportTarget(
-                      collectionId: _useNew ? null : _selectedId,
-                    ),
-                  )
+              ? () => Navigator.of(
+                  context,
+                ).pop(_ImportTarget(collectionId: _useNew ? null : _selectedId))
               : null,
           child: Text(l.importStartButton),
         ),
@@ -607,7 +599,7 @@ class _SearchablePickerDialogState extends State<_SearchablePickerDialog> {
   Widget build(BuildContext context) {
     final List<_PickerItem> filtered = _filtered;
 
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(widget.title, style: AppTypography.h3),
       contentPadding: const EdgeInsets.only(
         top: AppSpacing.sm,
@@ -663,23 +655,19 @@ class _SearchablePickerDialogState extends State<_SearchablePickerDialog> {
                       vertical: AppSpacing.xs,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  onChanged: (String value) =>
-                      setState(() => _query = value),
+                  onChanged: (String value) => setState(() => _query = value),
                 ),
               ),
             ),
@@ -689,21 +677,20 @@ class _SearchablePickerDialogState extends State<_SearchablePickerDialog> {
               child: ListView.builder(
                 padding: EdgeInsets.zero,
                 // +1 for "All" option when no search query
-                itemCount:
-                    _query.isEmpty ? filtered.length + 1 : filtered.length,
+                itemCount: _query.isEmpty
+                    ? filtered.length + 1
+                    : filtered.length,
                 itemBuilder: (BuildContext context, int index) {
                   // "All" option — reset via sentinel
                   if (_query.isEmpty && index == 0) {
                     return _buildOption(
                       label: widget.title,
                       isSelected: widget.currentId == null,
-                      onTap: () =>
-                          Navigator.of(context).pop(_resetSentinel),
+                      onTap: () => Navigator.of(context).pop(_resetSentinel),
                     );
                   }
 
-                  final int itemIndex =
-                      _query.isEmpty ? index - 1 : index;
+                  final int itemIndex = _query.isEmpty ? index - 1 : index;
                   final _PickerItem item = filtered[itemIndex];
                   return _buildOption(
                     label: item.label,

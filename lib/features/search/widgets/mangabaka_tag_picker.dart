@@ -1,5 +1,5 @@
 import 'package:core/models/mangabaka_tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/mangabaka_tags_repository.dart';
@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Searchable, grouped by top-level category, with a manual catalog refresh.
 /// Values are tag names, matching the multi-select filter contract.
@@ -21,26 +22,17 @@ Future<Object?> showMangaBakaTagPicker(
     final String single => <String>[single],
     _ => const <String>[],
   };
-  return showModalBottomSheet<Object?>(
+  return showGlassSheet<Object?>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: AppColors.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (BuildContext ctx) => _MangaBakaTagPicker(
-      initialSelection: initial,
-      l: l,
-    ),
+    builder: (BuildContext ctx) =>
+        _MangaBakaTagPicker(initialSelection: initial, l: l),
   );
 }
 
 class _MangaBakaTagPicker extends ConsumerStatefulWidget {
-  const _MangaBakaTagPicker({
-    required this.initialSelection,
-    required this.l,
-  });
+  const _MangaBakaTagPicker({required this.initialSelection, required this.l});
 
   final List<String> initialSelection;
   final S l;
@@ -98,8 +90,9 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
   @override
   Widget build(BuildContext context) {
     final S l = widget.l;
-    final AsyncValue<List<MangaBakaTag>> tagsAsync =
-        ref.watch(mangaBakaTagsProvider);
+    final AsyncValue<List<MangaBakaTag>> tagsAsync = ref.watch(
+      mangaBakaTagsProvider,
+    );
     final Size screen = MediaQuery.sizeOf(context);
     final double height = screen.height * 0.85;
 
@@ -146,8 +139,10 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
                   child: SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     dense: true,
-                    title: Text(l.tagPickerShowSpoilers,
-                        style: AppTypography.bodySmall),
+                    title: Text(
+                      l.tagPickerShowSpoilers,
+                      style: AppTypography.bodySmall,
+                    ),
                     value: _showSpoilers,
                     onChanged: (bool v) => setState(() => _showSpoilers = v),
                   ),
@@ -156,8 +151,10 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
                   child: SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     dense: true,
-                    title: Text(l.tagPickerShowAdult,
-                        style: AppTypography.bodySmall),
+                    title: Text(
+                      l.tagPickerShowAdult,
+                      style: AppTypography.bodySmall,
+                    ),
                     value: _showAdult,
                     onChanged: (bool v) => setState(() => _showAdult = v),
                   ),
@@ -167,16 +164,16 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
             const Divider(height: 1),
             Expanded(
               child: tagsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (Object e, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Text(
                       e.toString(),
                       textAlign: TextAlign.center,
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.error),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 ),
@@ -194,8 +191,9 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
                 children: <Widget>[
                   Text(
                     l.selectedCount(_selected.length),
-                    style: AppTypography.bodySmall
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   if (_selected.isNotEmpty)
                     TextButton(
@@ -208,9 +206,7 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
                   ),
                   FilledButton(
                     onPressed: () => Navigator.of(context).pop(
-                      _selected.isEmpty
-                          ? const <String>[]
-                          : _selected.toList(),
+                      _selected.isEmpty ? const <String>[] : _selected.toList(),
                     ),
                     child: Text(l.apply),
                   ),
@@ -229,8 +225,9 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
       return Center(
         child: Text(
           l.tagPickerEmpty,
-          style: AppTypography.bodySmall
-              .copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
       );
     }
@@ -276,8 +273,9 @@ class _MangaBakaTagPickerState extends ConsumerState<_MangaBakaTagPicker> {
                     ),
                     Text(
                       tags.length.toString(),
-                      style: AppTypography.caption
-                          .copyWith(color: AppColors.textTertiary),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ],
                 ),

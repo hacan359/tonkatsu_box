@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../likes/screens/likes_screen.dart';
@@ -14,6 +13,7 @@ import '../widgets/hub_section_card.dart';
 import '../widgets/hub_showcase_preview.dart';
 import '../widgets/hub_stats_preview.dart';
 import '../widgets/personalization_sub_screen.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 /// Landing page of the hub: one card per section with a live preview.
 class PersonalizationHubScreen extends StatelessWidget {
@@ -26,8 +26,7 @@ class PersonalizationHubScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     final bool wide = MediaQuery.sizeOf(context).width >= _wideBreakpoint;
-    return Material(
-      color: AppColors.background,
+    return FramePage(
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(

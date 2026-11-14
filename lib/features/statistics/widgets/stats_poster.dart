@@ -1,11 +1,12 @@
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/rating_badge.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// A 2:3 cover tile for statistics blocks, with an optional rating badge.
 /// Falls back to a media-type icon when the item has no cover (or is null).
@@ -36,7 +37,7 @@ class StatsPoster extends StatelessWidget {
     final CollectionItem? item = this.item;
     final String? url = item?.thumbnailUrl;
     final Widget placeholder = Container(
-      color: AppColors.surfaceLight,
+      color: glassTileColor(),
       alignment: Alignment.center,
       child: Icon(
         item?.placeholderIcon ?? Icons.image_not_supported_outlined,

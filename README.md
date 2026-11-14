@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/logo.png" width="120" alt="Tonkatsu Box">
+  <img src="docs/assets/logo_volumetric.png" width="120" alt="Tonkatsu Box">
 </p>
 
 <h1 align="center">Tonkatsu Box</h1>
@@ -20,7 +20,7 @@
   <a href="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml"><img src="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
   <a href="https://github.com/hacan359/tonkatsu_box/releases"><img src="https://img.shields.io/github/downloads/hacan359/tonkatsu_box/total?label=Downloads" alt="Downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.38+"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.50+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.50+"></a>
   <a href="https://discord.gg/JZVNPF7cS2"><img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
@@ -404,7 +404,7 @@ flutter pub get
 flutter run -d windows  # or linux / macos / android
 ```
 
-Requires Flutter 3.38+ / Dart 3.10+. See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details.
+Requires Flutter 3.50+ / Dart 3.14+. See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details.
 
 ## Community
 

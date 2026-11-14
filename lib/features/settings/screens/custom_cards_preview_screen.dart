@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:core/models/universal_import_result.dart';
 import 'package:core/models/import_source_kind.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/import/sources/custom_file/custom_card_entry.dart';
@@ -13,7 +13,7 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collection_imports_provider.dart';
@@ -89,9 +89,10 @@ class _CustomCardsPreviewScreenState
     final S l = S.of(context);
     final int errorCount = widget.rows.length - _validCount;
 
-    return Column(
+    return FramePage(
+      title: l.customImportPreviewTitle,
+      child: Column(
       children: <Widget>[
-        SubScreenTitleBar(title: l.customImportPreviewTitle),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.md,
@@ -153,6 +154,7 @@ class _CustomCardsPreviewScreenState
           ),
         ),
       ],
+      ),
     );
   }
 

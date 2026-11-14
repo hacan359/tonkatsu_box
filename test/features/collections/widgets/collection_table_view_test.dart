@@ -4,7 +4,7 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as p;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/collection_table_view.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/table_filter.dart';
@@ -241,7 +241,7 @@ void main() {
 
         // The grid paints body rows before the header, so the row checkbox
         // comes first in the tree and the select-all one last.
-        final Finder checkboxes = find.byType(Checkbox);
+        final Finder checkboxes = find.byType(TrinaScaledCheckbox);
         expect(checkboxes, findsNWidgets(2));
         await tapAndResolve(tester, checkboxes.first);
 
@@ -259,7 +259,7 @@ void main() {
           onToggleSelectAll: selectAllCalls.add,
         );
 
-        await tapAndResolve(tester, find.byType(Checkbox).last);
+        await tapAndResolve(tester, find.byType(TrinaScaledCheckbox).last);
 
         expect(selectAllCalls, <bool>[true]);
       });

@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
-import '../../../shared/theme/app_colors.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 /// A section pushed over the hub: title strip with back, then the section's
 /// own screen, which keeps knowing nothing about where it is hosted.
@@ -17,15 +16,7 @@ class PersonalizationSubScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.background,
-      child: Column(
-        children: <Widget>[
-          SubScreenTitleBar(title: title),
-          Expanded(child: child),
-        ],
-      ),
-    );
+    return FramePage(title: title, child: child);
   }
 }
 

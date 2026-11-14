@@ -9,7 +9,7 @@ import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -22,7 +22,8 @@ import 'package:tonkatsu_box/features/collections/widgets/item_detail/item_detai
 import 'package:tonkatsu_box/features/collections/widgets/status_list.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/widgets/glass_app_bar.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
+import 'package:tonkatsu_box/shared/navigation/frame_metrics.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail/identity_header.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
 import 'package:tonkatsu_box/shared/widgets/source_badge.dart';
@@ -91,7 +92,7 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: ItemDetailScreen(
           collectionId: collectionId,
@@ -886,13 +887,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(
-        find.descendant(
-          of: find.byType(GlassAppBar),
-          matching: find.text('Floating Bar Show'),
-        ),
-        findsNothing,
-      );
       expect(find.text('Floating Bar Show'), findsOneWidget);
     });
 
@@ -916,7 +910,7 @@ void main() {
       expect(title, findsOneWidget);
       expect(
         tester.getTopLeft(title).dy,
-        greaterThanOrEqualTo(kGlassAppBarHeight),
+        greaterThanOrEqualTo(kFrameTitleRowHeight),
       );
       // On the backing with the rest of the card, not floating above it.
       expect(
@@ -1961,7 +1955,7 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
         child: MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Builder(
             builder: (BuildContext context) => Scaffold(

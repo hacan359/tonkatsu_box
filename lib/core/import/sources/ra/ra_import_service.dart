@@ -70,16 +70,13 @@ typedef _MatchedGame = ({
 /// are allowed (RA owns progress), tracker_game_data lands in a second pass.
 class RaImportService implements ImportSource {
   RaImportService({
-    required RaApi raApi,
-    required IgdbApi igdbApi,
+    required this._raApi,
+    required this._igdbApi,
     required DatabaseService database,
-    required TrackerDao trackerDao,
+    required this._trackerDao,
     required CollectionRepository repository,
     required WishlistRepository wishlistRepository,
-  })  : _raApi = raApi,
-        _igdbApi = igdbApi,
-        _db = database,
-        _trackerDao = trackerDao,
+  })  : _db = database,
         _writer = ImportWriter(
           collections: repository,
           wishlist: wishlistRepository,

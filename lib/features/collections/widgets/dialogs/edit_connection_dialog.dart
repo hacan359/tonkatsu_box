@@ -1,5 +1,5 @@
 import 'package:core/models/canvas_connection.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -7,6 +7,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/color_picker_dialog.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
 import '../../../../shared/utils/color_hex.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Pops a map with keys `label`, `color`, `style`; `null` on cancel.
 class EditConnectionDialog extends StatefulWidget {
@@ -54,9 +55,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
   @override
   void initState() {
     super.initState();
-    _labelController = TextEditingController(
-      text: widget.initialLabel ?? '',
-    );
+    _labelController = TextEditingController(text: widget.initialLabel ?? '');
     _selectedColor = widget.initialColor ?? '#666666';
     _selectedStyle = widget.initialStyle ?? ConnectionStyle.solid;
   }
@@ -82,7 +81,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(l.canvasEditConnection),
       content: SizedBox(
@@ -92,83 +91,84 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-            TextField(
-              controller: _labelController,
-              decoration: InputDecoration(
-                labelText: l.linkLabelOptional,
-                border: const OutlineInputBorder(),
-                hintText: l.connectionLabelHint,
+              TextField(
+                controller: _labelController,
+                decoration: InputDecoration(
+                  labelText: l.linkLabelOptional,
+                  border: const OutlineInputBorder(),
+                  hintText: l.connectionLabelHint,
+                ),
+                autofocus: true,
+                onSubmitted: (_) => _submit(),
               ),
-              autofocus: true,
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l.colorPickerTitle,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            InkWell(
-              onTap: () async {
-                final Color? picked = await ColorPickerDialog.show(
-                  context: context,
-                  currentColor: _selectedColorValue,
-                );
-                if (picked == null) return;
-                setState(() => _selectedColor = ColorHex.toHex(picked));
-              },
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: _selectedColorValue,
-                      shape: BoxShape.circle,
-                      border:
-                          Border.all(color: AppColors.textPrimary.withAlpha(40)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _selectedColor,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace',
+              const SizedBox(height: 16),
+              Text(
+                l.colorPickerTitle,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final Color? picked = await ColorPickerDialog.show(
+                    context: context,
+                    currentColor: _selectedColorValue,
+                  );
+                  if (picked == null) return;
+                  setState(() => _selectedColor = ColorHex.toHex(picked));
+                },
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _selectedColorValue,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.textPrimary.withAlpha(40),
                         ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      _selectedColor,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l.connectionStyleLabel,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedPill<ConnectionStyle>(
+                options: <SegmentedPillOption<ConnectionStyle>>[
+                  SegmentedPillOption<ConnectionStyle>(
+                    value: ConnectionStyle.solid,
+                    label: l.connectionStyleSolid,
+                    icon: Icons.horizontal_rule,
+                  ),
+                  SegmentedPillOption<ConnectionStyle>(
+                    value: ConnectionStyle.dashed,
+                    label: l.connectionStyleDashed,
+                    icon: Icons.more_horiz,
+                  ),
+                  SegmentedPillOption<ConnectionStyle>(
+                    value: ConnectionStyle.arrow,
+                    label: l.connectionStyleArrow,
+                    icon: Icons.arrow_forward,
                   ),
                 ],
+                selected: _selectedStyle,
+                onChanged: (ConnectionStyle s) =>
+                    setState(() => _selectedStyle = s),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l.connectionStyleLabel,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            SegmentedPill<ConnectionStyle>(
-              options: <SegmentedPillOption<ConnectionStyle>>[
-                SegmentedPillOption<ConnectionStyle>(
-                  value: ConnectionStyle.solid,
-                  label: l.connectionStyleSolid,
-                  icon: Icons.horizontal_rule,
-                ),
-                SegmentedPillOption<ConnectionStyle>(
-                  value: ConnectionStyle.dashed,
-                  label: l.connectionStyleDashed,
-                  icon: Icons.more_horiz,
-                ),
-                SegmentedPillOption<ConnectionStyle>(
-                  value: ConnectionStyle.arrow,
-                  label: l.connectionStyleArrow,
-                  icon: Icons.arrow_forward,
-                ),
-              ],
-              selected: _selectedStyle,
-              onChanged: (ConnectionStyle s) =>
-                  setState(() => _selectedStyle = s),
-            ),
             ],
           ),
         ),
@@ -178,10 +178,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(l.save),
-        ),
+        FilledButton(onPressed: _submit, child: Text(l.save)),
       ],
     );
   }

@@ -12,10 +12,9 @@ import 'dialogs/edit_connection_dialog.dart';
 /// outlive the host widget.
 class CanvasItemActions {
   CanvasItemActions({
-    required BuildContext context,
-    required BaseCanvasController Function() controller,
-  })  : _context = context,
-        _controller = controller;
+    required this._context,
+    required this._controller,
+  });
 
   final BuildContext _context;
   final BaseCanvasController Function() _controller;

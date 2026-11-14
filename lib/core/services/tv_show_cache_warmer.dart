@@ -19,10 +19,9 @@ final Provider<TvShowCacheWarmer> tvShowCacheWarmerProvider =
 /// with full details, seasons and episodes from the show's own [DataSource].
 class TvShowCacheWarmer {
   TvShowCacheWarmer({
-    required TvEpisodeSource Function(DataSource) resolveSource,
-    required DatabaseService db,
-  })  : _resolveSource = resolveSource,
-        _db = db;
+    required this._resolveSource,
+    required this._db,
+  });
 
   final TvEpisodeSource Function(DataSource) _resolveSource;
   final DatabaseService _db;

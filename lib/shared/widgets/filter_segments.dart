@@ -1,5 +1,5 @@
 import 'package:core/models/item_status.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart' show SemanticsRole;
 
 import '../../l10n/app_localizations.dart';
@@ -8,11 +8,15 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../constants/item_status_ui.dart';
+import 'chip_tile.dart';
+import 'glass_panel.dart';
+import 'media_type_icon_strip.dart';
+import 'glass_popup_menu.dart';
 
 /// V-notch on the left (except the first), V-point on the right (except the
 /// last). [subtitle] renders two lines and is ignored when `compact: true`.
-class ChevronSegment extends StatelessWidget {
-  const ChevronSegment({
+class FilterSegment extends StatelessWidget {
+  const FilterSegment({
     required this.label,
     required this.icon,
     required this.selected,
@@ -57,8 +61,8 @@ class ChevronSegment extends StatelessWidget {
   /// Width of the chevron bevel.
   static const double chevronWidth = 6;
 
-  /// Background alpha of an inactive tinted segment (~15%).
-  static const int inactiveTintBgAlpha = 38;
+  /// Tint strength of an inactive tinted segment over the chip surface.
+  static const int inactiveTintBgAlpha = 80;
 
   /// Content (text/icon) alpha of an inactive tinted segment.
   static const int inactiveTintContentAlpha = 220;
@@ -71,54 +75,55 @@ class ChevronSegment extends StatelessWidget {
       bg = accentColor;
       contentColor = AppColors.background;
     } else if (tintWhenInactive) {
-      bg = accentColor.withAlpha(inactiveTintBgAlpha);
+      bg = glassChipColor(tint: accentColor, tintAlpha: inactiveTintBgAlpha);
       contentColor = accentColor.withAlpha(inactiveTintContentAlpha);
     } else {
-      bg = AppColors.surface;
+      bg = glassChipColor();
       contentColor = AppColors.textSecondary;
     }
 
-    return ClipPath(
-      clipper: ChevronClipper(
-        chevronWidth: chevronWidth,
-        hasLeftNotch: !isFirst,
-        hasRightPoint: !isLast,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        color: bg,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: isFirst ? 4 : chevronWidth + 1,
-                right: isLast ? 4 : chevronWidth + 1,
-              ),
-              child: Center(
-                child: buildChevronContent(
-                  context: context,
-                  label: label,
-                  icon: icon,
-                  subtitle: subtitle,
-                  contentColor: contentColor,
-                  selected: selected,
-                  compact: compact,
-                ),
-              ),
-            ),
-          ),
-        ),
+    return _FilterTile(
+      color: bg,
+      onTap: onTap,
+      child: buildSegmentContent(
+        context: context,
+        label: label,
+        icon: icon,
+        subtitle: subtitle,
+        contentColor: contentColor,
+        selected: selected,
+        compact: compact,
       ),
     );
   }
 }
 
-/// Shared by [ChevronSegment] and [DropdownChevronSegment]. On narrow screens
+/// A segment is a [ChipTile] with a small gap to its neighbours.
+class _FilterTile extends StatelessWidget {
+  const _FilterTile({
+    required this.color,
+    required this.onTap,
+    required this.child,
+  });
+
+  final Color color;
+  final VoidCallback onTap;
+  final Widget child;
+
+  static const double _gap = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _gap),
+      child: ChipTile(color: color, onTap: onTap, child: child),
+    );
+  }
+}
+
+/// Shared by [FilterSegment] and [FilterDropdownSegment]. On narrow screens
 /// fonts shrink to ~83% to match MediaPosterCard / RatingBadge.
-Widget buildChevronContent({
+Widget buildSegmentContent({
   required BuildContext context,
   required String label,
   required IconData icon,
@@ -185,59 +190,7 @@ Widget buildChevronContent({
   );
 }
 
-/// Clips a rectangle into the chevron (arrow segment) shape.
-class ChevronClipper extends CustomClipper<Path> {
-  const ChevronClipper({
-    required this.chevronWidth,
-    required this.hasLeftNotch,
-    required this.hasRightPoint,
-  });
-
-  /// Width of the V bevel.
-  final double chevronWidth;
-
-  /// V notch on the left edge.
-  final bool hasLeftNotch;
-
-  /// V point on the right edge.
-  final bool hasRightPoint;
-
-  @override
-  Path getClip(Size size) {
-    final Path path = Path();
-    final double mid = size.height / 2;
-
-    if (hasLeftNotch) {
-      path.moveTo(0, 0);
-      path.lineTo(chevronWidth, mid);
-      path.lineTo(0, size.height);
-    } else {
-      path.moveTo(0, 0);
-      path.lineTo(0, size.height);
-    }
-
-    if (hasRightPoint) {
-      path.lineTo(size.width - chevronWidth, size.height);
-      path.lineTo(size.width, mid);
-      path.lineTo(size.width - chevronWidth, 0);
-    } else {
-      path.lineTo(size.width, size.height);
-      path.lineTo(size.width, 0);
-    }
-
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant ChevronClipper old) {
-    return chevronWidth != old.chevronWidth ||
-        hasLeftNotch != old.hasLeftNotch ||
-        hasRightPoint != old.hasRightPoint;
-  }
-}
-
-/// Multi-select status filter shaped like [ChevronSegment]; an empty
+/// Multi-select status filter shaped like [FilterSegment]; an empty
 /// [statuses] means "All", and [subtitle] is ignored in compact mode.
 class StatusDropdownSegment extends StatelessWidget {
   const StatusDropdownSegment({
@@ -263,8 +216,6 @@ class StatusDropdownSegment extends StatelessWidget {
   /// `false` draws a right-pointing chevron edge so another segment can follow.
   final bool isLast;
 
-  static const double _chevronWidth = 6;
-
   /// Derived so a new status shows up here without a second hand-kept list.
   static final List<ItemStatus> _order = ItemStatus.values.toList()
     ..sort(
@@ -277,76 +228,49 @@ class StatusDropdownSegment extends StatelessWidget {
     final S l = S.of(context);
     final bool active = statuses.isNotEmpty;
     final ItemStatus? single = statuses.length == 1 ? statuses.first : null;
-    final Color accentColor = single?.color ??
-        (active ? AppColors.brand : AppColors.surface);
-    final Color contentColor = single != null
-        ? AppColors.background
-        : (active ? AppColors.onBrand : AppColors.textSecondary);
-    final String label = single?.genericLabel(l) ??
+    final String label =
+        single?.genericLabel(l) ??
         (active ? l.statusFilterSelected(statuses.length) : l.all);
     final IconData icon = single?.materialIcon ?? Icons.filter_list;
 
-    return PopupMenuButton<void>(
-      offset: const Offset(0, 40),
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      itemBuilder: (BuildContext ctx) => <PopupMenuEntry<void>>[
-        PopupMenuItem<void>(
-          enabled: false,
-          height: 0,
-          padding: EdgeInsets.zero,
-          child: _StatusMenuList(
-            initial: statuses,
-            order: _order,
-            onChanged: onChanged,
-          ),
-        ),
-      ],
-      child: ClipPath(
-        clipper: ChevronClipper(
-          chevronWidth: _chevronWidth,
-          hasLeftNotch: true,
-          hasRightPoint: !isLast,
-        ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          color: accentColor,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: _chevronWidth + 1,
-              right: isLast ? 4 : _chevronWidth + 1,
-            ),
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Flexible(
-                      child: buildChevronContent(
-                        context: context,
-                        label: label,
-                        icon: icon,
-                        subtitle: subtitle,
-                        contentColor: contentColor,
-                        selected: active,
-                        compact: compact,
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 14,
-                      color: contentColor,
-                    ),
-                  ],
+    final Widget menuList = _StatusMenuList(
+      initial: statuses,
+      order: _order,
+      onChanged: onChanged,
+    );
+
+    final Color tileBg = single != null
+        ? single.color
+        : active
+        ? AppColors.brand
+        : glassChipColor();
+    final Color tileFg = single != null
+        ? AppColors.background
+        : active
+        ? AppColors.onBrand
+        : AppColors.textSecondary;
+    return GlassPopupMenuButton<void>(
+      rows: (BuildContext _) => <Widget>[menuList],
+      child: ChipTile(
+        color: tileBg,
+        height: kMediaTypeTileSize,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 18, color: tileFg),
+            if (!compact) ...<Widget>[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: AppTypography.bodySmall.copyWith(
+                  color: tileFg,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-          ),
+            ],
+            const SizedBox(width: 2),
+            Icon(Icons.keyboard_arrow_down, size: 16, color: tileFg),
+          ],
         ),
       ),
     );
@@ -440,10 +364,12 @@ class _StatusMenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color itemColor =
-        selected ? (accent ?? AppColors.brand) : AppColors.textPrimary;
-    final Color iconColor =
-        selected ? (accent ?? AppColors.brand) : AppColors.textTertiary;
+    final Color itemColor = selected
+        ? (accent ?? AppColors.brand)
+        : AppColors.textPrimary;
+    final Color iconColor = selected
+        ? (accent ?? AppColors.brand)
+        : AppColors.textTertiary;
 
     return InkWell(
       onTap: onTap,
@@ -481,8 +407,8 @@ class _StatusMenuRow extends StatelessWidget {
 
 /// Opens a dropdown built by [menuBuilder]; long menus get the scroll-arrow
 /// hints of [showArrowedMenu].
-class DropdownChevronSegment<T extends Object> extends StatelessWidget {
-  const DropdownChevronSegment({
+class FilterDropdownSegment<T extends Object> extends StatelessWidget {
+  const FilterDropdownSegment({
     required this.label,
     required this.icon,
     required this.selected,
@@ -524,52 +450,31 @@ class DropdownChevronSegment<T extends Object> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = selected ? accentColor : AppColors.surface;
-    final Color contentColor =
-        selected ? AppColors.background : AppColors.textSecondary;
+    final Color bg = selected ? accentColor : glassChipColor();
+    final Color contentColor = selected
+        ? AppColors.background
+        : AppColors.textSecondary;
 
-    return ClipPath(
-      clipper: ChevronClipper(
-        chevronWidth: ChevronSegment.chevronWidth,
-        hasLeftNotch: !isFirst,
-        hasRightPoint: !isLast,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        color: bg,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _openMenu(context),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: isFirst ? 4 : ChevronSegment.chevronWidth + 1,
-                right: isLast ? 4 : ChevronSegment.chevronWidth + 1,
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Flexible(
-                      child: buildChevronContent(
-                        context: context,
-                        label: label,
-                        icon: icon,
-                        subtitle: subtitle,
-                        contentColor: contentColor,
-                        selected: selected,
-                        compact: compact,
-                      ),
-                    ),
-                    Icon(Icons.arrow_drop_down, size: 14, color: contentColor),
-                  ],
-                ),
-              ),
+    return _FilterTile(
+      color: bg,
+      onTap: () => _openMenu(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Flexible(
+            child: buildSegmentContent(
+              context: context,
+              label: label,
+              icon: icon,
+              subtitle: subtitle,
+              contentColor: contentColor,
+              selected: selected,
+              compact: compact,
             ),
           ),
-        ),
+          Icon(Icons.arrow_drop_down, size: 14, color: contentColor),
+        ],
       ),
     );
   }
@@ -601,13 +506,17 @@ Future<T?> showArrowedMenu<T extends Object>({
       ancestor: overlay,
     ),
   );
-  return navigator.push(_ArrowedMenuRoute<T>(
-    buttonRect: buttonRect,
-    entries: entries,
-    capturedThemes:
-        InheritedTheme.capture(from: context, to: navigator.context),
-    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-  ));
+  return navigator.push(
+    _ArrowedMenuRoute<T>(
+      buttonRect: buttonRect,
+      entries: entries,
+      capturedThemes: InheritedTheme.capture(
+        from: context,
+        to: navigator.context,
+      ),
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    ),
+  );
 }
 
 class _ArrowedMenuRoute<T extends Object> extends PopupRoute<T> {
@@ -745,10 +654,9 @@ class _ArrowedMenuState<T extends Object> extends State<_ArrowedMenu<T>> {
 
   void _scrollBy(double direction) {
     final ScrollPosition pos = _controller.position;
-    final double target =
-        (pos.pixels + direction * pos.viewportDimension * 0.8)
-            .clamp(pos.minScrollExtent, pos.maxScrollExtent)
-            .toDouble();
+    final double target = (pos.pixels + direction * pos.viewportDimension * 0.8)
+        .clamp(pos.minScrollExtent, pos.maxScrollExtent)
+        .toDouble();
     _controller.animateTo(
       target,
       duration: const Duration(milliseconds: 200),
@@ -784,13 +692,8 @@ class _ArrowedMenuState<T extends Object> extends State<_ArrowedMenu<T>> {
       explicitChildNodes: true,
       role: SemanticsRole.menu,
       child: IntrinsicWidth(
-        child: Material(
-          color: AppColors.surface,
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
-          clipBehavior: Clip.antiAlias,
+        child: GlassPanel(
+          radius: AppSpacing.radiusMd,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

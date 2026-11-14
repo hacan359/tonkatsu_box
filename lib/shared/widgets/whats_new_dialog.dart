@@ -1,16 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/services/whats_new_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'mini_markdown_text.dart';
+import 'glass_dialog.dart';
 
 /// Shows the "What's new" dialog; resolves when the user closes it.
-Future<void> showWhatsNewDialog(
-  BuildContext context,
-  WhatsNewContent content,
-) {
+Future<void> showWhatsNewDialog(BuildContext context, WhatsNewContent content) {
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) => WhatsNewDialog(content: content),
@@ -25,14 +23,12 @@ class WhatsNewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Row(
         children: <Widget>[
           Icon(Icons.celebration_outlined, color: AppColors.brand),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text("What's new in ${content.version}"),
-          ),
+          Expanded(child: Text("What's new in ${content.version}")),
         ],
       ),
       content: ConstrainedBox(

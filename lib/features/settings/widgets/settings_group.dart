@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({
@@ -49,7 +50,7 @@ class SettingsGroup extends StatelessWidget {
                       Icon(
                         titleIcon,
                         size: iconSize,
-                        color: titleIconColor ?? AppColors.textTertiary,
+                        color: titleIconColor ?? AppColors.textSecondary,
                       ),
                       const SizedBox(width: 6),
                     ],
@@ -58,7 +59,7 @@ class SettingsGroup extends StatelessWidget {
                         title!.toUpperCase(),
                         style: AppTypography.bodySmall.copyWith(
                           fontSize: headerSize,
-                          color: titleIconColor ?? AppColors.textTertiary,
+                          color: titleIconColor ?? AppColors.textSecondary,
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -72,7 +73,7 @@ class SettingsGroup extends StatelessWidget {
                     subtitle!,
                     style: AppTypography.bodySmall.copyWith(
                       fontSize: subtitleSize,
-                      color: AppColors.textTertiary,
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -81,10 +82,7 @@ class SettingsGroup extends StatelessWidget {
             ),
           ),
         Container(
-          decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
+          decoration: glassTileDecoration(radius: AppSpacing.radiusSm),
           clipBehavior: Clip.antiAlias,
           child: Material(
             type: MaterialType.transparency,

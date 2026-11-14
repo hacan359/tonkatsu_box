@@ -1239,6 +1239,186 @@ abstract class S {
   /// **'Eva Azure'**
   String get settingsThemeEva;
 
+  /// No description provided for @settingsSkin.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get settingsSkin;
+
+  /// No description provided for @settingsSkinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass or the classic look'**
+  String get settingsSkinSubtitle;
+
+  /// No description provided for @settingsSkinGlass.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass'**
+  String get settingsSkinGlass;
+
+  /// No description provided for @settingsSkinClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get settingsSkinClassic;
+
+  /// No description provided for @settingsCardLook.
+  ///
+  /// In en, this message translates to:
+  /// **'Card style'**
+  String get settingsCardLook;
+
+  /// No description provided for @settingsCardLookSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How posters look in grids'**
+  String get settingsCardLookSubtitle;
+
+  /// No description provided for @settingsCardLookClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get settingsCardLookClassic;
+
+  /// No description provided for @settingsCardLookCurved.
+  ///
+  /// In en, this message translates to:
+  /// **'Curved glass'**
+  String get settingsCardLookCurved;
+
+  /// No description provided for @settingsCardLookSlab.
+  ///
+  /// In en, this message translates to:
+  /// **'Slab'**
+  String get settingsCardLookSlab;
+
+  /// No description provided for @settingsCardLookJewel.
+  ///
+  /// In en, this message translates to:
+  /// **'Jewel case'**
+  String get settingsCardLookJewel;
+
+  /// No description provided for @settingsCardLookCinema.
+  ///
+  /// In en, this message translates to:
+  /// **'Cinema'**
+  String get settingsCardLookCinema;
+
+  /// No description provided for @settingsCardLookShelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Shelf'**
+  String get settingsCardLookShelf;
+
+  /// No description provided for @settingsCardLookTilt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilt'**
+  String get settingsCardLookTilt;
+
+  /// No description provided for @settingsCardLookKino.
+  ///
+  /// In en, this message translates to:
+  /// **'Hover sheet'**
+  String get settingsCardLookKino;
+
+  /// No description provided for @settingsCardLookMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get settingsCardLookMinimal;
+
+  /// No description provided for @settingsCardLookRibbon.
+  ///
+  /// In en, this message translates to:
+  /// **'Ribbon'**
+  String get settingsCardLookRibbon;
+
+  /// No description provided for @settingsProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get settingsProxy;
+
+  /// No description provided for @settingsProxySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the app\'s traffic through a local HTTP proxy'**
+  String get settingsProxySubtitle;
+
+  /// No description provided for @settingsProxyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the local HTTP port your VPN app opens (the Clash mixed port is usually 7890). Addresses on your own network always connect directly.'**
+  String get settingsProxyHint;
+
+  /// No description provided for @settingsProxyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable proxy'**
+  String get settingsProxyEnabled;
+
+  /// No description provided for @settingsProxyHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get settingsProxyHost;
+
+  /// No description provided for @settingsProxyPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get settingsProxyPort;
+
+  /// No description provided for @settingsProxyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a host name or IP address and a port from 1 to 65535'**
+  String get settingsProxyInvalid;
+
+  /// No description provided for @settingsWallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper'**
+  String get settingsWallpaper;
+
+  /// No description provided for @settingsWallpaperSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture behind the glass frame'**
+  String get settingsWallpaperSubtitle;
+
+  /// No description provided for @settingsWallpaperDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get settingsWallpaperDefault;
+
+  /// No description provided for @settingsWallpaperCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Your image'**
+  String get settingsWallpaperCustom;
+
+  /// No description provided for @settingsWallpaperChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image…'**
+  String get settingsWallpaperChoose;
+
+  /// No description provided for @settingsWallpaperReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get settingsWallpaperReset;
+
+  /// No description provided for @settingsWallpaperError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the wallpaper'**
+  String get settingsWallpaperError;
+
   /// No description provided for @settingsAppLanguageSubtitle.
   ///
   /// In en, this message translates to:
@@ -8371,6 +8551,36 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Integrations'**
   String get settingsIntegrations;
+
+  /// No description provided for @settingsTabProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get settingsTabProfile;
+
+  /// No description provided for @settingsTabData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get settingsTabData;
+
+  /// No description provided for @settingsAppearanceThemeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme & language'**
+  String get settingsAppearanceThemeLanguage;
+
+  /// No description provided for @settingsAppearanceLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get settingsAppearanceLibrary;
+
+  /// No description provided for @settingsAppearanceScale.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale'**
+  String get settingsAppearanceScale;
 
   /// No description provided for @settingsKodiSubtitle.
   ///

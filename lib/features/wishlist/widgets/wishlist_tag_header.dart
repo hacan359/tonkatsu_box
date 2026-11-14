@@ -1,17 +1,19 @@
 import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/wishlist_tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_segments.dart';
+import '../../../shared/widgets/media_type_icon_strip.dart';
 
 /// Bulk operation surfaced when a tag/search filter narrows the visible list.
 enum WishlistBulkAction { applyTag, removeTag, delete }
 
-/// Full-width chevron filter bar for the wishlist: tag picker + bulk actions.
+/// Two filter tiles over the list, like the search page: tag picker and
+/// bulk actions. No band behind them, the panel is the backing.
 class WishlistTagHeader extends StatelessWidget {
   const WishlistTagHeader({
     required this.tags,
@@ -36,27 +38,25 @@ class WishlistTagHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.surface,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xs,
+      ),
       child: SizedBox(
-        height: 40,
+        height: kMediaTypeTileSize,
         child: Row(
           children: <Widget>[
-            Expanded(
-              child: _TagPickerSegment(
-                tags: tags,
-                selected: selected,
-                onChanged: onChanged,
-                onRename: onRename,
-                onDelete: onDelete,
-              ),
+            _TagPickerSegment(
+              tags: tags,
+              selected: selected,
+              onChanged: onChanged,
+              onRename: onRename,
+              onDelete: onDelete,
             ),
-            Expanded(
-              child: _BulkActionsSegment(
-                count: filteredCount,
-                onAction: onBulkAction,
-              ),
-            ),
+            _BulkActionsSegment(count: filteredCount, onAction: onBulkAction),
           ],
         ),
       ),
@@ -82,24 +82,27 @@ class _TagPickerSegment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final int totalActive =
-        tags.fold(0, (int sum, WishlistTagCount t) => sum + t.activeCount);
-    final int totalAll =
-        tags.fold(0, (int sum, WishlistTagCount t) => sum + t.totalCount);
+    final int totalActive = tags.fold(
+      0,
+      (int sum, WishlistTagCount t) => sum + t.activeCount,
+    );
+    final int totalAll = tags.fold(
+      0,
+      (int sum, WishlistTagCount t) => sum + t.totalCount,
+    );
 
     final String label = _currentLabel(l);
     final int count = _currentCount(totalActive);
     final bool active = selected is! WishlistTagFilterAll;
 
-    return DropdownChevronSegment<_TagMenuChoice>(
+    return FilterDropdownSegment<_TagMenuChoice>(
       label: '$label ($count)',
       icon: Icons.folder_outlined,
       selected: active,
       accentColor: AppColors.brand,
       isFirst: true,
       isLast: false,
-      menuBuilder: (BuildContext ctx) =>
-          _buildMenu(ctx, totalActive, totalAll),
+      menuBuilder: (BuildContext ctx) => _buildMenu(ctx, totalActive, totalAll),
       onSelected: (_TagMenuChoice? picked) async {
         if (picked == null) return;
         switch (picked) {
@@ -157,7 +160,8 @@ class _TagPickerSegment extends StatelessWidget {
     int totalAll,
   ) {
     final S l = S.of(context);
-    final bool canManage = selected is WishlistTagFilterNamed ||
+    final bool canManage =
+        selected is WishlistTagFilterNamed ||
         selected is WishlistTagFilterUntagged;
 
     return <PopupMenuEntry<_TagMenuChoice>>[
@@ -170,9 +174,11 @@ class _TagPickerSegment extends StatelessWidget {
       ),
       for (final WishlistTagCount t in tags)
         _tagMenuItem(
-          value: _TagMenuChoice.filter(t.tag == null
-              ? const WishlistTagFilter.untagged()
-              : WishlistTagFilter.named(t.tag!)),
+          value: _TagMenuChoice.filter(
+            t.tag == null
+                ? const WishlistTagFilter.untagged()
+                : WishlistTagFilter.named(t.tag!),
+          ),
           label: t.tag == null ? l.wishlistTagUntagged : _humanLabel(t.tag!),
           count: t.activeCount,
           total: t.totalCount,
@@ -280,10 +286,7 @@ final class _TagMenuDelete extends _TagMenuChoice {
 }
 
 class _BulkActionsSegment extends StatelessWidget {
-  const _BulkActionsSegment({
-    required this.count,
-    required this.onAction,
-  });
+  const _BulkActionsSegment({required this.count, required this.onAction});
 
   final int count;
   final Future<void> Function(WishlistBulkAction action) onAction;
@@ -291,7 +294,7 @@ class _BulkActionsSegment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return DropdownChevronSegment<WishlistBulkAction>(
+    return FilterDropdownSegment<WishlistBulkAction>(
       label: l.wishlistBulkActionsButton(count),
       icon: Icons.checklist,
       selected: false,

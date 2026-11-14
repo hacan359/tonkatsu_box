@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// One door of the personalization hub: a header that names the section and a
 /// live preview underneath, the whole card opening the full screen.
@@ -29,13 +30,9 @@ class HubSectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget? preview = this.preview;
-    return Material(
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        side: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
-      ),
-      clipBehavior: Clip.antiAlias,
+    // Each section floats as its own glass block, like the card's parts.
+    return GlassTile(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
         child: Padding(

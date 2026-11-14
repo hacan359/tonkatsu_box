@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Back control for the rich hero banners; each style passes its own
 /// decoration so the arrow matches the banner's look.

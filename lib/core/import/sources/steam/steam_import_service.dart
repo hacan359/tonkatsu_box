@@ -50,14 +50,12 @@ class SteamImportOptions extends ImportOptions {
 /// whole library; unmatched titles fall back to the text wishlist.
 class SteamImportService implements ImportSource {
   SteamImportService({
-    required SteamApi steamApi,
-    required IgdbApi igdbApi,
+    required this._steamApi,
+    required this._igdbApi,
     required DatabaseService database,
     required CollectionRepository repository,
     required WishlistRepository wishlistRepository,
-  })  : _steamApi = steamApi,
-        _igdbApi = igdbApi,
-        _db = database,
+  })  : _db = database,
         _writer = ImportWriter(
           collections: repository,
           wishlist: wishlistRepository,

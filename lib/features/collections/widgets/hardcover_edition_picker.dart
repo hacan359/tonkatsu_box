@@ -1,5 +1,5 @@
 import 'package:core/models/book.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/hardcover_api.dart';
@@ -8,6 +8,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Cache of editions providers keyed by Hardcover book id.
 final Map<String, FutureProvider<List<HardcoverEdition>>> _editionProviders =
@@ -29,7 +31,7 @@ Future<HardcoverEdition?> showHardcoverEditionPicker(
   required String bookId,
   int? currentEditionId,
 }) {
-  return showModalBottomSheet<HardcoverEdition>(
+  return showGlassSheet<HardcoverEdition>(
     context: context,
     isScrollControlled: true,
     builder: (BuildContext ctx) => _HardcoverEditionPickerSheet(
@@ -46,8 +48,7 @@ Book applyHardcoverEdition(Book book, HardcoverEdition edition) {
   final bool titleChanges = hasTitle && edition.title != book.title;
   return book.copyWith(
     title: hasTitle ? edition.title : null,
-    originalTitle:
-        book.originalTitle ?? (titleChanges ? book.title : null),
+    originalTitle: book.originalTitle ?? (titleChanges ? book.title : null),
     coverUrl: edition.coverUrl,
     pageCount: edition.pages,
     publishYear: edition.releaseYear,
@@ -56,8 +57,7 @@ Book applyHardcoverEdition(Book book, HardcoverEdition edition) {
     languages: edition.languageCode != null
         ? <String>[edition.languageCode!]
         : null,
-    publishers:
-        edition.publisher != null ? <String>[edition.publisher!] : null,
+    publishers: edition.publisher != null ? <String>[edition.publisher!] : null,
     externalUrl: _withEditionFragment(book, edition.id),
   );
 }
@@ -74,8 +74,7 @@ String _withEditionFragment(Book book, int editionId) {
 /// `#edition-{id}` fragment on the external URL.
 int? hardcoverEditionIdFromExternalUrl(String? externalUrl) {
   if (externalUrl == null) return null;
-  final RegExpMatch? m =
-      RegExp(r'#edition-(\d+)$').firstMatch(externalUrl);
+  final RegExpMatch? m = RegExp(r'#edition-(\d+)$').firstMatch(externalUrl);
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
@@ -83,8 +82,9 @@ int? hardcoverEditionIdFromExternalUrl(String? externalUrl) {
 /// under `external_data/` carry no id — then this returns null.
 int? hardcoverEditionIdFromCoverUrl(String? coverUrl) {
   if (coverUrl == null) return null;
-  final RegExpMatch? m = RegExp(r'assets\.hardcover\.app/editions?/(\d+)/')
-      .firstMatch(coverUrl);
+  final RegExpMatch? m = RegExp(
+    r'assets\.hardcover\.app/editions?/(\d+)/',
+  ).firstMatch(coverUrl);
   return m != null ? int.tryParse(m.group(1)!) : null;
 }
 
@@ -95,8 +95,7 @@ Future<Book> reapplyHardcoverEdition(
   required Book cached,
   required Book fresh,
 }) async {
-  final int? explicitId =
-      hardcoverEditionIdFromExternalUrl(cached.externalUrl);
+  final int? explicitId = hardcoverEditionIdFromExternalUrl(cached.externalUrl);
   final int? pickedId =
       explicitId ?? hardcoverEditionIdFromCoverUrl(cached.coverUrl);
   if (pickedId == null) return fresh;
@@ -164,8 +163,9 @@ class _HardcoverEditionsSectionState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<List<HardcoverEdition>> async =
-        ref.watch(_getEditionsProvider(widget.bookId));
+    final AsyncValue<List<HardcoverEdition>> async = ref.watch(
+      _getEditionsProvider(widget.bookId),
+    );
 
     return async.maybeWhen(
       data: (List<HardcoverEdition> editions) {
@@ -175,8 +175,8 @@ class _HardcoverEditionsSectionState
         final List<HardcoverEdition> visible = _language == null
             ? editions
             : editions
-                .where((HardcoverEdition e) => e.languageCode == _language)
-                .toList();
+                  .where((HardcoverEdition e) => e.languageCode == _language)
+                  .toList();
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -190,13 +190,13 @@ class _HardcoverEditionsSectionState
                 ),
                 child: Row(
                   children: <Widget>[
-                    Icon(Icons.menu_book,
-                        color: AppColors.brand, size: 22),
+                    Icon(Icons.menu_book, color: AppColors.brand, size: 22),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       l.editionPickerTitle,
-                      style: AppTypography.cardTitle
-                          .copyWith(color: AppColors.textPrimary),
+                      style: AppTypography.cardTitle.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -297,11 +297,13 @@ class _HardcoverEditionPickerSheet extends ConsumerWidget {
     }
     final List<(String?, List<HardcoverEdition>)> groups =
         <(String?, List<HardcoverEdition>)>[
-      for (final MapEntry<String?, List<HardcoverEdition>> e
-          in byLanguage.entries)
-        (e.key, e.value),
-    ]..sort(((String?, List<HardcoverEdition>) a,
-            (String?, List<HardcoverEdition>) b) {
+          for (final MapEntry<String?, List<HardcoverEdition>> e
+              in byLanguage.entries)
+            (e.key, e.value),
+        ]..sort((
+          (String?, List<HardcoverEdition>) a,
+          (String?, List<HardcoverEdition>) b,
+        ) {
           if (a.$1 == null) return 1;
           if (b.$1 == null) return -1;
           return b.$2.length.compareTo(a.$2.length);
@@ -312,8 +314,9 @@ class _HardcoverEditionPickerSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    final AsyncValue<List<HardcoverEdition>> async =
-        ref.watch(_getEditionsProvider(bookId));
+    final AsyncValue<List<HardcoverEdition>> async = ref.watch(
+      _getEditionsProvider(bookId),
+    );
 
     return SafeArea(
       child: SizedBox(
@@ -332,8 +335,9 @@ class _HardcoverEditionPickerSheet extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       l.editionPickerTitle,
-                      style: AppTypography.h3
-                          .copyWith(fontWeight: FontWeight.w600),
+                      style: AppTypography.h3.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -351,8 +355,7 @@ class _HardcoverEditionPickerSheet extends ConsumerWidget {
                         groups: _groups(editions),
                         currentEditionId: currentEditionId,
                       ),
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => Center(child: Text(l.editionPickerEmpty)),
               ),
             ),
@@ -453,8 +456,11 @@ class _EditionCard extends StatelessWidget {
                         alignment: Alignment.topRight,
                         child: Padding(
                           padding: const EdgeInsets.all(4),
-                          child: Icon(Icons.check_circle,
-                              color: AppColors.brand, size: 22),
+                          child: Icon(
+                            Icons.check_circle,
+                            color: AppColors.brand,
+                            size: 22,
+                          ),
                         ),
                       ),
                   ],
@@ -487,11 +493,9 @@ class _EditionCard extends StatelessWidget {
   }
 
   Widget _placeholder() => ColoredBox(
-        color: AppColors.surfaceLight,
-        child: Center(
-          child: Icon(Icons.menu_book, color: AppColors.textTertiary),
-        ),
-      );
+    color: glassTileColor(),
+    child: Center(child: Icon(Icons.menu_book, color: AppColors.textTertiary)),
+  );
 
   String _caption() {
     final List<String> parts = <String>[

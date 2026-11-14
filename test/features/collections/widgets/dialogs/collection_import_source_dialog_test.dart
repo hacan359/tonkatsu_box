@@ -1,7 +1,8 @@
 import 'package:core/models/collection_import.dart';
 import 'package:core/models/import_source_kind.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 import 'package:tonkatsu_box/features/collections/widgets/dialogs/collection_import_source_dialog.dart';
 
 import '../../../../helpers/test_helpers.dart';
@@ -42,7 +43,7 @@ void main() {
       ], (_) {});
 
       expect(tester.takeException(), isNull);
-      expect(find.byType(SimpleDialogOption), findsNWidgets(3));
+      expect(find.byType(GlassDialogOption), findsNWidgets(3));
     });
 
     testWidgets('should return the file choice from the first option', (
@@ -53,7 +54,7 @@ void main() {
         saved(ImportSourceKind.steam),
       ], (CollectionImportChoice? c) => result = c);
 
-      await tester.tap(find.byType(SimpleDialogOption).first);
+      await tester.tap(find.byType(GlassDialogOption).first);
       await tester.pumpAndSettle();
 
       expect(result, isA<CollectionImportFromFile>());

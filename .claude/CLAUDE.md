@@ -7,7 +7,7 @@ are English (see "Comments" below).
 
 ## Stack
 
-- Flutter 3.38+ / Dart SDK `^3.10.8`
+- Flutter 3.50+ / Dart SDK `^3.14.0`
 - Platforms: Windows desktop (full) + Android (no VGMaps/WebView)
 - State: **Riverpod 2.x** (`NotifierProvider`, `AsyncNotifierProvider`)
 - DB: SQLite (`sqflite_common_ffi` on desktop, `sqflite` on Android)

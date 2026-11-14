@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/app_surface.dart';
 import 'logo_loader.dart';
 
 /// Runs [action] behind a modal, non-dismissible loader; the overlay is always
@@ -14,7 +14,7 @@ Future<T> withBlockingSpinner<T>(
     DialogRoute<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: AppColors.barrier,
+      barrierColor: AppSurface.barrier(),
       builder: (BuildContext _) => const PopScope<Object?>(
         canPop: false,
         child: Center(child: LogoLoader(size: 96)),

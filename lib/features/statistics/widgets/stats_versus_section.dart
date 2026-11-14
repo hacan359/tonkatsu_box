@@ -1,6 +1,6 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -12,6 +12,7 @@ import '../../../shared/widgets/segmented_pill.dart';
 import '../models/library_stats.dart';
 import 'stats_poster.dart';
 import 'stats_section_header.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Best/worst pair per media type, switched with a pill. Types with fewer
 /// than the ratings threshold are absent from [LibraryStats.versus] already.
@@ -49,10 +50,7 @@ class _StatsVersusSectionState extends State<StatsVersusSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        StatsSectionHeader(
-          title: l.statsVersusTitle,
-          hint: l.statsVersusHint,
-        ),
+        StatsSectionHeader(title: l.statsVersusTitle, hint: l.statsVersusHint),
         if (widget.pairs.length > 1) ...<Widget>[
           // Scrollable: with the low ratings threshold most media types
           // qualify, and the tab row outgrows narrow layouts.
@@ -107,8 +105,9 @@ class _StatsVersusSectionState extends State<StatsVersusSection> {
                 children: <Widget>[
                   Expanded(child: best),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
                     child: Center(
                       child: Text(
                         'VS',
@@ -149,12 +148,13 @@ class _VersusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double rating = item.userRating ?? 0;
-    final String? comment =
-        (item.userComment?.trim().isNotEmpty ?? false) ? item.userComment : null;
+    final String? comment = (item.userComment?.trim().isNotEmpty ?? false)
+        ? item.userComment
+        : null;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(color: accent.withAlpha(80)),
         gradient: LinearGradient(
@@ -184,28 +184,32 @@ class _VersusCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   item.displayName(titleLanguage),
-                  style:
-                      AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+                  style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (item.releaseYear != null)
                   Text(
                     '${item.releaseYear}',
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textTertiary),
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 const SizedBox(height: AppSpacing.sm),
                 Text.rich(
                   TextSpan(
                     text: rating.toStringAsFixed(1),
-                    style: AppTypography.h1
-                        .copyWith(color: accent, fontSize: 44, height: 1),
+                    style: AppTypography.h1.copyWith(
+                      color: accent,
+                      fontSize: 44,
+                      height: 1,
+                    ),
                     children: <InlineSpan>[
                       TextSpan(
                         text: ' / 10',
-                        style: AppTypography.caption
-                            .copyWith(color: AppColors.textTertiary),
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                       ),
                     ],
                   ),

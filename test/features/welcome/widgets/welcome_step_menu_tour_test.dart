@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/welcome/widgets/welcome_step_menu_tour.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/theme/app_theme.dart';
 
 void main() {
@@ -10,7 +11,7 @@ void main() {
   Widget wrap({required VoidCallback onStart, required VoidCallback onSkip}) {
     return MaterialApp(
       theme: AppTheme.darkTheme,
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: WelcomeStepMenuTour(onStart: onStart, onSkip: onSkip),

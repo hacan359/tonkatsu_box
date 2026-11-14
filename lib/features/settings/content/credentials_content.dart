@@ -1,6 +1,6 @@
 import 'package:core/models/data_source.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,6 +20,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/status_dot.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 const String _twitchConsoleUrl = 'https://dev.twitch.tv/console/apps';
 
@@ -898,12 +899,11 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   Future<void> _uploadKeysFromConfig() async {
     setState(() => _uploading = true);
     try {
-      final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+      final PlatformFile? picked = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: <String>['json'],
-        withData: true,
       );
-      final Uint8List? bytes = picked?.files.single.bytes;
+      final Uint8List? bytes = await picked?.readBytesOrNull();
       if (bytes == null) return;
 
       final Map<String, String> credentials = credentialsFromConfig(bytes);

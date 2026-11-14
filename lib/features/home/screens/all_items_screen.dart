@@ -4,7 +4,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/utils/item_search.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -20,8 +20,9 @@ import '../../../shared/utils/item_card_progress.dart';
 import '../../../shared/utils/media_format.dart';
 import '../../../shared/utils/poster_grid_delegate.dart';
 import '../../../shared/utils/url_launch.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_segments.dart';
 import '../../../shared/widgets/filter_subfilter_bar.dart';
+import '../../../shared/widgets/media_type_icon_strip.dart';
 import '../../../shared/widgets/logo_loader.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/min_height_body.dart';
@@ -57,14 +58,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<int> _selectedPlatformIds = <int>{};
   final Set<String> _selectedMangaFormats = <String>{};
   final Set<String> _selectedAnimeFormats = <String>{};
-
-  /// Below this width the segments show icons instead of text.
-  static const double _compactBreakpoint = 700;
-
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.watch(visibleAllItemsProvider);
+    final AsyncValue<List<CollectionItem>> itemsAsync = ref.watch(
+      visibleAllItemsProvider,
+    );
     // Hiding a collection mid-selection would leave ids of now invisible
     // items in the set.
     ref.listen<Set<int>>(
@@ -72,28 +70,48 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       (Set<int>? previous, Set<int> next) =>
           ref.read(allItemsSelectionProvider.notifier).clear(),
     );
-    final Map<int, String> collectionNames =
-        ref.watch(collectionNamesProvider);
+    final Map<int, String> collectionNames = ref.watch(collectionNamesProvider);
     final Map<int, Tag> tagsMap = ref.watch(allTagsMapProvider);
     final Map<int, List<int>> itemTags =
         ref.watch(itemTagsProvider).valueOrNull ?? <int, List<int>>{};
-    final Set<ItemStatus> filterStatuses =
-        ref.watch(homeStatusFilterProvider);
+    final Set<ItemStatus> filterStatuses = ref.watch(homeStatusFilterProvider);
     final bool favoriteOnly = ref.watch(homeFavoriteFilterProvider);
-    final ItemSearch search =
-        ref.watch(itemSearchProvider(ref.watch(homeSearchQueryProvider)));
+    final ItemSearch search = ref.watch(
+      itemSearchProvider(ref.watch(homeSearchQueryProvider)),
+    );
 
     final List<CollectionItem> allItems =
         itemsAsync.valueOrNull ?? const <CollectionItem>[];
-    final List<CollectionItem> visibleItems =
-        _applyFilter(allItems, filterStatuses, favoriteOnly, search);
+    final List<CollectionItem> visibleItems = _applyFilter(
+      allItems,
+      filterStatuses,
+      favoriteOnly,
+      search,
+    );
 
-    return MinHeightBody(
+    final Widget page = MinHeightBody(
       child: Column(
         children: <Widget>[
-          _buildMediaTypeBar(itemsAsync, filterStatuses, favoriteOnly, search),
-          SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-          _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xs,
+            ),
+            child: _buildMediaTypeBar(
+              itemsAsync,
+              filterStatuses,
+              favoriteOnly,
+              search,
+            ),
+          ),
+          Column(
+            children: <Widget>[
+              SubfilterBar(groups: _subfilterGroups(itemsAsync)),
+              _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
+            ],
+          ),
           Expanded(
             child: itemsAsync.when(
               data: (List<CollectionItem> items) {
@@ -101,7 +119,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                   return _buildEmptyState(items.isEmpty);
                 }
                 return _buildGridView(
-                    visibleItems, collectionNames, tagsMap, itemTags);
+                  visibleItems,
+                  collectionNames,
+                  tagsMap,
+                  itemTags,
+                );
               },
               loading: () => const Center(child: LogoLoader()),
               error: (Object error, StackTrace stack) =>
@@ -111,6 +133,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ],
       ),
     );
+    return page;
   }
 
   List<CollectionItem> _applyFilter(
@@ -120,10 +143,17 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ItemSearch search,
   ) {
     return items
-        .where((CollectionItem item) =>
-            (_selectedTypes.isEmpty ||
-                item.matchesTypeFilter(_selectedTypes)) &&
-            _matchesNonTypeFilters(item, filterStatuses, favoriteOnly, search))
+        .where(
+          (CollectionItem item) =>
+              (_selectedTypes.isEmpty ||
+                  item.matchesTypeFilter(_selectedTypes)) &&
+              _matchesNonTypeFilters(
+                item,
+                filterStatuses,
+                favoriteOnly,
+                search,
+              ),
+        )
         .toList();
   }
 
@@ -157,8 +187,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     ItemSearch search,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
-    final Map<MediaType, int> counts =
-        _countByMediaType(items, filterStatuses, favoriteOnly, search);
+    final Map<MediaType, int> counts = _countByMediaType(
+      items,
+      filterStatuses,
+      favoriteOnly,
+      search,
+    );
     final Map<MediaType, int> totals = _rawTotalsByMediaType(items);
     final S l = S.of(context);
 
@@ -215,70 +249,54 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
     ];
 
-    final bool compact =
-        MediaQuery.sizeOf(context).width < _compactBreakpoint;
     final bool hideEmpty = ref.watch(
       settingsNotifierProvider.select(
         (SettingsState s) => s.hideEmptyMediaTypeChevrons,
       ),
     );
-    final List<_MediaTypeEntry> visibleEntries =
-        (hideEmpty && items != null)
-            ? entries
-                .where((_MediaTypeEntry e) =>
+    final List<_MediaTypeEntry> visibleEntries = (hideEmpty && items != null)
+        ? entries
+              .where(
+                (_MediaTypeEntry e) =>
                     (totals[e.type] ?? 0) > 0 ||
-                    _selectedTypes.contains(e.type))
-                .toList()
-            : entries;
+                    _selectedTypes.contains(e.type),
+              )
+              .toList()
+        : entries;
 
-    return ColoredBox(
-      color: AppColors.surface,
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: <Widget>[
-            for (int i = 0; i < visibleEntries.length; i++)
-              Expanded(
-                child: ChevronSegment(
-                  label: visibleEntries[i].displayLabel,
-                  icon: MediaTypeTheme.iconFor(visibleEntries[i].type),
-                  selected: _selectedTypes.contains(visibleEntries[i].type),
-                  accentColor:
-                      MediaTypeTheme.colorFor(visibleEntries[i].type),
-                  isFirst: i == 0,
-                  isLast: false,
-                  onTap: () => _toggleMediaType(visibleEntries[i].type),
-                  compact: compact,
-                  tintWhenInactive: true,
-                ),
-              ),
-            Expanded(
-              child: StatusDropdownSegment(
-                statuses: filterStatuses,
-                compact: compact,
-                subtitle: l.status,
-                isLast: false,
-                onChanged: (Set<ItemStatus> s) =>
-                    ref.read(homeStatusFilterProvider.notifier).setFilter(s),
-              ),
-            ),
-            Expanded(
-              child: ChevronSegment(
-                label: l.favorite,
-                icon: Icons.favorite,
-                selected: favoriteOnly,
-                accentColor: AppColors.favorite,
-                isFirst: false,
-                isLast: true,
-                onTap: () =>
-                    ref.read(homeFavoriteFilterProvider.notifier).toggle(),
-                compact: compact,
-                tintWhenInactive: true,
-              ),
-            ),
-          ],
+    // Spike: icon tiles with the count riding on the corner; the label
+    // lives in the tooltip. Scrolls sideways where the row does not fit.
+    return MediaTypeIconStrip(
+      children: <Widget>[
+        for (final _MediaTypeEntry e in visibleEntries)
+          MediaTypeIconTile(
+            label: e.label,
+            count: e.count,
+            icon: MediaTypeTheme.iconFor(e.type),
+            accent: MediaTypeTheme.colorFor(e.type),
+            selected: _selectedTypes.contains(e.type),
+            onTap: () => _toggleMediaType(e.type),
+          ),
+        const SizedBox(width: AppSpacing.sm),
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: StatusDropdownSegment(
+            statuses: filterStatuses,
+            compact: false,
+            onChanged: (Set<ItemStatus> s) =>
+                ref.read(homeStatusFilterProvider.notifier).setFilter(s),
+          ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.sm),
+        MediaTypeIconTile(
+          label: l.favorite,
+          count: 0,
+          icon: Icons.favorite,
+          accent: AppColors.favorite,
+          selected: favoriteOnly,
+          onTap: () => ref.read(homeFavoriteFilterProvider.notifier).toggle(),
+        ),
+      ],
     );
   }
 
@@ -313,10 +331,18 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               }),
             ),
         ],
-      _formatGroup(MediaType.manga, _selectedMangaFormats, items,
-          alwaysShow: alwaysShow),
-      _formatGroup(MediaType.anime, _selectedAnimeFormats, items,
-          alwaysShow: alwaysShow),
+      _formatGroup(
+        MediaType.manga,
+        _selectedMangaFormats,
+        items,
+        alwaysShow: alwaysShow,
+      ),
+      _formatGroup(
+        MediaType.anime,
+        _selectedAnimeFormats,
+        items,
+        alwaysShow: alwaysShow,
+      ),
     ];
   }
 
@@ -416,15 +442,17 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final SliverGridDelegate gridDelegate = geometry.delegate;
     final double gridPadding = geometry.padding;
 
-    final List<_CollectionGroup> groups =
-        _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
+    final List<_CollectionGroup> groups = _groupByCollection(
+      items,
+      collectionNames,
+      S.of(context).collectionsUncategorized,
+    );
     final bool selectionActive = ref.watch(
       allItemsSelectionProvider.select((Set<int> s) => s.isNotEmpty),
     );
 
     return RefreshIndicator(
-      onRefresh: () =>
-          ref.read(allItemsNotifierProvider.notifier).refresh(),
+      onRefresh: () => ref.read(allItemsNotifierProvider.notifier).refresh(),
       child: CustomScrollView(
         slivers: <Widget>[
           for (int i = 0; i < groups.length; i++) ...<Widget>[
@@ -436,9 +464,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               ),
             ),
             if (groups[i].isUncategorized)
-              const SliverToBoxAdapter(
-                child: UncategorizedDeprecationBanner(),
-              ),
+              const SliverToBoxAdapter(child: UncategorizedDeprecationBanner()),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
                 gridPadding,
@@ -448,36 +474,31 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               ),
               sliver: SliverGrid(
                 gridDelegate: gridDelegate,
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    final CollectionItem item = groups[i].items[index];
-                    final List<int>? tagIds = itemTags[item.id];
-                    return _AllItemsCard(
-                      key: ValueKey<int>(item.id),
-                      item: item,
-                      variant: isLandscape ||
-                              isCompactScreen(context)
-                          ? CardVariant.compact
-                          : CardVariant.grid,
-                      tags: tagsMap.orderedFor(tagIds),
-                      onShowDetails: () =>
-                          _showItemDetails(item, collectionNames),
-                      onShowContextMenu: (Offset pos) =>
-                          _showItemContextMenu(pos, item),
-                    );
-                  },
-                  childCount: groups[i].items.length,
-                ),
+                delegate: SliverChildBuilderDelegate((
+                  BuildContext context,
+                  int index,
+                ) {
+                  final CollectionItem item = groups[i].items[index];
+                  final List<int>? tagIds = itemTags[item.id];
+                  return _AllItemsCard(
+                    key: ValueKey<int>(item.id),
+                    item: item,
+                    variant: isLandscape || isCompactScreen(context)
+                        ? CardVariant.compact
+                        : CardVariant.grid,
+                    tags: tagsMap.orderedFor(tagIds),
+                    onShowDetails: () =>
+                        _showItemDetails(item, collectionNames),
+                    onShowContextMenu: (Offset pos) =>
+                        _showItemContextMenu(pos, item),
+                  );
+                }, childCount: groups[i].items.length),
               ),
             ),
             if (i < groups.length - 1)
-              const SliverToBoxAdapter(
-                child: SizedBox(height: AppSpacing.sm),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
           ],
-          const SliverToBoxAdapter(
-            child: SizedBox(height: AppSpacing.md),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
         ],
       ),
     );
@@ -520,13 +541,15 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     required bool isFirst,
     required bool selectionActive,
   }) {
-    final Color accent =
-        group.isUncategorized ? AppColors.textTertiary : AppColors.brand;
+    final Color accent = group.isUncategorized
+        ? AppColors.textTertiary
+        : AppColors.brand;
 
     // A phone has room for the name or the tallies, not both: the chips crowd
     // the title into an ellipsis and stop being readable anyway.
-    final List<Widget> tallies =
-        kIsMobile ? const <Widget>[] : _headerTallies(group.items);
+    final List<Widget> tallies = kIsMobile
+        ? const <Widget>[]
+        : _headerTallies(group.items);
 
     // Wrap, not Row: a long name plus a tally per media type overflows a
     // narrow window — the name ellipsizes and the chips flow to the next line.
@@ -621,12 +644,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           iconSize,
         ),
       if (favorites > 0)
-        tally(
-          Icons.favorite,
-          AppColors.favorite,
-          '$favorites',
-          iconSize - 2,
-        ),
+        tally(Icons.favorite, AppColors.favorite, '$favorites', iconSize - 2),
     ];
   }
 
@@ -652,8 +670,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             Text(
               S.of(context).allItemsAddViaCollections,
               textAlign: TextAlign.center,
-              style: AppTypography.body
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ],
@@ -687,7 +706,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   bool _isItemEditable(CollectionItem item) =>
       isItemEditable(item, ref.read(collectionsProvider).valueOrNull);
 
-  Future<void> _showItemContextMenu(Offset position, CollectionItem item) async {
+  Future<void> _showItemContextMenu(
+    Offset position,
+    CollectionItem item,
+  ) async {
     if (!_isItemEditable(item)) return;
     final S l = S.of(context);
     final RenderBox overlay =
@@ -736,10 +758,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
     if (newStatus != null) {
       if (newStatus != item.status) {
-        final CollectionItemsNotifier notifier = ref
-            .read(collectionItemsNotifierProvider(item.collectionId).notifier);
-        final ClearedEpisodeMarks? cleared =
-            await notifier.updateStatus(item.id, newStatus, item.mediaType);
+        final CollectionItemsNotifier notifier = ref.read(
+          collectionItemsNotifierProvider(item.collectionId).notifier,
+        );
+        final ClearedEpisodeMarks? cleared = await notifier.updateStatus(
+          item.id,
+          newStatus,
+          item.mediaType,
+        );
         if (!mounted) return;
         offerStatusEpisodesUndo(context, notifier, cleared);
       }
@@ -747,7 +773,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
     switch (value) {
       case 'favorite':
-        await ref.read(allItemsNotifierProvider.notifier).toggleFavorite(item.id);
+        await ref
+            .read(allItemsNotifierProvider.notifier)
+            .toggleFavorite(item.id);
       case 'move':
         await CollectionActions.moveItem(
           context: context,
@@ -789,16 +817,16 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) async {
     final bool isEditable = _isItemEditable(item);
 
-    final MetaSearchRequest? request =
-        await Navigator.of(context).push<MetaSearchRequest?>(
-      MaterialPageRoute<MetaSearchRequest?>(
-        builder: (BuildContext context) => ItemDetailScreen(
-          collectionId: item.collectionId,
-          itemId: item.id,
-          isEditable: isEditable,
-        ),
-      ),
-    );
+    final MetaSearchRequest? request = await Navigator.of(context)
+        .push<MetaSearchRequest?>(
+          MaterialPageRoute<MetaSearchRequest?>(
+            builder: (BuildContext context) => ItemDetailScreen(
+              collectionId: item.collectionId,
+              itemId: item.id,
+              isEditable: isEditable,
+            ),
+          ),
+        );
     if (request == null || !mounted) return;
     applyMetaSearch(ref, homeSearchQueryProvider, request.query);
   }
@@ -902,10 +930,7 @@ class _CollectionGroup {
 /// Watches the selection itself so a toggle never rebuilds the screen
 /// (and its O(n) grouping) — only the bar.
 class _AllItemsBulkBar extends ConsumerWidget {
-  const _AllItemsBulkBar({
-    required this.allItems,
-    required this.visibleItems,
-  });
+  const _AllItemsBulkBar({required this.allItems, required this.visibleItems});
 
   final List<CollectionItem> allItems;
   final List<CollectionItem> visibleItems;
@@ -999,8 +1024,8 @@ class _AllItemsCard extends ConsumerWidget {
           onToggleFavorite: selectionActive
               ? null
               : () => ref
-                  .read(allItemsNotifierProvider.notifier)
-                  .toggleFavorite(item.id),
+                    .read(allItemsNotifierProvider.notifier)
+                    .toggleFavorite(item.id),
           tags: tags,
           showAllTags: showAllTags,
           source: item.dataSource,

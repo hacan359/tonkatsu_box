@@ -1,15 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Pops a `Map<String, dynamic>` with `url` and `label` keys,
 /// or `null` if the user cancelled.
 class AddLinkDialog extends StatefulWidget {
-  const AddLinkDialog({
-    this.initialUrl,
-    this.initialLabel,
-    super.key,
-  });
+  const AddLinkDialog({this.initialUrl, this.initialLabel, super.key});
 
   /// Non-null switches the dialog to edit mode.
   final String? initialUrl;
@@ -75,7 +72,7 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(_isEditing ? l.editLinkTitle : l.canvasAddLink),
       content: SizedBox(
@@ -84,27 +81,27 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-            TextField(
-              controller: _urlController,
-              decoration: InputDecoration(
-                labelText: l.urlLabel,
-                hintText: l.urlHint,
-                border: const OutlineInputBorder(),
+              TextField(
+                controller: _urlController,
+                decoration: InputDecoration(
+                  labelText: l.urlLabel,
+                  hintText: l.urlHint,
+                  border: const OutlineInputBorder(),
+                ),
+                autofocus: true,
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => _submit(),
               ),
-              autofocus: true,
-              onChanged: (_) => setState(() {}),
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _labelController,
-              decoration: InputDecoration(
-                labelText: l.linkLabelOptional,
-                hintText: l.linkLabelHint,
-                border: const OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _labelController,
+                decoration: InputDecoration(
+                  labelText: l.linkLabelOptional,
+                  hintText: l.linkLabelHint,
+                  border: const OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => _submit(),
               ),
-              onSubmitted: (_) => _submit(),
-            ),
             ],
           ),
         ),

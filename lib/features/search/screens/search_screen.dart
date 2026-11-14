@@ -4,7 +4,7 @@ import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -29,6 +29,7 @@ import '../widgets/source_chips_row.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/platform_ui.dart';
 import '../../../shared/widgets/min_height_body.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Search and browse screen — two modes: Browse (filter bar + Discover/Grid)
 /// and Search (query field + results).
@@ -36,11 +37,11 @@ class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.search,
-        entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+F', description: l.shortcutFocusSearchField),
-        ],
-      );
+    title: l.search,
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+F', description: l.shortcutFocusSearchField),
+    ],
+  );
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -61,10 +62,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   /// The platform map and the add-target collections are read live in closures,
   /// so handlers never rebuild — a tap resolves the current selection.
   MediaHandlers _buildHandlers() => MediaHandlers(
-        ref: ref,
-        platformMap: () => _platformMap,
-        targetCollections: () => ref.read(searchTargetCollectionsProvider),
-      );
+    ref: ref,
+    platformMap: () => _platformMap,
+    targetCollections: () => ref.read(searchTargetCollectionsProvider),
+  );
 
   Future<void> _loadPlatforms() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
@@ -130,7 +131,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (infos.isEmpty || !mounted) return;
 
     if (infos.length == 1) {
-      _navigateToItemDetail(infos.first);
+      unawaited(_navigateToItemDetail(infos.first));
       return;
     }
 
@@ -139,15 +140,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       context: context,
       builder: (BuildContext context) {
         final S l = S.of(context);
-        return SimpleDialog(
-          title: Text(l.openInCollection),
+        return GlassDialog(
+          title: l.openInCollection,
           children: infos.map((CollectedItemInfo info) {
             final String name =
                 info.collectionName ?? l.collectionsUncategorized;
             final Platform? platform = info.platformId != null
                 ? _platformMap[info.platformId]
                 : null;
-            return SimpleDialogOption(
+            return GlassDialogOption(
               onPressed: () => Navigator.of(context).pop(info),
               child: Row(
                 children: <Widget>[
@@ -171,9 +172,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         if (platform != null)
                           Text(
                             platform.displayName,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(color: AppColors.textTertiary),
                           ),
                       ],
@@ -187,7 +186,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       },
     );
     if (chosen != null && mounted) {
-      _navigateToItemDetail(chosen);
+      unawaited(_navigateToItemDetail(chosen));
     }
   }
 
@@ -221,21 +220,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
     // Narrowed by source so the placements match how the card's badge is
     // keyed: by (source, id), not by id alone.
-    return (collected[externalId] ?? <CollectedItemInfo>[])
-        .forSource(mediaType, source);
+    return (collected[externalId] ?? <CollectedItemInfo>[]).forSource(
+      mediaType,
+      source,
+    );
   }
 
   Future<void> _navigateToItemDetail(CollectedItemInfo info) async {
-    final MetaSearchRequest? request =
-        await Navigator.of(context).push<MetaSearchRequest?>(
-      MaterialPageRoute<MetaSearchRequest?>(
-        builder: (BuildContext context) => ItemDetailScreen(
-          collectionId: info.collectionId,
-          itemId: info.recordId,
-          isEditable: true,
-        ),
-      ),
-    );
+    final MetaSearchRequest? request = await Navigator.of(context)
+        .push<MetaSearchRequest?>(
+          MaterialPageRoute<MetaSearchRequest?>(
+            builder: (BuildContext context) => ItemDetailScreen(
+              collectionId: info.collectionId,
+              itemId: info.recordId,
+              isEditable: true,
+            ),
+          ),
+        );
     if (request == null || !mounted) return;
     ref.read(homeMetaSearchRequestProvider.notifier).state = request;
   }
@@ -263,7 +264,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return MinHeightBody(
       child: Column(
         children: <Widget>[
-          FilterBar(onBeforeFilterChange: _syncSearchText),
+          // Same inset as the icon strip on Home, so the two bars line up.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xs,
+            ),
+            child: FilterBar(onBeforeFilterChange: _syncSearchText),
+          ),
           if (!isCompactScreen(context)) const SourceChipsRow(),
           const CollectionChipsRow(),
           const SizedBox(height: AppSpacing.xs),

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:core/models/image_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -18,6 +18,7 @@ import '../models/showcase_item.dart';
 import '../providers/showcase_clock_provider.dart';
 import '../utils/release_labels.dart';
 import '../utils/showcase_cover.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Cover left, text right, at a fixed height so the grid never measures a
 /// card; only the countdown line listens to the clock.
@@ -64,7 +65,7 @@ class ReleaseCard extends StatelessWidget {
     final double? rating = item.rating;
 
     return Material(
-      color: AppColors.surface,
+      color: glassTileColor(),
       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -168,9 +169,7 @@ class _Countdown extends ConsumerWidget {
           releaseDateText(item, locale),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
         ),
       ],
     );
@@ -195,7 +194,7 @@ class _Cover extends StatelessWidget {
     );
     final ({ImageType type, String id}) cache = showcaseCoverCache(item);
     final Widget placeholder = Container(
-      color: AppColors.surfaceLight,
+      color: glassTileColor(),
       alignment: Alignment.center,
       child: Icon(
         MediaTypeTheme.placeholderIconFor(item.mediaType),
@@ -247,10 +246,12 @@ class _FittedDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle style =
-        AppTypography.caption.copyWith(color: AppColors.textTertiary);
-    final double lineHeight = MediaQuery.textScalerOf(context)
-        .scale((style.fontSize ?? 12) * (style.height ?? 1.3));
+    final TextStyle style = AppTypography.caption.copyWith(
+      color: AppColors.textTertiary,
+    );
+    final double lineHeight = MediaQuery.textScalerOf(
+      context,
+    ).scale((style.fontSize ?? 12) * (style.height ?? 1.3));
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final int lines = (constraints.maxHeight / lineHeight).floor();

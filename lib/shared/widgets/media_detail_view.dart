@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:core/models/card_link.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/data_source.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
@@ -12,6 +12,7 @@ import '../../features/settings/providers/settings_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/platform_features.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_surface.dart';
 import '../theme/app_typography.dart';
 import '../utils/date_format_preset.dart';
 import '../utils/duration_formatter.dart';
@@ -23,7 +24,6 @@ import 'media_detail/detail_note_section.dart';
 import 'media_detail/detail_sections.dart';
 import 'media_detail/identity_header.dart';
 import 'media_detail/media_cover_image.dart';
-import 'media_detail/media_detail_backdrop.dart';
 import 'media_detail/media_detail_chip.dart';
 import 'media_detail/mobile_detail_layout.dart';
 import 'media_detail/progress_tiles.dart';
@@ -94,6 +94,8 @@ class MediaDetailView extends ConsumerStatefulWidget {
   final String title;
   final String? coverUrl;
   final String? externalUrl;
+
+  /// Wide artwork (TMDB backdrop, IGDB artwork, AniList banner).
   final String? backdropUrl;
   final IconData placeholderIcon;
   final DataSource source;
@@ -224,7 +226,9 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     };
     if (refs.isEmpty) {
       if (_resolvedCardLinks.isNotEmpty && mounted) {
-        setState(() => _resolvedCardLinks = const <CardLinkRef, CollectionItem>{});
+        setState(
+          () => _resolvedCardLinks = const <CardLinkRef, CollectionItem>{},
+        );
       }
       return;
     }
@@ -232,19 +236,21 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
     final DatabaseService db = ref.read(databaseServiceProvider);
     final List<CardLinkRef> links = refs.toList();
     final List<List<CollectionItem>> matchLists = await Future.wait(
-      links.map((CardLinkRef link) => db.resolveCardLink(
-            mediaType: link.mediaType,
-            externalId: link.externalId,
-            source: link.source,
-            platformId: link.platformId,
-            collectionId: link.collectionId,
-          )),
+      links.map(
+        (CardLinkRef link) => db.resolveCardLink(
+          mediaType: link.mediaType,
+          externalId: link.externalId,
+          source: link.source,
+          platformId: link.platformId,
+          collectionId: link.collectionId,
+        ),
+      ),
     );
     final Map<CardLinkRef, CollectionItem> resolved =
         <CardLinkRef, CollectionItem>{
-      for (int i = 0; i < links.length; i++)
-        if (matchLists[i].isNotEmpty) links[i]: matchLists[i].first,
-    };
+          for (int i = 0; i < links.length; i++)
+            if (matchLists[i].isNotEmpty) links[i]: matchLists[i].first,
+        };
     if (mounted) setState(() => _resolvedCardLinks = resolved);
   }
 
@@ -282,8 +288,9 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       return;
     }
     _cardLinkPickerOpen = true;
-    _insertCardLink(fromBracketTrigger: true)
-        .whenComplete(() => _cardLinkPickerOpen = false);
+    _insertCardLink(
+      fromBracketTrigger: true,
+    ).whenComplete(() => _cardLinkPickerOpen = false);
   }
 
   Future<void> _insertCardLink({bool fromBracketTrigger = false}) async {
@@ -335,15 +342,11 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         : LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) =>
                 constraints.maxWidth < kDesktopDetailMinWidth
-                    ? mobile
-                    : DesktopDetailLayout(sections: sections),
+                ? mobile
+                : DesktopDetailLayout(sections: sections),
           );
 
-    final Widget withBackdrop = widget.backdropUrl != null
-        ? MediaDetailBackdrop(imageUrl: widget.backdropUrl!, child: content)
-        : content;
-
-    if (widget.embedded) return withBackdrop;
+    if (widget.embedded) return content;
 
     return Scaffold(
       appBar: AppBar(
@@ -352,7 +355,7 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         foregroundColor: AppColors.textPrimary,
         title: Text(widget.title, style: AppTypography.h2),
       ),
-      body: withBackdrop,
+      body: content,
     );
   }
 
@@ -392,6 +395,8 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       gallery: widget.mediaGallery,
       extras: widget.extraSections ?? const <Widget>[],
       recommendations: widget.recommendationSections ?? const <Widget>[],
+      // The skin decides whether artwork belongs behind the card at all.
+      backdropUrl: AppSurface.detailBackdrop ? widget.backdropUrl : null,
     );
   }
 
@@ -436,10 +441,10 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
         hasValue: widget.startedAt != null,
         onTap: editableDates
             ? () => _pickActivityDate(
-                  context,
-                  ActivityDateField.started,
-                  widget.startedAt,
-                )
+                context,
+                ActivityDateField.started,
+                widget.startedAt,
+              )
             : null,
       ),
       ProgressFact(
@@ -452,10 +457,10 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
             : null,
         onTap: editableDates
             ? () => _pickActivityDate(
-                  context,
-                  ActivityDateField.completed,
-                  widget.completedAt,
-                )
+                context,
+                ActivityDateField.completed,
+                widget.completedAt,
+              )
             : null,
       ),
       if (widget.onTimeSpentTap != null)
@@ -547,8 +552,8 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       isEditing: isEditing,
       onToggleEdit: widget.isEditable
           ? (isEditing
-              ? _finishEditing
-              : () => _startEditing(_EditingField.author))
+                ? _finishEditing
+                : () => _startEditing(_EditingField.author))
           : null,
       controller: _authorController,
       hint: l.detailWriteReviewHint,
@@ -582,8 +587,9 @@ class _MediaDetailViewState extends ConsumerState<MediaDetailView> {
       controller: _userController,
       hint: l.detailWriteNotesHint,
       onTap: () => _startEditing(_EditingField.user),
-      onInsertCardLink:
-          widget.onCardLinkTap != null ? () => _insertCardLink() : null,
+      onInsertCardLink: widget.onCardLinkTap != null
+          ? () => _insertCardLink()
+          : null,
       text: widget.hasUserComment ? widget.userComment : null,
       emptyText: l.detailNoNotesYet,
       textStyle: AppTypography.body.copyWith(height: 1.5),

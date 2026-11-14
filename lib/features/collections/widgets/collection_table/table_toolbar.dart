@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_popup_menu.dart';
 
 /// Toolbar above the collection table: the column visibility menu and the
 /// filter dialog trigger.
@@ -38,16 +39,20 @@ class TableToolbar extends StatelessWidget {
   }
 
   Widget _buildColumnsButton(S l) {
-    return PopupMenuButton<String>(
+    return GlassPopupMenuButton<String>(
       tooltip: l.collectionTableColumns,
-      color: AppColors.surface,
       onSelected: onToggleColumn,
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+      rows: (BuildContext _) => <Widget>[
         for (final MapEntry<String, String> e in columnLabels.entries)
-          CheckedPopupMenuItem<String>(
+          GlassMenuRow<String>(
             value: e.key,
-            checked: !isColumnHidden(e.key),
-            child: Text(e.value, style: AppTypography.body),
+            label: e.value,
+            icon: isColumnHidden(e.key)
+                ? Icons.check_box_outline_blank
+                : Icons.check_box,
+            iconColor: isColumnHidden(e.key)
+                ? AppColors.textTertiary
+                : AppColors.brand,
           ),
       ],
       child: _buildChip(

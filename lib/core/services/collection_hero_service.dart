@@ -11,7 +11,9 @@ import 'package:path_provider/path_provider.dart';
 import '../../shared/constants/platform_features.dart';
 import '../selfhost/server_origin.dart';
 import 'image_cache_service.dart';
+import 'image_extension.dart';
 import 'storage_root.dart';
+import '../../shared/services/file_dialogs.dart';
 
 /// Overridden in `main.dart` with the value resolved at app startup.
 final Provider<String> collectionsHeroDirProvider = Provider<String>(
@@ -22,16 +24,17 @@ final Provider<String> collectionsHeroDirProvider = Provider<String>(
 
 final Provider<CollectionHeroService> collectionHeroServiceProvider =
     Provider<CollectionHeroService>(
-  (Ref ref) => CollectionHeroService(
-    rootDir: ref.watch(collectionsHeroDirProvider),
-    imageCache: ref.watch(imageCacheServiceProvider),
-  ),
-);
+      (Ref ref) => CollectionHeroService(
+        rootDir: ref.watch(collectionsHeroDirProvider),
+        imageCache: ref.watch(imageCacheServiceProvider),
+      ),
+    );
 
 class CollectionHeroService {
-  const CollectionHeroService({required String rootDir, ImageCacheService? imageCache})
-      : _rootDir = rootDir,
-        _imageCache = imageCache;
+  const CollectionHeroService({
+    required this._rootDir,
+    this._imageCache,
+  });
 
   static final Logger _log = Logger('CollectionHeroService');
 
@@ -45,15 +48,16 @@ class CollectionHeroService {
   /// hero images left in the legacy `<appSupport>` location. Startup-only.
   static Future<String> resolveRoot() async {
     final StorageRootResolution root = await StorageRoot.resolve();
-    final String newDir =
-        p.join(root.path, StorageRoot.collectionsFolderName);
+    final String newDir = p.join(root.path, StorageRoot.collectionsFolderName);
     // No filesystem on web: the dir is virtual and legacy migration moot.
     if (kIsWebBuild) return newDir;
     await Directory(newDir).create(recursive: true);
 
     final Directory appDir = await getApplicationSupportDirectory();
-    final String legacyDir =
-        p.join(appDir.path, StorageRoot.collectionsFolderName);
+    final String legacyDir = p.join(
+      appDir.path,
+      StorageRoot.collectionsFolderName,
+    );
     await migrateLegacyHeroImages(legacyDir: legacyDir, newDir: newDir);
 
     return newDir;
@@ -116,27 +120,26 @@ class CollectionHeroService {
     required int collectionId,
     String? oldFileName,
   }) async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       type: FileType.image,
       dialogTitle: 'Cover image',
-      // A browser pick has no path — the bytes are all there is.
-      withData: kIsWebBuild,
     );
-    if (result == null || result.files.isEmpty) return null;
-
-    final PlatformFile picked = result.files.first;
+    if (picked == null) return null;
 
     final String ext = (picked.extension ?? p.extension(picked.name))
         .replaceFirst('.', '')
         .toLowerCase();
-    final String safeExt = _sanitizeExtension(ext);
+    final String safeExt = sanitizeImageExtension(ext);
     final int ts = DateTime.now().millisecondsSinceEpoch;
     final String fileName = 'hero_${collectionId}_$ts.$safeExt';
 
+    // Bytes, not the path: an Android pick can be a content URI with no path.
+    final Uint8List? bytes = await picked.readBytesOrNull();
+    if (bytes == null || bytes.isEmpty) return null;
+
     if (kIsWebBuild) {
-      final Uint8List? bytes = picked.bytes;
-      if (bytes == null || bytes.isEmpty) return null;
-      final bool ok = await _imageCache?.saveImageBytes(
+      final bool ok =
+          await _imageCache?.saveImageBytes(
             ImageType.collectionHero,
             fileName,
             bytes,
@@ -148,12 +151,10 @@ class CollectionHeroService {
       return ok ? fileName : null;
     }
 
-    final String? sourcePath = picked.path;
-    if (sourcePath == null) return null;
     final String target = absolutePathFor(fileName);
 
     try {
-      await File(sourcePath).copy(target);
+      await File(target).writeAsBytes(bytes);
     } on FileSystemException catch (e) {
       _log.warning('Failed to copy hero image: ${e.message}', e);
       return null;
@@ -172,7 +173,7 @@ class CollectionHeroService {
     required List<int> bytes,
     required String extension,
   }) async {
-    final String safeExt = _sanitizeExtension(extension);
+    final String safeExt = sanitizeImageExtension(extension);
     final int ts = DateTime.now().millisecondsSinceEpoch;
     final String fileName = 'hero_${collectionId}_$ts.$safeExt';
     if (kIsWebBuild) {
@@ -213,24 +214,7 @@ class CollectionHeroService {
     return d
         .listSync(followLinks: false)
         .whereType<File>()
-        .where((File f) =>
-            p.basename(f.path).startsWith('hero_'))
+        .where((File f) => p.basename(f.path).startsWith('hero_'))
         .toList();
-  }
-
-  String _sanitizeExtension(String ext) {
-    const Set<String> allowed = <String>{
-      'png',
-      'jpg',
-      'jpeg',
-      'webp',
-      'gif',
-      'bmp',
-    };
-    final String clean = ext.toLowerCase().replaceAll(
-          RegExp('[^a-z0-9]'),
-          '',
-        );
-    return allowed.contains(clean) ? clean : 'png';
   }
 }

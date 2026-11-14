@@ -1,6 +1,6 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/marked_unit.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -14,15 +14,12 @@ import '../../../shared/widgets/cached_image.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/marked_units_provider.dart';
 import '../utils/marked_unit_label.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// One title with its marked units listed underneath. Any tap opens the
 /// title's card — scrolling to the unit itself is not attempted.
 class MarkedGroupTile extends ConsumerWidget {
-  const MarkedGroupTile({
-    required this.group,
-    required this.onOpen,
-    super.key,
-  });
+  const MarkedGroupTile({required this.group, required this.onOpen, super.key});
 
   final MarkedUnitGroup group;
   final VoidCallback onOpen;
@@ -34,18 +31,19 @@ class MarkedGroupTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
     final CollectionItem item = group.item;
-    final String? collectionName =
-        ref.watch(collectionNamesProvider)[item.collectionId];
+    final String? collectionName = ref.watch(
+      collectionNamesProvider,
+    )[item.collectionId];
     final String subtitle = <String>[
       item.mediaType.localizedLabel(l),
       ?collectionName,
     ].join(' · ');
 
     return Material(
-      color: AppColors.surface,
+      color: glassTileColor(),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        side: BorderSide(color: AppColors.surfaceBorder, width: 0.5),
+        side: BorderSide(color: glassTileBorderColor(), width: 0.5),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -123,7 +121,7 @@ class _Cover extends StatelessWidget {
   Widget build(BuildContext context) {
     final String? url = item.thumbnailUrl;
     final Widget placeholder = Container(
-      color: AppColors.surfaceLight,
+      color: glassTileColor(),
       alignment: Alignment.center,
       child: Icon(
         item.placeholderIcon,
@@ -155,11 +153,10 @@ typedef _MarkIcon = ({IconData icon, Color color});
 
 /// Both icons can show at once: a unit may be liked and noted.
 List<_MarkIcon> _unitIcons(MarkedUnit unit) => <_MarkIcon>[
-      if (unit.mark.isFavorite)
-        (icon: Icons.favorite, color: AppColors.favorite),
-      if (unit.mark.note != null)
-        (icon: Icons.sticky_note_2_outlined, color: AppColors.textTertiary),
-    ];
+  if (unit.mark.isFavorite) (icon: Icons.favorite, color: AppColors.favorite),
+  if (unit.mark.note != null)
+    (icon: Icons.sticky_note_2_outlined, color: AppColors.textTertiary),
+];
 
 class _MarkRow extends StatelessWidget {
   const _MarkRow({
@@ -187,13 +184,14 @@ class _MarkRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final String? note = this.note;
     final double? rating = this.rating;
-    final TextStyle labelStyle =
-        AppTypography.bodySmall.copyWith(fontWeight: FontWeight.w500);
+    final TextStyle labelStyle = AppTypography.bodySmall.copyWith(
+      fontWeight: FontWeight.w500,
+    );
     // The slot is exactly one label line tall so the icons sit centred on
     // the label, whatever the text scale, while a note wraps below.
     final double lineHeight =
         MediaQuery.textScalerOf(context).scale(labelStyle.fontSize ?? 0) *
-            (labelStyle.height ?? 1);
+        (labelStyle.height ?? 1);
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -254,8 +252,9 @@ class _MarkRow extends StatelessWidget {
                       padding: const EdgeInsets.only(top: _noteGap),
                       child: Text(
                         note,
-                        style: AppTypography.bodySmall
-                            .copyWith(color: AppColors.textSecondary),
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

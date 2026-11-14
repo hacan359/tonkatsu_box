@@ -270,7 +270,7 @@ class DiscordRpcService {
   Future<void> _disconnect() async {
     if (_rpc != null) {
       try {
-        _rpc!.dispose();
+        unawaited(_rpc!.dispose());
       } on Exception catch (_) {}
     }
     _rpc = null;

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -668,6 +669,99 @@ class SRu extends S {
 
   @override
   String get settingsThemeEva => 'Eva Лазурь';
+
+  @override
+  String get settingsSkin => 'Стиль';
+
+  @override
+  String get settingsSkinSubtitle => 'Стекло или классический вид';
+
+  @override
+  String get settingsSkinGlass => 'Стекло';
+
+  @override
+  String get settingsSkinClassic => 'Классика';
+
+  @override
+  String get settingsCardLook => 'Вид карточек';
+
+  @override
+  String get settingsCardLookSubtitle => 'Как выглядят постеры в сетках';
+
+  @override
+  String get settingsCardLookClassic => 'Классика';
+
+  @override
+  String get settingsCardLookCurved => 'Изогнутое стекло';
+
+  @override
+  String get settingsCardLookSlab => 'Плитка';
+
+  @override
+  String get settingsCardLookJewel => 'Бокс';
+
+  @override
+  String get settingsCardLookCinema => 'Кино';
+
+  @override
+  String get settingsCardLookShelf => 'Полка';
+
+  @override
+  String get settingsCardLookTilt => 'Наклон';
+
+  @override
+  String get settingsCardLookKino => 'Шторка';
+
+  @override
+  String get settingsCardLookMinimal => 'Минимализм';
+
+  @override
+  String get settingsCardLookRibbon => 'Лента';
+
+  @override
+  String get settingsProxy => 'Прокси';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Направляет трафик приложения через локальный HTTP-прокси';
+
+  @override
+  String get settingsProxyHint =>
+      'Укажите локальный HTTP-порт, который открывает ваш VPN (смешанный порт Clash обычно 7890). Адреса вашей локальной сети всегда подключаются напрямую.';
+
+  @override
+  String get settingsProxyEnabled => 'Включить прокси';
+
+  @override
+  String get settingsProxyHost => 'Хост';
+
+  @override
+  String get settingsProxyPort => 'Порт';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Введите имя хоста или IP-адрес и порт от 1 до 65535';
+
+  @override
+  String get settingsWallpaper => 'Обои';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Картинка под стеклянной рамкой';
+
+  @override
+  String get settingsWallpaperDefault => 'По умолчанию';
+
+  @override
+  String get settingsWallpaperCustom => 'Своя картинка';
+
+  @override
+  String get settingsWallpaperChoose => 'Выбрать картинку…';
+
+  @override
+  String get settingsWallpaperReset => 'Сбросить';
+
+  @override
+  String get settingsWallpaperError => 'Не удалось сохранить обои';
 
   @override
   String get settingsAppLanguageSubtitle => 'Язык интерфейса';
@@ -4782,6 +4876,21 @@ class SRu extends S {
 
   @override
   String get settingsIntegrations => 'Интеграции';
+
+  @override
+  String get settingsTabProfile => 'Профиль';
+
+  @override
+  String get settingsTabData => 'Данные';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Тема и язык';
+
+  @override
+  String get settingsAppearanceLibrary => 'Библиотека';
+
+  @override
+  String get settingsAppearanceScale => 'Масштаб';
 
   @override
   String get settingsKodiSubtitle => 'Синхронизация просмотров с Kodi';

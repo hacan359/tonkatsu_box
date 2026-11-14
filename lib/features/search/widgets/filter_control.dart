@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_segments.dart';
 import '../models/common_filter.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
@@ -80,10 +80,7 @@ mixin FilterOptionsLoader<T extends ConsumerStatefulWidget>
       onPick(null, null);
       return;
     }
-    onPick(
-      resolved,
-      CommonSelection(semantic: resolved, targets: targets),
-    );
+    onPick(resolved, CommonSelection(semantic: resolved, targets: targets));
   }
 
   /// Label for the current [value]: the matching option, a count for
@@ -102,11 +99,7 @@ mixin FilterOptionsLoader<T extends ConsumerStatefulWidget>
     return value.toString();
   }
 
-  List<PopupMenuEntry<Object>> menuEntries(
-    S l,
-    Object? value,
-    Color accent,
-  ) {
+  List<PopupMenuEntry<Object>> menuEntries(S l, Object? value, Color accent) {
     final List<FilterOption>? loaded = options;
     if (loaded == null || isLoadingOptions) {
       return <PopupMenuEntry<Object>>[
@@ -145,8 +138,9 @@ mixin FilterOptionsLoader<T extends ConsumerStatefulWidget>
               option.label,
               style: AppTypography.body.copyWith(
                 color: option.value == value ? accent : AppColors.textPrimary,
-                fontWeight:
-                    option.value == value ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: option.value == value
+                    ? FontWeight.w600
+                    : FontWeight.normal,
               ),
             ),
           ),
@@ -223,7 +217,7 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
     if (reason != null) {
       return Tooltip(
         message: reason,
-        child: ChevronSegment(
+        child: FilterSegment(
           label: widget.filter.placeholder(l),
           icon: Icons.filter_list_off,
           selected: false,
@@ -236,9 +230,9 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
     }
 
     final Future<Object?> Function(BuildContext, WidgetRef, S, Object?)?
-        customPicker = widget.filter.openCustomPicker;
+    customPicker = widget.filter.openCustomPicker;
     if (customPicker != null) {
-      return ChevronSegment(
+      return FilterSegment(
         label: labelFor(widget.value, l),
         subtitle: subtitle,
         icon: Icons.filter_list,
@@ -247,8 +241,12 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
         isFirst: false,
         isLast: widget.isLast,
         onTap: () async {
-          final Object? result =
-              await customPicker(context, ref, l, widget.value);
+          final Object? result = await customPicker(
+            context,
+            ref,
+            l,
+            widget.value,
+          );
           if (!mounted) return;
           report(result, widget.onPick);
         },
@@ -256,7 +254,7 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
     }
 
     if (widget.filter.searchable) {
-      return ChevronSegment(
+      return FilterSegment(
         label: labelFor(widget.value, l),
         subtitle: subtitle,
         icon: Icons.filter_list,
@@ -282,7 +280,7 @@ class _FilterChevronState extends ConsumerState<FilterChevron>
       );
     }
 
-    return DropdownChevronSegment<Object>(
+    return FilterDropdownSegment<Object>(
       label: labelFor(widget.value, l),
       subtitle: subtitle,
       icon: Icons.filter_list,

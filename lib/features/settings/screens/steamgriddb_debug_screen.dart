@@ -1,13 +1,13 @@
 import 'package:core/models/steamgriddb_game.dart';
 import 'package:core/models/steamgriddb_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 class SteamGridDbDebugScreen extends ConsumerStatefulWidget {
   const SteamGridDbDebugScreen({super.key});
@@ -121,11 +121,12 @@ class _SteamGridDbDebugScreenState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return DefaultTabController(
+    return FramePage(
+      title: l.steamGridDbPanelTitle,
+      child: DefaultTabController(
       length: 5,
       child: Column(
         children: <Widget>[
-          SubScreenTitleBar(title: l.steamGridDbPanelTitle),
           Material(
             color: AppColors.surface,
             child: TabBar(
@@ -151,6 +152,7 @@ class _SteamGridDbDebugScreenState
             ),
           ),
         ],
+      ),
       ),
     );
   }

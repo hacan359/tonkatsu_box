@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/widgets/markdown_toolbar.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
 void main() {
   late TextEditingController controller;
@@ -16,7 +18,7 @@ void main() {
 
   Widget buildToolbar() {
     return MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: Column(
@@ -31,8 +33,9 @@ void main() {
 
   group('MarkdownToolbar', () {
     group('кнопки', () {
-      testWidgets('should show 3 кнопки: Bold, Italic, Link',
-          (WidgetTester tester) async {
+      testWidgets('should show 3 кнопки: Bold, Italic, Link', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
 
@@ -56,8 +59,10 @@ void main() {
 
       test('должен оборачивать выделенный текст', () {
         controller.text = 'hello world';
-        controller.selection =
-            const TextSelection(baseOffset: 6, extentOffset: 11);
+        controller.selection = const TextSelection(
+          baseOffset: 6,
+          extentOffset: 11,
+        );
 
         MarkdownToolbar.wrapSelection(controller, '**');
 
@@ -68,8 +73,10 @@ void main() {
 
       test('должен оборачивать * для italic', () {
         controller.text = 'some text';
-        controller.selection =
-            const TextSelection(baseOffset: 5, extentOffset: 9);
+        controller.selection = const TextSelection(
+          baseOffset: 5,
+          extentOffset: 9,
+        );
 
         MarkdownToolbar.wrapSelection(controller, '*');
 
@@ -87,8 +94,9 @@ void main() {
     });
 
     group('insertLink', () {
-      testWidgets('должен открывать диалог вставки ссылки',
-          (WidgetTester tester) async {
+      testWidgets('должен открывать диалог вставки ссылки', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
 
@@ -102,8 +110,9 @@ void main() {
         expect(find.text('URL'), findsOneWidget);
       });
 
-      testWidgets('должен вставлять markdown-ссылку при подтверждении',
-          (WidgetTester tester) async {
+      testWidgets('должен вставлять markdown-ссылку при подтверждении', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
 
@@ -114,7 +123,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final Finder dialogFields = find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(GlassAlertDialog),
           matching: find.byType(TextField),
         );
         expect(dialogFields, findsNWidgets(2));
@@ -128,8 +137,9 @@ void main() {
         expect(controller.text, '[Guide](https://example.com)');
       });
 
-      testWidgets('не должен вставлять при отмене',
-          (WidgetTester tester) async {
+      testWidgets('не должен вставлять при отмене', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
 
@@ -145,8 +155,9 @@ void main() {
         expect(controller.text, isEmpty);
       });
 
-      testWidgets('не должен вставлять when empty URL',
-          (WidgetTester tester) async {
+      testWidgets('не должен вставлять when empty URL', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
 
@@ -157,7 +168,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final Finder dialogFields = find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(GlassAlertDialog),
           matching: find.byType(TextField),
         );
         await tester.enterText(dialogFields.first, 'Guide');

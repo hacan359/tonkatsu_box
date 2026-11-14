@@ -1,12 +1,10 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/rendering.dart';
 
-import '../constants/platform_features.dart';
+import 'file_dialogs.dart';
 
 /// Result of an export attempt.
 enum BulkExportStatus { saved, cancelled, failed }
@@ -62,36 +60,13 @@ Future<BulkExportResult> saveBoundaryAsPng({
     }
     final Uint8List pngBytes = byteData.buffer.asUint8List();
 
-    // Web: saveFile hands the bytes to the browser as a download and returns
-    // null — there is no cancel to observe.
-    if (kIsWebBuild) {
-      final String downloadName = ensurePngExtension(suggestedFileName);
-      await FilePicker.platform.saveFile(
-        fileName: downloadName,
-        bytes: pngBytes,
-      );
-      return BulkExportResult(BulkExportStatus.saved, path: downloadName);
-    }
-
-    final bool mobile = Platform.isAndroid || Platform.isIOS;
-    final String? outputPath = await FilePicker.platform.saveFile(
+    final String? outputPath = await saveBytesWithDialog(
       dialogTitle: saveDialogTitle,
-      fileName: suggestedFileName,
-      // On Android FileType.custom blocks the picker; FileType.any opens SAF.
-      type: mobile ? FileType.any : FileType.custom,
-      allowedExtensions: mobile ? null : <String>['png'],
-      // bytes are required on mobile — file_picker writes via SAF itself.
-      bytes: mobile ? pngBytes : null,
+      fileName: ensurePngExtension(suggestedFileName),
+      bytes: pngBytes,
     );
     if (outputPath == null) {
       return const BulkExportResult(BulkExportStatus.cancelled);
-    }
-
-    // Desktop: file_picker only returns the chosen path; we write the bytes.
-    if (!mobile) {
-      final String finalPath = ensurePngExtension(outputPath);
-      await File(finalPath).writeAsBytes(pngBytes);
-      return BulkExportResult(BulkExportStatus.saved, path: finalPath);
     }
 
     return BulkExportResult(BulkExportStatus.saved, path: outputPath);

@@ -1,21 +1,22 @@
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../services/search_collection_adder.dart';
 import 'media_action_handler.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Handler shape shared by Anime/Manga/VisualNovel (no platform picker or
 /// animation branch); [T] spares the accessors repeated `as` casts.
 class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   SimpleMediaHandler({
-    required WidgetRef ref,
-    required SearchCollectionAdder adder,
-    required Set<int> Function() targetCollections,
+    required this._ref,
+    required this._adder,
+    required this._targetCollections,
     required this.mediaType,
     required this.imageType,
     required this.collectedProvider,
@@ -28,9 +29,7 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     this.sourceOf,
     this.enrich,
     this.enrichBeforeDetails,
-  })  : _ref = ref,
-        _adder = adder,
-        _targetCollections = targetCollections;
+  });
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
@@ -128,9 +127,11 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   @override
   void showDetails(BuildContext context, Object item, MediaType mediaType) {
     final T typed = item as T;
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      // The details sheet carries its own glass panel.
+      selfBacked: true,
       builder: (BuildContext _) => sheetBuilder(
         typed,
         () => addToAnyCollection(context, typed, mediaType),
@@ -162,8 +163,9 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   /// Placements of [id]; [source] narrows them for multi-source types, whose
   /// providers hand out colliding numeric ids.
   Future<Set<int?>> _collectedCollectionIds(int id, DataSource? source) async {
-    final Map<int, List<CollectedItemInfo>> collected =
-        await _ref.read(collectedProvider.future);
+    final Map<int, List<CollectedItemInfo>> collected = await _ref.read(
+      collectedProvider.future,
+    );
     return (collected[id] ?? <CollectedItemInfo>[])
         .forSource(mediaType, source)
         .map((CollectedItemInfo i) => i.collectionId)

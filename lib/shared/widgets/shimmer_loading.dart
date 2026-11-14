@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
 import '../constants/platform_features.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../utils/poster_grid_delegate.dart';
+import '../theme/app_surface.dart';
+import 'glass_panel.dart';
 
 /// One app-wide shimmer clock: a loading grid would otherwise run one
 /// AnimationController per box. Ticks only while at least one box listens.
@@ -106,11 +107,11 @@ class _ShimmerBoxState extends State<ShimmerBox> {
     // Hoisted out of the per-frame builder: only the gradient stops move, and
     // a loading grid rebuilds dozens of these every frame.
     final BorderRadius radius = BorderRadius.circular(widget.borderRadius);
-    final List<Color> colors = <Color>[
-      AppColors.surface,
-      AppColors.surfaceLight,
-      AppColors.surface,
-    ];
+    // A glass tile with a highlight sweeping across it: the wallpaper keeps
+    // showing through, so a loading grid matches the loaded one.
+    final Color tile = glassTileColor();
+    final Color sheen = AppSurface.sheen();
+    final List<Color> colors = <Color>[tile, sheen, tile];
     return SizedBox(
       width: widget.width,
       height: widget.height,
@@ -120,6 +121,7 @@ class _ShimmerBoxState extends State<ShimmerBox> {
           return DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: radius,
+              border: Border.all(color: glassTileBorderColor()),
               gradient: LinearGradient(
                 begin: Alignment(-1.0 + 2.0 * phase, 0),
                 end: Alignment(-1.0 + 2.0 * phase + 1.0, 0),
@@ -184,13 +186,16 @@ class ShimmerTierListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.surfaceLight,
-      child: const Padding(
+    return const Card(
+      child: Padding(
         padding: EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: <Widget>[
-            ShimmerBox(width: 32, height: 32, borderRadius: AppSpacing.radiusSm),
+            ShimmerBox(
+              width: 32,
+              height: 32,
+              borderRadius: AppSpacing.radiusSm,
+            ),
             SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -202,7 +207,11 @@ class ShimmerTierListCard extends StatelessWidget {
                 ],
               ),
             ),
-            ShimmerBox(width: 24, height: 24, borderRadius: AppSpacing.radiusSm),
+            ShimmerBox(
+              width: 24,
+              height: 24,
+              borderRadius: AppSpacing.radiusSm,
+            ),
           ],
         ),
       ),
@@ -250,18 +259,26 @@ class _ShimmerTierRow extends StatelessWidget {
     return Row(
       children: <Widget>[
         // Tier label
-        ShimmerBox(
-          width: width,
+        ShimmerBox(width: width, height: 56, borderRadius: AppSpacing.radiusSm),
+        const SizedBox(width: AppSpacing.sm),
+        // Item placeholders
+        const ShimmerBox(
+          width: 48,
           height: 56,
           borderRadius: AppSpacing.radiusSm,
         ),
-        const SizedBox(width: AppSpacing.sm),
-        // Item placeholders
-        const ShimmerBox(width: 48, height: 56, borderRadius: AppSpacing.radiusSm),
         const SizedBox(width: AppSpacing.xs),
-        const ShimmerBox(width: 48, height: 56, borderRadius: AppSpacing.radiusSm),
+        const ShimmerBox(
+          width: 48,
+          height: 56,
+          borderRadius: AppSpacing.radiusSm,
+        ),
         const SizedBox(width: AppSpacing.xs),
-        const ShimmerBox(width: 48, height: 56, borderRadius: AppSpacing.radiusSm),
+        const ShimmerBox(
+          width: 48,
+          height: 56,
+          borderRadius: AppSpacing.radiusSm,
+        ),
       ],
     );
   }
@@ -301,8 +318,7 @@ class ShimmerList extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       physics: const NeverScrollableScrollPhysics(),
       itemCount: itemCount,
-      itemBuilder: (BuildContext context, int index) =>
-          const ShimmerListTile(),
+      itemBuilder: (BuildContext context, int index) => const ShimmerListTile(),
     );
   }
 }
@@ -320,11 +336,11 @@ class ShimmerPosterGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ({SliverGridDelegate delegate, double padding}) geometry =
         posterGridGeometry(
-      context,
-      cardScale: ref.watch(
-        settingsNotifierProvider.select((SettingsState s) => s.cardScale),
-      ),
-    );
+          context,
+          cardScale: ref.watch(
+            settingsNotifierProvider.select((SettingsState s) => s.cardScale),
+          ),
+        );
     final bool compact = useCompactCard(context);
     return GridView.builder(
       padding: EdgeInsets.all(geometry.padding),
@@ -353,11 +369,7 @@ class ShimmerListTile extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          ShimmerBox(
-            width: 64,
-            height: 96,
-            borderRadius: AppSpacing.radiusSm,
-          ),
+          ShimmerBox(width: 64, height: 96, borderRadius: AppSpacing.radiusSm),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(

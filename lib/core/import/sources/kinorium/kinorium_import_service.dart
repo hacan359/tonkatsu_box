@@ -94,15 +94,13 @@ class KinoriumImportService implements ImportSource {
     required CollectionRepository repository,
     required WishlistRepository wishlistRepository,
     required TmdbApi tmdbApi,
-    required DatabaseService database,
-    KinoriumCsvParser parser = const KinoriumCsvParser(),
+    required this._database,
+    this._parser = const KinoriumCsvParser(),
   })  : _writer = ImportWriter(
           collections: repository,
           wishlist: wishlistRepository,
         ),
-        _matcher = TmdbMatcher(tmdbApi),
-        _database = database,
-        _parser = parser;
+        _matcher = TmdbMatcher(tmdbApi);
 
   final ImportWriter _writer;
   final TmdbMatcher _matcher;

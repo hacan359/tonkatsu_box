@@ -21,7 +21,6 @@ import 'package:core/models/tracker_game_data.dart';
 import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/xcoll_file.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -30,6 +29,7 @@ import '../../shared/constants/platform_features.dart';
 import '../database/database_service.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
+import '../../shared/services/file_dialogs.dart';
 
 final Provider<ExportService> exportServiceProvider =
     Provider<ExportService>((Ref ref) {
@@ -76,19 +76,15 @@ class ExportResult {
 
 /// Exports collections to the .xcoll / .xcollx formats.
 class ExportService {
-  /// [canvasRepository], [imageCacheService] and [database] are only needed
+  /// [_canvasRepository], [_imageCacheService] and [_database] are only needed
   /// for full export (.xcollx): canvas data, covers and season data.
   ExportService({
-    CanvasRepository? canvasRepository,
-    ImageCacheService? imageCacheService,
-    DatabaseService? database,
-    TrackerDao? trackerDao,
-    CollectionHeroService? heroService,
-  })  : _canvasRepository = canvasRepository,
-        _imageCacheService = imageCacheService,
-        _database = database,
-        _trackerDao = trackerDao,
-        _heroService = heroService;
+    this._canvasRepository,
+    this._imageCacheService,
+    this._database,
+    this._trackerDao,
+    this._heroService,
+  });
 
   static final Logger _log = Logger('ExportService');
 
@@ -720,41 +716,14 @@ class ExportService {
       final String suggestedName = _sanitizeFileName(collection.name);
       final String downloadName = '$suggestedName.$extension';
 
-      // Web: saveFile hands the bytes to the browser as a download and
-      // returns null — there is no cancel to observe.
-      if (kIsWebBuild) {
-        await FilePicker.platform.saveFile(
-          fileName: downloadName,
-          bytes: jsonBytes,
-        );
-        return ExportResult.success(downloadName);
-      }
-
-      // On Android FileType.custom doesn't support custom extensions.
-      final bool useAny = Platform.isAndroid || Platform.isIOS;
-      final String? outputPath = await FilePicker.platform.saveFile(
+      final String? outputPath = await saveBytesWithDialog(
         dialogTitle: 'Export Collection',
-        fileName: '$suggestedName.$extension',
-        type: useAny ? FileType.any : FileType.custom,
-        allowedExtensions: useAny ? null : <String>[extension],
+        fileName: downloadName,
         bytes: jsonBytes,
       );
 
       if (outputPath == null) {
         return const ExportResult.cancelled();
-      }
-
-      // On Android/iOS file_picker writes the bytes via SAF;
-      // on desktop the file must be written manually.
-      if (!Platform.isAndroid && !Platform.isIOS) {
-        final String finalPath = outputPath.endsWith('.$extension')
-            ? outputPath
-            : '$outputPath.$extension';
-
-        final File file = File(finalPath);
-        await file.writeAsString(json);
-
-        return ExportResult.success(finalPath);
       }
 
       return ExportResult.success(outputPath);

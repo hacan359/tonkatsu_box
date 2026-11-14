@@ -5,7 +5,7 @@ import 'package:core/models/collection.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,6 +17,7 @@ import 'package:tonkatsu_box/features/settings/screens/import_result_screen.dart
 import 'package:tonkatsu_box/features/settings/screens/kinorium_import_screen.dart';
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 import 'package:tonkatsu_box/core/database/database_service.dart';
 
@@ -25,41 +26,60 @@ import '../../helpers/test_helpers.dart';
 /// Sentinel root route of the host (per-tab) Navigator.
 const String _rootMarker = 'ROOT';
 
-/// Extends [FilePicker] rather than mocking it, so it keeps the real
-/// platform-interface token the static `FilePicker.platform =` setter demands.
-class _StubFilePicker extends FilePicker {
+/// Extends the platform interface rather than mocking it, so it keeps the
+/// token the `FilePickerPlatform.instance` setter verifies.
+class _StubFilePicker extends FilePickerPlatform {
   _StubFilePicker(this.path);
 
   final String path;
 
-  /// The import contents read bytes at pick time now, so the stub must
-  /// hand some out or the pick silently no-ops.
-  static final Uint8List _bytes = Uint8List.fromList(<int>[1, 2, 3]);
-
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     String? dialogTitle,
     String? initialDirectory,
     FileType type = FileType.any,
     List<String>? allowedExtensions,
     void Function(FilePickerStatus)? onFileLoading,
-    bool allowCompression = false,
     int compressionQuality = 0,
-    bool allowMultiple = false,
-    bool withData = false,
-    bool withReadStream = false,
-    bool lockParentWindow = false,
-    bool readSequential = false,
+    AndroidOptions androidOptions = const AndroidOptions(),
+    DarwinOptions darwinOptions = const DarwinOptions(),
+    WindowsOptions windowsOptions = const WindowsOptions(),
+    LinuxOptions linuxOptions = const LinuxOptions(),
+    WebOptions webOptions = const WebOptions(),
   }) async {
-    return FilePickerResult(<PlatformFile>[
-      PlatformFile(
-        name: path.split('/').last,
-        size: _bytes.length,
-        path: path,
-        bytes: _bytes,
-      ),
-    ]);
+    return _StubPlatformFile(path);
   }
+}
+
+final class _StubPlatformFile extends PlatformFile {
+  _StubPlatformFile(this._path);
+
+  final String _path;
+
+  /// The import contents read bytes at pick time, so the stub must hand
+  /// some out or the pick silently no-ops.
+  static final Uint8List _bytes = Uint8List.fromList(<int>[1, 2, 3]);
+
+  @override
+  String get name => _path.split('/').last;
+
+  @override
+  Uri get uri => Uri.file(_path, windows: false);
+
+  @override
+  Never get xFile => throw UnimplementedError();
+
+  @override
+  int? lengthSync() => _bytes.length;
+
+  @override
+  Future<int?> length() async => _bytes.length;
+
+  @override
+  Future<Uint8List> readAsBytes() async => _bytes;
+
+  @override
+  Stream<Uint8List> readAsByteStream() => Stream<Uint8List>.value(_bytes);
 }
 
 class _FakeTraktImportOptions extends Fake implements TraktImportOptions {}
@@ -96,7 +116,7 @@ void main() {
     registerFallbackValue(Uint8List(0));
   });
 
-  FilePicker? originalPicker;
+  late FilePickerPlatform originalPicker;
   late GlobalKey<NavigatorState> hostKey;
 
   setUp(() {
@@ -110,21 +130,12 @@ void main() {
     }
     when(() => importDao.upsert(any())).thenAnswer((_) async {});
     hostKey = GlobalKey<NavigatorState>();
-    // FilePicker.platform is `late` and unset in the unit-test VM (no real
-    // platform impl), so only capture it if it was already set.
-    try {
-      originalPicker = FilePicker.platform;
-    } on Error {
-      originalPicker = null;
-    }
-    FilePicker.platform = _StubFilePicker('/tmp/export.zip');
+    originalPicker = FilePickerPlatform.instance;
+    FilePickerPlatform.instance = _StubFilePicker('/tmp/export.zip');
   });
 
   tearDown(() {
-    final FilePicker? original = originalPicker;
-    if (original != null) {
-      FilePicker.platform = original;
-    }
+    FilePickerPlatform.instance = originalPicker;
   });
 
   /// Tall enough for the whole scrollable import form to lay out without
@@ -159,7 +170,7 @@ void main() {
     return ProviderScope(
       overrides: overrides,
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: const Locale('en'),
         home: Navigator(
@@ -292,7 +303,7 @@ void main() {
 
       setUp(() {
         service = MockKinoriumImportService();
-        FilePicker.platform = _StubFilePicker('/tmp/export.csv');
+        FilePickerPlatform.instance = _StubFilePicker('/tmp/export.csv');
       });
 
       UniversalImportResult successResult() {

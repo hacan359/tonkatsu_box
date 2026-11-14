@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,6 +30,8 @@ import '../keyboard/keyboard_shortcuts_dialog.dart';
 import '../widgets/min_height_body.dart';
 import '../widgets/whats_new_dialog.dart';
 import 'app_bottom_bar.dart';
+import 'app_frame.dart';
+import 'frame_chrome.dart';
 import 'app_sidebar.dart';
 import 'app_top_bar.dart';
 import 'nav_destinations.dart';
@@ -63,13 +65,15 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
+  final FrameChromeController _frameChrome = FrameChromeController();
   late int _selectedIndex = widget.initialTab?.index ?? NavTab.home.index;
 
   /// FocusScopeNode per tab.
-  final List<FocusScopeNode> _tabFocusScopeNodes = List<FocusScopeNode>.generate(
-    _tabCount,
-    (int i) => FocusScopeNode(debugLabel: 'tab-$i-scope'),
-  );
+  final List<FocusScopeNode> _tabFocusScopeNodes =
+      List<FocusScopeNode>.generate(
+        _tabCount,
+        (int i) => FocusScopeNode(debugLabel: 'tab-$i-scope'),
+      );
 
   /// Tabs that have been initialized already (lazy init).
   late final Set<int> _initializedTabs = <int>{
@@ -80,17 +84,17 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// Navigator keys per tab.
   final List<GlobalKey<NavigatorState>> _navigatorKeys =
       List<GlobalKey<NavigatorState>>.generate(
-    _tabCount,
-    (_) => GlobalKey<NavigatorState>(),
-  );
+        _tabCount,
+        (_) => GlobalKey<NavigatorState>(),
+      );
 
   /// [MaterialApp] rebuilds the tree on locale change; without this cache each
   /// rebuild would drop a new Navigator in and lose its route history.
-  final List<Widget?> _navigatorWidgets =
-      List<Widget?>.filled(_tabCount, null);
+  final List<Widget?> _navigatorWidgets = List<Widget?>.filled(_tabCount, null);
 
   @override
   void dispose() {
+    _frameChrome.dispose();
     for (final FocusScopeNode node in _tabFocusScopeNodes) {
       node.dispose();
     }
@@ -99,47 +103,50 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<SearchTabRequest?>(
-      searchTabRequestProvider,
-      (SearchTabRequest? previous, SearchTabRequest? request) {
-        if (request == null) return;
-        _openSearchTab(request);
-        ref.read(searchTabRequestProvider.notifier).state = null;
-      },
-    );
-    ref.listen<MetaSearchRequest?>(
-      homeMetaSearchRequestProvider,
-      (MetaSearchRequest? previous, MetaSearchRequest? request) {
-        if (request == null) return;
-        // The Home query is off-screen while another tab is up, so a stale
-        // meta query is replaced rather than narrowed.
-        applyMetaSearch(ref, homeSearchQueryProvider, request.query,
-            narrow: false);
-        _onDestinationSelected(NavTab.home.index);
-        ref.read(homeMetaSearchRequestProvider.notifier).state = null;
-      },
-    );
+    ref.listen<SearchTabRequest?>(searchTabRequestProvider, (
+      SearchTabRequest? previous,
+      SearchTabRequest? request,
+    ) {
+      if (request == null) return;
+      _openSearchTab(request);
+      ref.read(searchTabRequestProvider.notifier).state = null;
+    });
+    ref.listen<MetaSearchRequest?>(homeMetaSearchRequestProvider, (
+      MetaSearchRequest? previous,
+      MetaSearchRequest? request,
+    ) {
+      if (request == null) return;
+      // The Home query is off-screen while another tab is up, so a stale
+      // meta query is replaced rather than narrowed.
+      applyMetaSearch(
+        ref,
+        homeSearchQueryProvider,
+        request.query,
+        narrow: false,
+      );
+      _onDestinationSelected(NavTab.home.index);
+      ref.read(homeMetaSearchRequestProvider.notifier).state = null;
+    });
     // Release notes after an app update, once per version. The version is
     // remembered on close, so a launch killed mid-dialog shows it again.
-    ref.listen<AsyncValue<WhatsNewContent?>>(
-      whatsNewProvider,
-      (AsyncValue<WhatsNewContent?>? previous,
-          AsyncValue<WhatsNewContent?> next) {
-        final WhatsNewContent? content = next.valueOrNull;
-        if (content == null) return;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          unawaited(
-            showWhatsNewDialog(context, content).then((_) {
-              if (!mounted) return;
-              unawaited(
-                ref.read(whatsNewServiceProvider).markSeen(content.version),
-              );
-            }),
-          );
-        });
-      },
-    );
+    ref.listen<AsyncValue<WhatsNewContent?>>(whatsNewProvider, (
+      AsyncValue<WhatsNewContent?>? previous,
+      AsyncValue<WhatsNewContent?> next,
+    ) {
+      final WhatsNewContent? content = next.valueOrNull;
+      if (content == null) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        unawaited(
+          showWhatsNewDialog(context, content).then((_) {
+            if (!mounted) return;
+            unawaited(
+              ref.read(whatsNewServiceProvider).markSeen(content.version),
+            );
+          }),
+        );
+      });
+    });
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
@@ -151,8 +158,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       child: CallbackShortcuts(
         bindings: buildGlobalShortcuts(
           onSwitchSlot: (int slot) => _openSlot(kNavSlotOrder[slot]),
-          onOpenSettings: () =>
-              _onDestinationSelected(NavTab.settings.index),
+          onOpenSettings: () => _onDestinationSelected(NavTab.settings.index),
           onNextTab: () => _stepSlot(forward: true),
           onPreviousTab: () => _stepSlot(forward: false),
           onBack: () => _handleBack(),
@@ -209,46 +215,41 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget _buildScaffold(BuildContext context) {
     final bool compact = isCompactScreen(context);
     final NavTab activeTab = NavTab.values[_selectedIndex];
-    final PreferredSizeWidget topBar = PreferredSize(
-      preferredSize: Size.fromHeight(
-        kAppTopBarHeight + MediaQuery.paddingOf(context).top,
-      ),
-      child: AppTopBar(
-        activeTab: activeTab,
-        personalizationOpen: _personalizationOpen,
-        onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
-      ),
-    );
 
     void onTabSelected(NavTab tab) => _onDestinationSelected(tab.index);
 
-    if (compact) {
-      return Scaffold(
-        appBar: topBar,
-        body: _buildContent(),
-        bottomNavigationBar: AppBottomBar(
-          selectedTab: activeTab,
-          onDestinationSelected: onTabSelected,
-          onCenterTap: _openPreferenceCloud,
-          centerActive: _personalizationOpen,
-        ),
-      );
-    }
+    final Widget menuZone = compact
+        ? AppBottomBar(
+            selectedTab: activeTab,
+            onDestinationSelected: onTabSelected,
+            onCenterTap: _openPreferenceCloud,
+            centerActive: _personalizationOpen,
+          )
+        : AppSidebar(
+            selectedTab: activeTab,
+            onDestinationSelected: onTabSelected,
+            onCenterTap: _openPreferenceCloud,
+            centerActive: _personalizationOpen,
+          );
+
     return Scaffold(
-      appBar: topBar,
       // A landscape phone with the keyboard up leaves the body a few dozen
       // pixels; the sidebar's rail of buttons cannot shrink that far.
       body: MinHeightBody(
-        child: Row(
-          children: <Widget>[
-            AppSidebar(
-              selectedTab: activeTab,
-              onDestinationSelected: onTabSelected,
-              onCenterTap: _openPreferenceCloud,
-              centerActive: _personalizationOpen,
+        minHeight: kMinBodyHeight + frameChromeHeight(compact: compact),
+        child: FrameChromeScope(
+          controller: _frameChrome,
+          child: AppFrame(
+            compact: compact,
+            topZone: AppTopBar(
+              activeTab: activeTab,
+              personalizationOpen: _personalizationOpen,
+              onSettingsTap: () =>
+                  _onDestinationSelected(NavTab.settings.index),
             ),
-            Expanded(child: _buildContent()),
-          ],
+            menuZone: menuZone,
+            child: _buildContent(),
+          ),
         ),
       ),
     );
@@ -266,8 +267,9 @@ class _AppShellState extends ConsumerState<AppShell> {
   void _openPreferenceCloud() {
     if (_personalizationOpen) {
       // Same gesture as a tab: pressing again returns to the hub's landing.
-      _personalizationNavKey.currentState
-          ?.popUntil((Route<dynamic> route) => route.isFirst);
+      _personalizationNavKey.currentState?.popUntil(
+        (Route<dynamic> route) => route.isFirst,
+      );
       return;
     }
     // Drop any focus the top-bar search field holds so the mobile keyboard
@@ -383,9 +385,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (index == _selectedIndex && !_personalizationOpen) {
       // Pressing again returns to the tab root, but not while Personalization
       // is open — that tap must close the cloud, not pop a hidden tab.
-      _navigatorKeys[index]
-          .currentState
-          ?.popUntil((Route<dynamic> route) => route.isFirst);
+      _navigatorKeys[index].currentState?.popUntil(
+        (Route<dynamic> route) => route.isFirst,
+      );
       return;
     }
     if (NavTab.values[index] == NavTab.search) {
@@ -476,8 +478,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       setState(() => _personalizationOpen = false);
       return true;
     }
-    final NavigatorState? tabNav =
-        _navigatorKeys[_selectedIndex].currentState;
+    final NavigatorState? tabNav = _navigatorKeys[_selectedIndex].currentState;
     if (tabNav != null && tabNav.canPop()) {
       tabNav.pop();
       return true;
@@ -506,14 +507,14 @@ class _AppShellState extends ConsumerState<AppShell> {
       NavTab.home => const <ShortcutGroup>[],
       NavTab.releases => const <ShortcutGroup>[],
       NavTab.collections => <ShortcutGroup>[
-          HomeScreen.shortcutGroup(l),
-          CollectionScreen.shortcutGroup(l),
-          ItemDetailScreen.shortcutGroup(l),
-        ],
+        HomeScreen.shortcutGroup(l),
+        CollectionScreen.shortcutGroup(l),
+        ItemDetailScreen.shortcutGroup(l),
+      ],
       NavTab.tierLists => <ShortcutGroup>[
-          TierListsScreen.shortcutGroup(l),
-          TierListDetailScreen.shortcutGroup(l),
-        ],
+        TierListsScreen.shortcutGroup(l),
+        TierListDetailScreen.shortcutGroup(l),
+      ],
       NavTab.wishlist => <ShortcutGroup>[WishlistScreen.shortcutGroup(l)],
       NavTab.search => <ShortcutGroup>[SearchScreen.shortcutGroup(l)],
       NavTab.settings => const <ShortcutGroup>[],
@@ -522,8 +523,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   /// F5 — refresh the current tab (pop to its root).
   void _onRefresh() {
-    final NavigatorState? tabNav =
-        _navigatorKeys[_selectedIndex].currentState;
+    final NavigatorState? tabNav = _navigatorKeys[_selectedIndex].currentState;
     if (tabNav == null) return;
     tabNav.popUntil((Route<dynamic> route) => route.isFirst);
   }
@@ -531,11 +531,13 @@ class _AppShellState extends ConsumerState<AppShell> {
   void _onGamepadTabSwitch(GamepadAction action) =>
       _stepSlot(forward: action == GamepadAction.nextTab);
 
-  void _stepSlot({required bool forward}) => _openSlot(navStepSlot(
-        current: NavTab.values[_selectedIndex],
-        centerActive: _personalizationOpen,
-        forward: forward,
-      ));
+  void _stepSlot({required bool forward}) => _openSlot(
+    navStepSlot(
+      current: NavTab.values[_selectedIndex],
+      centerActive: _personalizationOpen,
+      forward: forward,
+    ),
+  );
 
   /// `null` is Personalization; it goes through [_openPreferenceCloud] so a
   /// repeat press returns to the hub root, like a tab does.
@@ -609,6 +611,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         }
         el.visitChildElements(visit);
       }
+
       visit(element);
     });
 

@@ -1,12 +1,13 @@
 import 'package:core/models/mood_grid_cell.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import 'mood_grid_cell_media.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// One mood-grid cell: 2:3 cover over a label, each its own tap target
 /// ([onTap] / [onLabelTap]). Empty cells show a `+` placeholder.
@@ -48,7 +49,7 @@ class MoodGridCellWidget extends StatelessWidget {
       onLongPressStart: onContextMenu == null
           ? null
           : (LongPressStartDetails details) =>
-              onContextMenu!(details.globalPosition),
+                onContextMenu!(details.globalPosition),
       onSecondaryTapUp: onContextMenu == null
           ? null
           : (TapUpDetails details) => onContextMenu!(details.globalPosition),
@@ -74,8 +75,7 @@ class MoodGridCellWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: Container(
                 width: double.infinity,
-                constraints:
-                    const BoxConstraints(minHeight: _labelMinHeight),
+                constraints: const BoxConstraints(minHeight: _labelMinHeight),
                 alignment: Alignment.center,
                 child: Text(
                   cell.label ?? '',
@@ -96,13 +96,9 @@ class MoodGridCellWidget extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Container(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         child: Center(
-          child: Icon(
-            Icons.add,
-            size: 32,
-            color: AppColors.textSecondary,
-          ),
+          child: Icon(Icons.add, size: 32, color: AppColors.textSecondary),
         ),
       ),
     );
@@ -136,7 +132,7 @@ class MoodGridCellWidget extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Container(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         child: Center(
           child: Icon(icon, size: 32, color: AppColors.textTertiary),
         ),

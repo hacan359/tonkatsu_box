@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../theme/app_surface.dart';
+import 'glass_panel.dart';
 
 class DraggableFabItem {
   const DraggableFabItem({
@@ -20,11 +22,7 @@ class DraggableFabItem {
 /// Inserts an extra vertical gap between menu sections.
 class DraggableFabDivider extends DraggableFabItem {
   const DraggableFabDivider()
-      : super(
-          icon: Icons.remove,
-          label: '',
-          onTap: _noop,
-        );
+    : super(icon: Icons.remove, label: '', onTap: _noop);
 
   static void _noop() {}
 }
@@ -87,8 +85,9 @@ class _DraggableFabState extends State<DraggableFab> {
 
   double get _blockWidth {
     final int count = _bottomRowCount;
-    final double bottomRow =
-        count > 0 ? count * _fabSize + (count - 1) * _gap : 0;
+    final double bottomRow = count > 0
+        ? count * _fabSize + (count - 1) * _gap
+        : 0;
     final double menu = _hasMenu ? _menuFabSize + _menuInset : 0;
     return bottomRow > menu ? bottomRow : menu;
   }
@@ -167,19 +166,28 @@ class _DraggableFabState extends State<DraggableFab> {
     bool isSmall = false,
   }) {
     final double size = isSmall ? _menuFabSize : _fabSize;
-    final Widget circle = Material(
-      elevation: 6,
-      shadowColor: AppColors.brand.withAlpha(80),
-      shape: const CircleBorder(),
-      color: AppColors.brand,
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: Icon(
-          icon,
-          color: iconColor ?? AppColors.textPrimary,
-          size: isSmall ? 20 : 24,
-        ),
+    // A floating glass disc with the accent in the icon, not the fill, so
+    // the buttons sit on the panel like the other tiles.
+    final Widget circle = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: glassTileColor(),
+        border: Border.all(color: glassTileBorderColor()),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AppColors.shadow.withAlpha(70),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: Icon(
+        icon,
+        color: iconColor ?? AppColors.brand,
+        size: isSmall ? 20 : 24,
       ),
     );
 
@@ -217,10 +225,14 @@ class _DraggableFabState extends State<DraggableFab> {
 
     final Size parentSize = MediaQuery.sizeOf(context);
     setState(() {
-      _right = (_dragStartRight - delta.dx)
-          .clamp(0.0, parentSize.width - _blockWidth);
-      _bottom = (_dragStartBottom - delta.dy)
-          .clamp(0.0, parentSize.height - _blockHeight - 100);
+      _right = (_dragStartRight - delta.dx).clamp(
+        0.0,
+        parentSize.width - _blockWidth,
+      );
+      _bottom = (_dragStartBottom - delta.dy).clamp(
+        0.0,
+        parentSize.height - _blockHeight - 100,
+      );
     });
   }
 
@@ -261,7 +273,7 @@ class _FanMenuRoute extends PopupRoute<void> {
   final double fabSize;
 
   @override
-  Color? get barrierColor => AppColors.scrim.withAlpha(0x61);
+  Color? get barrierColor => AppSurface.barrier();
 
   @override
   bool get barrierDismissible => true;
@@ -351,13 +363,15 @@ class _FanMenuPage extends StatelessWidget {
       if (lastWasItem) {
         columnChildren.add(const SizedBox(height: _pillGap));
       }
-      columnChildren.add(_buildAnimatedPill(
-        context: context,
-        item: item,
-        index: actionIndex,
-        total: actionCount,
-        goUp: goUp,
-      ));
+      columnChildren.add(
+        _buildAnimatedPill(
+          context: context,
+          item: item,
+          index: actionIndex,
+          total: actionCount,
+          goUp: goUp,
+        ),
+      );
       actionIndex++;
       lastWasItem = true;
     }
@@ -394,9 +408,7 @@ class _FanMenuPage extends StatelessWidget {
           Positioned(
             right: fabRight,
             top: goUp ? null : fabPosition.dy + fabSize + _fabGap,
-            bottom: goUp
-                ? screen.height - fabPosition.dy + _fabGap
-                : null,
+            bottom: goUp ? screen.height - fabPosition.dy + _fabGap : null,
             child: scrollable,
           ),
         ],
@@ -435,16 +447,14 @@ class _FanMenuPage extends StatelessWidget {
         final double dy = (goUp ? 16.0 : -16.0) * (1 - v);
         return Opacity(
           opacity: v,
-          child: Transform.translate(
-            offset: Offset(0, dy),
-            child: child,
-          ),
+          child: Transform.translate(offset: Offset(0, dy), child: child),
         );
       },
       child: pill,
     );
   }
 }
+
 class _PillButton extends StatefulWidget {
   const _PillButton({
     required this.item,
@@ -475,12 +485,14 @@ class _PillButtonState extends State<_PillButton> {
           height: widget.height,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: _hovered ? AppColors.surfaceLight : AppColors.surface,
+            color: _hovered
+                ? AppColors.brand.withAlpha(40)
+                : AppColors.surface.withAlpha(215),
             borderRadius: BorderRadius.circular(widget.height / 2),
             border: Border.all(
               color: _hovered
                   ? AppColors.brand.withAlpha(160)
-                  : AppColors.surfaceBorder,
+                  : glassTileBorderColor(),
               width: 0.5,
             ),
             boxShadow: <BoxShadow>[

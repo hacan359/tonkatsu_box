@@ -14,8 +14,7 @@ final Provider<WishlistRepository> wishlistRepositoryProvider =
 });
 
 class WishlistRepository {
-  WishlistRepository({required WishlistDao wishlistDao})
-      : _wishlistDao = wishlistDao;
+  WishlistRepository({required this._wishlistDao});
 
   final WishlistDao _wishlistDao;
 

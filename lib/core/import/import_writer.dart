@@ -100,10 +100,9 @@ class ImportWriteResult {
 /// upsert stays with the adapter (media-type specific).
 class ImportWriter {
   const ImportWriter({
-    required CollectionRepository collections,
-    required WishlistRepository wishlist,
-  })  : _collections = collections,
-        _wishlist = wishlist;
+    required this._collections,
+    required this._wishlist,
+  });
 
   final CollectionRepository _collections;
   final WishlistRepository _wishlist;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'palettes/dark_palette.dart';
 import 'palettes/eva_palette.dart';

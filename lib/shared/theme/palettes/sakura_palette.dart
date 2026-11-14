@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../app_assets.dart';
 import '../app_palette.dart';
@@ -11,9 +11,9 @@ const AppPalette sakuraPalette = AppPalette(
   surface: Color(0xFFFFF9FA),
   surfaceLight: Color(0xFFF9E7EC),
   surfaceBorder: Color(0xFFEFD3DB),
-  textPrimary: Color(0xFF3D2B30),
-  textSecondary: Color(0xFF7A5C66),
-  textTertiary: Color(0xFFB08E9A),
+  textPrimary: Color(0xFF2C1B21),
+  textSecondary: Color(0xFF5C3E4A),
+  textTertiary: Color(0xFF8A6674),
   brand: Color(0xFFD96A8A),
   onBrand: Color(0xFFFFFFFF),
   brandContainer: Color(0xFFFFD9E3),

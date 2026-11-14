@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -660,6 +661,101 @@ class SEs extends S {
 
   @override
   String get settingsThemeEva => 'Eva Azul';
+
+  @override
+  String get settingsSkin => 'Estilo';
+
+  @override
+  String get settingsSkinSubtitle => 'Cristal o el aspecto clásico';
+
+  @override
+  String get settingsSkinGlass => 'Cristal';
+
+  @override
+  String get settingsSkinClassic => 'Clásico';
+
+  @override
+  String get settingsCardLook => 'Estilo de tarjetas';
+
+  @override
+  String get settingsCardLookSubtitle =>
+      'Cómo se ven los pósteres en las cuadrículas';
+
+  @override
+  String get settingsCardLookClassic => 'Clásico';
+
+  @override
+  String get settingsCardLookCurved => 'Cristal curvo';
+
+  @override
+  String get settingsCardLookSlab => 'Bloque';
+
+  @override
+  String get settingsCardLookJewel => 'Estuche';
+
+  @override
+  String get settingsCardLookCinema => 'Cine';
+
+  @override
+  String get settingsCardLookShelf => 'Estante';
+
+  @override
+  String get settingsCardLookTilt => 'Inclinación';
+
+  @override
+  String get settingsCardLookKino => 'Panel al pasar';
+
+  @override
+  String get settingsCardLookMinimal => 'Minimalista';
+
+  @override
+  String get settingsCardLookRibbon => 'Cinta';
+
+  @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Envía el tráfico de la app por un proxy HTTP local';
+
+  @override
+  String get settingsProxyHint =>
+      'Indica el puerto HTTP local que abre tu app de VPN (el puerto mixto de Clash suele ser 7890). Las direcciones de tu red local siempre se conectan directamente.';
+
+  @override
+  String get settingsProxyEnabled => 'Activar proxy';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Puerto';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Introduce un nombre de host o una dirección IP y un puerto del 1 al 65535';
+
+  @override
+  String get settingsWallpaper => 'Fondo de pantalla';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Imagen detrás del marco de cristal';
+
+  @override
+  String get settingsWallpaperDefault => 'Predeterminado';
+
+  @override
+  String get settingsWallpaperCustom => 'Tu imagen';
+
+  @override
+  String get settingsWallpaperChoose => 'Elegir imagen…';
+
+  @override
+  String get settingsWallpaperReset => 'Restablecer';
+
+  @override
+  String get settingsWallpaperError =>
+      'No se pudo guardar el fondo de pantalla';
 
   @override
   String get settingsAppLanguageSubtitle => 'Idioma de la interfaz';
@@ -4757,6 +4853,21 @@ class SEs extends S {
 
   @override
   String get settingsIntegrations => 'Integraciones';
+
+  @override
+  String get settingsTabProfile => 'Perfil';
+
+  @override
+  String get settingsTabData => 'Datos';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Tema e idioma';
+
+  @override
+  String get settingsAppearanceLibrary => 'Biblioteca';
+
+  @override
+  String get settingsAppearanceScale => 'Escala';
 
   @override
   String get settingsKodiSubtitle =>

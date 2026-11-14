@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../content/credentials_content.dart';
 
 class CredentialsScreen extends StatelessWidget {
@@ -19,11 +19,9 @@ class CredentialsScreen extends StatelessWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return Column(
-      children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsApiKeys),
-        Expanded(
-          child: Align(
+    return FramePage(
+      title: S.of(context).settingsApiKeys,
+      child: Align(
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -38,8 +36,6 @@ class CredentialsScreen extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ],
     );
   }
 }

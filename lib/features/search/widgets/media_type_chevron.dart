@@ -1,11 +1,11 @@
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_ui.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
+import '../../../shared/widgets/filter_segments.dart';
 import '../sources/search_sources.dart';
 import '../utils/filter_ui.dart';
 
@@ -29,7 +29,7 @@ class MediaTypeChevron extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return DropdownChevronSegment<MediaType>(
+    return FilterDropdownSegment<MediaType>(
       label: mediaType.localizedPluralLabel(l),
       subtitle: l.searchWhatToFind,
       icon: Icons.category_outlined,
@@ -59,8 +59,9 @@ class MediaTypeChevron extends StatelessWidget {
                 ),
                 Text(
                   '${searchSourcesFor(type).length}',
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.textTertiary),
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
               ],
             ),

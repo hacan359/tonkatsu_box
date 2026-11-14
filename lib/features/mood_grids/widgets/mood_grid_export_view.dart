@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:core/models/mood_grid.dart';
 import 'package:core/models/mood_grid_cell.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';

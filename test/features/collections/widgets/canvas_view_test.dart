@@ -1,6 +1,6 @@
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/game.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/providers/canvas_provider.dart';
@@ -8,6 +8,7 @@ import 'package:tonkatsu_box/features/collections/providers/steamgriddb_panel_pr
 import 'package:tonkatsu_box/features/collections/providers/vgmaps_panel_provider.dart';
 import 'package:tonkatsu_box/features/collections/widgets/canvas_view.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/constants/platform_features.dart';
 
 // Test notifier with controllable state; no real DB/repo async work.
@@ -73,7 +74,7 @@ void main() {
             .overrideWith(() => _TestVgMapsPanelNotifier()),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: SizedBox(

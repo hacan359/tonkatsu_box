@@ -1,6 +1,6 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../shared/constants/item_status_ui.dart';
@@ -9,6 +9,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../layout/stats_layout_scope.dart';
 import 'stats_poster.dart';
+import '../../../shared/widgets/image_placeholder.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Locale-aware thousands-separated number format for the stats sections.
 NumberFormat statsNumberFormat(BuildContext context) =>
@@ -17,11 +19,12 @@ NumberFormat statsNumberFormat(BuildContext context) =>
 /// Derived views over a status-count map shared by every breakdown card.
 extension StatusCountsX on Map<ItemStatus, int> {
   /// Non-zero segments ordered like the status pickers.
-  List<MapEntry<ItemStatus, int>> get sortedSegments => entries
-      .where((MapEntry<ItemStatus, int> e) => e.value > 0)
-      .toList()
-    ..sort((MapEntry<ItemStatus, int> a, MapEntry<ItemStatus, int> b) =>
-        a.key.statusSortPriority.compareTo(b.key.statusSortPriority));
+  List<MapEntry<ItemStatus, int>> get sortedSegments =>
+      entries.where((MapEntry<ItemStatus, int> e) => e.value > 0).toList()
+        ..sort(
+          (MapEntry<ItemStatus, int> a, MapEntry<ItemStatus, int> b) =>
+              a.key.statusSortPriority.compareTo(b.key.statusSortPriority),
+        );
 
   /// Completed share of all counted items, rounded to whole percent.
   int get completedPercent {
@@ -49,10 +52,10 @@ class StatsCard extends StatelessWidget {
       width: double.infinity,
       padding: StatsLayoutScope.of(context).cardPadding,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(
-          color: highlightColor?.withAlpha(110) ?? AppColors.surfaceBorder,
+          color: highlightColor?.withAlpha(110) ?? glassTileBorderColor(),
           width: highlightColor != null ? 1 : 0.5,
         ),
       ),
@@ -77,7 +80,7 @@ class StatusSplitBar extends StatelessWidget {
       child: SizedBox(
         height: 4,
         child: segments.isEmpty
-            ? ColoredBox(color: AppColors.surfaceLight)
+            ? const ImagePlaceholder(showIcon: false)
             : Row(
                 children: <Widget>[
                   for (final MapEntry<ItemStatus, int> entry in segments)
@@ -157,8 +160,7 @@ class StatsLegendDot extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs + 2),
         Text(
           label,
-          style:
-              AppTypography.caption.copyWith(color: AppColors.textSecondary),
+          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
         ),
         if (count != null) ...<Widget>[
           const SizedBox(width: AppSpacing.xs),

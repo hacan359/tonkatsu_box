@@ -1,15 +1,19 @@
 import 'package:core/models/collection_sort_mode.dart';
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/widgets/settings_tile.dart';
+import '../helpers/tag_name_filter.dart';
 import '../providers/collections_provider.dart';
 import '../../../shared/constants/collection_sort_mode_ui.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 Future<void> showCollectionFilterSheet(
   BuildContext context, {
@@ -20,10 +24,10 @@ Future<void> showCollectionFilterSheet(
   required ValueChanged<int?> onTagToggled,
   required VoidCallback onGroupToggled,
 }) {
-  return showModalBottomSheet<void>(
+  return showGlassSheet<void>(
     context: context,
-    backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    selfBacked: true,
     builder: (BuildContext ctx) => DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,
@@ -31,14 +35,14 @@ Future<void> showCollectionFilterSheet(
       expand: false,
       builder: (BuildContext _, ScrollController scrollController) =>
           CollectionFilterSheet(
-        scrollController: scrollController,
-        collectionId: collectionId,
-        tags: tags,
-        selectedTagIds: selectedTagIds,
-        groupByTags: groupByTags,
-        onTagToggled: onTagToggled,
-        onGroupToggled: onGroupToggled,
-      ),
+            scrollController: scrollController,
+            collectionId: collectionId,
+            tags: tags,
+            selectedTagIds: selectedTagIds,
+            groupByTags: groupByTags,
+            onTagToggled: onTagToggled,
+            onGroupToggled: onGroupToggled,
+          ),
     ),
   );
 }
@@ -80,10 +84,18 @@ class CollectionFilterSheet extends ConsumerStatefulWidget {
       _CollectionFilterSheetState();
 }
 
-class _CollectionFilterSheetState
-    extends ConsumerState<CollectionFilterSheet> {
+class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
   late final Set<int> _selectedTagIds = <int>{...widget.selectedTagIds};
   late bool _groupByTags = widget.groupByTags;
+  final TextEditingController _tagQuery = TextEditingController();
+  final FocusNode _tagQueryFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _tagQuery.dispose();
+    _tagQueryFocus.dispose();
+    super.dispose();
+  }
 
   void _handleTagToggle(int? id) {
     setState(() {
@@ -110,79 +122,55 @@ class _CollectionFilterSheetState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final CollectionSortMode currentSort =
-        ref.watch(collectionSortProvider(widget.collectionId));
-    final bool isDescending =
-        ref.watch(collectionSortDescProvider(widget.collectionId));
+    final CollectionSortMode currentSort = ref.watch(
+      collectionSortProvider(widget.collectionId),
+    );
+    final bool isDescending = ref.watch(
+      collectionSortDescProvider(widget.collectionId),
+    );
     final bool hasTagFilter = _selectedTagIds.isNotEmpty;
+    final bool searchableTags = widget.tags.length >= kTagSearchMinTags;
+    final List<Tag> visibleTags = filterTagsByName(
+      widget.tags,
+      _tagQuery.text,
+      keepIds: _selectedTagIds,
+    );
 
-    return Material(
-      color: AppColors.background,
-      elevation: 16,
-      shadowColor: AppColors.shadow,
+    return GlassPanel(
       borderRadius: const BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusLg),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          image: AppColors.tileImage,
-        ),
-        child: Stack(
-          children: <Widget>[
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: const Alignment(0, -0.7),
-                      radius: 1.1,
-                      colors: <Color>[
-                        AppColors.brand.withAlpha(80),
-                        AppColors.brand.withAlpha(20),
-                        Colors.transparent,
-                      ],
-                      stops: const <double>[0.0, 0.4, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        AppColors.background.withAlpha(80),
-                        AppColors.background.withAlpha(160),
-                        AppColors.background.withAlpha(220),
-                      ],
-                      stops: const <double>[0.0, 0.45, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            SingleChildScrollView(
-              controller: widget.scrollController,
-              padding: const EdgeInsets.all(AppSpacing.md),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withAlpha(80),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(
-                    color: AppColors.surfaceBorder.withAlpha(40),
+                  gradient: RadialGradient(
+                    center: const Alignment(0, -0.7),
+                    radius: 1.1,
+                    colors: <Color>[
+                      AppColors.brand.withAlpha(60),
+                      AppColors.brand.withAlpha(16),
+                      Colors.transparent,
+                    ],
+                    stops: const <double>[0.0, 0.4, 1.0],
                   ),
                 ),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
+              ),
+            ),
+          ),
+
+          SingleChildScrollView(
+            controller: widget.scrollController,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: DecoratedBox(
+              decoration: glassTileDecoration(radius: AppSpacing.radiusMd),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.lg,
@@ -191,9 +179,7 @@ class _CollectionFilterSheetState
                         AppSpacing.sm,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppSpacing.md,
-                        ),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
                         child: SizedBox(
                           width: double.infinity,
                           child: Stack(
@@ -204,7 +190,9 @@ class _CollectionFilterSheetState
                                 height: 4,
                                 decoration: BoxDecoration(
                                   color: AppColors.textPrimary.withAlpha(80),
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
+                                  borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusXxs,
+                                  ),
                                 ),
                               ),
                               if (hasTagFilter)
@@ -215,7 +203,10 @@ class _CollectionFilterSheetState
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: AppSpacing.sm,
                                       ),
-                                      minimumSize: const Size(0, AppSpacing.buttonHeightDense),
+                                      minimumSize: const Size(
+                                        0,
+                                        AppSpacing.buttonHeightDense,
+                                      ),
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                       visualDensity: VisualDensity.compact,
@@ -223,8 +214,7 @@ class _CollectionFilterSheetState
                                     onPressed: () => _handleTagToggle(null),
                                     child: Text(
                                       l.filtersClear,
-                                      style:
-                                          AppTypography.bodySmall.copyWith(
+                                      style: AppTypography.bodySmall.copyWith(
                                         color: AppColors.error,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -253,6 +243,20 @@ class _CollectionFilterSheetState
                           ),
                         ),
                       ),
+                      if (searchableTags)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.md,
+                            0,
+                            AppSpacing.md,
+                            AppSpacing.sm,
+                          ),
+                          child: _TagSearchField(
+                            controller: _tagQuery,
+                            focusNode: _tagQueryFocus,
+                            onChanged: () => setState(() {}),
+                          ),
+                        ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.md,
@@ -260,18 +264,27 @@ class _CollectionFilterSheetState
                           AppSpacing.md,
                           AppSpacing.sm,
                         ),
-                        child: Wrap(
-                          spacing: AppSpacing.xs,
-                          runSpacing: AppSpacing.xs,
-                          children: <Widget>[
-                            for (final Tag tag in widget.tags)
-                              _TagChip(
-                                tag: tag,
-                                selected: _selectedTagIds.contains(tag.id),
-                                onTap: () => _handleTagToggle(tag.id),
+                        child: visibleTags.isEmpty
+                            ? Text(
+                                l.tagNone,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              )
+                            : Wrap(
+                                spacing: AppSpacing.xs,
+                                runSpacing: AppSpacing.xs,
+                                children: <Widget>[
+                                  for (final Tag tag in visibleTags)
+                                    _TagChip(
+                                      tag: tag,
+                                      selected: _selectedTagIds.contains(
+                                        tag.id,
+                                      ),
+                                      onTap: () => _handleTagToggle(tag.id),
+                                    ),
+                                ],
                               ),
-                          ],
-                        ),
                       ),
                       SettingsTile(
                         title: l.tagSidebarGroup,
@@ -307,14 +320,19 @@ class _CollectionFilterSheetState
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.sm,
                               ),
-                              minimumSize: const Size(0, AppSpacing.buttonHeightDense),
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                              minimumSize: const Size(
+                                0,
+                                AppSpacing.buttonHeightDense,
+                              ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             ),
                             onPressed: () => ref
-                                .read(collectionSortDescProvider(widget.collectionId)
-                                    .notifier)
+                                .read(
+                                  collectionSortDescProvider(
+                                    widget.collectionId,
+                                  ).notifier,
+                                )
                                 .toggle(),
                             icon: Icon(
                               isDescending
@@ -342,20 +360,64 @@ class _CollectionFilterSheetState
                         label: mode.localizedDisplayLabel(l),
                         selected: mode == currentSort,
                         onTap: () => ref
-                            .read(collectionSortProvider(widget.collectionId)
-                                .notifier)
+                            .read(
+                              collectionSortProvider(
+                                widget.collectionId,
+                              ).notifier,
+                            )
                             .setSortMode(mode),
                       ),
 
                     const SizedBox(height: AppSpacing.md),
                   ],
-                  ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _TagSearchField extends StatelessWidget {
+  const _TagSearchField({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasQuery = controller.text.isNotEmpty;
+    return TextField(
+      key: const ValueKey<String>('filterSheetTagSearch'),
+      controller: controller,
+      focusNode: focusNode,
+      // Touch keeps focus on an outside tap, so the keyboard would stick to
+      // the sheet while the user is picking chips.
+      onTapOutside: kIsMobile ? (_) => focusNode.unfocus() : null,
+      style: AppTypography.bodySmall,
+      decoration: InputDecoration(
+        hintText: S.of(context).tagPickerSearchHint,
+        prefixIcon: const Icon(Icons.search, size: 18),
+        suffixIcon: hasQuery
+            ? IconButton(
+                icon: const Icon(Icons.clear, size: 16),
+                visualDensity: VisualDensity.compact,
+                onPressed: () {
+                  controller.clear();
+                  onChanged();
+                },
+              )
+            : null,
+        isDense: true,
+      ),
+      onChanged: (_) => onChanged(),
     );
   }
 }
@@ -376,15 +438,12 @@ class _TagChip extends StatelessWidget {
     final Color color = tag.color != null
         ? Color(tag.color!)
         : AppColors.textSecondary;
-    final Color bg = selected ? color : Colors.transparent;
+    final Color bg = selected ? color : glassChipColor();
     final Color fg = selected ? AppColors.background : color;
     return Material(
       color: bg,
       shape: StadiumBorder(
-        side: BorderSide(
-          color: color,
-          width: selected ? 1.5 : 1,
-        ),
+        side: BorderSide(color: color, width: selected ? 1.5 : 1),
       ),
       child: InkWell(
         onTap: onTap,
@@ -443,9 +502,7 @@ class _SortTile extends StatelessWidget {
         ),
       ),
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       onTap: onTap,
     );
   }

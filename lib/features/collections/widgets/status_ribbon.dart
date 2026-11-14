@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/item_status_ui.dart';
 import '../../../shared/theme/app_colors.dart';

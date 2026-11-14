@@ -62,12 +62,11 @@ class IgdbListImportOptions extends ImportOptions {
 /// ids IGDB no longer returns fall back to the text wishlist.
 class IgdbListImportService implements ImportSource {
   IgdbListImportService({
-    required IgdbApi igdbApi,
+    required this._igdbApi,
     required DatabaseService database,
     required CollectionRepository repository,
     required WishlistRepository wishlistRepository,
-  })  : _igdbApi = igdbApi,
-        _db = database,
+  })  : _db = database,
         _writer = ImportWriter(
           collections: repository,
           wishlist: wishlistRepository,

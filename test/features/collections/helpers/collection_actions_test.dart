@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/steamgriddb_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
@@ -9,7 +11,9 @@ import 'package:tonkatsu_box/features/collections/helpers/collection_actions.dar
 import 'package:tonkatsu_box/features/collections/providers/canvas_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
 class _TestCanvasNotifier extends CanvasNotifier {
   _TestCanvasNotifier();
@@ -35,13 +39,15 @@ class _TestCanvasNotifier extends CanvasNotifier {
     double width = 200,
     double height = 200,
   }) async {
-    addImageCalls.add(_AddImageCall(
-      x: x,
-      y: y,
-      imageData: imageData,
-      width: width,
-      height: height,
-    ));
+    addImageCalls.add(
+      _AddImageCall(
+        x: x,
+        y: y,
+        imageData: imageData,
+        width: width,
+        height: height,
+      ),
+    );
     return CanvasItem(
       id: 999,
       collectionId: 1,
@@ -97,21 +103,17 @@ class _TestCollectionsNotifier extends CollectionsNotifier {
 WidgetRef? _capturedRef;
 BuildContext? _capturedContext;
 
-Widget _buildTestApp({
-  required List<Override> overrides,
-}) {
+Widget _buildTestApp({required List<Override> overrides}) {
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Consumer(
         builder: (BuildContext context, WidgetRef ref, Widget? child) {
           _capturedRef = ref;
           _capturedContext = context;
-          return const Scaffold(
-            body: SizedBox.shrink(),
-          );
+          return const Scaffold(body: SizedBox.shrink());
         },
       ),
     ),
@@ -136,30 +138,34 @@ void main() {
 
   group('CollectionActions', () {
     group('addItems', () {
-      testWidgets('requests the Search tab with the collection as add target',
-          (WidgetTester tester) async {
+      testWidgets('requests the Search tab with the collection as add target', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(_buildTestApp(overrides: <Override>[]));
         await tester.pumpAndSettle();
 
         CollectionActions.addItems(ref: _capturedRef!, collectionId: 42);
 
-        final SearchTabRequest? request =
-            _capturedRef!.read(searchTabRequestProvider);
+        final SearchTabRequest? request = _capturedRef!.read(
+          searchTabRequestProvider,
+        );
         expect(request, isNotNull);
         expect(request!.collectionId, 42);
         expect(request.query, isNull);
         expect(request.sourceId, isNull);
       });
 
-      testWidgets('passes a null collectionId through (uncategorized)',
-          (WidgetTester tester) async {
+      testWidgets('passes a null collectionId through (uncategorized)', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(_buildTestApp(overrides: <Override>[]));
         await tester.pumpAndSettle();
 
         CollectionActions.addItems(ref: _capturedRef!, collectionId: null);
 
-        final SearchTabRequest? request =
-            _capturedRef!.read(searchTabRequestProvider);
+        final SearchTabRequest? request = _capturedRef!.read(
+          searchTabRequestProvider,
+        );
         expect(request, isNotNull);
         expect(request!.collectionId, isNull);
       });
@@ -171,11 +177,13 @@ void main() {
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
-            overrides: <Override>[
-              canvasNotifierProvider.overrideWith(() => canvasNotifier),
-            ],
-          ));
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: <Override>[
+                canvasNotifierProvider.overrideWith(() => canvasNotifier),
+              ],
+            ),
+          );
           await tester.pumpAndSettle();
 
           const SteamGridDbImage image = SteamGridDbImage(
@@ -207,11 +215,13 @@ void main() {
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
-            overrides: <Override>[
-              canvasNotifierProvider.overrideWith(() => canvasNotifier),
-            ],
-          ));
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: <Override>[
+                canvasNotifierProvider.overrideWith(() => canvasNotifier),
+              ],
+            ),
+          );
           await tester.pumpAndSettle();
 
           const SteamGridDbImage wideImage = SteamGridDbImage(
@@ -237,227 +247,229 @@ void main() {
         },
       );
 
-      testWidgets(
-        'should use оригинальную ширину если она <= 300',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should use оригинальную ширину если она <= 300', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          const SteamGridDbImage smallImage = SteamGridDbImage(
-            id: 3,
-            score: 8,
-            style: 'material',
-            url: 'https://example.com/small.png',
-            thumb: 'https://example.com/thumb.png',
-            width: 200,
-            height: 300,
-          );
+        const SteamGridDbImage smallImage = SteamGridDbImage(
+          id: 3,
+          score: 8,
+          style: 'material',
+          url: 'https://example.com/small.png',
+          thumb: 'https://example.com/thumb.png',
+          width: 200,
+          height: 300,
+        );
 
-          CollectionActions.addSteamGridDbImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            image: smallImage,
-          );
+        CollectionActions.addSteamGridDbImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          image: smallImage,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(call.width, equals(200.0));
-          expect(call.height, equals(300.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.width, equals(200.0));
+        expect(call.height, equals(300.0));
+      });
 
-      testWidgets(
-        'should use defaultSize=200 если width или height равны 0',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should use defaultSize=200 если width или height равны 0', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          const SteamGridDbImage zeroImage = SteamGridDbImage(
-            id: 4,
-            score: 0,
-            style: 'alternate',
-            url: 'https://example.com/zero.png',
-            thumb: 'https://example.com/thumb.png',
-            width: 0,
-            height: 0,
-          );
+        const SteamGridDbImage zeroImage = SteamGridDbImage(
+          id: 4,
+          score: 0,
+          style: 'alternate',
+          url: 'https://example.com/zero.png',
+          thumb: 'https://example.com/thumb.png',
+          width: 0,
+          height: 0,
+        );
 
-          CollectionActions.addSteamGridDbImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            image: zeroImage,
-          );
+        CollectionActions.addSteamGridDbImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          image: zeroImage,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(call.width, equals(200.0));
-          expect(call.height, equals(200.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.width, equals(200.0));
+        expect(call.height, equals(200.0));
+      });
 
-      testWidgets(
-        'должен центрировать изображение на канвасе',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('должен центрировать изображение на канвасе', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          const SteamGridDbImage image = SteamGridDbImage(
-            id: 5,
-            score: 10,
-            style: 'alternate',
-            url: 'https://example.com/img.png',
-            thumb: 'https://example.com/thumb.png',
-            width: 200,
-            height: 200,
-          );
+        const SteamGridDbImage image = SteamGridDbImage(
+          id: 5,
+          score: 10,
+          style: 'alternate',
+          url: 'https://example.com/img.png',
+          thumb: 'https://example.com/thumb.png',
+          width: 200,
+          height: 200,
+        );
 
-          CollectionActions.addSteamGridDbImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            image: image,
-          );
+        CollectionActions.addSteamGridDbImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          image: image,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(
-            call.x,
-            equals(CanvasRepository.initialCenterX - 200.0 / 2),
-          );
-          expect(
-            call.y,
-            equals(CanvasRepository.initialCenterY - 200.0 / 2),
-          );
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.x, equals(CanvasRepository.initialCenterX - 200.0 / 2));
+        expect(call.y, equals(CanvasRepository.initialCenterY - 200.0 / 2));
+      });
 
-      testWidgets(
-        'должен работать с collectionId=null',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('должен работать с collectionId=null', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          const SteamGridDbImage image = SteamGridDbImage(
-            id: 6,
-            score: 10,
-            style: 'alternate',
-            url: 'https://example.com/img.png',
-            thumb: 'https://example.com/thumb.png',
-            width: 100,
-            height: 100,
-          );
+        const SteamGridDbImage image = SteamGridDbImage(
+          id: 6,
+          score: 10,
+          style: 'alternate',
+          url: 'https://example.com/img.png',
+          thumb: 'https://example.com/thumb.png',
+          width: 100,
+          height: 100,
+        );
 
-          CollectionActions.addSteamGridDbImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: null,
-            image: image,
-          );
+        CollectionActions.addSteamGridDbImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: null,
+          image: image,
+        );
 
-          expect(canvasNotifier.addImageCalls, hasLength(1));
-        },
-      );
+        expect(canvasNotifier.addImageCalls, hasLength(1));
+      });
 
-      testWidgets(
-        'should show SnackBar с сообщением об успехе',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should show SnackBar с сообщением об успехе', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          const SteamGridDbImage image = SteamGridDbImage(
-            id: 7,
-            score: 10,
-            style: 'alternate',
-            url: 'https://example.com/img.png',
-            thumb: 'https://example.com/thumb.png',
-            width: 100,
-            height: 100,
-          );
+        const SteamGridDbImage image = SteamGridDbImage(
+          id: 7,
+          score: 10,
+          style: 'alternate',
+          url: 'https://example.com/img.png',
+          thumb: 'https://example.com/thumb.png',
+          width: 100,
+          height: 100,
+        );
 
-          CollectionActions.addSteamGridDbImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            image: image,
-          );
-          await tester.pump();
+        CollectionActions.addSteamGridDbImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          image: image,
+        );
+        await tester.pump();
 
-          expect(find.byType(SnackBar), findsOneWidget);
-        },
-      );
+        expect(find.byType(SnackBar), findsOneWidget);
+      });
     });
 
     group('addVgMapsImage', () {
-      testWidgets(
-        'should call addImageItem на canvasNotifier',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should call addImageItem на canvasNotifier', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/map.png',
-            width: 800,
-            height: 600,
-          );
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/map.png',
+          width: 800,
+          height: 600,
+        );
 
-          expect(canvasNotifier.addImageCalls, hasLength(1));
+        expect(canvasNotifier.addImageCalls, hasLength(1));
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(
-            call.imageData,
-            equals(<String, dynamic>{'url': 'https://vgmaps.de/map.png'}),
-          );
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(
+          call.imageData,
+          equals(<String, dynamic>{'url': 'https://vgmaps.de/map.png'}),
+        );
+      });
 
       testWidgets(
         'должен масштабировать ширину до maxWidth=400 если изображение шире',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
-            overrides: <Override>[
-              canvasNotifierProvider.overrideWith(() => canvasNotifier),
-            ],
-          ));
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: <Override>[
+                canvasNotifierProvider.overrideWith(() => canvasNotifier),
+              ],
+            ),
+          );
           await tester.pumpAndSettle();
 
           CollectionActions.addVgMapsImage(
@@ -475,43 +487,46 @@ void main() {
         },
       );
 
-      testWidgets(
-        'should use оригинальную ширину если она <= 400',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should use оригинальную ширину если она <= 400', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/small_map.png',
-            width: 300,
-            height: 150,
-          );
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/small_map.png',
+          width: 300,
+          height: 150,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(call.width, equals(300.0));
-          expect(call.height, equals(150.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.width, equals(300.0));
+        expect(call.height, equals(150.0));
+      });
 
       testWidgets(
         'should use defaultSize=400 если width или height равны null',
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
-            overrides: <Override>[
-              canvasNotifierProvider.overrideWith(() => canvasNotifier),
-            ],
-          ));
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: <Override>[
+                canvasNotifierProvider.overrideWith(() => canvasNotifier),
+              ],
+            ),
+          );
           await tester.pumpAndSettle();
 
           CollectionActions.addVgMapsImage(
@@ -529,136 +544,132 @@ void main() {
         },
       );
 
-      testWidgets(
-        'should use defaultSize=400 если width=0 и height=0',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should use defaultSize=400 если width=0 и height=0', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/zero.png',
-            width: 0,
-            height: 0,
-          );
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/zero.png',
+          width: 0,
+          height: 0,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(call.width, equals(400.0));
-          expect(call.height, equals(400.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.width, equals(400.0));
+        expect(call.height, equals(400.0));
+      });
 
-      testWidgets(
-        'должен центрировать карту на канвасе',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('должен центрировать карту на канвасе', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/map.png',
-            width: 400,
-            height: 200,
-          );
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/map.png',
+          width: 400,
+          height: 200,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(
-            call.x,
-            equals(CanvasRepository.initialCenterX - 400.0 / 2),
-          );
-          expect(
-            call.y,
-            equals(CanvasRepository.initialCenterY - 200.0 / 2),
-          );
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.x, equals(CanvasRepository.initialCenterX - 400.0 / 2));
+        expect(call.y, equals(CanvasRepository.initialCenterY - 200.0 / 2));
+      });
 
-      testWidgets(
-        'should show SnackBar с сообщением об успехе',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should show SnackBar с сообщением об успехе', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/map.png',
-            width: 800,
-            height: 600,
-          );
-          await tester.pump();
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/map.png',
+          width: 800,
+          height: 600,
+        );
+        await tester.pump();
 
-          expect(find.byType(SnackBar), findsOneWidget);
-        },
-      );
+        expect(find.byType(SnackBar), findsOneWidget);
+      });
     });
 
-    group('renameCollection', skip: 'Переписано на EditCollectionDialog — тесты будут обновлены отдельно', () {
-      testWidgets(
-        'should return null если диалог отменён',
-        (WidgetTester tester) async {
+    group(
+      'renameCollection',
+      skip:
+          'Переписано на EditCollectionDialog — тесты будут обновлены отдельно',
+      () {
+        testWidgets('should return null если диалог отменён', (
+          WidgetTester tester,
+        ) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
 
           await tester.pumpWidget(
             ProviderScope(
               overrides: <Override>[
-                collectionsProvider
-                    .overrideWith(() => collectionsNotifier),
+                collectionsProvider.overrideWith(() => collectionsNotifier),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Consumer(
                   builder:
                       (BuildContext context, WidgetRef ref, Widget? child) {
-                    _capturedRef = ref;
-                    _capturedContext = context;
-                    return const Scaffold(body: SizedBox.shrink());
-                  },
+                        _capturedRef = ref;
+                        _capturedContext = context;
+                        return const Scaffold(body: SizedBox.shrink());
+                      },
                 ),
               ),
             ),
           );
           await tester.pumpAndSettle();
 
-          final Future<bool> resultFuture =
-              CollectionActions.renameCollection(
+          final Future<bool> resultFuture = CollectionActions.renameCollection(
             context: _capturedContext!,
             ref: _capturedRef!,
             collection: testCollection,
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(AlertDialog), findsOneWidget);
+          expect(find.byType(GlassAlertDialog), findsOneWidget);
 
-          final Finder cancelButton = find.widgetWithText(
-            TextButton,
-            'Cancel',
-          );
+          final Finder cancelButton = find.widgetWithText(TextButton, 'Cancel');
           expect(cancelButton, findsOneWidget);
           await tester.tap(cancelButton);
           await tester.pumpAndSettle();
@@ -667,46 +678,43 @@ void main() {
           expect(result, isFalse);
 
           expect(collectionsNotifier.renameCalled, isFalse);
-        },
-      );
+        });
 
-      testWidgets(
-        'should return null если новое имя совпадает с текущим',
-        (WidgetTester tester) async {
+        testWidgets('should return null если новое имя совпадает с текущим', (
+          WidgetTester tester,
+        ) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
 
           await tester.pumpWidget(
             ProviderScope(
               overrides: <Override>[
-                collectionsProvider
-                    .overrideWith(() => collectionsNotifier),
+                collectionsProvider.overrideWith(() => collectionsNotifier),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Consumer(
                   builder:
                       (BuildContext context, WidgetRef ref, Widget? child) {
-                    _capturedRef = ref;
-                    _capturedContext = context;
-                    return const Scaffold(body: SizedBox.shrink());
-                  },
+                        _capturedRef = ref;
+                        _capturedContext = context;
+                        return const Scaffold(body: SizedBox.shrink());
+                      },
                 ),
               ),
             ),
           );
           await tester.pumpAndSettle();
 
-          final Future<bool> resultFuture =
-              CollectionActions.renameCollection(
+          final Future<bool> resultFuture = CollectionActions.renameCollection(
             context: _capturedContext!,
             ref: _capturedRef!,
             collection: testCollection,
           );
           await tester.pumpAndSettle();
 
-          expect(find.byType(AlertDialog), findsOneWidget);
+          expect(find.byType(GlassAlertDialog), findsOneWidget);
 
           final Finder renameButton = find.widgetWithText(
             FilledButton,
@@ -720,39 +728,36 @@ void main() {
           expect(result, isFalse);
 
           expect(collectionsNotifier.renameCalled, isFalse);
-        },
-      );
+        });
 
-      testWidgets(
-        'should return новое имя если переименование успешно',
-        (WidgetTester tester) async {
+        testWidgets('should return новое имя если переименование успешно', (
+          WidgetTester tester,
+        ) async {
           final _TestCollectionsNotifier collectionsNotifier =
               _TestCollectionsNotifier();
 
           await tester.pumpWidget(
             ProviderScope(
               overrides: <Override>[
-                collectionsProvider
-                    .overrideWith(() => collectionsNotifier),
+                collectionsProvider.overrideWith(() => collectionsNotifier),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Consumer(
                   builder:
                       (BuildContext context, WidgetRef ref, Widget? child) {
-                    _capturedRef = ref;
-                    _capturedContext = context;
-                    return const Scaffold(body: SizedBox.shrink());
-                  },
+                        _capturedRef = ref;
+                        _capturedContext = context;
+                        return const Scaffold(body: SizedBox.shrink());
+                      },
                 ),
               ),
             ),
           );
           await tester.pumpAndSettle();
 
-          final Future<bool> resultFuture =
-              CollectionActions.renameCollection(
+          final Future<bool> resultFuture = CollectionActions.renameCollection(
             context: _capturedContext!,
             ref: _capturedRef!,
             collection: testCollection,
@@ -774,162 +779,142 @@ void main() {
           final bool result = await resultFuture;
           expect(result, isTrue);
           expect(collectionsNotifier.renameCalled, isTrue);
-        },
-      );
-    });
+        });
+      },
+    );
 
     group('deleteCollection', () {
-      testWidgets(
-        'should return false если диалог отменён',
-        (WidgetTester tester) async {
-          final _TestCollectionsNotifier collectionsNotifier =
-              _TestCollectionsNotifier();
+      testWidgets('should return false если диалог отменён', (
+        WidgetTester tester,
+      ) async {
+        final _TestCollectionsNotifier collectionsNotifier =
+            _TestCollectionsNotifier();
 
-          await tester.pumpWidget(
-            ProviderScope(
-              overrides: <Override>[
-                collectionsProvider
-                    .overrideWith(() => collectionsNotifier),
-              ],
-              child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
-                supportedLocales: S.supportedLocales,
-                home: Consumer(
-                  builder:
-                      (BuildContext context, WidgetRef ref, Widget? child) {
-                    _capturedRef = ref;
-                    _capturedContext = context;
-                    return const Scaffold(body: SizedBox.shrink());
-                  },
-                ),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              collectionsProvider.overrideWith(() => collectionsNotifier),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: kAppLocalizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              home: Consumer(
+                builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                  _capturedRef = ref;
+                  _capturedContext = context;
+                  return const Scaffold(body: SizedBox.shrink());
+                },
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          final Future<bool> resultFuture =
-              CollectionActions.deleteCollection(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collection: testCollection,
-          );
-          await tester.pumpAndSettle();
+        final Future<bool> resultFuture = CollectionActions.deleteCollection(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collection: testCollection,
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.byType(GlassAlertDialog), findsOneWidget);
 
-          final Finder cancelButton = find.widgetWithText(
-            TextButton,
-            'Cancel',
-          );
-          expect(cancelButton, findsOneWidget);
-          await tester.tap(cancelButton);
-          await tester.pumpAndSettle();
+        final Finder cancelButton = find.widgetWithText(TextButton, 'Cancel');
+        expect(cancelButton, findsOneWidget);
+        await tester.tap(cancelButton);
+        await tester.pumpAndSettle();
 
-          final bool result = await resultFuture;
-          expect(result, isFalse);
+        final bool result = await resultFuture;
+        expect(result, isFalse);
 
-          expect(collectionsNotifier.deleteCalled, isFalse);
-        },
-      );
+        expect(collectionsNotifier.deleteCalled, isFalse);
+      });
 
-      testWidgets(
-        'should return true если удаление подтверждено',
-        (WidgetTester tester) async {
-          final _TestCollectionsNotifier collectionsNotifier =
-              _TestCollectionsNotifier();
+      testWidgets('should return true если удаление подтверждено', (
+        WidgetTester tester,
+      ) async {
+        final _TestCollectionsNotifier collectionsNotifier =
+            _TestCollectionsNotifier();
 
-          await tester.pumpWidget(
-            ProviderScope(
-              overrides: <Override>[
-                collectionsProvider
-                    .overrideWith(() => collectionsNotifier),
-              ],
-              child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
-                supportedLocales: S.supportedLocales,
-                home: Consumer(
-                  builder:
-                      (BuildContext context, WidgetRef ref, Widget? child) {
-                    _capturedRef = ref;
-                    _capturedContext = context;
-                    return const Scaffold(body: SizedBox.shrink());
-                  },
-                ),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              collectionsProvider.overrideWith(() => collectionsNotifier),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: kAppLocalizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              home: Consumer(
+                builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                  _capturedRef = ref;
+                  _capturedContext = context;
+                  return const Scaffold(body: SizedBox.shrink());
+                },
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          final Future<bool> resultFuture =
-              CollectionActions.deleteCollection(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collection: testCollection,
-          );
-          await tester.pumpAndSettle();
+        final Future<bool> resultFuture = CollectionActions.deleteCollection(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collection: testCollection,
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.byType(GlassAlertDialog), findsOneWidget);
 
-          final Finder deleteButton = find.widgetWithText(
-            TextButton,
-            'Delete',
-          );
-          expect(deleteButton, findsOneWidget);
-          await tester.tap(deleteButton);
-          await tester.pumpAndSettle();
+        final Finder deleteButton = find.widgetWithText(TextButton, 'Delete');
+        expect(deleteButton, findsOneWidget);
+        await tester.tap(deleteButton);
+        await tester.pumpAndSettle();
 
-          final bool result = await resultFuture;
-          expect(result, isTrue);
+        final bool result = await resultFuture;
+        expect(result, isTrue);
 
-          expect(collectionsNotifier.deleteCalled, isTrue);
-        },
-      );
+        expect(collectionsNotifier.deleteCalled, isTrue);
+      });
 
-      testWidgets(
-        'should show SnackBar при успешном удалении',
-        (WidgetTester tester) async {
-          final _TestCollectionsNotifier collectionsNotifier =
-              _TestCollectionsNotifier();
+      testWidgets('should show SnackBar при успешном удалении', (
+        WidgetTester tester,
+      ) async {
+        final _TestCollectionsNotifier collectionsNotifier =
+            _TestCollectionsNotifier();
 
-          await tester.pumpWidget(
-            ProviderScope(
-              overrides: <Override>[
-                collectionsProvider
-                    .overrideWith(() => collectionsNotifier),
-              ],
-              child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
-                supportedLocales: S.supportedLocales,
-                home: Consumer(
-                  builder:
-                      (BuildContext context, WidgetRef ref, Widget? child) {
-                    _capturedRef = ref;
-                    _capturedContext = context;
-                    return const Scaffold(body: SizedBox.shrink());
-                  },
-                ),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              collectionsProvider.overrideWith(() => collectionsNotifier),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: kAppLocalizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              home: Consumer(
+                builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                  _capturedRef = ref;
+                  _capturedContext = context;
+                  return const Scaffold(body: SizedBox.shrink());
+                },
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.deleteCollection(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collection: testCollection,
-          );
-          await tester.pumpAndSettle();
+        unawaited(CollectionActions.deleteCollection(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collection: testCollection,
+        ));
+        await tester.pumpAndSettle();
 
-          final Finder deleteButton = find.widgetWithText(
-            TextButton,
-            'Delete',
-          );
-          await tester.tap(deleteButton);
-          await tester.pumpAndSettle();
+        final Finder deleteButton = find.widgetWithText(TextButton, 'Delete');
+        await tester.tap(deleteButton);
+        await tester.pumpAndSettle();
 
-          expect(find.byType(SnackBar), findsOneWidget);
-        },
-      );
+        expect(find.byType(SnackBar), findsOneWidget);
+      });
     });
 
     group('addSteamGridDbImage — граничные случаи масштабирования', () {
@@ -938,11 +923,13 @@ void main() {
         (WidgetTester tester) async {
           final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
-            overrides: <Override>[
-              canvasNotifierProvider.overrideWith(() => canvasNotifier),
-            ],
-          ));
+          await tester.pumpWidget(
+            _buildTestApp(
+              overrides: <Override>[
+                canvasNotifierProvider.overrideWith(() => canvasNotifier),
+              ],
+            ),
+          );
           await tester.pumpAndSettle();
 
           const SteamGridDbImage image = SteamGridDbImage(
@@ -969,97 +956,100 @@ void main() {
         },
       );
 
-      testWidgets(
-        'should handle изображение ровно 300px по ширине',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should handle изображение ровно 300px по ширине', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          const SteamGridDbImage image = SteamGridDbImage(
-            id: 11,
-            score: 1,
-            style: 'alternate',
-            url: 'https://example.com/exact.png',
-            thumb: 'https://example.com/thumb.png',
-            width: 300,
-            height: 450,
-          );
+        const SteamGridDbImage image = SteamGridDbImage(
+          id: 11,
+          score: 1,
+          style: 'alternate',
+          url: 'https://example.com/exact.png',
+          thumb: 'https://example.com/thumb.png',
+          width: 300,
+          height: 450,
+        );
 
-          CollectionActions.addSteamGridDbImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            image: image,
-          );
+        CollectionActions.addSteamGridDbImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          image: image,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(call.width, equals(300.0));
-          expect(call.height, equals(450.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.width, equals(300.0));
+        expect(call.height, equals(450.0));
+      });
     });
 
     group('addVgMapsImage — граничные случаи масштабирования', () {
-      testWidgets(
-        'should handle карту ровно 400px по ширине',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should handle карту ровно 400px по ширине', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/exact.png',
-            width: 400,
-            height: 200,
-          );
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/exact.png',
+          width: 400,
+          height: 200,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          expect(call.width, equals(400.0));
-          expect(call.height, equals(200.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        expect(call.width, equals(400.0));
+        expect(call.height, equals(200.0));
+      });
 
-      testWidgets(
-        'should handle null width с non-null height как default',
-        (WidgetTester tester) async {
-          final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
+      testWidgets('should handle null width с non-null height как default', (
+        WidgetTester tester,
+      ) async {
+        final _TestCanvasNotifier canvasNotifier = _TestCanvasNotifier();
 
-          await tester.pumpWidget(_buildTestApp(
+        await tester.pumpWidget(
+          _buildTestApp(
             overrides: <Override>[
               canvasNotifierProvider.overrideWith(() => canvasNotifier),
             ],
-          ));
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          CollectionActions.addVgMapsImage(
-            context: _capturedContext!,
-            ref: _capturedRef!,
-            collectionId: 1,
-            url: 'https://vgmaps.de/partial.png',
-            width: null,
-            height: 300,
-          );
+        CollectionActions.addVgMapsImage(
+          context: _capturedContext!,
+          ref: _capturedRef!,
+          collectionId: 1,
+          url: 'https://vgmaps.de/partial.png',
+          width: null,
+          height: 300,
+        );
 
-          final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          // null width disables scaling and defaults to 400x400.
-          expect(call.width, equals(400.0));
-          expect(call.height, equals(400.0));
-        },
-      );
+        final _AddImageCall call = canvasNotifier.addImageCalls.first;
+        // null width disables scaling and defaults to 400x400.
+        expect(call.width, equals(400.0));
+        expect(call.height, equals(400.0));
+      });
     });
   });
 }

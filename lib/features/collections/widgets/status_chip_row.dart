@@ -1,13 +1,14 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_durations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/constants/item_status_ui.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 const String _kStatusMenuPrefix = 'status:';
 
@@ -47,8 +48,8 @@ List<PopupMenuEntry<String>> statusChipPopupMenuEntries({
       child: StatusChipRow(
         status: item.status,
         mediaType: item.displayMediaType,
-        onChanged: (ItemStatus newStatus) => Navigator.of(context)
-            .pop('$_kStatusMenuPrefix${newStatus.value}'),
+        onChanged: (ItemStatus newStatus) =>
+            Navigator.of(context).pop('$_kStatusMenuPrefix${newStatus.value}'),
       ),
     ),
   ];
@@ -77,7 +78,7 @@ class StatusChipRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: glassChipColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(color: AppColors.surfaceBorder),
       ),

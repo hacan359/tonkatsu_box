@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_list_sort_mode.dart';
 import 'package:core/models/xcoll_file.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,21 +37,22 @@ import 'collection_screen.dart';
 import '../../../shared/constants/collection_list_sort_mode_ui.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
 import '../../../shared/widgets/import_progress_dialog.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.navCollections,
-        entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateCollection),
-          ShortcutEntry(keys: 'Ctrl+I', description: l.shortcutImportCollection),
-          ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
-          ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteCollection),
-          ShortcutEntry(keys: 'F2', description: l.shortcutRenameCollection),
-          ShortcutEntry(keys: 'Enter', description: l.openCollection),
-        ],
-      );
+    title: l.navCollections,
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutCreateCollection),
+      ShortcutEntry(keys: 'Ctrl+I', description: l.shortcutImportCollection),
+      ShortcutEntry(keys: 'Ctrl+Shift+V', description: l.shortcutToggleView),
+      ShortcutEntry(keys: 'Delete', description: l.shortcutDeleteCollection),
+      ShortcutEntry(keys: 'F2', description: l.shortcutRenameCollection),
+      ShortcutEntry(keys: 'Enter', description: l.openCollection),
+    ],
+  );
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -60,12 +63,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.watch(collectionsProvider);
+    final AsyncValue<List<Collection>> collectionsAsync = ref.watch(
+      collectionsProvider,
+    );
     final S l = S.of(context);
 
-    final CollectionListSortMode sortMode =
-        ref.watch(collectionListSortProvider);
+    final CollectionListSortMode sortMode = ref.watch(
+      collectionListSortProvider,
+    );
     final bool sortDesc = ref.watch(collectionListSortDescProvider);
     final bool isGridView = ref.watch(collectionListViewModeProvider);
 
@@ -76,14 +81,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Stack(
         children: <Widget>[
           collectionsAsync.when(
-            data: (List<Collection> collections) =>
-                _buildCollectionsList(
-                  context, ref, collections,
-                  sortMode: sortMode,
-                  sortDesc: sortDesc,
-                  isGridView: isGridView,
-                  searchQuery: searchQuery,
-                ),
+            data: (List<Collection> collections) => _buildCollectionsList(
+              context,
+              ref,
+              collections,
+              sortMode: sortMode,
+              sortDesc: sortDesc,
+              isGridView: isGridView,
+              searchQuery: searchQuery,
+            ),
             loading: () => _buildLoadingState(),
             error: (Object error, StackTrace stack) => CollectionErrorState(
               error: error,
@@ -130,30 +136,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(WidgetRef ref) {
     if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
     return <ShortcutActivator, VoidCallback>{
-      const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-          () => _createCollection(context, ref),
-      const SingleActivator(LogicalKeyboardKey.keyI, control: true):
-          () => _importCollection(context, ref),
+      const SingleActivator(LogicalKeyboardKey.keyN, control: true): () =>
+          _createCollection(context, ref),
+      const SingleActivator(LogicalKeyboardKey.keyI, control: true): () =>
+          _importCollection(context, ref),
       const SingleActivator(
         LogicalKeyboardKey.keyV,
         control: true,
         shift: true,
-      ): () => ref.read(collectionListViewModeProvider.notifier).toggle(),
-      const SingleActivator(LogicalKeyboardKey.delete):
-          () {
-            if (_focusedCollection == null) return;
-            _deleteCollection(context, ref, _focusedCollection!);
-          },
-      const SingleActivator(LogicalKeyboardKey.f2):
-          () {
-            if (_focusedCollection == null) return;
-            _renameCollection(context, ref, _focusedCollection!);
-          },
-      const SingleActivator(LogicalKeyboardKey.enter):
-          () {
-            if (_focusedCollection == null) return;
-            _navigateToCollection(context, _focusedCollection!);
-          },
+      ): () =>
+          ref.read(collectionListViewModeProvider.notifier).toggle(),
+      const SingleActivator(LogicalKeyboardKey.delete): () {
+        if (_focusedCollection == null) return;
+        _deleteCollection(context, ref, _focusedCollection!);
+      },
+      const SingleActivator(LogicalKeyboardKey.f2): () {
+        if (_focusedCollection == null) return;
+        _renameCollection(context, ref, _focusedCollection!);
+      },
+      const SingleActivator(LogicalKeyboardKey.enter): () {
+        if (_focusedCollection == null) return;
+        _navigateToCollection(context, _focusedCollection!);
+      },
     };
   }
 
@@ -181,7 +185,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .toList();
     }
 
-    filteredCollections = _sortCollections(filteredCollections, sortMode, sortDesc);
+    filteredCollections = _sortCollections(
+      filteredCollections,
+      sortMode,
+      sortDesc,
+    );
 
     if (isGridView) {
       return _buildGrid(context, ref, filteredCollections, uncategorizedCount);
@@ -195,8 +203,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     bool descending,
   ) {
     final List<Collection> sorted = List<Collection>.of(collections);
-    sorted.sort((Collection a, Collection b) =>
-        mode.compare(a, b, descending: descending));
+    sorted.sort(
+      (Collection a, Collection b) =>
+          mode.compare(a, b, descending: descending),
+    );
     return sorted;
   }
 
@@ -207,21 +217,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     int uncategorizedCount,
   ) {
     final List<Widget> gridItems = <Widget>[
-      if (uncategorizedCount > 0 && ref.read(collectionsSearchQueryProvider).isEmpty)
+      if (uncategorizedCount > 0 &&
+          ref.read(collectionsSearchQueryProvider).isEmpty)
         UncategorizedCard(
           count: uncategorizedCount,
           onTap: () => _navigateToUncategorized(context),
         ),
-      ...collections.map((Collection c) => CollectionCard(
-            collection: c,
-            onTap: () => _navigateToCollection(context, c),
-            onLongPress: () => _showCollectionOptions(context, ref, c),
-            onSecondaryTap: (Offset pos) =>
-                _showCollectionContextMenu(context, ref, c, pos),
-            onFocusChanged: (bool hasFocus) {
-              setState(() => _focusedCollection = hasFocus ? c : null);
-            },
-          )),
+      ...collections.map(
+        (Collection c) => CollectionCard(
+          collection: c,
+          onTap: () => _navigateToCollection(context, c),
+          onLongPress: () => _showCollectionOptions(context, ref, c),
+          onSecondaryTap: (Offset pos) =>
+              _showCollectionContextMenu(context, ref, c, pos),
+          onFocusChanged: (bool hasFocus) {
+            setState(() => _focusedCollection = hasFocus ? c : null);
+          },
+        ),
+      ),
     ];
 
     return FocusTraversalGroup(
@@ -257,7 +270,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     int uncategorizedCount,
   ) {
     final int offset =
-        (uncategorizedCount > 0 && ref.read(collectionsSearchQueryProvider).isEmpty) ? 1 : 0;
+        (uncategorizedCount > 0 &&
+            ref.read(collectionsSearchQueryProvider).isEmpty)
+        ? 1
+        : 0;
 
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
@@ -311,9 +327,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: AppSpacing.md),
             Text(
               l.collectionsNoCollectionsYet,
-              style: AppTypography.h2.copyWith(
-                color: AppColors.textTertiary,
-              ),
+              style: AppTypography.h2.copyWith(color: AppColors.textTertiary),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -332,9 +346,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _navigateToCollection(BuildContext context, Collection collection) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => CollectionScreen(
-          collectionId: collection.id,
-        ),
+        builder: (BuildContext context) =>
+            CollectionScreen(collectionId: collection.id),
       ),
     );
   }
@@ -342,34 +355,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _navigateToUncategorized(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => const CollectionScreen(
-          collectionId: null,
-        ),
+        builder: (BuildContext context) =>
+            const CollectionScreen(collectionId: null),
       ),
     );
   }
 
   Future<void> _createCollection(BuildContext context, WidgetRef ref) async {
-    final CreateCollectionResult? result =
-        await CreateCollectionDialog.show(context);
+    final CreateCollectionResult? result = await CreateCollectionDialog.show(
+      context,
+    );
 
     if (result == null) return;
 
     try {
       final String author = ref.read(settingsNotifierProvider).authorName;
-      final Collection collection =
-          await ref.read(collectionsProvider.notifier).create(
-                name: result.name,
-                author: author,
-                isHidden: result.isHidden,
-              );
+      final Collection collection = await ref
+          .read(collectionsProvider.notifier)
+          .create(name: result.name, author: author, isHidden: result.isHidden);
 
       if (context.mounted) {
         _navigateToCollection(context, collection);
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack(S.of(context).collectionsFailedToCreate('$e'), type: SnackType.error);
+        context.showSnack(
+          S.of(context).collectionsFailedToCreate('$e'),
+          type: SnackType.error,
+        );
       }
     }
   }
@@ -428,7 +441,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 'import':
         await _importCollection(context, ref);
       case 'toggle_view':
-        ref.read(collectionListViewModeProvider.notifier).toggle();
+        unawaited(ref.read(collectionListViewModeProvider.notifier).toggle());
     }
   }
 
@@ -484,14 +497,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         PopupMenuItem<String>(
           value: 'delete',
           child: ListTile(
-            leading: Icon(
-              Icons.delete,
-              color: AppColors.error,
-            ),
-            title: Text(
-              l.delete,
-              style: TextStyle(color: AppColors.error),
-            ),
+            leading: Icon(Icons.delete, color: AppColors.error),
+            title: Text(l.delete, style: TextStyle(color: AppColors.error)),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -505,10 +512,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 'rename':
         await _renameCollection(context, ref, collection);
       case 'hide':
-        await ref.read(collectionsProvider.notifier).setHidden(
-              collection.id,
-              isHidden: !collection.isHidden,
-            );
+        await ref
+            .read(collectionsProvider.notifier)
+            .setHidden(collection.id, isHidden: !collection.isHidden);
       case 'delete':
         await _deleteCollection(context, ref, collection);
     }
@@ -519,7 +525,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetRef ref,
     Collection collection,
   ) {
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       builder: (BuildContext context) {
         final S l = S.of(context);
@@ -555,10 +561,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 onTap: () async {
                   Navigator.of(context).pop();
-                  await ref.read(collectionsProvider.notifier).setHidden(
-                        collection.id,
-                        isHidden: !collection.isHidden,
-                      );
+                  await ref
+                      .read(collectionsProvider.notifier)
+                      .setHidden(collection.id, isHidden: !collection.isHidden);
                 },
               ),
               ListTile(
@@ -590,13 +595,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) async {
     final _SortChoice? choice = await showDialog<_SortChoice>(
       context: context,
-      builder: (BuildContext context) => _SortDialog(
-        initialMode: currentMode,
-        initialDescending: descending,
-      ),
+      builder: (BuildContext context) =>
+          _SortDialog(initialMode: currentMode, initialDescending: descending),
     );
     if (choice == null) return;
-    await ref.read(collectionListSortProvider.notifier).setSortMode(choice.mode);
+    await ref
+        .read(collectionListSortProvider.notifier)
+        .setSortMode(choice.mode);
     await ref
         .read(collectionListSortDescProvider.notifier)
         .setDescending(descending: choice.descending);
@@ -608,16 +613,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Collection collection,
   ) async {
     try {
-      final bool changed =
-          await EditCollectionDialog.show(context, collection);
+      final bool changed = await EditCollectionDialog.show(context, collection);
       if (!changed) return;
 
       if (context.mounted) {
-        context.showSnack(S.of(context).collectionsRenamed, type: SnackType.success);
+        context.showSnack(
+          S.of(context).collectionsRenamed,
+          type: SnackType.success,
+        );
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack(S.of(context).collectionsFailedToRename('$e'), type: SnackType.error);
+        context.showSnack(
+          S.of(context).collectionsFailedToRename('$e'),
+          type: SnackType.error,
+        );
       }
     }
   }
@@ -641,11 +651,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await ref.read(collectionsProvider.notifier).delete(collection.id);
 
       if (context.mounted) {
-        context.showSnack(S.of(context).collectionsDeleted, type: SnackType.success);
+        context.showSnack(
+          S.of(context).collectionsDeleted,
+          type: SnackType.success,
+        );
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack(S.of(context).collectionsFailedToDelete('$e'), type: SnackType.error);
+        context.showSnack(
+          S.of(context).collectionsFailedToDelete('$e'),
+          type: SnackType.error,
+        );
       }
     }
   }
@@ -673,34 +689,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // null = cancelled, 0 = create new, >0 = existing collection id
     if (targetCollectionId == null || !context.mounted) return;
 
-    final int? collectionId =
-        targetCollectionId == 0 ? null : targetCollectionId;
+    final int? collectionId = targetCollectionId == 0
+        ? null
+        : targetCollectionId;
 
     final ValueNotifier<ImportProgress?> progressNotifier =
         ValueNotifier<ImportProgress?>(null);
 
     ImportResult? importResult;
 
-    final Future<ImportResult> importFuture = importService.importFromXcoll(
-      xcoll,
-      collectionId: collectionId,
-      onProgress: (ImportProgress progress) {
-        progressNotifier.value = progress;
-      },
-    ).then((ImportResult result) {
-      importResult = result;
-      return result;
-    });
+    final Future<ImportResult> importFuture = importService
+        .importFromXcoll(
+          xcoll,
+          collectionId: collectionId,
+          onProgress: (ImportProgress progress) {
+            progressNotifier.value = progress;
+          },
+        )
+        .then((ImportResult result) {
+          importResult = result;
+          return result;
+        });
 
     final bool? dialogResult = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) =>
           ImportProgressDialog<ImportResult>(
-        title: S.of(context).collectionsImporting,
-        progressNotifier: progressNotifier,
-        importFuture: importFuture,
-      ),
+            title: S.of(context).collectionsImporting,
+            progressNotifier: progressNotifier,
+            importFuture: importFuture,
+          ),
     );
 
     progressNotifier.dispose();
@@ -725,13 +744,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.invalidate(itemTagsProvider);
 
       final StringBuffer message = StringBuffer(
-        S.of(context).collectionsImported(
-          result.collection!.name,
-          result.itemsImported ?? 0,
-        ),
+        S
+            .of(context)
+            .collectionsImported(
+              result.collection!.name,
+              result.itemsImported ?? 0,
+            ),
       );
       if (result.itemsUpdated > 0) {
-        message.write(', ${S.of(context).steamImportUpdated(result.itemsUpdated)}');
+        message.write(
+          ', ${S.of(context).steamImportUpdated(result.itemsUpdated)}',
+        );
       }
       if (result.customSkipped > 0) {
         message.write(
@@ -777,7 +800,7 @@ class _SortDialogState extends State<_SortDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.sort),
       scrollable: true,
       content: Column(
@@ -810,17 +833,13 @@ class _SortDialogState extends State<_SortDialog> {
             child: Column(
               children: <Widget>[
                 RadioListTile<bool>(
-                  title: Text(
-                    _mode.localizedDescription(l, descending: false),
-                  ),
+                  title: Text(_mode.localizedDescription(l, descending: false)),
                   value: false,
                   contentPadding: EdgeInsets.zero,
                   dense: true,
                 ),
                 RadioListTile<bool>(
-                  title: Text(
-                    _mode.localizedDescription(l, descending: true),
-                  ),
+                  title: Text(_mode.localizedDescription(l, descending: true)),
                   value: true,
                   contentPadding: EdgeInsets.zero,
                   dense: true,
@@ -863,7 +882,7 @@ class _ImportTargetDialogState extends State<_ImportTargetDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(l.importTargetTitle),
       content: Column(
@@ -903,9 +922,7 @@ class _ImportTargetDialogState extends State<_ImportTargetDialog> {
           ),
           if (!_createNew)
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: widget.collections.when(
                 data: (List<Collection> collections) {
                   if (collections.isEmpty) {
@@ -920,12 +937,10 @@ class _ImportTargetDialogState extends State<_ImportTargetDialog> {
                     value: _selectedId,
                     hint: l.importSelectCollection,
                     title: l.importSelectCollection,
-                    onChanged: (int? id) =>
-                        setState(() => _selectedId = id),
+                    onChanged: (int? id) => setState(() => _selectedId = id),
                   );
                 },
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (Object e, StackTrace s) => Text(
                   l.importErrorLoadingCollections,
                   style: AppTypography.bodySmall.copyWith(
@@ -943,9 +958,7 @@ class _ImportTargetDialogState extends State<_ImportTargetDialog> {
         ),
         FilledButton(
           onPressed: _createNew || _selectedId != null
-              ? () => Navigator.of(context).pop(
-                    _createNew ? 0 : _selectedId,
-                  )
+              ? () => Navigator.of(context).pop(_createNew ? 0 : _selectedId)
               : null,
           child: Text(l.importStartButton),
         ),

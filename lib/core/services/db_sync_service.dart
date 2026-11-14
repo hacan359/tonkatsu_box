@@ -63,10 +63,9 @@ class SyncSnapshotInfo {
 /// "send" writes a snapshot, "inspect" validates, "receive" swaps it in.
 class DbSyncService {
   DbSyncService({
-    required DatabaseService database,
-    Future<SyncDeviceMeta> Function()? metaProvider,
-  })  : _database = database,
-        _metaProvider = metaProvider;
+    required this._database,
+    this._metaProvider,
+  });
 
   static const String snapshotFileName = 'xerabora-sync.db';
 
