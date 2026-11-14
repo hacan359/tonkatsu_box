@@ -15,7 +15,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.hacan359.tonkatsubox"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler 13 compiles against 37; Flutter 3.50 defaults to 36.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

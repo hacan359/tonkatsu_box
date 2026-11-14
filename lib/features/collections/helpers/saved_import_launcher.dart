@@ -30,6 +30,7 @@ import '../../settings/screens/igdb_list_import_screen.dart';
 import '../../settings/screens/ra_import_screen.dart';
 import '../../settings/screens/simkl_import_screen.dart';
 import '../../settings/screens/steam_import_screen.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 sealed class SavedImportLaunch {
   const SavedImportLaunch();
@@ -301,20 +302,17 @@ abstract final class SavedImportLauncher {
   static String? _nonBlank(String? value) =>
       value == null || value.trim().isEmpty ? null : value;
 
-  // Android's FileType.custom does not filter custom extensions, and the
-  // browser only ever hands out bytes, so one withData path serves them all.
+  // Android's FileType.custom does not filter custom extensions.
   static Future<Uint8List?> _pickBytes(
     String dialogTitle,
     List<String> extensions,
   ) async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       dialogTitle: dialogTitle,
       type: kIsMobile ? FileType.any : FileType.custom,
       allowedExtensions: kIsMobile ? null : extensions,
-      allowMultiple: false,
-      withData: true,
     );
-    if (result == null || result.files.isEmpty) return null;
-    return result.files.single.bytes;
+    if (picked == null) return null;
+    return picked.readBytesOrNull();
   }
 }

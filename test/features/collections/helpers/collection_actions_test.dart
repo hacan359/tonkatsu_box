@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/steamgriddb_image.dart';
@@ -900,11 +902,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        CollectionActions.deleteCollection(
+        unawaited(CollectionActions.deleteCollection(
           context: _capturedContext!,
           ref: _capturedRef!,
           collection: testCollection,
-        );
+        ));
         await tester.pumpAndSettle();
 
         final Finder deleteButton = find.widgetWithText(TextButton, 'Delete');

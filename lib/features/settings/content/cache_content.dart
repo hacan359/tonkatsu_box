@@ -116,7 +116,7 @@ class _CacheContentState extends ConsumerState<CacheContent> {
 
   Future<void> _selectCacheFolder(ImageCacheService cacheService) async {
     final String? selectedDirectory =
-        await FilePicker.platform.getDirectoryPath(
+        await FilePicker.getDirectoryPath(
       dialogTitle: S.of(context).cacheSelectFolderDialog,
     );
 

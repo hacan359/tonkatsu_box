@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:core/models/collection.dart';
@@ -22,6 +21,7 @@ import '../../collections/providers/collections_provider.dart';
 import '../providers/settings_provider.dart';
 import '../screens/custom_cards_preview_screen.dart';
 import '../widgets/settings_group.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 /// Flow: JSON/CSV file pick → parse + validate → target collection →
 /// preview screen with per-row checkboxes → import.
@@ -263,19 +263,14 @@ class _CustomCardsImportContentState
     final S l = S.of(context);
     // Android's SAF does not reliably filter custom extensions.
     final bool useAny = kIsMobile;
-    // withData: the browser only ever hands out bytes, and reading them at
-    // pick time keeps one code path for every platform.
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       dialogTitle: l.customImportSelectFile,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['json', 'csv'],
-      allowMultiple: false,
-      withData: true,
     );
 
-    if (result == null || result.files.isEmpty) return;
-    final PlatformFile picked = result.files.single;
-    final Uint8List? bytes = picked.bytes;
+    if (picked == null) return;
+    final Uint8List? bytes = await picked.readBytesOrNull();
     if (bytes == null || !mounted) return;
 
     final CustomCardsImportService service =
@@ -300,26 +295,12 @@ class _CustomCardsImportContentState
     required String extension,
   }) async {
     final S l = S.of(context);
-    final String? path = await FilePicker.platform.saveFile(
+    final String? path = await saveBytesWithDialog(
       dialogTitle: fileName,
       fileName: fileName,
-      type: FileType.custom,
-      allowedExtensions: <String>[extension],
-      // On Android/iOS the picker writes the bytes itself; on web this is a
-      // browser download that answers null.
       bytes: utf8.encode(content),
     );
-    if (kIsWebBuild) {
-      if (mounted) context.showSnack(l.customImportTemplateSaved);
-      return;
-    }
     if (path == null || !mounted) return;
-
-    // On desktop saveFile only returns the path; write the content ourselves.
-    if (!kIsMobile) {
-      await File(path).writeAsString(content);
-    }
-    if (!mounted) return;
     context.showSnack(l.customImportTemplateSaved);
   }
 

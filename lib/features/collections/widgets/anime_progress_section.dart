@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/anime.dart';
 import 'package:core/models/item_mark.dart';
 import 'package:material_ui/material_ui.dart';
@@ -163,9 +165,9 @@ class AnimeProgressSection extends ConsumerWidget {
       final int? value = int.tryParse(result);
       if (value != null && value >= 0) {
         final int clamped = total != null && value > total ? total : value;
-        ref
+        unawaited(ref
             .read(collectionItemsNotifierProvider(collectionId).notifier)
-            .updateProgress(itemId, currentEpisode: clamped);
+            .updateProgress(itemId, currentEpisode: clamped));
       }
     }
     controller.dispose();

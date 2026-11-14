@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:calendar_view/calendar_view.dart';
 import 'package:core/models/media_type.dart';
 import 'package:material_ui/material_ui.dart';
@@ -594,7 +596,7 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     if (picked == null || !mounted) return;
     final DateTime day = _dateOnly(picked);
     if (_view == _CalendarView.month) {
-      _monthKey.currentState?.animateToMonth(DateTime(day.year, day.month));
+      unawaited(_monthKey.currentState?.animateToMonth(DateTime(day.year, day.month)));
     }
     setState(() {
       _focusedDay = day;

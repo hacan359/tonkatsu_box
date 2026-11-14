@@ -13,6 +13,7 @@ import '../selfhost/server_origin.dart';
 import 'image_cache_service.dart';
 import 'image_extension.dart';
 import 'storage_root.dart';
+import '../../shared/services/file_dialogs.dart';
 
 /// Overridden in `main.dart` with the value resolved at app startup.
 final Provider<String> collectionsHeroDirProvider = Provider<String>(
@@ -119,15 +120,11 @@ class CollectionHeroService {
     required int collectionId,
     String? oldFileName,
   }) async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       type: FileType.image,
       dialogTitle: 'Cover image',
-      // A browser pick has no path — the bytes are all there is.
-      withData: kIsWebBuild,
     );
-    if (result == null || result.files.isEmpty) return null;
-
-    final PlatformFile picked = result.files.first;
+    if (picked == null) return null;
 
     final String ext = (picked.extension ?? p.extension(picked.name))
         .replaceFirst('.', '')
@@ -136,9 +133,11 @@ class CollectionHeroService {
     final int ts = DateTime.now().millisecondsSinceEpoch;
     final String fileName = 'hero_${collectionId}_$ts.$safeExt';
 
+    // Bytes, not the path: an Android pick can be a content URI with no path.
+    final Uint8List? bytes = await picked.readBytesOrNull();
+    if (bytes == null || bytes.isEmpty) return null;
+
     if (kIsWebBuild) {
-      final Uint8List? bytes = picked.bytes;
-      if (bytes == null || bytes.isEmpty) return null;
       final bool ok =
           await _imageCache?.saveImageBytes(
             ImageType.collectionHero,
@@ -152,12 +151,10 @@ class CollectionHeroService {
       return ok ? fileName : null;
     }
 
-    final String? sourcePath = picked.path;
-    if (sourcePath == null) return null;
     final String target = absolutePathFor(fileName);
 
     try {
-      await File(sourcePath).copy(target);
+      await File(target).writeAsBytes(bytes);
     } on FileSystemException catch (e) {
       _log.warning('Failed to copy hero image: ${e.message}', e);
       return null;

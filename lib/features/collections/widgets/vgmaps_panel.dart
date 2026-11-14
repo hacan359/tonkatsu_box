@@ -229,7 +229,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     }
 
     // Strategy 3: postMessage via JS injection.
-    _controller.executeScript(_captureMapScript);
+    unawaited(_controller.executeScript(_captureMapScript));
   }
 
   /// Bypasses JS execution in the WebView entirely, so it works even when

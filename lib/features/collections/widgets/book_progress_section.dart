@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/book.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,9 +135,9 @@ class BookProgressSection extends ConsumerWidget {
       final int? value = int.tryParse(result);
       if (value != null && value >= 0) {
         final int clamped = total != null && value > total ? total : value;
-        ref
+        unawaited(ref
             .read(collectionItemsNotifierProvider(collectionId).notifier)
-            .updateProgress(itemId, currentEpisode: clamped);
+            .updateProgress(itemId, currentEpisode: clamped));
       }
     }
     controller.dispose();

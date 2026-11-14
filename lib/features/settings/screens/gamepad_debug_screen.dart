@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +17,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/frame_page.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 const int _maxEvents = 100;
 
@@ -158,21 +158,12 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     final String content = buffer.toString();
 
     try {
-      // On Android FileType.custom doesn't support custom extensions.
-      final bool useAny = Platform.isAndroid || Platform.isIOS;
-      final String? outputPath = await FilePicker.platform.saveFile(
+      final String? outputPath = await saveBytesWithDialog(
         dialogTitle: l.debugExportLog,
         fileName: 'gamepad_log.txt',
-        type: useAny ? FileType.any : FileType.custom,
-        allowedExtensions: useAny ? null : <String>['txt'],
         bytes: utf8.encode(content),
       );
       if (outputPath == null) return;
-      // On Android/iOS file_picker writes the bytes via SAF;
-      // on desktop the file must be written manually.
-      if (!Platform.isAndroid && !Platform.isIOS) {
-        await File(outputPath).writeAsString(content);
-      }
       if (mounted) {
         context.showSnack(
           l.debugLogExported(outputPath),

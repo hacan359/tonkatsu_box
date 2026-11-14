@@ -45,12 +45,11 @@ class WallpaperService {
   }
 
   static Future<String?> _defaultPick(String dialogTitle) async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       type: FileType.image,
       dialogTitle: dialogTitle,
     );
-    if (result == null || result.files.isEmpty) return null;
-    return result.files.first.path;
+    return picked?.path;
   }
 
   /// Returns the saved copy's path, or null on cancel. [oldPath] is removed

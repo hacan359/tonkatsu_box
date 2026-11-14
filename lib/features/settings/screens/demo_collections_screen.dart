@@ -178,7 +178,7 @@ class _DemoCollectionsScreenState
   }
 
   Future<void> _pickDirectoryAndGenerate() async {
-    final String? dir = await FilePicker.platform.getDirectoryPath(
+    final String? dir = await FilePicker.getDirectoryPath(
       dialogTitle: 'Select output folder for .xcollx files',
     );
     if (dir == null) return;

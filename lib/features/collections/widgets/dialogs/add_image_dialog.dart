@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
 import '../../../../shared/widgets/glass_dialog.dart';
+import '../../../../shared/services/file_dialogs.dart';
 
 enum _ImageSource { url, file }
 
@@ -68,17 +69,13 @@ class _AddImageDialogState extends State<AddImageDialog> {
   }
 
   Future<void> _pickFile() async {
-    // withData: the browser only ever hands out bytes, and the canvas stores
-    // the image as base64 anyway.
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? file = await FilePicker.pickFile(
       type: FileType.image,
-      withData: true,
     );
 
-    if (result == null || result.files.isEmpty) return;
+    if (file == null) return;
 
-    final PlatformFile file = result.files.first;
-    final Uint8List? bytes = file.bytes;
+    final Uint8List? bytes = await file.readBytesOrNull();
     if (bytes == null) return;
 
     final String base64String = base64Encode(bytes);

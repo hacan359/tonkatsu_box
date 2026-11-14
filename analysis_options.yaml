@@ -115,6 +115,7 @@ linter:
     avoid_void_async: true
     avoid_futureor_void: true
     throw_in_finally: true
+    unawaited_futures: true
 
     # Web build: minified type names and conditional imports
     avoid_type_to_string: true
