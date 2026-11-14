@@ -37,6 +37,7 @@ import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 import '../../../shared/widgets/import_progress_dialog.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 /// Flow: CSV file pick → options (status, platform, target) → import progress.
 class IgdbListImportContent extends ConsumerStatefulWidget {
@@ -395,20 +396,15 @@ class _IgdbListImportContentState extends ConsumerState<IgdbListImportContent> {
   Future<void> _pickFile() async {
     // Android's FileType.custom does not filter custom extensions.
     final bool useAny = kIsMobile;
-    // withData: the browser only ever hands out bytes, and reading them at
-    // pick time keeps one code path for every platform.
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       dialogTitle: S.of(context).igdbImportSelectCsvExport,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['csv'],
-      allowMultiple: false,
-      withData: true,
     );
 
-    if (result == null || result.files.isEmpty) return;
+    if (picked == null) return;
 
-    final PlatformFile picked = result.files.single;
-    final Uint8List? bytes = picked.bytes;
+    final Uint8List? bytes = await picked.readBytesOrNull();
     if (bytes == null) return;
 
     setState(() {

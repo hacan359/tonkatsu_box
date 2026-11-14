@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_list_sort_mode.dart';
 import 'package:core/models/xcoll_file.dart';
@@ -439,7 +441,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 'import':
         await _importCollection(context, ref);
       case 'toggle_view':
-        ref.read(collectionListViewModeProvider.notifier).toggle();
+        unawaited(ref.read(collectionListViewModeProvider.notifier).toggle());
     }
   }
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:core/models/profile.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
@@ -68,6 +67,7 @@ import '../../../shared/constants/rich_hero_style.dart';
 import '../../../shared/constants/rich_hero_style_ui.dart';
 import '../../../shared/widgets/glass_dialog.dart';
 import '../../../shared/widgets/poster_look.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 /// Breakpoint for switching content width.
 const double _desktopBreakpoint = 800;
@@ -1265,24 +1265,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _handleRestore(BuildContext context, WidgetRef ref, S l) async {
-    // withData only on web: the browser has no paths; desktop/Android read
-    // from the path so a large archive is never held in memory twice.
     final bool useAny = kIsMobile;
-    final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+    final PlatformFile? pickedFile = await FilePicker.pickFile(
       dialogTitle: l.settingsRestoreBackup,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['zip'],
-      allowMultiple: false,
-      withData: kIsWebBuild,
     );
 
-    if (picked == null || picked.files.isEmpty) return;
-    final PlatformFile pickedFile = picked.files.first;
-    final Uint8List? zipBytes = kIsWebBuild
-        ? pickedFile.bytes
-        : (pickedFile.path == null
-              ? null
-              : await File(pickedFile.path!).readAsBytes());
+    if (pickedFile == null) return;
+    final Uint8List? zipBytes = await pickedFile.readBytesOrNull();
     if (zipBytes == null) return;
 
     // 2. Read the manifest.

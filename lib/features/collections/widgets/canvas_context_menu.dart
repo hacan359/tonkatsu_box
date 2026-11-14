@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/canvas_item.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -185,7 +187,7 @@ class CanvasContextMenu {
         onEdit?.call();
       case 'delete':
         if (!context.mounted) return;
-        _showDeleteConfirmation(context, onDelete);
+        unawaited(_showDeleteConfirmation(context, onDelete));
       case 'connect':
         onConnect?.call();
       case 'bring_to_front':
@@ -240,7 +242,7 @@ class CanvasContextMenu {
         onEdit();
       case 'delete':
         if (!context.mounted) return;
-        _showDeleteConfirmation(context, onDelete);
+        unawaited(_showDeleteConfirmation(context, onDelete));
     }
   }
 

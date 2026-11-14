@@ -34,6 +34,7 @@ import 'custom_item/custom_item_data.dart';
 import 'custom_item/multi_select_genre_dialog.dart';
 import 'custom_item/searchable_list_dialog.dart';
 import '../../../shared/constants/media_type_ui.dart';
+import '../../../shared/services/file_dialogs.dart';
 export 'custom_item/custom_item_data.dart' show CustomItemData;
 
 /// Full-screen create / edit form for a custom collection item.
@@ -289,18 +290,13 @@ class _CreateCustomItemDialogState
     final S l = S.of(context);
     // Mobile pickers don't reliably filter custom extensions (SAF/UTI).
     final bool useAny = kIsMobile;
-    // withData: the browser only ever hands out bytes, and reading them at
-    // pick time keeps one code path for every platform.
-    final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+    final PlatformFile? file = await FilePicker.pickFile(
       dialogTitle: l.customItemFillFromFile,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['json', 'csv'],
-      allowMultiple: false,
-      withData: true,
     );
-    if (picked == null || picked.files.isEmpty) return;
-    final PlatformFile file = picked.files.single;
-    final Uint8List? bytes = file.bytes;
+    if (file == null) return;
+    final Uint8List? bytes = await file.readBytesOrNull();
     if (bytes == null || !mounted) return;
 
     final List<CustomCardRow> rows;

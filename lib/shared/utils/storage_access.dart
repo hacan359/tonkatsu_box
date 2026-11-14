@@ -47,7 +47,7 @@ Future<String?> pickRawFolder(
   required String dialogTitle,
 }) async {
   if (!kIsMobile) {
-    return FilePicker.platform.getDirectoryPath(dialogTitle: dialogTitle);
+    return FilePicker.getDirectoryPath(dialogTitle: dialogTitle);
   }
 
   final S l10n = S.of(context);

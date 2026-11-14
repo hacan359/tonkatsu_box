@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/media_type.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -180,13 +182,13 @@ class CustomProgressSection extends ConsumerWidget {
         if (value != null && value >= 0) {
           final int clamped = total != null && value > total ? total : value;
           if (isGroup) {
-            ref
+            unawaited(ref
                 .read(collectionItemsNotifierProvider(collectionId).notifier)
-                .updateProgress(itemId, currentSeason: clamped);
+                .updateProgress(itemId, currentSeason: clamped));
           } else {
-            ref
+            unawaited(ref
                 .read(collectionItemsNotifierProvider(collectionId).notifier)
-                .updateProgress(itemId, currentEpisode: clamped);
+                .updateProgress(itemId, currentEpisode: clamped));
           }
         }
       }

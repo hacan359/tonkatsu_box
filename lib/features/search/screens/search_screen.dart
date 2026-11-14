@@ -131,7 +131,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (infos.isEmpty || !mounted) return;
 
     if (infos.length == 1) {
-      _navigateToItemDetail(infos.first);
+      unawaited(_navigateToItemDetail(infos.first));
       return;
     }
 
@@ -186,7 +186,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       },
     );
     if (chosen != null && mounted) {
-      _navigateToItemDetail(chosen);
+      unawaited(_navigateToItemDetail(chosen));
     }
   }
 

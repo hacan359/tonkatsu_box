@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/item_mark.dart';
 import 'package:core/models/manga.dart';
 import 'package:material_ui/material_ui.dart';
@@ -193,13 +195,13 @@ class MangaProgressSection extends ConsumerWidget {
       if (value != null && value >= 0) {
         final int clamped = total != null && value > total ? total : value;
         if (isChapter) {
-          ref
+          unawaited(ref
               .read(collectionItemsNotifierProvider(collectionId).notifier)
-              .updateProgress(itemId, currentEpisode: clamped);
+              .updateProgress(itemId, currentEpisode: clamped));
         } else {
-          ref
+          unawaited(ref
               .read(collectionItemsNotifierProvider(collectionId).notifier)
-              .updateProgress(itemId, currentSeason: clamped);
+              .updateProgress(itemId, currentSeason: clamped));
         }
       }
     }

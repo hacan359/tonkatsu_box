@@ -705,9 +705,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final DatabaseService db = ref.read(databaseServiceProvider);
     await db.customMediaDao.update(updated);
 
-    ref
+    unawaited(ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .refresh();
+        .refresh());
     // The edit can change display type / platform / format, which drive the
     // All Items filters — reload so it re-buckets instead of staying stale.
     ref.invalidate(allItemsNotifierProvider);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection_item.dart';
 import 'package:core/utils/anime_manga_title_language.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1375,7 +1377,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
         clientId: ApiDefaults.igdbClientId,
         clientSecret: ApiDefaults.igdbClientSecret,
       );
-      Future<void>.microtask(_autoVerifyConnection);
+      unawaited(Future<void>.microtask(_autoVerifyConnection));
     } else {
       _igdbApi.clearCredentials();
       state = state.copyWith(

@@ -11,6 +11,7 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
 import '../../../../shared/widgets/glass_dialog.dart';
 import '../../../../shared/widgets/glass_panel.dart';
+import '../../../../shared/services/file_dialogs.dart';
 
 /// Result of [pickCustomCoverImage]. Either picked bytes or a URL — never
 /// both, since picking one clears the other.
@@ -97,13 +98,11 @@ Future<CoverPickResult?> pickCustomCoverImage(
   }
 
   if (choice == 'file') {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       type: FileType.image,
-      allowMultiple: false,
-      withData: true,
     );
-    if (result == null || result.files.isEmpty) return null;
-    final Uint8List? bytes = result.files.first.bytes;
+    if (picked == null) return null;
+    final Uint8List? bytes = await picked.readBytesOrNull();
     if (bytes == null) return null;
     return CoverPickResult.file(bytes);
   }

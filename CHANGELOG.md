@@ -190,6 +190,36 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Flutter 3.50, Dart 3.14 and current package versions**
+
+  The app builds on Flutter 3.50 with Material widgets from the `material_ui`
+  package. Save dialogs write the file themselves on every platform, and a
+  name typed without its extension gets the extension added on desktop.
+
+  * pubspec.yaml: Dart `^3.14.0`, Flutter `>=3.50.0`; adds `material_ui`; moves
+    `file_picker` to 13, `device_info_plus` to 13, `package_info_plus` to 10,
+    `sensors_plus` to 7, `permission_handler` to 13, `android_intent_plus` to 6,
+    `cached_network_image` to 4, `xml` to 7, `trina_grid` to 2.4 and
+    `shadcn_ui` to 0.57.
+  * packages/core/pubspec.yaml, server/pubspec.yaml: Dart `^3.14.0`.
+  * android/settings.gradle.kts, android/gradle/wrapper/gradle-wrapper.properties,
+    android/gradle.properties, android/app/build.gradle.kts: Gradle 9.5.0,
+    Android Gradle Plugin 9.3.1, Kotlin 2.4.20, compile SDK 37.
+  * analysis_options.yaml: Adds `unawaited_futures` and the async, web and
+    likely-mistake rule groups; drops `avoid_null_checks_in_equality_operators`.
+  * lib/shared/services/file_dialogs.dart (saveBytesWithDialog,
+    PickedFileBytes.readBytesOrNull): New; every save and pick site goes
+    through them.
+  * lib/shared/constants/localization_delegates.dart
+    (kAppLocalizationsDelegates): New.
+  * lib/shared/widgets/legacy_material_bridge.dart (LegacyMaterialBridge),
+    lib/features/collections/widgets/collection_table/legacy_grid_scope.dart
+    (LegacyGridScope): New; theme and Material ancestors for packages still
+    built on the in-SDK Material library.
+  * lib/features/collections/widgets/collection_table/table_style.dart
+    (collectionTableConfiguration): Column resize grip and sort arrows sit at
+    the column edge instead of over the header text.
+
 - **Author review on the wide item card**
 
   The two-column item card shows the author review under the notes.

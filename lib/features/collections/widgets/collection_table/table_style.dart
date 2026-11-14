@@ -49,9 +49,61 @@ TrinaGridConfiguration collectionTableConfiguration({required bool isRu}) {
         fontSize: 10.5,
       ),
       cellTextStyle: AppTypography.body,
+      // The stock glyphs sit 12px inside the header and cover short titles.
+      columnResizeWidget: const _HeaderEdge(child: _ResizeGrip()),
+      columnAscendingIcon: _HeaderEdge(
+        child: Icon(
+          Icons.arrow_upward,
+          size: _sortIconSize,
+          color: AppColors.brand,
+        ),
+      ),
+      columnDescendingIcon: _HeaderEdge(
+        child: Icon(
+          Icons.arrow_downward,
+          size: _sortIconSize,
+          color: AppColors.brand,
+        ),
+      ),
       rowHeight: 72,
       columnHeight: 40,
       columnFilterHeight: 40,
     ),
   );
+}
+
+const double _sortIconSize = 14;
+
+// The grid centres its header icon in a box that ends 12px before the column
+// edge; this shift moves the content out to the edge itself.
+const double _headerEdgeShift = 10;
+
+class _HeaderEdge extends StatelessWidget {
+  const _HeaderEdge({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(_headerEdgeShift, 0),
+      child: Align(alignment: Alignment.centerRight, child: child),
+    );
+  }
+}
+
+class _ResizeGrip extends StatelessWidget {
+  const _ResizeGrip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 2,
+      height: 14,
+      decoration: BoxDecoration(
+        color: AppColors.textPrimary.withAlpha(40),
+        borderRadius: BorderRadius.circular(1),
+      ),
+    );
+  }
 }
