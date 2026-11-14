@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +10,7 @@ import 'package:tonkatsu_box/features/settings/widgets/inline_text_field.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
 import 'package:tonkatsu_box/features/settings/widgets/status_dot.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 void main() {
   group('CredentialsScreen', () {
@@ -27,7 +28,7 @@ void main() {
           apiKeysProvider.overrideWithValue(const ApiKeys()),
         ],
         child: MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: CredentialsScreen(isInitialSetup: isInitialSetup),

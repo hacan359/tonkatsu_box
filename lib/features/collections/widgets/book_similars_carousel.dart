@@ -1,6 +1,6 @@
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';

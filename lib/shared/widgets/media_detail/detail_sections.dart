@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'media_detail_chip.dart';
 import 'progress_tiles.dart';

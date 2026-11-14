@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +11,7 @@ import 'package:tonkatsu_box/features/welcome/widgets/welcome_step_menu_tour.dar
 import 'package:tonkatsu_box/features/welcome/widgets/welcome_step_name.dart';
 import 'package:tonkatsu_box/features/welcome/widgets/welcome_step_sources.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -26,7 +27,7 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: WelcomeScreen(fromSettings: fromSettings),
       ),
@@ -177,7 +178,7 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
             ],
             child: const MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               home: MediaQuery(
                 data: MediaQueryData(size: Size(500, 800)),
@@ -220,7 +221,7 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               home: Builder(
                 builder: (BuildContext context) {

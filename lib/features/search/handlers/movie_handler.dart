@@ -1,7 +1,7 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
@@ -16,12 +16,10 @@ import '../../../shared/widgets/glass_dialog.dart';
 /// check unions both: the same TMDB id may live under either media type.
 class MovieHandler implements MediaActionHandler {
   MovieHandler({
-    required WidgetRef ref,
-    required SearchCollectionAdder adder,
-    required Set<int> Function() targetCollections,
-  }) : _ref = ref,
-       _adder = adder,
-       _targetCollections = targetCollections;
+    required this._ref,
+    required this._adder,
+    required this._targetCollections,
+  });
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;

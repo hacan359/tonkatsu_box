@@ -5,7 +5,7 @@ import 'package:core/models/collection.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,6 +17,7 @@ import 'package:tonkatsu_box/features/settings/screens/import_result_screen.dart
 import 'package:tonkatsu_box/features/settings/screens/kinorium_import_screen.dart';
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 import 'package:tonkatsu_box/core/database/database_service.dart';
 
@@ -159,7 +160,7 @@ void main() {
     return ProviderScope(
       overrides: overrides,
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: const Locale('en'),
         home: Navigator(

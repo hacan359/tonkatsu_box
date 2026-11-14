@@ -4,7 +4,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/tag.dart';
 import 'package:core/utils/item_search.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';

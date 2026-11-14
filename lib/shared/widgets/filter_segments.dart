@@ -1,5 +1,5 @@
 import 'package:core/models/item_status.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart' show SemanticsRole;
 
 import '../../l10n/app_localizations.dart';

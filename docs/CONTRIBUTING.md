@@ -34,7 +34,7 @@ Before creating an issue:
 
 ## Tech Stack
 
-Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3
+Flutter 3.50+ / Dart 3.14+ · Riverpod · SQLite · Dio · Material Design 3
 
 ## Technical Documentation
 

@@ -2,7 +2,7 @@ import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -19,16 +19,12 @@ import '../../../shared/widgets/glass_dialog.dart';
 /// is intentionally allowed; a dialog asks for the platform before the add.
 class GameHandler implements MediaActionHandler {
   GameHandler({
-    required WidgetRef ref,
-    required SearchCollectionAdder adder,
-    required Map<int, Platform> Function() platformMap,
-    required Set<int> Function() targetCollections,
-    void Function(Game game)? onGameSelected,
-  }) : _ref = ref,
-       _adder = adder,
-       _platformMap = platformMap,
-       _targetCollections = targetCollections,
-       _onGameSelected = onGameSelected;
+    required this._ref,
+    required this._adder,
+    required this._platformMap,
+    required this._targetCollections,
+    this._onGameSelected,
+  });
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;

@@ -57,7 +57,7 @@ class ConfigResult {
 /// Exports and imports app configuration stored in SharedPreferences
 /// (API keys, source credentials and related display settings).
 class ConfigService {
-  ConfigService({required SharedPreferences prefs}) : _prefs = prefs;
+  ConfigService({required this._prefs});
 
   // ignore: unused_field
   static final Logger _log = Logger('ConfigService');

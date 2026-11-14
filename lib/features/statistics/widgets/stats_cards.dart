@@ -1,6 +1,6 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../shared/constants/item_status_ui.dart';

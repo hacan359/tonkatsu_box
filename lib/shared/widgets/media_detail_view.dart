@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:core/models/card_link.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/data_source.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';

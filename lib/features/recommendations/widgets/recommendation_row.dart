@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/constants/media_type_theme.dart';

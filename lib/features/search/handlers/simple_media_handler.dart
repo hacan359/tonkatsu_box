@@ -1,7 +1,7 @@
 import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
@@ -14,9 +14,9 @@ import '../../../shared/widgets/glass_dialog.dart';
 /// animation branch); [T] spares the accessors repeated `as` casts.
 class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
   SimpleMediaHandler({
-    required WidgetRef ref,
-    required SearchCollectionAdder adder,
-    required Set<int> Function() targetCollections,
+    required this._ref,
+    required this._adder,
+    required this._targetCollections,
     required this.mediaType,
     required this.imageType,
     required this.collectedProvider,
@@ -29,9 +29,7 @@ class SimpleMediaHandler<T extends Object> implements MediaActionHandler {
     this.sourceOf,
     this.enrich,
     this.enrichBeforeDetails,
-  }) : _ref = ref,
-       _adder = adder,
-       _targetCollections = targetCollections;
+  });
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;

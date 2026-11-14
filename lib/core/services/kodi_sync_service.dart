@@ -64,12 +64,10 @@ final Provider<KodiSyncService> kodiSyncServiceProvider =
 /// with [createSubCollections], Kodi sets also get per-set collections.
 class KodiSyncService {
   KodiSyncService({
-    required KodiApi kodiApi,
-    required TmdbApi tmdbApi,
+    required this._kodiApi,
+    required this._tmdbApi,
     required DatabaseService database,
-  })  : _kodiApi = kodiApi,
-        _tmdbApi = tmdbApi,
-        _db = database;
+  })  : _db = database;
 
   static final Logger _log = Logger('KodiSyncService');
 

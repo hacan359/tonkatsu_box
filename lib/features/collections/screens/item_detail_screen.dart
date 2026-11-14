@@ -20,7 +20,7 @@ import 'package:core/models/movie.dart';
 import 'package:core/models/tracker_game_data.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';

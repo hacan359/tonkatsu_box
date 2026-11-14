@@ -1,7 +1,7 @@
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/collection.dart';
 import 'package:core/models/steamgriddb_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/data/repositories/canvas_repository.dart';
@@ -9,6 +9,7 @@ import 'package:tonkatsu_box/features/collections/helpers/collection_actions.dar
 import 'package:tonkatsu_box/features/collections/providers/canvas_provider.dart';
 import 'package:tonkatsu_box/features/collections/providers/collections_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
@@ -104,7 +105,7 @@ Widget _buildTestApp({required List<Override> overrides}) {
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Consumer(
         builder: (BuildContext context, WidgetRef ref, Widget? child) {
@@ -642,7 +643,7 @@ void main() {
                 collectionsProvider.overrideWith(() => collectionsNotifier),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Consumer(
                   builder:
@@ -689,7 +690,7 @@ void main() {
                 collectionsProvider.overrideWith(() => collectionsNotifier),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Consumer(
                   builder:
@@ -739,7 +740,7 @@ void main() {
                 collectionsProvider.overrideWith(() => collectionsNotifier),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Consumer(
                   builder:
@@ -793,7 +794,7 @@ void main() {
               collectionsProvider.overrideWith(() => collectionsNotifier),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               home: Consumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? child) {
@@ -839,7 +840,7 @@ void main() {
               collectionsProvider.overrideWith(() => collectionsNotifier),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               home: Consumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? child) {
@@ -885,7 +886,7 @@ void main() {
               collectionsProvider.overrideWith(() => collectionsNotifier),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               home: Consumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? child) {

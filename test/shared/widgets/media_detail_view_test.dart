@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/theme/app_surface.dart';
 import 'package:tonkatsu_box/shared/widgets/copyable_text.dart';
 import 'package:tonkatsu_box/shared/widgets/glass_panel.dart';
@@ -66,7 +67,7 @@ void main() {
         settingsNotifierProvider.overrideWith(_DefaultSettingsNotifier.new),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         // The layout picks mobile or desktop from its own width.
         home: Align(

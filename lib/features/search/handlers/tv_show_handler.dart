@@ -1,7 +1,7 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
@@ -17,12 +17,10 @@ import '../../../shared/widgets/glass_dialog.dart';
 /// warms the seasons cache so the detail screen opens without a network trip.
 class TvShowHandler implements MediaActionHandler {
   TvShowHandler({
-    required WidgetRef ref,
-    required SearchCollectionAdder adder,
-    required Set<int> Function() targetCollections,
-  }) : _ref = ref,
-       _adder = adder,
-       _targetCollections = targetCollections;
+    required this._ref,
+    required this._adder,
+    required this._targetCollections,
+  });
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;

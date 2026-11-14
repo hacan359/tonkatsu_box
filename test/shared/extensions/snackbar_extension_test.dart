@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/extensions/snackbar_extension.dart';
 
 void main() {
   Widget wrapWithButton(String label, VoidCallback onPressed) => MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(
@@ -32,7 +33,7 @@ void main() {
       late BuildContext savedContext;
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(builder: (BuildContext context) {
@@ -57,7 +58,7 @@ void main() {
       ));
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -75,7 +76,7 @@ void main() {
     testWidgets('error → error_outline icon', (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -94,7 +95,7 @@ void main() {
         (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -113,7 +114,7 @@ void main() {
         (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -138,7 +139,7 @@ void main() {
         (WidgetTester tester) async {
       late BuildContext savedContext;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -163,7 +164,7 @@ void main() {
       bool actionPressed = false;
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -190,7 +191,7 @@ void main() {
         (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -214,7 +215,7 @@ void main() {
         (WidgetTester tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -247,7 +248,7 @@ void main() {
     testWidgets('should hide the current SnackBar', (WidgetTester tester) async {
       late BuildContext savedContext;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {
@@ -273,7 +274,7 @@ void main() {
         (WidgetTester tester) async {
       late BuildContext savedContext;
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(builder: (BuildContext context) {

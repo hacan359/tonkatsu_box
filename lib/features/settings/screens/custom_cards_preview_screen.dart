@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:core/models/universal_import_result.dart';
 import 'package:core/models/import_source_kind.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/import/sources/custom_file/custom_card_entry.dart';

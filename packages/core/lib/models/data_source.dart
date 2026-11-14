@@ -63,8 +63,7 @@ enum DataSource {
   /// Local source (custom items).
   local('Custom', 0xFF26A69A);
 
-  const DataSource(this.label, this.colorValue, {String? brandName})
-      : _brandName = brandName;
+  const DataSource(this.label, this.colorValue, {this._brandName});
 
   /// Short display label (badges, chips).
   final String label;

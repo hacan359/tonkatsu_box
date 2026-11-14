@@ -6,7 +6,7 @@ import 'package:core/models/media_type.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/tv_show.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/api/api_error_extract.dart';
@@ -17,6 +17,7 @@ import 'package:tonkatsu_box/features/search/providers/browse_provider.dart';
 import 'package:tonkatsu_box/features/search/widgets/browse_grid.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
 
 void main() {
@@ -115,7 +116,7 @@ void main() {
         ...?extraOverrides,
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: const Locale('en'),
         home: Scaffold(
@@ -766,7 +767,7 @@ void main() {
               }),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               locale: const Locale('en'),
               home: Scaffold(
@@ -826,7 +827,7 @@ void main() {
               ),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               locale: const Locale('en'),
               home: Scaffold(
@@ -864,7 +865,7 @@ void main() {
               }),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               locale: const Locale('en'),
               home: Scaffold(
@@ -911,7 +912,7 @@ void main() {
               }),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               locale: const Locale('en'),
               home: Scaffold(
@@ -957,7 +958,7 @@ void main() {
               }),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               locale: const Locale('en'),
               home: Scaffold(
@@ -1003,7 +1004,7 @@ void main() {
               }),
             ],
             child: MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
+              localizationsDelegates: kAppLocalizationsDelegates,
               supportedLocales: S.supportedLocales,
               locale: const Locale('en'),
               home: Scaffold(
@@ -1174,8 +1175,7 @@ class _TestBrowseNotifier extends BrowseNotifier {
 }
 
 class _ViewportFillTestNotifier extends BrowseNotifier {
-  _ViewportFillTestNotifier({required this.onLoadMore, BrowseState? initial})
-      : _initial = initial;
+  _ViewportFillTestNotifier({required this.onLoadMore, this._initial});
 
   final void Function() onLoadMore;
   final BrowseState? _initial;

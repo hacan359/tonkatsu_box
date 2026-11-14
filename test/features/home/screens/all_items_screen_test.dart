@@ -9,7 +9,7 @@ import 'package:core/models/profile.dart';
 import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/visual_novel.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -23,6 +23,7 @@ import 'package:tonkatsu_box/features/home/screens/all_items_screen.dart';
 import 'package:tonkatsu_box/features/settings/providers/profile_provider.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
 import 'package:tonkatsu_box/shared/widgets/logo_loader.dart';
 import 'package:tonkatsu_box/shared/widgets/media_type_icon_strip.dart';
@@ -200,7 +201,7 @@ void main() {
         ...extraOverrides,
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(body: AllItemsScreen()),
       ),
@@ -626,7 +627,7 @@ void main() {
           ),
         ],
         child: const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(body: AllItemsScreen()),
         ),

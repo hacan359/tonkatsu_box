@@ -1,8 +1,9 @@
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/update_service.dart';
@@ -36,7 +37,7 @@ void main() {
         ),
       ],
       child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Column(
@@ -118,7 +119,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: Column(

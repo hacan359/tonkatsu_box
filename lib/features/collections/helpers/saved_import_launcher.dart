@@ -5,7 +5,7 @@ import 'package:core/models/collection_import.dart';
 import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/item_status.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

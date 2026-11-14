@@ -3,10 +3,11 @@ import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/core/services/image_cache_service.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/utils/item_card_progress.dart';
 import 'package:tonkatsu_box/shared/widgets/dual_rating_badge.dart';
 import 'package:tonkatsu_box/shared/widgets/media_poster_card.dart';
@@ -41,7 +42,7 @@ void main() {
     VoidCallback? onSourceTap,
   }) {
     return MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: Builder(
@@ -636,7 +637,7 @@ void main() {
         CardVariant variant = CardVariant.grid,
       }) {
         return MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Align(
@@ -733,7 +734,7 @@ void main() {
         void Function(Offset globalPosition)? onTagTap,
       }) async {
         await tester.pumpWidget(MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Center(
@@ -865,7 +866,7 @@ void main() {
           'should not overflow with status, progress and tag at 60px width',
           (WidgetTester tester) async {
         await tester.pumpWidget(const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SizedBox(
@@ -900,7 +901,7 @@ void main() {
           'should ellipsize a long tagless progress label at 60px width',
           (WidgetTester tester) async {
         await tester.pumpWidget(const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SizedBox(
@@ -927,7 +928,7 @@ void main() {
       testWidgets('should keep the progress label on the right, tag on the left',
           (WidgetTester tester) async {
         await tester.pumpWidget(const MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SizedBox(

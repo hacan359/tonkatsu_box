@@ -4,7 +4,8 @@
 import 'package:core/rpc/protocol.dart';
 import 'package:core/rpc/rpc_transport.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/widgets/volumetric_logo.dart';
@@ -30,7 +31,7 @@ void main() {
     return ProviderScope(
       overrides: <Override>[databaseServiceProvider.overrideWithValue(mockDb)],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: SplashScreen(),
       ),

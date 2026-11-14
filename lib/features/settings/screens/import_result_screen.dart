@@ -1,6 +1,6 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/universal_import_result.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../../../l10n/app_localizations.dart';

@@ -1,6 +1,6 @@
 import 'package:core/models/card_link.dart';
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';

@@ -8,7 +8,7 @@ import 'package:core/models/tv_show.dart';
 import 'package:core/models/xcoll_file.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/constants/platform_features.dart';

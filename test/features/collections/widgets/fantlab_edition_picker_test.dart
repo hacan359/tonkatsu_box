@@ -1,12 +1,13 @@
 import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/core/api/fantlab_api.dart';
 import 'package:tonkatsu_box/features/collections/widgets/fantlab_edition_picker.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -196,7 +197,7 @@ void main() {
           fantlabApiProvider.overrideWithValue(mockApi),
         ],
         child: MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Builder(
             builder: (BuildContext ctx) => Scaffold(
@@ -288,7 +289,7 @@ void main() {
           fantlabApiProvider.overrideWithValue(mockApi),
         ],
         child: MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SingleChildScrollView(

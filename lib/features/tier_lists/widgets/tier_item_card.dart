@@ -1,6 +1,6 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';

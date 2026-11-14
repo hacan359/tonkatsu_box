@@ -1,5 +1,5 @@
 import 'package:core/models/book.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../core/api/hardcover_api.dart';
 import '../../collections/widgets/hardcover_edition_picker.dart';

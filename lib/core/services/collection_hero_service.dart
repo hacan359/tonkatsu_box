@@ -31,10 +31,9 @@ final Provider<CollectionHeroService> collectionHeroServiceProvider =
 
 class CollectionHeroService {
   const CollectionHeroService({
-    required String rootDir,
-    ImageCacheService? imageCache,
-  }) : _rootDir = rootDir,
-       _imageCache = imageCache;
+    required this._rootDir,
+    this._imageCache,
+  });
 
   static final Logger _log = Logger('CollectionHeroService');
 

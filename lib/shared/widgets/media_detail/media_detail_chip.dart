@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Icon + text descriptor for an info chip in the media detail header.
 class MediaDetailChip {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/statistics/layout/stats_layout.dart';
 import 'package:tonkatsu_box/features/statistics/layout/stats_layout_desktop.dart';

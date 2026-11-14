@@ -1,7 +1,8 @@
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 // GamepadListener subscribes only when kIsMobile is false; tests run as desktop.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
@@ -76,7 +77,7 @@ void main() {
         gamepadServiceProvider.overrideWithValue(gamepadService),
       ],
       child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
         home: GamepadListener(
           onConfirm: onConfirm,
@@ -273,7 +274,7 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: GamepadListener(
             child: Scaffold(
@@ -308,7 +309,7 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: GamepadListener(
             onConfirm: () => confirmed = true,
@@ -343,7 +344,7 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: GamepadListener(
             onNavigate: (GamepadAction action) => receivedAction = action,
@@ -379,7 +380,7 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: GamepadListener(
             child: Scaffold(
@@ -422,7 +423,7 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: GamepadListener(
             onTabSwitch: (GamepadAction action) => receivedAction = action,
@@ -482,7 +483,7 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: Consumer(
             builder: (BuildContext context, WidgetRef ref, Widget? child) {

@@ -8,13 +8,12 @@ import 'tmdb_types.dart';
 // TMDB v3 transport; injects the API key and language into every request.
 // Docs: https://developer.themoviedb.org/reference
 class TmdbHttpClient {
-  TmdbHttpClient({Dio? dio, String language = 'ru-RU'})
+  TmdbHttpClient({Dio? dio, this._language = 'ru-RU'})
       : _dio = dio ??
             createApiDio(
               connectTimeout: _timeout,
               receiveTimeout: _timeout,
-            ),
-        _language = language;
+            );
 
   static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://api.themoviedb.org/3';

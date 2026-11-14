@@ -2,7 +2,7 @@ import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
 import 'package:core/models/wishlist_tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
