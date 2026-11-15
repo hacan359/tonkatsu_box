@@ -39,10 +39,7 @@ void main() {
 
   void onProgress(ImportProgress p) => progressCalls.add(p);
 
-  void setupIgdbSearchMock({
-    required String query,
-    List<Game>? results,
-  }) {
+  void setupIgdbSearchMock({required String query, List<Game>? results}) {
     final List<Game> games = results ?? <Game>[];
     igdbGamesByTitle[query] = games.isNotEmpty ? games.first : null;
   }
@@ -78,8 +75,9 @@ void main() {
       wishlistRepository: mockWishlist,
     );
 
-    when(() => mockIgdbApi.multiSearchGamesByName(any()))
-        .thenAnswer((Invocation inv) async {
+    when(() => mockIgdbApi.multiSearchGamesByName(any())).thenAnswer((
+      Invocation inv,
+    ) async {
       final List<({String name, int? platformId})> queries =
           inv.positionalArguments[0] as List<({String name, int? platformId})>;
       final Map<int, List<Game>> result = <int, List<Game>>{};
@@ -92,26 +90,31 @@ void main() {
   });
 
   void setupRepoMocks() {
-    when(() => mockRepo.create(
-          name: any(named: 'name'),
-          author: any(named: 'author'),
-        )).thenAnswer((_) async => createTestCollection(id: 1));
+    when(
+      () => mockRepo.create(
+        name: any(named: 'name'),
+        author: any(named: 'author'),
+      ),
+    ).thenAnswer((_) async => createTestCollection(id: 1));
     when(() => mockRepo.getById(any()))
         .thenAnswer((_) async => createTestCollection(id: 1));
     when(() => mockRepo.getItems(any()))
         .thenAnswer((_) async => <CollectionItem>[]);
     when(() => mockRepo.addItemsBatchReturningIds(any(), any())).thenAnswer(
-        (Invocation inv) async => List<int?>.generate(
-            (inv.positionalArguments[1] as List<dynamic>).length,
-            (int index) => index + 1));
+      (Invocation inv) async => List<int?>.generate(
+        (inv.positionalArguments[1] as List<dynamic>).length,
+        (int index) => index + 1,
+      ),
+    );
     when(() => mockRepo.updateItemFieldsBatch(any())).thenAnswer((_) async {});
     when(() => mockGameDao.upsertGames(any())).thenAnswer((_) async {});
-    when(() => mockWishlist.getAll(
-          includeResolved: any(named: 'includeResolved'),
-        )).thenAnswer((_) async => <WishlistItem>[]);
+    when(
+      () => mockWishlist.getAll(includeResolved: any(named: 'includeResolved')),
+    ).thenAnswer((_) async => <WishlistItem>[]);
     when(() => mockWishlist.addWishlistItemsBatch(any())).thenAnswer(
-        (Invocation inv) async =>
-            (inv.positionalArguments[0] as List<dynamic>).length);
+      (Invocation inv) async =>
+          (inv.positionalArguments[0] as List<dynamic>).length,
+    );
   }
 
   RaImportOptions opts({int? collectionId = 1, bool addToWishlist = false}) =>
@@ -124,7 +127,9 @@ void main() {
       );
 
   List<Map<String, dynamic>> capturedItemRows() =>
-      verify(() => mockRepo.addItemsBatchReturningIds(any(), captureAny())).captured.single
+      verify(() => mockRepo.addItemsBatchReturningIds(any(), captureAny()))
+              .captured
+              .single
           as List<Map<String, dynamic>>;
 
   List<(int, Map<String, dynamic>)> capturedUpdates() =>
@@ -133,8 +138,9 @@ void main() {
 
   List<Map<String, dynamic>> capturedWishlistRows() =>
       verify(() => mockWishlist.addWishlistItemsBatch(captureAny()))
-          .captured
-          .single as List<Map<String, dynamic>>;
+              .captured
+              .single
+          as List<Map<String, dynamic>>;
 
   group('RaImportService.import', () {
     test('should import games successfully', () async {
@@ -151,11 +157,16 @@ void main() {
       final Game igdbGame = createTestGame(id: 100, name: 'Super Mario World');
 
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
-      setupIgdbSearchMock(query: 'Super Mario World', results: <Game>[igdbGame]);
+      setupIgdbSearchMock(
+        query: 'Super Mario World',
+        results: <Game>[igdbGame],
+      );
       setupRepoMocks();
 
-      final UniversalImportResult result =
-          await sut.import(opts(), onProgress: onProgress);
+      final UniversalImportResult result = await sut.import(
+        opts(),
+        onProgress: onProgress,
+      );
 
       expect(result.totalImported, 1);
       expect(result.totalUpdated, 0);
@@ -168,18 +179,24 @@ void main() {
     });
 
     test('should report progress ending in the completed stage', () async {
-      final RaGameProgress raGame =
-          createTestRaGameProgress(title: 'Test Game', consoleId: 3);
+      final RaGameProgress raGame = createTestRaGameProgress(
+        title: 'Test Game',
+        consoleId: 3,
+      );
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(
-          query: 'Test Game', results: <Game>[createTestGame(name: 'Test Game')]);
+        query: 'Test Game',
+        results: <Game>[createTestGame(name: 'Test Game')],
+      );
       setupRepoMocks();
 
       await sut.import(opts(), onProgress: onProgress);
 
       expect(progressCalls.first.stage, ImportStage.reading);
       expect(
-        progressCalls.any((ImportProgress p) => p.stage == ImportStage.fetchingGames),
+        progressCalls.any(
+          (ImportProgress p) => p.stage == ImportStage.fetchingGames,
+        ),
         isTrue,
       );
       expect(progressCalls.last.stage, ImportStage.completed);
@@ -195,24 +212,28 @@ void main() {
       );
     });
 
-    test('should not write an unmatched game when wishlist is disabled',
-        () async {
-      final RaGameProgress raGame = createTestRaGameProgress(
-        title: 'Unknown Retro Game',
-        consoleName: 'SNES',
-        consoleId: 3,
-      );
-      setupRaApiMocks(games: <RaGameProgress>[raGame]);
-      setupIgdbSearchMock(query: 'Unknown Retro Game', results: <Game>[]);
-      setupRepoMocks();
+    test(
+      'should not write an unmatched game when wishlist is disabled',
+      () async {
+        final RaGameProgress raGame = createTestRaGameProgress(
+          title: 'Unknown Retro Game',
+          consoleName: 'SNES',
+          consoleId: 3,
+        );
+        setupRaApiMocks(games: <RaGameProgress>[raGame]);
+        setupIgdbSearchMock(query: 'Unknown Retro Game', results: <Game>[]);
+        setupRepoMocks();
 
-      final UniversalImportResult result =
-          await sut.import(opts(), onProgress: onProgress);
+        final UniversalImportResult result = await sut.import(
+          opts(),
+          onProgress: onProgress,
+        );
 
-      expect(result.totalImported, 0);
-      expect(result.totalWishlisted, 0);
-      expect(capturedItemRows(), isEmpty);
-    });
+        expect(result.totalImported, 0);
+        expect(result.totalWishlisted, 0);
+        expect(capturedItemRows(), isEmpty);
+      },
+    );
 
     test('should add unmatched games to the wishlist when enabled', () async {
       final RaGameProgress raGame = createTestRaGameProgress(
@@ -258,54 +279,67 @@ void main() {
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(query: 'Unknown Game', results: <Game>[]);
       setupRepoMocks();
-      when(() => mockWishlist.getAll(
-                includeResolved: any(named: 'includeResolved'),
-              ))
-          .thenAnswer((_) async =>
-              <WishlistItem>[createTestWishlistItem(text: 'Unknown Game (NES)')]);
+      when(
+        () =>
+            mockWishlist.getAll(includeResolved: any(named: 'includeResolved')),
+      ).thenAnswer(
+        (_) async => <WishlistItem>[
+          createTestWishlistItem(text: 'Unknown Game (NES)'),
+        ],
+      );
 
-      final UniversalImportResult result =
-          await sut.import(opts(addToWishlist: true), onProgress: onProgress);
+      final UniversalImportResult result = await sut.import(
+        opts(addToWishlist: true),
+        onProgress: onProgress,
+      );
 
       expect(result.totalWishlisted, 0);
       expect(capturedWishlistRows(), isEmpty);
     });
 
-    test('manual RA→IGDB link skips IGDB search and reuses the cached game',
-        () async {
-      final RaGameProgress raGame = createTestRaGameProgress(
-        gameId: 999,
-        title: 'Obscure ROM Hack',
-        consoleName: 'SNES',
-        consoleId: 3,
-      );
-      final Game cachedGame = createTestGame(id: 500, name: 'Obscure ROM Hack');
+    test(
+      'manual RA→IGDB link skips IGDB search and reuses the cached game',
+      () async {
+        final RaGameProgress raGame = createTestRaGameProgress(
+          gameId: 999,
+          title: 'Obscure ROM Hack',
+          consoleName: 'SNES',
+          consoleId: 3,
+        );
+        final Game cachedGame = createTestGame(
+          id: 500,
+          name: 'Obscure ROM Hack',
+        );
 
-      setupRaApiMocks(games: <RaGameProgress>[raGame]);
-      setupRepoMocks();
-      when(() => mockTrackerDao.getAllGameData(TrackerType.ra))
-          .thenAnswer((_) async => <TrackerGameData>[
-                TrackerGameData(
-                  id: 1,
-                  trackerType: TrackerType.ra,
-                  gameId: 500,
-                  trackerGameId: '999',
-                  trackerGameTitle: 'Obscure ROM Hack',
-                  achievementsTotal: 50,
-                  lastSyncedAt: DateTime(2024).millisecondsSinceEpoch ~/ 1000,
-                ),
-              ]);
-      when(() => mockGameDao.getGameById(500))
-          .thenAnswer((_) async => cachedGame);
+        setupRaApiMocks(games: <RaGameProgress>[raGame]);
+        setupRepoMocks();
+        when(() => mockTrackerDao.getAllGameData(TrackerType.ra)).thenAnswer(
+          (_) async => <TrackerGameData>[
+            TrackerGameData(
+              id: 1,
+              trackerType: TrackerType.ra,
+              gameId: 500,
+              trackerGameId: '999',
+              trackerGameTitle: 'Obscure ROM Hack',
+              achievementsTotal: 50,
+              lastSyncedAt: DateTime(2024).millisecondsSinceEpoch ~/ 1000,
+            ),
+          ],
+        );
+        when(() => mockGameDao.getGameById(500))
+            .thenAnswer((_) async => cachedGame);
 
-      final UniversalImportResult result =
-          await sut.import(opts(addToWishlist: true), onProgress: onProgress);
+        final UniversalImportResult result = await sut.import(
+          opts(addToWishlist: true),
+          onProgress: onProgress,
+        );
 
-      expect(result.totalImported, 1);
-      verifyNever(() => mockIgdbApi.multiSearchGamesByName(any()));
-      verify(() => mockGameDao.getGameById(500)).called(1);
-      verifyNever(() => mockWishlist.addWishlistItemsBatch(any()));
-    });
+        expect(result.totalImported, 1);
+        verifyNever(() => mockIgdbApi.multiSearchGamesByName(any()));
+        verify(() => mockGameDao.getGameById(500)).called(1);
+        verifyNever(() => mockWishlist.addWishlistItemsBatch(any()));
+      },
+    );
 
     test('manual link with a broken cache falls back to IGDB search', () async {
       final RaGameProgress raGame = createTestRaGameProgress(
@@ -318,26 +352,31 @@ void main() {
 
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupRepoMocks();
-      when(() => mockTrackerDao.getAllGameData(TrackerType.ra))
-          .thenAnswer((_) async => <TrackerGameData>[
-                TrackerGameData(
-                  id: 1,
-                  trackerType: TrackerType.ra,
-                  gameId: 600,
-                  trackerGameId: '777',
-                  trackerGameTitle: 'Cached Game',
-                  achievementsTotal: 50,
-                  lastSyncedAt: DateTime(2024).millisecondsSinceEpoch ~/ 1000,
-                ),
-              ]);
+      when(() => mockTrackerDao.getAllGameData(TrackerType.ra)).thenAnswer(
+        (_) async => <TrackerGameData>[
+          TrackerGameData(
+            id: 1,
+            trackerType: TrackerType.ra,
+            gameId: 600,
+            trackerGameId: '777',
+            trackerGameTitle: 'Cached Game',
+            achievementsTotal: 50,
+            lastSyncedAt: DateTime(2024).millisecondsSinceEpoch ~/ 1000,
+          ),
+        ],
+      );
       when(() => mockGameDao.getGameById(600)).thenAnswer((_) async => null);
-      when(() => mockIgdbApi.searchGames(
-            query: 'Cached Game',
-            platformIds: any(named: 'platformIds'),
-          )).thenAnswer((_) async => <Game>[freshGame]);
+      when(
+        () => mockIgdbApi.searchGames(
+          query: 'Cached Game',
+          platformIds: any(named: 'platformIds'),
+        ),
+      ).thenAnswer((_) async => <Game>[freshGame]);
 
-      final UniversalImportResult result =
-          await sut.import(opts(), onProgress: onProgress);
+      final UniversalImportResult result = await sut.import(
+        opts(),
+        onProgress: onProgress,
+      );
 
       expect(result.totalImported, 1);
       verify(() => mockGameDao.getGameById(600)).called(1);
@@ -359,18 +398,21 @@ void main() {
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(query: 'Mario', results: <Game>[igdbGame]);
       setupRepoMocks();
-      when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
-          <CollectionItem>[
-            createTestCollectionItem(
-              id: 42,
-              externalId: 100,
-              platformId: 19,
-              status: ItemStatus.inProgress,
-            ),
-          ]);
+      when(() => mockRepo.getItems(any())).thenAnswer(
+        (_) async => <CollectionItem>[
+          createTestCollectionItem(
+            id: 42,
+            externalId: 100,
+            platformId: 19,
+            status: ItemStatus.inProgress,
+          ),
+        ],
+      );
 
-      final UniversalImportResult result =
-          await sut.import(opts(), onProgress: onProgress);
+      final UniversalImportResult result = await sut.import(
+        opts(),
+        onProgress: onProgress,
+      );
 
       expect(result.totalUpdated, 1);
       expect(result.totalImported, 0);
@@ -392,19 +434,23 @@ void main() {
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(query: 'Mario', results: <Game>[igdbGame]);
       setupRepoMocks();
-      when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
-          <CollectionItem>[
-            createTestCollectionItem(
-              id: 42,
-              externalId: 100,
-              platformId: 19,
-              status: ItemStatus.completed,
-            ),
-          ]);
+      when(() => mockRepo.getItems(any())).thenAnswer(
+        (_) async => <CollectionItem>[
+          createTestCollectionItem(
+            id: 42,
+            externalId: 100,
+            platformId: 19,
+            status: ItemStatus.completed,
+          ),
+        ],
+      );
 
       await sut.import(opts(), onProgress: onProgress);
 
-      expect(capturedUpdates().single.$2['status'], ItemStatus.inProgress.value);
+      expect(
+        capturedUpdates().single.$2['status'],
+        ItemStatus.inProgress.value,
+      );
     });
 
     test('should not drop a planned item RA reports as inactive', () async {
@@ -421,15 +467,16 @@ void main() {
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(query: 'Mario', results: <Game>[igdbGame]);
       setupRepoMocks();
-      when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
-          <CollectionItem>[
-            createTestCollectionItem(
-              id: 42,
-              externalId: 100,
-              platformId: 19,
-              status: ItemStatus.planned,
-            ),
-          ]);
+      when(() => mockRepo.getItems(any())).thenAnswer(
+        (_) async => <CollectionItem>[
+          createTestCollectionItem(
+            id: 42,
+            externalId: 100,
+            platformId: 19,
+            status: ItemStatus.planned,
+          ),
+        ],
+      );
 
       await sut.import(opts(), onProgress: onProgress);
 
@@ -462,7 +509,80 @@ void main() {
 
       final Map<String, dynamic> row = capturedItemRows().single;
       expect(row['completed_at'], completedAt.millisecondsSinceEpoch ~/ 1000);
-      expect(row['last_activity_at'], lastPlayed.millisecondsSinceEpoch ~/ 1000);
+      expect(
+        row['last_activity_at'],
+        lastPlayed.millisecondsSinceEpoch ~/ 1000,
+      );
+    });
+
+    test('should leave the start date empty for a new item', () async {
+      final RaGameProgress raGame = createTestRaGameProgress(
+        gameId: 1234,
+        title: 'Mario',
+        consoleId: 3,
+        numAwarded: 10,
+        maxPossible: 96,
+      );
+
+      setupRaApiMocks(games: <RaGameProgress>[raGame]);
+      setupIgdbSearchMock(
+        query: 'Mario',
+        results: <Game>[createTestGame(id: 100, name: 'Mario')],
+      );
+      setupRepoMocks();
+
+      await sut.import(opts(), onProgress: onProgress);
+
+      final Map<String, dynamic> row = capturedItemRows().single;
+      expect(row['status'], ItemStatus.inProgress.value);
+      expect(row['started_at'], isNull);
+    });
+
+    group('re-sync start date', () {
+      Future<Map<String, dynamic>> resync({DateTime? startedAt}) async {
+        final RaGameProgress raGame = createTestRaGameProgress(
+          gameId: 1234,
+          title: 'Mario',
+          consoleId: 3,
+          numAwarded: 10,
+          maxPossible: 96,
+        );
+
+        setupRaApiMocks(games: <RaGameProgress>[raGame]);
+        setupIgdbSearchMock(
+          query: 'Mario',
+          results: <Game>[createTestGame(id: 100, name: 'Mario')],
+        );
+        setupRepoMocks();
+        when(() => mockRepo.getItems(any())).thenAnswer(
+          (_) async => <CollectionItem>[
+            createTestCollectionItem(
+              id: 42,
+              externalId: 100,
+              platformId: 19,
+              status: ItemStatus.completed,
+              startedAt: startedAt,
+            ),
+          ],
+        );
+
+        await sut.import(opts(), onProgress: onProgress);
+        return capturedUpdates().single.$2;
+      }
+
+      test('should keep the start date the item already has', () async {
+        final DateTime started = DateTime(2024, 3, 21);
+
+        final Map<String, dynamic> fields = await resync(startedAt: started);
+
+        expect(fields['started_at'], started.millisecondsSinceEpoch ~/ 1000);
+      });
+
+      test('should not invent a start date the item lacks', () async {
+        final Map<String, dynamic> fields = await resync();
+
+        expect(fields['started_at'], isNull);
+      });
     });
 
     test('should write tracker_game_data for a matched game', () async {
@@ -479,15 +599,16 @@ void main() {
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(query: 'Mario', results: <Game>[igdbGame]);
       setupRepoMocks();
-      when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
-          <CollectionItem>[
-            createTestCollectionItem(
-              id: 42,
-              externalId: 100,
-              platformId: 19,
-              status: ItemStatus.inProgress,
-            ),
-          ]);
+      when(() => mockRepo.getItems(any())).thenAnswer(
+        (_) async => <CollectionItem>[
+          createTestCollectionItem(
+            id: 42,
+            externalId: 100,
+            platformId: 19,
+            status: ItemStatus.inProgress,
+          ),
+        ],
+      );
 
       await sut.import(opts(), onProgress: onProgress);
 
@@ -508,18 +629,21 @@ void main() {
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
       setupIgdbSearchMock(query: 'Mario', results: <Game>[igdbGame]);
       setupRepoMocks();
-      when(() => mockRepo.getItems(any())).thenAnswer((_) async =>
-          <CollectionItem>[
-            createTestCollectionItem(
-              id: 42,
-              externalId: 100,
-              platformId: 19,
-              status: ItemStatus.planned,
-            ),
-          ]);
+      when(() => mockRepo.getItems(any())).thenAnswer(
+        (_) async => <CollectionItem>[
+          createTestCollectionItem(
+            id: 42,
+            externalId: 100,
+            platformId: 19,
+            status: ItemStatus.planned,
+          ),
+        ],
+      );
 
-      final UniversalImportResult result =
-          await sut.import(opts(), onProgress: onProgress);
+      final UniversalImportResult result = await sut.import(
+        opts(),
+        onProgress: onProgress,
+      );
 
       expect(result.totalUpdated, 0);
     });
@@ -545,16 +669,20 @@ void main() {
       setupIgdbSearchMock(query: 'Unmatched Game', results: <Game>[]);
       setupRepoMocks();
 
-      final UniversalImportResult result =
-          await sut.import(opts(), onProgress: onProgress);
+      final UniversalImportResult result = await sut.import(
+        opts(),
+        onProgress: onProgress,
+      );
 
       expect(result.totalImported, 1);
       expect(capturedItemRows(), hasLength(1));
     });
 
     test('should map the platform id from the RA console', () async {
-      final RaGameProgress raGame =
-          createTestRaGameProgress(title: 'Test', consoleId: 12);
+      final RaGameProgress raGame = createTestRaGameProgress(
+        title: 'Test',
+        consoleId: 12,
+      );
       final Game igdbGame = createTestGame(id: 100, name: 'Test');
 
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
@@ -567,8 +695,10 @@ void main() {
     });
 
     test('should write a null platform id for an unknown console', () async {
-      final RaGameProgress raGame =
-          createTestRaGameProgress(title: 'Test', consoleId: 999);
+      final RaGameProgress raGame = createTestRaGameProgress(
+        title: 'Test',
+        consoleId: 999,
+      );
       final Game igdbGame = createTestGame(id: 100, name: 'Test');
 
       setupRaApiMocks(games: <RaGameProgress>[raGame]);
