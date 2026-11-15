@@ -39,6 +39,18 @@ void main() {
       expect(controller.current?.title, 'strip');
     });
 
+    test('should hide the search while any lender opts out', () {
+      final Object page = Object();
+      controller.set(Object(), const FrameChrome(title: 'List'));
+      controller.set(page, const FrameChrome(showSearch: false, priority: 1));
+
+      expect(controller.current?.showSearch, isFalse);
+
+      controller.clear(page);
+
+      expect(controller.current?.showSearch, isTrue);
+    });
+
     test('should keep mount order for equal priorities', () {
       final List<Object> owners = List<Object>.generate(40, (_) => Object());
       for (int i = 0; i < owners.length; i++) {

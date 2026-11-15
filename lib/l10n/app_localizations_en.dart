@@ -103,6 +103,9 @@ class SEn extends S {
   String get statusListening => 'Listening';
 
   @override
+  String get statusReading => 'Reading';
+
+  @override
   String get statusInProgress => 'In Progress';
 
   @override

@@ -15,6 +15,7 @@ class FramePage extends StatelessWidget {
     this.onBack,
     this.actions = const <Widget>[],
     this.header,
+    this.showSearch = true,
     this.padding = EdgeInsets.zero,
     super.key,
   });
@@ -32,17 +33,22 @@ class FramePage extends StatelessWidget {
   /// Fixed panels (filters, chips) above the scrolling body.
   final Widget? header;
 
+  /// False removes the frame's search field while this page is on top.
+  final bool showSearch;
+
   final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
-    final bool hasChrome =
-        title != null || onBack != null || actions.isNotEmpty;
+    // Hiding the search alone lends no back button: a tab root has no route
+    // to pop.
+    final bool hasRow = title != null || onBack != null || actions.isNotEmpty;
+    final bool hasChrome = hasRow || !showSearch;
     final bool inFrame = FrameChromeScope.maybeOf(context) != null;
     final VoidCallback back = onBack ?? () => Navigator.of(context).pop();
 
     final Widget body = Padding(padding: padding, child: child);
-    final Widget? row = hasChrome && !inFrame
+    final Widget? row = hasRow && !inFrame
         ? _TitleRow(title: title, onBack: back, actions: actions)
         : null;
     final Widget page = Material(
@@ -61,8 +67,9 @@ class FramePage extends StatelessWidget {
     return FrameChromeBinding(
       chrome: FrameChrome(
         title: title,
-        onBack: back,
+        onBack: hasRow ? back : null,
         actions: actions,
+        showSearch: showSearch,
         priority: 1,
       ),
       child: page,

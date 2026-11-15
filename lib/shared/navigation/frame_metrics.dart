@@ -7,6 +7,9 @@ const double kFrameZoneButtonSize = 40;
 
 const double kFrameSearchFieldHeight = 38;
 
+/// Below this the search field cannot show its icon and a few letters.
+const double kFrameSearchFieldMinWidth = 72;
+
 /// A sub-screen title in the zone is clipped past this, so the search field
 /// keeps its room.
 const double kFrameTitleMaxWidth = 260;

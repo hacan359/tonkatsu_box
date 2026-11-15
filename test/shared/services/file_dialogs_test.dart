@@ -161,22 +161,9 @@ void main() {
       },
     );
 
-    test('should return the document name for a non-file URI', () async {
+    test('should return the suggested name for a non-file URI', () async {
       FilePickerPlatform.instance = _StubSavePicker(
-        (_) => Uri.parse('content://provider/document/saved.zip'),
-      );
-
-      final String? result = await saveBytesWithDialog(
-        fileName: 'backup.zip',
-        bytes: payload,
-      );
-
-      expect(result, 'saved.zip');
-    });
-
-    test('should fall back to the suggested name for an opaque URI', () async {
-      FilePickerPlatform.instance = _StubSavePicker(
-        (_) => Uri.parse('content://provider/'),
+        (_) => Uri.parse('content://provider/document/9334'),
       );
 
       final String? result = await saveBytesWithDialog(

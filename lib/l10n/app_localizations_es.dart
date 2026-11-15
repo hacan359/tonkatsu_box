@@ -103,6 +103,9 @@ class SEs extends S {
   String get statusListening => 'Escuchando';
 
   @override
+  String get statusReading => 'Leyendo';
+
+  @override
   String get statusInProgress => 'En curso';
 
   @override

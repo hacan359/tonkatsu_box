@@ -301,6 +301,10 @@ class _AppShellState extends ConsumerState<AppShell> {
       context: context,
     );
     if (ctx == null) return KeyEventResult.ignored;
+    // The field is gone on such a page: the text would land unseen.
+    if (!(_frameChrome.current?.showSearch ?? true)) {
+      return KeyEventResult.ignored;
+    }
 
     if (_isAnyEditableTextFocused()) return KeyEventResult.ignored;
 

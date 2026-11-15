@@ -24,14 +24,9 @@ Future<String?> saveBytesWithDialog({
   // The browser turns the save into a download and reports nothing back.
   if (kIsWebBuild) return fileName;
   if (saved == null) return null;
-  if (saved.scheme != 'file') return _documentName(saved) ?? fileName;
+  // An Android content URI ends in an opaque document id, not a name.
+  if (saved.scheme != 'file') return fileName;
   return _withExtension(saved.toFilePath(), p.extension(fileName));
-}
-
-String? _documentName(Uri uri) {
-  if (uri.pathSegments.isEmpty) return null;
-  final String name = uri.pathSegments.last;
-  return name.isEmpty ? null : name;
 }
 
 // The desktop dialog saves under exactly what was typed, so a name entered

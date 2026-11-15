@@ -36,6 +36,7 @@
   "statusPlaying": "Играю",
   "statusWatching": "Смотрю",
   "statusListening": "Слушаю",
+  "statusReading": "Читаю",
   "statusInProgress": "В процессе",
   "statusCompleted": "Завершено",
   "statusDropped": "Брошено",

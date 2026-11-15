@@ -103,6 +103,9 @@ class SPt extends S {
   String get statusListening => 'Ouvindo';
 
   @override
+  String get statusReading => 'Lendo';
+
+  @override
   String get statusInProgress => 'Em andamento';
 
   @override

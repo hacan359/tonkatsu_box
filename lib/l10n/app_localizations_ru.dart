@@ -103,6 +103,9 @@ class SRu extends S {
   String get statusListening => 'Слушаю';
 
   @override
+  String get statusReading => 'Читаю';
+
+  @override
   String get statusInProgress => 'В процессе';
 
   @override
