@@ -20,12 +20,18 @@ class MinHeightBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        if (!constraints.hasBoundedHeight ||
-            constraints.maxHeight >= minHeight) {
-          return child;
-        }
+        if (!constraints.hasBoundedHeight) return child;
+        // One tree shape for both cases: swapping wrappers remounts the child,
+        // which drops text focus the moment the keyboard shrinks the body.
+        final bool fits = constraints.maxHeight >= minHeight;
         return SingleChildScrollView(
-          child: SizedBox(height: minHeight, child: child),
+          // The screen's own list keeps the route's primary controller.
+          primary: false,
+          physics: fits ? const NeverScrollableScrollPhysics() : null,
+          child: SizedBox(
+            height: fits ? constraints.maxHeight : minHeight,
+            child: child,
+          ),
         );
       },
     );

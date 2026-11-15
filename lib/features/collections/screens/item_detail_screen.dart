@@ -827,6 +827,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       child: FramePage(
         onBack: () => Navigator.of(context).pop(),
         actions: actions,
+        showSearch: false,
         child: screen,
       ),
     );

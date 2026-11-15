@@ -8,6 +8,7 @@ class FrameChrome {
     this.onBack,
     this.actions = const <Widget>[],
     this.center,
+    this.showSearch = true,
     this.priority = 0,
   });
 
@@ -17,6 +18,9 @@ class FrameChrome {
 
   /// A screen's own filter strip for the middle of the zone (desktop).
   final Widget? center;
+
+  /// False on a screen with nothing to search; any visible lender can veto.
+  final bool showSearch;
 
   /// Per field the highest priority wins; a page's own title row lends at
   /// 1 so a filter strip mounted later cannot take its place.
@@ -78,6 +82,7 @@ class FrameChromeController extends ChangeNotifier {
         onBack: onBack,
         actions: actions,
         center: center,
+        showSearch: ordered.every((FrameChrome c) => c.showSearch),
         priority: ordered.last.priority,
       );
     }

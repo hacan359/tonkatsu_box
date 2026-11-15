@@ -77,5 +77,33 @@ void main() {
         lessThan(tester.getTopLeft(find.text('body')).dy),
       );
     });
+
+    testWidgets('should lend no back button when it only hides the search', (
+      WidgetTester tester,
+    ) async {
+      final FrameChromeController controller = FrameChromeController();
+      addTearDown(controller.dispose);
+
+      await tester.pumpApp(
+        FrameChromeScope(
+          controller: controller,
+          child: const FramePage(showSearch: false, child: Text('body')),
+        ),
+      );
+      await tester.pump();
+
+      expect(controller.current?.showSearch, isFalse);
+      expect(controller.current?.onBack, isNull);
+    });
+
+    testWidgets('should draw no title row when it only hides the search', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpApp(
+        const FramePage(showSearch: false, child: Text('body')),
+      );
+
+      expect(find.byTooltip('Back'), findsNothing);
+    });
   });
 }

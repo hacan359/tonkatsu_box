@@ -138,6 +138,7 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
     final FrameChrome? chrome = FrameChromeScope.watch(context)?.current;
     final VoidCallback? onBack = chrome?.onBack;
     final String? title = chrome?.title;
+    final bool showSearch = chrome?.showSearch ?? true;
     final NavTourKeys tourKeys = ref.watch(navTourKeysProvider);
     final bool tourActive = ref.watch(menuTourControllerProvider);
 
@@ -169,38 +170,67 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
       children: <Widget>[
         if (onBack != null)
           ZoneIconButton(icon: Icons.arrow_back, onTap: onBack),
-        if (title != null)
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: kFrameTitleMaxWidth),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xs,
-                0,
-                AppSpacing.md,
-                0,
-              ),
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.body.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-          ),
         Expanded(
-          child: Container(
-            height: kFrameSearchFieldHeight,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: AppColors.background.withAlpha(110),
-              borderRadius: BorderRadius.circular(kFrameSearchFieldHeight / 2),
-              border: Border.all(color: AppColors.surfaceBorder),
-            ),
-            child: searchField,
+          // The title and the search share what the buttons leave: the title
+          // shrinks to fit, and a search sliver too narrow to use steps aside.
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double titleWidth = title == null
+                  ? 0
+                  : showSearch
+                  ? constraints.maxWidth.clamp(0, kFrameTitleMaxWidth)
+                  : constraints.maxWidth;
+              return Row(
+                children: <Widget>[
+                  if (title != null)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: titleWidth),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.xs,
+                          0,
+                          AppSpacing.md,
+                          0,
+                        ),
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.body.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints rest) {
+                        if (!showSearch ||
+                            rest.maxWidth < kFrameSearchFieldMinWidth) {
+                          return const SizedBox.shrink();
+                        }
+                        return Container(
+                          height: kFrameSearchFieldHeight,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.background.withAlpha(110),
+                            borderRadius: BorderRadius.circular(
+                              kFrameSearchFieldHeight / 2,
+                            ),
+                            border: Border.all(color: AppColors.surfaceBorder),
+                          ),
+                          child: searchField,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
         const SizedBox(width: AppSpacing.sm),

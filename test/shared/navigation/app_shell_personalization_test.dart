@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:material_ui/material_ui.dart';
@@ -25,6 +27,8 @@ import 'package:tonkatsu_box/features/welcome/screens/welcome_screen.dart';
 import 'package:tonkatsu_box/shared/navigation/app_top_bar.dart';
 import 'package:tonkatsu_box/shared/navigation/nav_center_button.dart';
 import 'package:tonkatsu_box/shared/navigation/nav_icon_button.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/shared/widgets/frame_page.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -314,6 +318,47 @@ void main() {
 
         await press(tester, LogicalKeyboardKey.tab, shift: true);
         expect(find.byType(PersonalizationHubScreen), findsNothing);
+      });
+    });
+
+    group('type-to-search', () {
+      testWidgets('should type into the active tab query', (
+        WidgetTester tester,
+      ) async {
+        await pumpShell(tester);
+        final ProviderContainer container = ProviderScope.containerOf(
+          tester.element(find.byType(AllItemsScreen)),
+        );
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyA, character: 'a');
+        await tester.pump();
+
+        expect(container.read(homeSearchQueryProvider), 'a');
+      });
+
+      testWidgets('should ignore keys on a page that hides the search', (
+        WidgetTester tester,
+      ) async {
+        await pumpShell(tester);
+        final BuildContext home = tester.element(find.byType(AllItemsScreen));
+        final ProviderContainer container = ProviderScope.containerOf(home);
+
+        unawaited(
+          Navigator.of(home).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => const FramePage(
+                title: 'Detail',
+                showSearch: false,
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyA, character: 'a');
+        await tester.pump();
+
+        expect(container.read(homeSearchQueryProvider), isEmpty);
       });
     });
   });
