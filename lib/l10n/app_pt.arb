@@ -40,6 +40,7 @@
   "statusPlaying": "Jogando",
   "statusWatching": "Assistindo",
   "statusListening": "Ouvindo",
+  "statusReading": "Lendo",
   "statusInProgress": "Em andamento",
   "statusCompleted": "Concluído",
   "statusDropped": "Abandonado",

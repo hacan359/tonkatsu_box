@@ -36,6 +36,7 @@
   "statusPlaying": "Commencé",
   "statusWatching": "Commencé",
   "statusListening": "En écoute",
+  "statusReading": "En lecture",
   "statusInProgress": "En cours",
   "statusCompleted": "Terminé",
   "statusDropped": "Abandonné",

@@ -167,7 +167,7 @@ List<TrinaColumn> buildCollectionTableColumns({
         return Center(
           child: StatusCell(
             status: item.status,
-            mediaType: item.mediaType,
+            mediaType: item.displayMediaType,
             onStatusChanged: view().onStatusChanged != null
                 ? (ItemStatus s) =>
                       view().onStatusChanged!(item.id, s, item.mediaType)

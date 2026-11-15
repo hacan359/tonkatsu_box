@@ -862,13 +862,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       cacheImageId: config.cacheImageId,
       statusWidget: StatusChipRow(
         status: item.status,
-        mediaType: item.mediaType,
+        mediaType: item.displayMediaType,
         onChanged: (ItemStatus status) =>
             _updateStatus(item.id, status, item.mediaType),
       ),
       statusListWidget: StatusList(
         status: item.status,
-        mediaType: item.mediaType,
+        mediaType: item.displayMediaType,
         onChanged: (ItemStatus status) =>
             _updateStatus(item.id, status, item.mediaType),
       ),

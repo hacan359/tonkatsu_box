@@ -36,6 +36,7 @@
   "statusPlaying": "游玩中",
   "statusWatching": "观看中",
   "statusListening": "收听中",
+  "statusReading": "阅读中",
   "statusInProgress": "进行中",
   "statusCompleted": "已完成",
   "statusDropped": "已弃置",

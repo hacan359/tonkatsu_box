@@ -285,6 +285,12 @@ abstract class S {
   /// **'Listening'**
   String get statusListening;
 
+  /// No description provided for @statusReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get statusReading;
+
   /// No description provided for @statusInProgress.
   ///
   /// In en, this message translates to:

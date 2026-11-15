@@ -102,6 +102,9 @@ class SZh extends S {
   String get statusListening => '收听中';
 
   @override
+  String get statusReading => '阅读中';
+
+  @override
   String get statusInProgress => '进行中';
 
   @override

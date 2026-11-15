@@ -103,6 +103,9 @@ class SFr extends S {
   String get statusListening => 'En écoute';
 
   @override
+  String get statusReading => 'En lecture';
+
+  @override
   String get statusInProgress => 'En cours';
 
   @override
