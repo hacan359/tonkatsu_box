@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_surface.dart';
+import '../theme/app_typography.dart';
 import 'glass_panel.dart';
 
 class DraggableFabItem {
@@ -510,6 +511,9 @@ class _PillButtonState extends State<_PillButton> {
                 child: Text(
                   widget.item.label,
                   style: TextStyle(
+                    // The pill sits in an overlay with no Material ancestor,
+                    // where Android falls back to a monospace face.
+                    fontFamily: AppTypography.fontFamily,
                     fontSize: 13,
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w500,
