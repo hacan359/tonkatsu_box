@@ -1,6 +1,18 @@
 abstract final class AppAssets {
   static const String logo = 'assets/images/logo.png';
 
+  /// [logo] cut into colour layers for the splash lift; stacked in order they
+  /// reproduce the flat logo.
+  static const String logoBase = 'assets/images/logo_layers/base.png';
+  static const String logoClapper = 'assets/images/logo_layers/clapper.png';
+  static const List<String> logoPieces = <String>[
+    'assets/images/logo_layers/piece_0.png',
+    'assets/images/logo_layers/piece_1.png',
+    'assets/images/logo_layers/piece_2.png',
+    'assets/images/logo_layers/piece_3.png',
+    'assets/images/logo_layers/piece_4.png',
+  ];
+
   static const String backgroundTile = 'assets/images/background_tile.png';
 
   /// [backgroundTile] recolored to sakura rose for the light theme.
@@ -44,10 +56,8 @@ abstract final class AppAssets {
   static const String iconMalColor = 'assets/images/icon_myanimelist_color.png';
   static const String iconOpenLibraryColor =
       'assets/images/open_library_color.png';
-  static const String iconFantlabColor =
-      'assets/images/icon_fantlab_color.png';
-  static const String iconComicVineColor =
-      'assets/images/comic_vine_color.png';
+  static const String iconFantlabColor = 'assets/images/icon_fantlab_color.png';
+  static const String iconComicVineColor = 'assets/images/comic_vine_color.png';
   static const String iconGoogleBooksColor =
       'assets/images/icon_google_book_color.png';
   static const String iconHardcoverColor =

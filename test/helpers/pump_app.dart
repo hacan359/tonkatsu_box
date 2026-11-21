@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/theme/app_theme.dart';
+import 'package:tonkatsu_box/shared/widgets/legacy_material_bridge.dart';
 
 class _DefaultSettingsNotifier extends SettingsNotifier {
   @override
@@ -53,9 +55,11 @@ extension PumpApp on WidgetTester {
           // The real app theme, not a bare ThemeData — theme-driven layout
           // crashes are invisible to tests otherwise.
           theme: AppTheme.darkTheme,
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           locale: const Locale('en'),
+          builder: (BuildContext context, Widget? child) =>
+              LegacyMaterialBridge(child: child ?? const SizedBox.shrink()),
           home: child,
         ),
       ),

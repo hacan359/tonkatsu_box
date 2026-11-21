@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Multi-select dialog with search box for genres (or other tag-style
 /// strings). Returns the picked set, or `null` if the user cancels.
@@ -35,8 +36,7 @@ class MultiSelectGenreDialog extends StatefulWidget {
   }
 
   @override
-  State<MultiSelectGenreDialog> createState() =>
-      _MultiSelectGenreDialogState();
+  State<MultiSelectGenreDialog> createState() => _MultiSelectGenreDialogState();
 }
 
 class _MultiSelectGenreDialogState extends State<MultiSelectGenreDialog> {
@@ -72,7 +72,7 @@ class _MultiSelectGenreDialogState extends State<MultiSelectGenreDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Dialog(
+    return GlassDialogFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
         child: Padding(
@@ -80,8 +80,10 @@ class _MultiSelectGenreDialogState extends State<MultiSelectGenreDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(widget.title,
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                widget.title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _searchController,

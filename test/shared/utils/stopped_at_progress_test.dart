@@ -4,7 +4,7 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/custom_media.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/utils/stopped_at_progress.dart';

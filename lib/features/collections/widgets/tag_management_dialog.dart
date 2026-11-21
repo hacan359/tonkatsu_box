@@ -1,5 +1,5 @@
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -10,6 +10,7 @@ import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'tag_row.dart';
 import 'tag_search_list.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Manager over the global tag set: drag reorder plus everything a [TagRow]
 /// carries; search, quick-create and sorting come from [TagSearchList].
@@ -47,8 +48,9 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     );
     if (picked == null) return;
     setState(() {
-      _selectedColor =
-          picked == ColorPickerDialog.noColorSentinel ? null : picked;
+      _selectedColor = picked == ColorPickerDialog.noColorSentinel
+          ? null
+          : picked;
     });
   }
 
@@ -57,7 +59,7 @@ class _TagManagementDialogState extends ConsumerState<TagManagementDialog> {
     final S l = S.of(context);
     final Map<int, int> usage = ref.watch(tagUsageCountsProvider);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.md,

@@ -1,17 +1,16 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'keyboard_shortcuts.dart';
+import '../widgets/glass_dialog.dart';
+import '../widgets/glass_panel.dart';
 
 /// The F1 legend: global navigation shortcuts plus the current screen's own.
 class KeyboardShortcutsDialog extends StatelessWidget {
-  const KeyboardShortcutsDialog({
-    required this.screenGroups,
-    super.key,
-  });
+  const KeyboardShortcutsDialog({required this.screenGroups, super.key});
 
   /// Screen-specific groups; the global ones are prepended here.
   final List<ShortcutGroup> screenGroups;
@@ -22,24 +21,20 @@ class KeyboardShortcutsDialog extends StatelessWidget {
   }) {
     showDialog<void>(
       context: context,
-      builder: (BuildContext context) => KeyboardShortcutsDialog(
-        screenGroups: screenGroups,
-      ),
+      builder: (BuildContext context) =>
+          KeyboardShortcutsDialog(screenGroups: screenGroups),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Row(
         children: <Widget>[
           Icon(Icons.keyboard, color: AppColors.textSecondary),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            l.shortcutsDialogTitle,
-            style: AppTypography.h2,
-          ),
+          Text(l.shortcutsDialogTitle, style: AppTypography.h2),
         ],
       ),
       content: SizedBox(
@@ -81,10 +76,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Row(
               children: <Widget>[
-                SizedBox(
-                  width: 180,
-                  child: _KeyBadge(keys: entry.keys),
-                ),
+                SizedBox(width: 180, child: _KeyBadge(keys: entry.keys)),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -128,7 +120,7 @@ class _KeyBadge extends StatelessWidget {
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
+              color: glassTileColor(),
               borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
               border: Border.all(color: AppColors.surfaceBorder),
             ),

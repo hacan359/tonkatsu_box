@@ -1,5 +1,5 @@
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -16,6 +16,7 @@ import '../providers/showcase_settings_provider.dart';
 import '../widgets/showcase_group_title.dart';
 import '../widgets/showcase_row_section.dart';
 import '../widgets/showcase_settings_sheet.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 final Logger _log = Logger('ShowcaseScreen');
 
@@ -53,15 +54,19 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen> {
   Future<void> _loadPlatforms() async {
     final List<Platform> platforms;
     try {
-      platforms =
-          await ref.read(databaseServiceProvider).gameDao.getAllPlatforms();
+      platforms = await ref
+          .read(databaseServiceProvider)
+          .gameDao
+          .getAllPlatforms();
     } on Object catch (e, st) {
       _log.warning('Platform list failed to load', e, st);
       return;
     }
     if (!mounted) return;
     setState(() {
-      _platformMap = <int, Platform>{for (final Platform p in platforms) p.id: p};
+      _platformMap = <int, Platform>{
+        for (final Platform p in platforms) p.id: p,
+      };
     });
   }
 
@@ -72,17 +77,14 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Material(
-      color: AppColors.background,
+    return FramePage(
       child: Column(
         children: <Widget>[
           _Header(
             onRefresh: () => refreshShowcase(ref),
             onSettings: () => ShowcaseSettingsSheet.show(context),
           ),
-          CollectionChipsRow(
-            targetProvider: showcaseTargetCollectionsProvider,
-          ),
+          CollectionChipsRow(targetProvider: showcaseTargetCollectionsProvider),
           Expanded(child: _buildBody(l)),
         ],
       ),
@@ -101,11 +103,13 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen> {
       children.add(ShowcaseGroupTitle(group: group));
       for (final ShowcaseRowId row in rows) {
         children
-          ..add(ShowcaseRowSection(
-            key: ValueKey<ShowcaseRowId>(row),
-            rowId: row,
-            onTap: _onItemTap,
-          ))
+          ..add(
+            ShowcaseRowSection(
+              key: ValueKey<ShowcaseRowId>(row),
+              rowId: row,
+              onTap: _onItemTap,
+            ),
+          )
           ..add(const SizedBox(height: AppSpacing.lg));
       }
     }

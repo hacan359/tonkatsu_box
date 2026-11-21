@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:core/models/book.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -7,6 +9,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Reading-progress for books. Reuses `currentEpisode` for the page read, the
 /// way [AnimeProgressSection] reuses it for episodes.
@@ -30,7 +33,8 @@ class BookProgressSection extends ConsumerWidget {
   final Color accentColor;
 
   /// Comics track issues read, prose books track pages.
-  String _unitLabel(S l) => (book?.isComic ?? false) ? l.bookIssues : l.bookPages;
+  String _unitLabel(S l) =>
+      (book?.isComic ?? false) ? l.bookIssues : l.bookPages;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,7 +108,7 @@ class BookProgressSection extends ConsumerWidget {
 
     final String? result = await showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(_unitLabel(l)),
         content: TextField(
           controller: controller,
@@ -131,9 +135,9 @@ class BookProgressSection extends ConsumerWidget {
       final int? value = int.tryParse(result);
       if (value != null && value >= 0) {
         final int clamped = total != null && value > total ? total : value;
-        ref
+        unawaited(ref
             .read(collectionItemsNotifierProvider(collectionId).notifier)
-            .updateProgress(itemId, currentEpisode: clamped);
+            .updateProgress(itemId, currentEpisode: clamped));
       }
     }
     controller.dispose();

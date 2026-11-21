@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/widgets/type_to_filter_overlay.dart';
 
 void main() {
@@ -12,7 +13,7 @@ void main() {
     Widget? child,
   }) {
     return MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: TypeToFilterOverlay(
@@ -204,7 +205,7 @@ void main() {
       final List<String> calls = <String>[];
 
       await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: TypeToFilterOverlay(

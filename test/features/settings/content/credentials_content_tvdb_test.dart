@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,7 +58,7 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           locale: const Locale('en'),
           home: const Scaffold(

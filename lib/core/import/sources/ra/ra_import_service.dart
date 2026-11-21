@@ -28,15 +28,15 @@ import '../../import_writer.dart';
 
 final Provider<RaImportService> raImportServiceProvider =
     Provider<RaImportService>((Ref ref) {
-  return RaImportService(
-    raApi: ref.watch(raApiProvider),
-    igdbApi: ref.watch(igdbApiProvider),
-    database: ref.watch(databaseServiceProvider),
-    trackerDao: ref.watch(trackerDaoProvider),
-    repository: ref.watch(collectionRepositoryProvider),
-    wishlistRepository: ref.watch(wishlistRepositoryProvider),
-  );
-});
+      return RaImportService(
+        raApi: ref.watch(raApiProvider),
+        igdbApi: ref.watch(igdbApiProvider),
+        database: ref.watch(databaseServiceProvider),
+        trackerDao: ref.watch(trackerDaoProvider),
+        repository: ref.watch(collectionRepositoryProvider),
+        wishlistRepository: ref.watch(wishlistRepositoryProvider),
+      );
+    });
 
 class RaImportOptions extends ImportOptions {
   const RaImportOptions({
@@ -70,20 +70,17 @@ typedef _MatchedGame = ({
 /// are allowed (RA owns progress), tracker_game_data lands in a second pass.
 class RaImportService implements ImportSource {
   RaImportService({
-    required RaApi raApi,
-    required IgdbApi igdbApi,
+    required this._raApi,
+    required this._igdbApi,
     required DatabaseService database,
-    required TrackerDao trackerDao,
+    required this._trackerDao,
     required CollectionRepository repository,
     required WishlistRepository wishlistRepository,
-  })  : _raApi = raApi,
-        _igdbApi = igdbApi,
-        _db = database,
-        _trackerDao = trackerDao,
-        _writer = ImportWriter(
-          collections: repository,
-          wishlist: wishlistRepository,
-        );
+  }) : _db = database,
+       _writer = ImportWriter(
+         collections: repository,
+         wishlist: wishlistRepository,
+       );
 
   final RaApi _raApi;
   final IgdbApi _igdbApi;
@@ -101,26 +98,27 @@ class RaImportService implements ImportSource {
     covariant RaImportOptions options, {
     ImportProgressCallback? onProgress,
   }) async {
-    onProgress?.call(const ImportProgress(
-      stage: ImportStage.reading,
-      current: 0,
-      total: 0,
-    ));
+    onProgress?.call(
+      const ImportProgress(stage: ImportStage.reading, current: 0, total: 0),
+    );
 
-    final List<RaGameProgress> raGames =
-        await _raApi.getCompletedGames(options.raUsername);
+    final List<RaGameProgress> raGames = await _raApi.getCompletedGames(
+      options.raUsername,
+    );
 
     // Drop non-game entries (Hubs, Events, Standalone).
-    final List<RaGameProgress> games =
-        raGames.where((RaGameProgress g) => g.isRealGame).toList();
+    final List<RaGameProgress> games = raGames
+        .where((RaGameProgress g) => g.isRealGame)
+        .toList();
     if (games.isEmpty) {
       throw const RaApiException('No games found in this RA profile');
     }
 
     // Manual RA→IGDB links from tracker_game_data: already-linked games skip the
     // IGDB search and use the stored IGDB id.
-    final List<TrackerGameData> manualLinks =
-        await _trackerDao.getAllGameData(TrackerType.ra);
+    final List<TrackerGameData> manualLinks = await _trackerDao.getAllGameData(
+      TrackerType.ra,
+    );
     final Map<int, int> raIdToIgdbId = <int, int>{};
     for (final TrackerGameData d in manualLinks) {
       final int? raId = int.tryParse(d.trackerGameId);
@@ -132,22 +130,26 @@ class RaImportService implements ImportSource {
         if (!raIdToIgdbId.containsKey(g.gameId)) g,
     ];
 
-    onProgress?.call(ImportProgress(
-      stage: ImportStage.fetchingGames,
-      current: 0,
-      total: unlinkedGames.length,
-    ));
+    onProgress?.call(
+      ImportProgress(
+        stage: ImportStage.fetchingGames,
+        current: 0,
+        total: unlinkedGames.length,
+      ),
+    );
 
     final Map<int, Game?> matchesByIndex = unlinkedGames.isEmpty
         ? <int, Game?>{}
         : await _batchFindGames(
             unlinkedGames,
             onBatchDone: (int processed) {
-              onProgress?.call(ImportProgress(
-                stage: ImportStage.fetchingGames,
-                current: processed,
-                total: unlinkedGames.length,
-              ));
+              onProgress?.call(
+                ImportProgress(
+                  stage: ImportStage.fetchingGames,
+                  current: processed,
+                  total: unlinkedGames.length,
+                ),
+              );
             },
           );
 
@@ -175,11 +177,13 @@ class RaImportService implements ImportSource {
 
       if (igdbGame == null) {
         if (options.addToWishlist) {
-          wishlist.add(WishlistCandidate(
-            text: '${raGame.title} (${raGame.consoleName})',
-            mediaType: MediaType.game,
-            note: _wishlistNote(raGame),
-          ));
+          wishlist.add(
+            WishlistCandidate(
+              text: '${raGame.title} (${raGame.consoleName})',
+              mediaType: MediaType.game,
+              note: _wishlistNote(raGame),
+            ),
+          );
         }
         continue;
       }
@@ -212,11 +216,13 @@ class RaImportService implements ImportSource {
       );
     }
 
-    onProgress?.call(ImportProgress(
-      stage: ImportStage.addingItems,
-      current: 0,
-      total: matched.length,
-    ));
+    onProgress?.call(
+      ImportProgress(
+        stage: ImportStage.addingItems,
+        current: 0,
+        total: matched.length,
+      ),
+    );
 
     final int wishlistCount = wishlist.length;
     final ImportWriteResult write = await _writer.writeItems(
@@ -224,18 +230,20 @@ class RaImportService implements ImportSource {
       candidates: <ImportCandidate>[
         for (final _MatchedGame m in matched) _candidate(m),
       ],
-      onItem: (int processed, int total, int imported, int updated,
-          String? label) {
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.addingItems,
-          current: processed,
-          total: total,
-          currentItem: label,
-          imported: imported,
-          updated: updated,
-          wishlisted: wishlistCount,
-        ));
-      },
+      onItem:
+          (int processed, int total, int imported, int updated, String? label) {
+            onProgress?.call(
+              ImportProgress(
+                stage: ImportStage.addingItems,
+                current: processed,
+                total: total,
+                currentItem: label,
+                imported: imported,
+                updated: updated,
+                wishlisted: wishlistCount,
+              ),
+            );
+          },
     );
     final Map<MediaType, int> wishlistedByType = await _writer.writeWishlist(
       entries: wishlist,
@@ -248,14 +256,16 @@ class RaImportService implements ImportSource {
       for (final _MatchedGame m in matched) _trackerGameData(m.game.id, m.ra),
     ]);
 
-    onProgress?.call(ImportProgress(
-      stage: ImportStage.completed,
-      current: games.length,
-      total: games.length,
-      imported: sumByType(write.importedByType),
-      updated: sumByType(write.updatedByType),
-      wishlisted: sumByType(wishlistedByType),
-    ));
+    onProgress?.call(
+      ImportProgress(
+        stage: ImportStage.completed,
+        current: games.length,
+        total: games.length,
+        imported: sumByType(write.importedByType),
+        updated: sumByType(write.updatedByType),
+        wishlisted: sumByType(wishlistedByType),
+      ),
+    );
 
     _log.info(
       'RA import done: ${sumByType(write.importedByType)} added, '
@@ -302,9 +312,12 @@ class RaImportService implements ImportSource {
         currentCompletedAt: null,
         now: DateTime.now(),
       );
-      row['started_at'] = dates.clearStartedAt ? null : epochSeconds(dates.startedAt);
-      row['completed_at'] =
-          dates.clearCompletedAt ? null : epochSeconds(dates.completedAt);
+      // The game list carries no first-played date; the start stays empty
+      // until the game's achievements supply the real one.
+      row['started_at'] = null;
+      row['completed_at'] = dates.clearCompletedAt
+          ? null
+          : epochSeconds(dates.completedAt);
       row['last_activity_at'] = epochSeconds(dates.lastActivityAt);
     }
     if (m.ra.lastPlayedAt != null) {
@@ -342,9 +355,13 @@ class RaImportService implements ImportSource {
         now: DateTime.now(),
       );
       fields['status'] = dates.status.value;
-      fields['started_at'] = dates.clearStartedAt ? null : epochSeconds(dates.startedAt);
-      fields['completed_at'] =
-          dates.clearCompletedAt ? null : epochSeconds(dates.completedAt);
+      // Never the sync moment: only a start the item already had survives.
+      fields['started_at'] = dates.clearStartedAt
+          ? null
+          : epochSeconds(existing.startedAt);
+      fields['completed_at'] = dates.clearCompletedAt
+          ? null
+          : epochSeconds(dates.completedAt);
       fields['last_activity_at'] = epochSeconds(dates.lastActivityAt);
     }
     if (lastActivity != null) {
@@ -390,17 +407,21 @@ class RaImportService implements ImportSource {
     final Map<int, Game?> results = <int, Game?>{};
     const int batchSize = IgdbApi.maxMultiQueryBatch;
 
-    for (int batchStart = 0;
-        batchStart < games.length;
-        batchStart += batchSize) {
+    for (
+      int batchStart = 0;
+      batchStart < games.length;
+      batchStart += batchSize
+    ) {
       final int batchEnd = min(batchStart + batchSize, games.length);
       final List<RaGameProgress> batch = games.sublist(batchStart, batchEnd);
 
       final List<({String name, int? platformId})> queries = batch
-          .map((RaGameProgress g) => (
-                name: g.title,
-                platformId: RaToIgdbMapper.primaryIgdbPlatformId(g.consoleId),
-              ))
+          .map(
+            (RaGameProgress g) => (
+              name: g.title,
+              platformId: RaToIgdbMapper.primaryIgdbPlatformId(g.consoleId),
+            ),
+          )
           .toList();
 
       Map<int, List<Game>> batchResults;
@@ -413,8 +434,10 @@ class RaImportService implements ImportSource {
 
       for (int j = 0; j < batch.length; j++) {
         final List<Game> candidates = batchResults[j] ?? <Game>[];
-        results[batchStart + j] =
-            RaToIgdbMapper.bestMatch(batch[j].title, candidates);
+        results[batchStart + j] = RaToIgdbMapper.bestMatch(
+          batch[j].title,
+          candidates,
+        );
       }
 
       onBatchDone?.call(batchEnd);
@@ -458,8 +481,9 @@ class RaImportService implements ImportSource {
     final int? lastPlayedTimestamp = raGame.lastPlayedAt != null
         ? raGame.lastPlayedAt!.millisecondsSinceEpoch ~/ 1000
         : null;
-    final int? platformId =
-        RaToIgdbMapper.primaryIgdbPlatformId(raGame.consoleId);
+    final int? platformId = RaToIgdbMapper.primaryIgdbPlatformId(
+      raGame.consoleId,
+    );
 
     return TrackerGameData(
       id: 0,

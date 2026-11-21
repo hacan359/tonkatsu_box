@@ -3,15 +3,14 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/segmented_pill.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
+import '../../../../shared/services/file_dialogs.dart';
 
-enum _ImageSource {
-  url,
-  file,
-}
+enum _ImageSource { url, file }
 
 /// Pops a map with a `url` key (URL mode) or `base64` + `mimeType`
 /// (file mode); `null` on cancel.
@@ -70,17 +69,13 @@ class _AddImageDialogState extends State<AddImageDialog> {
   }
 
   Future<void> _pickFile() async {
-    // withData: the browser only ever hands out bytes, and the canvas stores
-    // the image as base64 anyway.
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? file = await FilePicker.pickFile(
       type: FileType.image,
-      withData: true,
     );
 
-    if (result == null || result.files.isEmpty) return;
+    if (file == null) return;
 
-    final PlatformFile file = result.files.first;
-    final Uint8List? bytes = file.bytes;
+    final Uint8List? bytes = await file.readBytesOrNull();
     if (bytes == null) return;
 
     final String base64String = base64Encode(bytes);
@@ -108,14 +103,13 @@ class _AddImageDialogState extends State<AddImageDialog> {
 
     switch (_source) {
       case _ImageSource.url:
-        Navigator.of(context).pop(<String, dynamic>{
-          'url': _urlController.text.trim(),
-        });
+        Navigator.of(
+          context,
+        ).pop(<String, dynamic>{'url': _urlController.text.trim()});
       case _ImageSource.file:
-        Navigator.of(context).pop(<String, dynamic>{
-          'base64': _base64Data,
-          'mimeType': _mimeType,
-        });
+        Navigator.of(
+          context,
+        ).pop(<String, dynamic>{'base64': _base64Data, 'mimeType': _mimeType});
     }
   }
 
@@ -124,7 +118,7 @@ class _AddImageDialogState extends State<AddImageDialog> {
     final ThemeData theme = Theme.of(context);
     final S l = S.of(context);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       scrollable: true,
       title: Text(_isEditing ? l.editImageTitle : l.canvasAddImage),
       content: SizedBox(
@@ -134,92 +128,96 @@ class _AddImageDialogState extends State<AddImageDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-            if (!_isEditing) ...<Widget>[
-              SegmentedPill<_ImageSource>(
-                options: <SegmentedPillOption<_ImageSource>>[
-                  SegmentedPillOption<_ImageSource>(
-                    value: _ImageSource.url,
-                    label: l.imageFromUrl,
-                    icon: Icons.link,
-                  ),
-                  SegmentedPillOption<_ImageSource>(
-                    value: _ImageSource.file,
-                    label: l.imageFromFile,
-                    icon: Icons.folder_open,
-                  ),
-                ],
-                selected: _source,
-                onChanged: (_ImageSource s) => setState(() => _source = s),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            if (_source == _ImageSource.url) ...<Widget>[
-              TextField(
-                controller: _urlController,
-                decoration: InputDecoration(
-                  labelText: l.imageUrlLabel,
-                  hintText: l.imageUrlHint,
-                  border: const OutlineInputBorder(),
-                ),
-                autofocus: true,
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 12),
-              if (_urlController.text.trim().startsWith('http'))
-                SizedBox(
-                  height: 150,
-                  child: Center(
-                    child: CachedNetworkImage(
-                      imageUrl: _urlController.text.trim(),
-                      fit: BoxFit.contain,
-                      placeholder: (BuildContext context, String url) =>
-                          const CircularProgressIndicator(),
-                      errorWidget: (BuildContext context, String url,
-                              Object error) =>
-                          Icon(
-                        Icons.broken_image_outlined,
-                        size: 48,
-                        color: theme.colorScheme.error,
-                      ),
+              if (!_isEditing) ...<Widget>[
+                SegmentedPill<_ImageSource>(
+                  options: <SegmentedPillOption<_ImageSource>>[
+                    SegmentedPillOption<_ImageSource>(
+                      value: _ImageSource.url,
+                      label: l.imageFromUrl,
+                      icon: Icons.link,
                     ),
-                  ),
+                    SegmentedPillOption<_ImageSource>(
+                      value: _ImageSource.file,
+                      label: l.imageFromFile,
+                      icon: Icons.folder_open,
+                    ),
+                  ],
+                  selected: _source,
+                  onChanged: (_ImageSource s) => setState(() => _source = s),
                 ),
-            ],
+                const SizedBox(height: 16),
+              ],
 
-            if (_source == _ImageSource.file) ...<Widget>[
-              if (_fileName != null) ...<Widget>[
-                Text(
-                  _fileName!,
-                  style: theme.textTheme.bodyMedium,
+              if (_source == _ImageSource.url) ...<Widget>[
+                TextField(
+                  controller: _urlController,
+                  decoration: InputDecoration(
+                    labelText: l.imageUrlLabel,
+                    hintText: l.imageUrlHint,
+                    border: const OutlineInputBorder(),
+                  ),
+                  autofocus: true,
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) => _submit(),
                 ),
-                const SizedBox(height: 8),
-                if (_pickedBytes != null)
+                const SizedBox(height: 12),
+                if (_urlController.text.trim().startsWith('http'))
                   SizedBox(
                     height: 150,
                     child: Center(
-                      child: Image.memory(
-                        _pickedBytes!,
+                      child: CachedNetworkImage(
+                        imageUrl: _urlController.text.trim(),
                         fit: BoxFit.contain,
-                        errorBuilder: (BuildContext context, Object error,
-                                StackTrace? stackTrace) =>
-                            Icon(
-                          Icons.broken_image_outlined,
-                          size: 48,
-                          color: theme.colorScheme.error,
-                        ),
+                        placeholder: (BuildContext context, String url) =>
+                            const CircularProgressIndicator(),
+                        errorWidget:
+                            (BuildContext context, String url, Object error) =>
+                                Icon(
+                                  Icons.broken_image_outlined,
+                                  size: 48,
+                                  color: theme.colorScheme.error,
+                                ),
                       ),
                     ),
                   ),
-                const SizedBox(height: 8),
               ],
-              OutlinedButton.icon(
-                onPressed: _pickFile,
-                icon: const Icon(Icons.folder_open),
-                label: Text(_fileName != null ? l.imageChooseAnother : l.imageChooseFile),
-              ),
-            ],
+
+              if (_source == _ImageSource.file) ...<Widget>[
+                if (_fileName != null) ...<Widget>[
+                  Text(_fileName!, style: theme.textTheme.bodyMedium),
+                  const SizedBox(height: 8),
+                  if (_pickedBytes != null)
+                    SizedBox(
+                      height: 150,
+                      child: Center(
+                        child: Image.memory(
+                          _pickedBytes!,
+                          fit: BoxFit.contain,
+                          errorBuilder:
+                              (
+                                BuildContext context,
+                                Object error,
+                                StackTrace? stackTrace,
+                              ) => Icon(
+                                Icons.broken_image_outlined,
+                                size: 48,
+                                color: theme.colorScheme.error,
+                              ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                ],
+                OutlinedButton.icon(
+                  onPressed: _pickFile,
+                  icon: const Icon(Icons.folder_open),
+                  label: Text(
+                    _fileName != null
+                        ? l.imageChooseAnother
+                        : l.imageChooseFile,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

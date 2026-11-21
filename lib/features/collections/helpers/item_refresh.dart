@@ -40,12 +40,15 @@ class RefreshOutcome {
   factory RefreshOutcome.failed(String error) =>
       RefreshOutcome._(RefreshOutcomeKind.failed, error);
 
-  static const RefreshOutcome success =
-      RefreshOutcome._(RefreshOutcomeKind.success);
-  static const RefreshOutcome notFound =
-      RefreshOutcome._(RefreshOutcomeKind.notFound);
-  static const RefreshOutcome unsupported =
-      RefreshOutcome._(RefreshOutcomeKind.unsupported);
+  static const RefreshOutcome success = RefreshOutcome._(
+    RefreshOutcomeKind.success,
+  );
+  static const RefreshOutcome notFound = RefreshOutcome._(
+    RefreshOutcomeKind.notFound,
+  );
+  static const RefreshOutcome unsupported = RefreshOutcome._(
+    RefreshOutcomeKind.unsupported,
+  );
 
   final RefreshOutcomeKind kind;
   final String? error;
@@ -70,12 +73,12 @@ bool _keepsCoverOnBulkRefresh(CollectionItem item) =>
 /// Whether [refreshItemFromSource] can run for [item] with no user input;
 /// the bulk action hides itself when no selected item qualifies.
 bool canRefreshFromSource(CollectionItem item) => switch (item.mediaType) {
-      MediaType.custom => false,
-      MediaType.audio => item.audioItem != null,
-      MediaType.book => item.book != null &&
-          _bookSourcesWithRefresh.contains(item.source),
-      _ => true,
-    };
+  MediaType.custom => false,
+  MediaType.audio => item.audioItem != null,
+  MediaType.book =>
+    item.book != null && _bookSourcesWithRefresh.contains(item.source),
+  _ => true,
+};
 
 /// Refetches [item] from its source and upserts the cache row. Context-free
 /// so both the card button and the bulk run share one per-source path.
@@ -106,7 +109,9 @@ Future<RefreshOutcome> refreshItemFromSource(
       // The refetched cover lands on the same path, which also keys Flutter's
       // decoded-image cache — without this the old art renders until restart.
       await cache.evictDecodedImage(
-          item.cachedImageType, item.cachedCoverImageId);
+        item.cachedImageType,
+        item.cachedCoverImageId,
+      );
     }
     return outcome;
   } catch (e) {
@@ -123,24 +128,22 @@ Future<RefreshOutcome> _refetch(
 }) async {
   switch (item.mediaType) {
     case MediaType.game:
-      final Game? game =
-          await ref.read(igdbApiProvider).getGameById(item.externalId);
+      final Game? game = await ref
+          .read(igdbApiProvider)
+          .getGameById(item.externalId);
       if (game == null) return RefreshOutcome.notFound;
       await db.gameDao.upsertGame(game);
     case MediaType.movie:
-      final Movie? movie = item.source == DataSource.tvdb
-          ? await ref.read(tvdbApiProvider).getMovie(item.externalId)
-          : await ref.read(tmdbApiProvider).getMovie(item.externalId);
-      if (movie == null) return RefreshOutcome.notFound;
-      await db.movieDao.upsertMovie(movie);
-    case MediaType.tvShow:
+      return _refetchMovie(ref, db, item);
     case MediaType.animation:
-      final TvEpisodeSource api = ref.read(tvEpisodeSourceResolverProvider)(
-        item.source ?? item.mediaType.defaultSource,
-      );
-      final TvShow? show = await api.getShow(item.externalId);
-      if (show == null) return RefreshOutcome.notFound;
-      await db.tvShowDao.upsertTvShow(show);
+      // An animated movie lives in the movies table; the TV endpoint 404s
+      // on its id.
+      if (item.platformId != AnimationSource.tvShow) {
+        return _refetchMovie(ref, db, item);
+      }
+      return _refetchTvShow(ref, db, item);
+    case MediaType.tvShow:
+      return _refetchTvShow(ref, db, item);
     case MediaType.anime:
       final Anime? anime = switch (item.source) {
         DataSource.kitsu =>
@@ -155,20 +158,25 @@ Future<RefreshOutcome> _refetch(
         case DataSource.mangabaka:
           manga = await ref.read(mangaBakaApiProvider).getById(item.externalId);
         case DataSource.kitsu:
-          manga = await ref.read(kitsuApiProvider).getMangaById(item.externalId);
+          manga = await ref
+              .read(kitsuApiProvider)
+              .getMangaById(item.externalId);
         case DataSource.mangadex:
           final String? uuid = item.manga?.mangaDexUuid;
           manga = uuid != null
               ? await ref.read(mangaDexApiProvider).getByUuid(uuid)
               : null;
         default:
-          manga = await ref.read(aniListApiProvider).getMangaById(item.externalId);
+          manga = await ref
+              .read(aniListApiProvider)
+              .getMangaById(item.externalId);
       }
       if (manga == null) return RefreshOutcome.notFound;
       await db.mangaDao.upsertManga(manga);
     case MediaType.visualNovel:
-      final VisualNovel? vn =
-          await ref.read(vndbApiProvider).getVnById(item.externalId.toString());
+      final VisualNovel? vn = await ref
+          .read(vndbApiProvider)
+          .getVnById(item.externalId.toString());
       if (vn == null) return RefreshOutcome.notFound;
       await db.visualNovelDao.upsertVisualNovel(vn);
     case MediaType.audio:
@@ -176,7 +184,9 @@ Future<RefreshOutcome> _refetch(
       if (cached == null) return RefreshOutcome.unsupported;
       final AudioItem? full = cached.isPodcast
           ? await ref.read(podcastIndexApiProvider).getPodcast(cached.id)
-          : await ref.read(musicBrainzApiProvider).getReleaseGroup(cached.nativeId);
+          : await ref
+                .read(musicBrainzApiProvider)
+                .getReleaseGroup(cached.nativeId);
       if (full == null) return RefreshOutcome.notFound;
       // Overlay so the picked release (label, format, track list totals)
       // survives; the DAO's preserving upsert backs this up.
@@ -195,6 +205,33 @@ Future<RefreshOutcome> _refetch(
   return RefreshOutcome.success;
 }
 
+Future<RefreshOutcome> _refetchMovie(
+  WidgetRef ref,
+  DatabaseService db,
+  CollectionItem item,
+) async {
+  final Movie? movie = item.source == DataSource.tvdb
+      ? await ref.read(tvdbApiProvider).getMovie(item.externalId)
+      : await ref.read(tmdbApiProvider).getMovie(item.externalId);
+  if (movie == null) return RefreshOutcome.notFound;
+  await db.movieDao.upsertMovie(movie);
+  return RefreshOutcome.success;
+}
+
+Future<RefreshOutcome> _refetchTvShow(
+  WidgetRef ref,
+  DatabaseService db,
+  CollectionItem item,
+) async {
+  final TvEpisodeSource api = ref.read(tvEpisodeSourceResolverProvider)(
+    item.source ?? item.mediaType.defaultSource,
+  );
+  final TvShow? show = await api.getShow(item.externalId);
+  if (show == null) return RefreshOutcome.notFound;
+  await db.tvShowDao.upsertTvShow(show);
+  return RefreshOutcome.success;
+}
+
 Future<RefreshOutcome> _refetchBook(
   WidgetRef ref,
   DatabaseService db,
@@ -206,8 +243,9 @@ Future<RefreshOutcome> _refetchBook(
   if (cached == null) return RefreshOutcome.unsupported;
   switch (item.source) {
     case DataSource.openLibrary:
-      final Book? full =
-          await ref.read(openLibraryApiProvider).getWork(cached.nativeId);
+      final Book? full = await ref
+          .read(openLibraryApiProvider)
+          .getWork(cached.nativeId);
       if (full == null) return RefreshOutcome.notFound;
       // OpenLibrary search rows carry year / pages the work lacks, so
       // overlay rather than replace.
@@ -223,13 +261,15 @@ Future<RefreshOutcome> _refetchBook(
           : await reapplyFantlabEdition(api, cached: cached, fresh: full);
       await db.bookDao.upsertBook(updated);
     case DataSource.comicVine:
-      final Book? full =
-          await ref.read(comicVineApiProvider).getVolume(cached.nativeId);
+      final Book? full = await ref
+          .read(comicVineApiProvider)
+          .getVolume(cached.nativeId);
       if (full == null) return RefreshOutcome.notFound;
       await db.bookDao.upsertBook(full);
     case DataSource.googleBooks:
-      final Book? full =
-          await ref.read(googleBooksApiProvider).getVolume(cached.nativeId);
+      final Book? full = await ref
+          .read(googleBooksApiProvider)
+          .getVolume(cached.nativeId);
       if (full == null) return RefreshOutcome.notFound;
       await db.bookDao.upsertBook(full);
     case DataSource.hardcover:

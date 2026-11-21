@@ -1,5 +1,5 @@
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -9,6 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../models/library_stats.dart';
 import 'stats_month_detail_dialog.dart';
 import 'stats_poster.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// The busiest month's activity, or zero when nothing happened all period.
 int statsMonthsPeak(List<MonthActivity> months) {
@@ -54,8 +55,9 @@ class StatsMonthColumn extends StatelessWidget {
     final DateFormat monthFormat = DateFormat.MMM(locale);
     final bool isPeak = month.activity == peak && month.activity > 0;
     final bool active = month.activity > 0;
-    final CollectionItem? cover =
-        month.bestItemId != null ? stats.coversById[month.bestItemId] : null;
+    final CollectionItem? cover = month.bestItemId != null
+        ? stats.coversById[month.bestItemId]
+        : null;
 
     final Widget column = SizedBox(
       width: width,
@@ -152,7 +154,7 @@ class _MonthBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(2),
       child: Container(
         height: 3,
-        color: AppColors.surfaceLight,
+        color: AppColors.textPrimary.withAlpha(30),
         alignment: Alignment.centerLeft,
         child: FractionallySizedBox(
           widthFactor: fraction.clamp(0.0, 1.0),
@@ -175,11 +177,7 @@ class _EmptyMonthTile extends StatelessWidget {
     return AspectRatio(
       aspectRatio: AppSpacing.posterAspectRatio,
       child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          border: Border.all(color: AppColors.surfaceBorder, width: 0.5),
-        ),
+        decoration: glassTileDecoration(radius: AppSpacing.radiusSm, borderWidth: 0.5),
         alignment: Alignment.center,
         child: itemsAdded > 0
             ? Text(

@@ -1,11 +1,12 @@
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_error_extract.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -30,11 +31,8 @@ class BrowseSectionsCompact extends ConsumerWidget {
 
   final void Function(Object item, MediaType mediaType) onItemTap;
 
-  final void Function(
-    int externalId,
-    MediaType mediaType,
-    DataSource? source,
-  )? onOpenInCollection;
+  final void Function(int externalId, MediaType mediaType, DataSource? source)?
+  onOpenInCollection;
 
   final Map<int, Platform> platformMap;
 
@@ -47,8 +45,9 @@ class BrowseSectionsCompact extends ConsumerWidget {
     final BrowseState state = ref.watch(browseProvider);
     final S l = S.of(context);
     final String animeMangaTitleLanguage = ref.watch(
-      settingsNotifierProvider
-          .select((SettingsState s) => s.animeMangaTitleLanguage),
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.animeMangaTitleLanguage,
+      ),
     );
     final CollectedIds collected =
         ref.watch(collectedIdsProvider).valueOrNull ?? kNoCollected;
@@ -70,8 +69,9 @@ class BrowseSectionsCompact extends ConsumerWidget {
               Text(
                 queried ? l.searchNoResults : l.browseEmptyFilters,
                 textAlign: TextAlign.center,
-                style: AppTypography.bodySmall
-                    .copyWith(color: AppColors.textSecondary),
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -79,61 +79,65 @@ class BrowseSectionsCompact extends ConsumerWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      children: <Widget>[
-        for (final SearchSource source in state.activeSources) ...<Widget>[
-          // A load-more failure keeps the rail; the strip goes above it
-          // instead of replacing the page-1 results.
-          if (state.errors[source.id] case final ApiError error)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              child: SourceErrorStrip(
-                source: source,
-                error: error,
-                onRetry: () => ref.read(browseProvider.notifier).refresh(),
-              ),
-            ),
-          // A rail of its own while it is still answering: with nothing here at
-          // all, a slow provider looks like one that found nothing.
-          if (state.errors[source.id] == null &&
-              state.isSourceLoading(source.id) &&
-              (state.itemsBySource[source.id] ?? <Object>[]).isEmpty)
-            _CompactRail(
-              source: source,
-              count: null,
-              onShowAll: null,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => ListView(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs) + bars,
+        children: <Widget>[
+          for (final SearchSource source in state.activeSources) ...<Widget>[
+            // A load-more failure keeps the rail; the strip goes above it
+            // instead of replacing the page-1 results.
+            if (state.errors[source.id] case final ApiError error)
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                itemCount: 4,
-                separatorBuilder: (BuildContext _, int _) =>
-                    const SizedBox(width: AppSpacing.xs),
-                itemBuilder: (BuildContext _, int _) => const SizedBox(
-                  width: cardWidth,
-                  child: ShimmerPosterCard(),
+                child: SourceErrorStrip(
+                  source: source,
+                  error: error,
+                  onRetry: () => ref.read(browseProvider.notifier).refresh(),
                 ),
               ),
-            )
-          else if ((state.itemsBySource[source.id] ?? <Object>[]).isNotEmpty)
-            _CompactRail(
-              source: source,
-              count: state.itemsBySource[source.id]!.length,
-              onShowAll: () =>
-                  ref.read(browseProvider.notifier).narrowTo(source.id),
-              child: _CompactRailList(
-                items: state.itemsBySource[source.id]!,
-                state: state,
+            // A rail of its own while it is still answering: with nothing here at
+            // all, a slow provider looks like one that found nothing.
+            if (state.errors[source.id] == null &&
+                state.isSourceLoading(source.id) &&
+                (state.itemsBySource[source.id] ?? <Object>[]).isEmpty)
+              _CompactRail(
                 source: source,
-                collected: collected,
-                animeMangaTitleLanguage: animeMangaTitleLanguage,
-                platformMap: platformMap,
-                onItemTap: onItemTap,
-                onOpenInCollection: onOpenInCollection,
+                count: null,
+                onShowAll: null,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
+                  itemCount: 4,
+                  separatorBuilder: (BuildContext _, int _) =>
+                      const SizedBox(width: AppSpacing.xs),
+                  itemBuilder: (BuildContext _, int _) => const SizedBox(
+                    width: cardWidth,
+                    child: ShimmerPosterCard(),
+                  ),
+                ),
+              )
+            else if ((state.itemsBySource[source.id] ?? <Object>[]).isNotEmpty)
+              _CompactRail(
+                source: source,
+                count: state.itemsBySource[source.id]!.length,
+                onShowAll: () =>
+                    ref.read(browseProvider.notifier).narrowTo(source.id),
+                child: _CompactRailList(
+                  items: state.itemsBySource[source.id]!,
+                  state: state,
+                  source: source,
+                  collected: collected,
+                  animeMangaTitleLanguage: animeMangaTitleLanguage,
+                  platformMap: platformMap,
+                  onItemTap: onItemTap,
+                  onOpenInCollection: onOpenInCollection,
+                ),
               ),
-            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -173,15 +177,17 @@ class _CompactRail extends StatelessWidget {
                 const SizedBox(width: AppSpacing.xs),
                 Text(
                   source.dataSource.label,
-                  style: AppTypography.bodySmall
-                      .copyWith(fontWeight: FontWeight.w600),
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 if (count != null) ...<Widget>[
                   const SizedBox(width: AppSpacing.xs),
                   Text(
                     '$count',
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textTertiary),
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 ],
                 const Spacer(),
@@ -209,10 +215,7 @@ class _CompactRail extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(
-            height: BrowseSectionsCompact.railHeight,
-            child: child,
-          ),
+          SizedBox(height: BrowseSectionsCompact.railHeight, child: child),
         ],
       ),
     );
@@ -238,11 +241,8 @@ class _CompactRailList extends ConsumerStatefulWidget {
   final String animeMangaTitleLanguage;
   final Map<int, Platform> platformMap;
   final void Function(Object item, MediaType mediaType) onItemTap;
-  final void Function(
-    int externalId,
-    MediaType mediaType,
-    DataSource? source,
-  )? onOpenInCollection;
+  final void Function(int externalId, MediaType mediaType, DataSource? source)?
+  onOpenInCollection;
 
   @override
   ConsumerState<_CompactRailList> createState() => _CompactRailListState();
@@ -273,7 +273,8 @@ class _CompactRailListState extends ConsumerState<_CompactRailList> {
 
   @override
   Widget build(BuildContext context) {
-    final bool loadingMore = widget.state.isLoadingMore &&
+    final bool loadingMore =
+        widget.state.isLoadingMore &&
         (widget.state.moreBySource[widget.source.id] ?? false);
 
     return ListView.separated(

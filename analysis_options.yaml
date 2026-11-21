@@ -30,6 +30,13 @@ analyzer:
     - "**/*.freezed.dart"
     - "build/**"
     - ".dart_tool/**"
+    # gen-l10n output; Flutter 3.50 still emits the deprecated in-SDK delegates.
+    - "lib/l10n/app_localizations*.dart"
+    - android/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:
@@ -49,7 +56,6 @@ linter:
     prefer_const_literals_to_create_immutables: true
 
     # Null safety
-    avoid_null_checks_in_equality_operators: true
     null_check_on_nullable_type_parameter: true
     null_closures: true
 
@@ -104,6 +110,31 @@ linter:
     use_rethrow_when_possible: true
     use_super_parameters: true
     valid_regexps: true
+
+    # Async
+    avoid_void_async: true
+    avoid_futureor_void: true
+    throw_in_finally: true
+    unawaited_futures: true
+
+    # Web build: minified type names and conditional imports
+    avoid_type_to_string: true
+    no_runtimeType_toString: true
+    conditional_uri_does_not_exist: true
+
+    # Likely mistakes
+    literal_only_boolean_expressions: true
+    test_types_in_equals: true
+    unnecessary_statements: true
+    avoid_unused_constructor_parameters: true
+    matching_super_parameters: true
+    deprecated_consistency: true
+    strict_top_level_inference: true
+    use_truncating_division: true
+    no_literal_bool_comparisons: true
+    unnecessary_breaks: true
+    unnecessary_to_list_in_spreads: true
+    use_null_aware_elements: true
 
     # Docs
     public_member_api_docs: false

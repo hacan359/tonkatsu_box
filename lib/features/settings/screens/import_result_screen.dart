@@ -1,6 +1,6 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/universal_import_result.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -10,15 +10,13 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/error_details_dialog.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../collections/screens/collection_screen.dart';
 import '../../../shared/constants/media_type_ui.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 class ImportResultScreen extends StatelessWidget {
-  const ImportResultScreen({
-    required this.result,
-    super.key,
-  });
+  const ImportResultScreen({required this.result, super.key});
 
   final UniversalImportResult result;
 
@@ -26,11 +24,9 @@ class ImportResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return Column(
-      children: <Widget>[
-        SubScreenTitleBar(title: l.importResultTitle),
-        Expanded(
-          child: SingleChildScrollView(
+    return FramePage(
+      title: l.importResultTitle,
+      child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -57,8 +53,9 @@ class ImportResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
                     child: Text(
                       l.importResultWishlistHint,
                       style: AppTypography.bodySmall.copyWith(
@@ -109,8 +106,6 @@ class ImportResultScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ],
     );
   }
 
@@ -168,9 +163,8 @@ class ImportResultScreen extends StatelessWidget {
               // so backing out of the opened collection returns here.
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (BuildContext context) => CollectionScreen(
-                    collectionId: collectionId,
-                  ),
+                  builder: (BuildContext context) =>
+                      CollectionScreen(collectionId: collectionId),
                 ),
               );
             },
@@ -209,7 +203,7 @@ class _ResultCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(color: AppColors.surfaceBorder),
       ),
@@ -222,9 +216,7 @@ class _ResultCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Text(
                 title,
-                style: AppTypography.body.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               Text(
@@ -262,10 +254,7 @@ class _ResultCard extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: Text(
-              type.localizedLabel(l),
-              style: AppTypography.bodySmall,
-            ),
+            child: Text(type.localizedLabel(l), style: AppTypography.bodySmall),
           ),
           Text(
             '$count',
@@ -315,7 +304,7 @@ class _LinesCardState extends State<_LinesCard> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: glassTileColor(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         border: Border.all(color: widget.color.withAlpha(128)),
       ),
@@ -339,10 +328,7 @@ class _LinesCardState extends State<_LinesCard> {
                   Clipboard.setData(
                     ClipboardData(text: widget.lines.join('\n')),
                   );
-                  context.showSnack(
-                    widget.copiedMessage,
-                    type: SnackType.info,
-                  );
+                  context.showSnack(widget.copiedMessage, type: SnackType.info);
                 },
                 icon: const Icon(Icons.copy, size: 16),
                 tooltip: l.copyErrorDetails,
@@ -365,9 +351,7 @@ class _LinesCardState extends State<_LinesCard> {
           if (widget.lines.length > _collapsedCount)
             TextButton(
               onPressed: () => setState(() => _expanded = !_expanded),
-              style: TextButton.styleFrom(
-                textStyle: AppTypography.bodySmall,
-              ),
+              style: TextButton.styleFrom(textStyle: AppTypography.bodySmall),
               child: Text(_expanded ? l.showLess : l.showMore),
             ),
         ],
@@ -378,11 +362,7 @@ class _LinesCardState extends State<_LinesCard> {
 
 /// Single stat row.
 class _StatRow extends StatelessWidget {
-  const _StatRow({
-    required this.icon,
-    required this.color,
-    required this.text,
-  });
+  const _StatRow({required this.icon, required this.color, required this.text});
 
   final IconData icon;
   final Color color;

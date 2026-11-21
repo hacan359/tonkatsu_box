@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
@@ -364,11 +366,11 @@ void main() {
         final ProviderContainer container =
             createContainer(<CollectionItem>[]);
 
-        syncEpisodesToStatus(
+        unawaited(syncEpisodesToStatus(
           container.read,
           tvItem(status: ItemStatus.completed),
           ItemStatus.dropped,
-        );
+        ));
         await Future<void>.delayed(Duration.zero);
 
         expect(unmarkCalls, hasLength(1));

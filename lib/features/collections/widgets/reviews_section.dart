@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tmdb_review.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
@@ -9,7 +9,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
+import '../../settings/providers/settings_provider.dart'
+    show SettingsState, settingsNotifierProvider;
+import '../../../shared/widgets/glass_panel.dart';
 
 // Providers are cached per tmdbId so repeated builds reuse the same
 // provider instance instead of creating (and re-fetching) a new one.
@@ -52,8 +54,7 @@ class ReviewsSection extends ConsumerWidget {
   final MediaType mediaType;
 
   bool get _isTvBased =>
-      mediaType == MediaType.tvShow ||
-      (mediaType == MediaType.animation);
+      mediaType == MediaType.tvShow || (mediaType == MediaType.animation);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,8 +63,9 @@ class ReviewsSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final FutureProvider<List<TmdbReview>> provider =
-        _isTvBased ? _getTvReviewProvider(tmdbId) : _getMovieReviewProvider(tmdbId);
+    final FutureProvider<List<TmdbReview>> provider = _isTvBased
+        ? _getTvReviewProvider(tmdbId)
+        : _getMovieReviewProvider(tmdbId);
 
     final AsyncValue<List<TmdbReview>> asyncReviews = ref.watch(provider);
 
@@ -155,11 +157,7 @@ class _ReviewCardState extends State<_ReviewCard> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md - 4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.surfaceBorder),
-      ),
+      decoration: glassTileDecoration(radius: AppSpacing.radiusSm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -190,11 +188,7 @@ class _ReviewCardState extends State<_ReviewCard> {
                 ),
               ),
               if (widget.review.authorRating != null) ...<Widget>[
-                Icon(
-                  Icons.star,
-                  size: 14,
-                  color: AppColors.ratingStar,
-                ),
+                Icon(Icons.star, size: 14, color: AppColors.ratingStar),
                 const SizedBox(width: 2),
                 Text(
                   '${widget.review.formattedRating}/10',

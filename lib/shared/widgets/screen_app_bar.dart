@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -13,12 +13,7 @@ const double kScreenAppBarIconSize = 20;
 /// The app-wide [AppBar]: 44px tall, with an automatic back button on pushed
 /// routes.
 class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ScreenAppBar({
-    super.key,
-    this.title,
-    this.actions,
-    this.bottom,
-  });
+  const ScreenAppBar({super.key, this.title, this.actions, this.bottom});
 
   final String? title;
 
@@ -36,21 +31,14 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final bool canPop = Navigator.of(context).canPop();
 
+    // No backing of its own: the glass panel behind the page is the look.
     return Container(
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: AppColors.surfaceBorder,
+            color: AppColors.textPrimary.withAlpha(24),
             width: 0.5,
           ),
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[
-            AppColors.surface,
-            AppColors.background,
-          ],
         ),
       ),
       child: AppBar(
@@ -61,8 +49,7 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         titleSpacing: 0,
         leading: canPop
             ? IconButton(
-                icon: const Icon(Icons.arrow_back,
-                    size: kScreenAppBarIconSize),
+                icon: const Icon(Icons.arrow_back, size: kScreenAppBarIconSize),
                 color: AppColors.textTertiary,
                 onPressed: () => Navigator.of(context).pop(),
               )
@@ -70,9 +57,7 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         leadingWidth: canPop ? 48 : 0,
         title: title != null
             ? Padding(
-                padding: EdgeInsets.only(
-                  left: !canPop ? 16 : 0,
-                ),
+                padding: EdgeInsets.only(left: !canPop ? 16 : 0),
                 child: CopyableText(
                   text: title!,
                   child: Text(
@@ -93,4 +78,3 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
-

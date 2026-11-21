@@ -1,10 +1,11 @@
 import 'package:core/models/mood_grid.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../providers/mood_grids_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Dialog to create a new mood grid. Returns the created grid via `Navigator.pop`.
 class CreateMoodGridDialog extends ConsumerStatefulWidget {
@@ -16,8 +17,9 @@ class CreateMoodGridDialog extends ConsumerStatefulWidget {
 }
 
 class _CreateMoodGridDialogState extends ConsumerState<CreateMoodGridDialog> {
-  final TextEditingController _nameController =
-      TextEditingController(text: kDefaultMoodGridTitle);
+  final TextEditingController _nameController = TextEditingController(
+    text: kDefaultMoodGridTitle,
+  );
   MoodGridPreset _preset = MoodGridPreset.aboutMeTonkatsuBox;
   int _rows = 3;
   int _cols = 3;
@@ -33,7 +35,7 @@ class _CreateMoodGridDialogState extends ConsumerState<CreateMoodGridDialog> {
     final S l = S.of(context);
     final bool isBlank = _preset == MoodGridPreset.blank;
 
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.moodGridCreateTitle),
       content: SingleChildScrollView(
         child: Column(
@@ -110,10 +112,7 @@ class _CreateMoodGridDialogState extends ConsumerState<CreateMoodGridDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        FilledButton(
-          onPressed: _create,
-          child: Text(l.moodGridCreate),
-        ),
+        FilledButton(onPressed: _create, child: Text(l.moodGridCreate)),
       ],
     );
   }
@@ -122,13 +121,9 @@ class _CreateMoodGridDialogState extends ConsumerState<CreateMoodGridDialog> {
     final String name = _nameController.text.trim().isEmpty
         ? kDefaultMoodGridTitle
         : _nameController.text.trim();
-    final MoodGrid grid =
-        await ref.read(moodGridsProvider.notifier).create(
-              name: name,
-              preset: _preset,
-              rows: _rows,
-              cols: _cols,
-            );
+    final MoodGrid grid = await ref
+        .read(moodGridsProvider.notifier)
+        .create(name: name, preset: _preset, rows: _rows, cols: _cols);
     if (mounted) Navigator.of(context).pop(grid);
   }
 }

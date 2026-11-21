@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
+import '../../../../shared/widgets/glass_panel.dart';
 
 const double _dialogWidth = 560;
 const double _dialogHeight = 600;
@@ -48,7 +50,7 @@ class CoverCandidateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Dialog(
+    return GlassDialogFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth: _dialogWidth,
@@ -127,7 +129,7 @@ class _CandidateTile extends StatelessWidget {
     final Widget tile = ClipRRect(
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Material(
-        color: AppColors.surfaceLight,
+        color: glassTileColor(),
         child: InkWell(
           onTap: onTap,
           // Thumbs only: the full-size picture is fetched once, when picked.

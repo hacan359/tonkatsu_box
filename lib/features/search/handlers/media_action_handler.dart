@@ -1,5 +1,5 @@
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Items are `Object`, not a generic: invariance would forbid one registry of
 /// `MediaActionHandler<T>`. Animation dispatches via [MediaType], no handler.

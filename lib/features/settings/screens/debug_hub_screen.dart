@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../../shared/widgets/whats_new_dialog.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
@@ -23,11 +23,9 @@ class DebugHubScreen extends ConsumerWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return Column(
-      children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsDebug),
-        Expanded(
-          child: Align(
+    return FramePage(
+      title: S.of(context).settingsDebug,
+      child: Align(
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -81,8 +79,6 @@ class DebugHubScreen extends ConsumerWidget {
               ),
             ),
           ),
-        ),
-      ],
     );
   }
 

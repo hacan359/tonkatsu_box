@@ -57,17 +57,12 @@ typedef _Split = ({
 class CustomCardsImportService {
   CustomCardsImportService({
     required DatabaseService database,
-    required CollectionRepository repository,
-    required ImageCacheService imageCache,
-    required ImportWriter writer,
-    required TitleResolver resolver,
-    required MediaCacheWriter mediaCache,
-  })  : _db = database,
-        _repository = repository,
-        _imageCache = imageCache,
-        _writer = writer,
-        _resolver = resolver,
-        _mediaCache = mediaCache;
+    required this._repository,
+    required this._imageCache,
+    required this._writer,
+    required this._resolver,
+    required this._mediaCache,
+  })  : _db = database;
 
   static final Logger _log = Logger('CustomCardsImportService');
 

@@ -5,7 +5,7 @@ import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart' as p;
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/data/repositories/collection_repository.dart';
@@ -13,7 +13,8 @@ import 'package:tonkatsu_box/features/collections/providers/collections_provider
 import 'package:tonkatsu_box/features/collections/widgets/collection_filter_bar.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:tonkatsu_box/shared/widgets/chevron_filter_bar.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
+import 'package:tonkatsu_box/shared/widgets/media_type_icon_strip.dart';
 import 'package:tonkatsu_box/shared/widgets/filter_subfilter_bar.dart';
 
 class TestSettingsNotifier extends SettingsNotifier {
@@ -180,7 +181,7 @@ Widget _buildTestApp({
   return ProviderScope(
     overrides: overrides,
     child: MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       home: Scaffold(body: child),
     ),
@@ -189,8 +190,9 @@ Widget _buildTestApp({
 
 Widget _buildFilterBar({
   int? collectionId = _testCollectionId,
-  AsyncValue<CollectionStats> statsAsync =
-      const AsyncData<CollectionStats>(_testStats),
+  AsyncValue<CollectionStats> statsAsync = const AsyncData<CollectionStats>(
+    _testStats,
+  ),
   AsyncValue<List<CollectionItem>> itemsAsync =
       const AsyncData<List<CollectionItem>>(<CollectionItem>[]),
   Set<MediaType> filterTypes = const <MediaType>{},
@@ -240,10 +242,12 @@ List<Override> _defaultOverrides({
   bool alwaysShowSubcategories = false,
 }) {
   return <Override>[
-    collectionSortProvider
-        .overrideWith(() => TestCollectionSortNotifier(sortMode)),
-    collectionSortDescProvider
-        .overrideWith(() => TestCollectionSortDescNotifier(isDescending)),
+    collectionSortProvider.overrideWith(
+      () => TestCollectionSortNotifier(sortMode),
+    ),
+    collectionSortDescProvider.overrideWith(
+      () => TestCollectionSortDescNotifier(isDescending),
+    ),
     settingsNotifierProvider.overrideWith(
       () => TestSettingsNotifier(
         alwaysShowSubcategories: alwaysShowSubcategories,
@@ -251,6 +255,15 @@ List<Override> _defaultOverrides({
     ),
   ];
 }
+
+/// The strip shows a type as an icon tile; its label lives in the tooltip.
+Finder _tile(String label) => find.byWidgetPredicate(
+  (Widget w) => w is MediaTypeIconTile && w.label == label,
+);
+
+Finder _tileWithCount(int count) => find.byWidgetPredicate(
+  (Widget w) => w is MediaTypeIconTile && w.count == count,
+);
 
 void main() {
   group('CollectionFilterBar', () {
@@ -280,7 +293,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(ChevronSegment), findsWidgets);
+        expect(find.byType(MediaTypeIconTile), findsWidgets);
       });
     });
 
@@ -302,7 +315,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final Finder gamesSegment = find.textContaining('Games');
+        final Finder gamesSegment = _tile('Games');
         expect(gamesSegment, findsWidgets);
         await tester.tap(gamesSegment.first);
         await tester.pumpAndSettle();
@@ -334,24 +347,23 @@ void main() {
         },
       );
 
-      testWidgets(
-        'hides format chips when manga is not selected',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                itemsAsync: AsyncData<List<CollectionItem>>(
-                  _mangaItemsWithFormats,
-                ),
+      testWidgets('hides format chips when manga is not selected', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              itemsAsync: AsyncData<List<CollectionItem>>(
+                _mangaItemsWithFormats,
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(FilterTabChip), findsNothing);
-        },
-      );
+        expect(find.byType(FilterTabChip), findsNothing);
+      });
     });
 
     group('платформы (чипы)', () {
@@ -376,168 +388,161 @@ void main() {
         },
       );
 
-      testWidgets(
-        'должен дедуплицировать платформы из нескольких элементов',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.game},
-                itemsAsync: AsyncData<List<CollectionItem>>(
-                  _gameItemsWithPlatforms,
-                ),
+      testWidgets('должен дедуплицировать платформы из нескольких элементов', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.game},
+              itemsAsync: AsyncData<List<CollectionItem>>(
+                _gameItemsWithPlatforms,
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.text('SNES'), findsOneWidget);
-        },
-      );
+        expect(find.text('SNES'), findsOneWidget);
+      });
 
-      testWidgets(
-        'должен игнорировать элементы с platformId == -1',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            CollectionItem(
-              id: 100,
-              collectionId: _testCollectionId,
-              mediaType: MediaType.game,
-              externalId: 999,
-              status: ItemStatus.notStarted,
-              addedAt: DateTime(2024),
-              platformId: -1,
-              platform: const p.Platform(id: -1, name: 'Invalid'),
+      testWidgets('должен игнорировать элементы с platformId == -1', (
+        WidgetTester tester,
+      ) async {
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
+            id: 100,
+            collectionId: _testCollectionId,
+            mediaType: MediaType.game,
+            externalId: 999,
+            status: ItemStatus.notStarted,
+            addedAt: DateTime(2024),
+            platformId: -1,
+            platform: const p.Platform(id: -1, name: 'Invalid'),
+          ),
+        ];
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.game},
+              itemsAsync: AsyncData<List<CollectionItem>>(items),
             ),
-          ];
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.game},
-                itemsAsync: AsyncData<List<CollectionItem>>(items),
+        expect(find.byType(FilterTabChip), findsNothing);
+      });
+
+      testWidgets('должен игнорировать элементы с platform == null', (
+        WidgetTester tester,
+      ) async {
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
+            id: 101,
+            collectionId: _testCollectionId,
+            mediaType: MediaType.game,
+            externalId: 888,
+            status: ItemStatus.notStarted,
+            addedAt: DateTime(2024),
+            platformId: 19,
+          ),
+        ];
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.game},
+              itemsAsync: AsyncData<List<CollectionItem>>(items),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(FilterTabChip), findsNothing);
+      });
+
+      testWidgets('должен не показывать платформы для не-игровых элементов', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              itemsAsync: AsyncData<List<CollectionItem>>(_movieItems),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(FilterTabChip), findsNothing);
+      });
+
+      testWidgets('should call onPlatformToggled when tapped on платформу', (
+        WidgetTester tester,
+      ) async {
+        int? tappedPlatformId;
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.game},
+              itemsAsync: AsyncData<List<CollectionItem>>(
+                _gameItemsWithPlatforms,
+              ),
+              onPlatformToggled: (int? id) {
+                tappedPlatformId = id;
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('PS1'));
+        await tester.pumpAndSettle();
+
+        expect(tappedPlatformId, equals(7));
+      });
+
+      testWidgets('должен не показывать платформы при loading items', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.game},
+              itemsAsync: const AsyncLoading<List<CollectionItem>>(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(FilterTabChip), findsNothing);
+      });
+
+      testWidgets('должен не показывать платформы когда Games не активен', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              itemsAsync: AsyncData<List<CollectionItem>>(
+                _gameItemsWithPlatforms,
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(FilterTabChip), findsNothing);
-        },
-      );
-
-      testWidgets(
-        'должен игнорировать элементы с platform == null',
-        (WidgetTester tester) async {
-          final List<CollectionItem> items = <CollectionItem>[
-            CollectionItem(
-              id: 101,
-              collectionId: _testCollectionId,
-              mediaType: MediaType.game,
-              externalId: 888,
-              status: ItemStatus.notStarted,
-              addedAt: DateTime(2024),
-              platformId: 19,
-            ),
-          ];
-
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.game},
-                itemsAsync: AsyncData<List<CollectionItem>>(items),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          expect(find.byType(FilterTabChip), findsNothing);
-        },
-      );
-
-      testWidgets(
-        'должен не показывать платформы для не-игровых элементов',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                itemsAsync: AsyncData<List<CollectionItem>>(_movieItems),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          expect(find.byType(FilterTabChip), findsNothing);
-        },
-      );
-
-      testWidgets(
-        'should call onPlatformToggled when tapped on платформу',
-        (WidgetTester tester) async {
-          int? tappedPlatformId;
-
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.game},
-                itemsAsync: AsyncData<List<CollectionItem>>(
-                  _gameItemsWithPlatforms,
-                ),
-                onPlatformToggled: (int? id) {
-                  tappedPlatformId = id;
-                },
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          await tester.tap(find.text('PS1'));
-          await tester.pumpAndSettle();
-
-          expect(tappedPlatformId, equals(7));
-        },
-      );
-
-      testWidgets(
-        'должен не показывать платформы при loading items',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.game},
-                itemsAsync: const AsyncLoading<List<CollectionItem>>(),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          expect(find.byType(FilterTabChip), findsNothing);
-        },
-      );
-
-      testWidgets(
-        'должен не показывать платформы когда Games не активен',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                itemsAsync: AsyncData<List<CollectionItem>>(
-                  _gameItemsWithPlatforms,
-                ),
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          expect(find.byType(FilterTabChip), findsNothing);
-        },
-      );
+        expect(find.byType(FilterTabChip), findsNothing);
+      });
     });
 
     group('счётчики типов', () {
@@ -550,8 +555,9 @@ void main() {
               child: _buildFilterBar(
                 filterTypes: <MediaType>{MediaType.manga},
                 filterMangaFormats: <String>{'MANHWA'},
-                itemsAsync:
-                    AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
+                itemsAsync: AsyncData<List<CollectionItem>>(
+                  _mangaItemsWithFormats,
+                ),
               ),
             ),
           );
@@ -559,54 +565,55 @@ void main() {
 
           // Only one of the two manga matches MANHWA; the count has to follow
           // the subfilter or it drifts from what the grid shows.
-          expect(find.textContaining('(1)'), findsOneWidget);
-          expect(find.textContaining('(2)'), findsNothing);
+          expect(_tileWithCount(1), findsOneWidget);
+          expect(_tileWithCount(2), findsNothing);
         },
       );
 
-      testWidgets(
-        'без субфильтра счётчик показывает все элементы типа',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.manga},
-                itemsAsync:
-                    AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
+      testWidgets('без субфильтра счётчик показывает все элементы типа', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.manga},
+              itemsAsync: AsyncData<List<CollectionItem>>(
+                _mangaItemsWithFormats,
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.textContaining('(2)'), findsOneWidget);
-        },
-      );
+        expect(_tileWithCount(2), findsOneWidget);
+      });
 
-      testWidgets(
-        'статус-фильтр тоже сужает счётчик',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                filterTypes: <MediaType>{MediaType.manga},
-                filterStatuses: <ItemStatus>{ItemStatus.completed},
-                itemsAsync:
-                    AsyncData<List<CollectionItem>>(_mangaItemsWithFormats),
+      testWidgets('статус-фильтр тоже сужает счётчик', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              filterTypes: <MediaType>{MediaType.manga},
+              filterStatuses: <ItemStatus>{ItemStatus.completed},
+              itemsAsync: AsyncData<List<CollectionItem>>(
+                _mangaItemsWithFormats,
               ),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.textContaining('(1)'), findsOneWidget);
-        },
-      );
+        expect(_tileWithCount(1), findsOneWidget);
+      });
     });
 
     group('фильтр избранного', () {
-      testWidgets('тап по сегменту зовёт onFavoriteToggled',
-          (WidgetTester tester) async {
+      testWidgets('тап по сегменту зовёт onFavoriteToggled', (
+        WidgetTester tester,
+      ) async {
         int calls = 0;
 
         await tester.pumpWidget(
@@ -616,15 +623,15 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        // The non-compact bar renders the label; the icon only appears compact.
-        await tester.tap(find.text('Favorite'));
+        await tester.tap(_tile('Favorite'));
         await tester.pumpAndSettle();
 
         expect(calls, 1);
       });
 
-      testWidgets('строка шевронов не переполняется на ширине телефона',
-          (WidgetTester tester) async {
+      testWidgets('строка шевронов не переполняется на ширине телефона', (
+        WidgetTester tester,
+      ) async {
         tester.view.physicalSize = const Size(360, 640);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.reset);
@@ -640,8 +647,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('счётчик типа учитывает избранное',
-          (WidgetTester tester) async {
+      testWidgets('счётчик типа учитывает избранное', (
+        WidgetTester tester,
+      ) async {
         final List<CollectionItem> items = <CollectionItem>[
           CollectionItem(
             id: 40,
@@ -676,8 +684,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('(1)'), findsOneWidget);
-        expect(find.textContaining('(2)'), findsNothing);
+        expect(_tileWithCount(1), findsOneWidget);
+        expect(_tileWithCount(2), findsNothing);
       });
     });
 
@@ -687,8 +695,7 @@ void main() {
         (WidgetTester tester) async {
           await tester.pumpWidget(
             _buildTestApp(
-              overrides:
-                  _defaultOverrides(alwaysShowSubcategories: true),
+              overrides: _defaultOverrides(alwaysShowSubcategories: true),
               child: _buildFilterBar(
                 itemsAsync: AsyncData<List<CollectionItem>>(
                   _gameItemsWithPlatforms,
@@ -708,8 +715,7 @@ void main() {
         (WidgetTester tester) async {
           await tester.pumpWidget(
             _buildTestApp(
-              overrides:
-                  _defaultOverrides(alwaysShowSubcategories: true),
+              overrides: _defaultOverrides(alwaysShowSubcategories: true),
               child: _buildFilterBar(
                 itemsAsync: AsyncData<List<CollectionItem>>(
                   _mangaItemsWithFormats,
@@ -725,58 +731,54 @@ void main() {
     });
 
     group('состояние пустой статистики', () {
-      testWidgets(
-        'должен корректно отображаться с пустой статистикой',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                statsAsync:
-                    const AsyncData<CollectionStats>(_emptyStats),
-              ),
+      testWidgets('должен корректно отображаться с пустой статистикой', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              statsAsync: const AsyncData<CollectionStats>(_emptyStats),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(CollectionFilterBar), findsOneWidget);
-        },
-      );
+        expect(find.byType(CollectionFilterBar), findsOneWidget);
+      });
 
-      testWidgets(
-        'должен корректно отображаться при loading статистике',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                statsAsync: const AsyncLoading<CollectionStats>(),
-              ),
+      testWidgets('должен корректно отображаться при loading статистике', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(
+              statsAsync: const AsyncLoading<CollectionStats>(),
             ),
-          );
-          await tester.pumpAndSettle();
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(CollectionFilterBar), findsOneWidget);
-        },
-      );
+        expect(find.byType(CollectionFilterBar), findsOneWidget);
+      });
     });
 
     group('collectionId == null (uncategorized)', () {
-      testWidgets(
-        'должен корректно отображаться без collectionId',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(collectionId: null),
-            ),
-          );
-          await tester.pumpAndSettle();
+      testWidgets('должен корректно отображаться без collectionId', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          _buildTestApp(
+            overrides: _defaultOverrides(),
+            child: _buildFilterBar(collectionId: null),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-          expect(find.byType(CollectionFilterBar), findsOneWidget);
-          expect(find.byType(ChevronSegment), findsWidgets);
-        },
-      );
+        expect(find.byType(CollectionFilterBar), findsOneWidget);
+        expect(find.byType(MediaTypeIconTile), findsWidgets);
+      });
     });
   });
 }

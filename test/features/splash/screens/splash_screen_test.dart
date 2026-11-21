@@ -4,9 +4,11 @@
 import 'package:core/rpc/protocol.dart';
 import 'package:core/rpc/rpc_transport.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/widgets/volumetric_logo.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:tonkatsu_box/core/database/database_service.dart';
@@ -27,12 +29,10 @@ void main() {
 
   Widget buildTestWidget() {
     return ProviderScope(
-      overrides: <Override>[
-        databaseServiceProvider.overrideWithValue(mockDb),
-      ],
+      overrides: <Override>[databaseServiceProvider.overrideWithValue(mockDb)],
       child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
-            supportedLocales: S.supportedLocales,
+        localizationsDelegates: kAppLocalizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: SplashScreen(),
       ),
     );
@@ -42,43 +42,48 @@ void main() {
     testWidgets('рендерит логотип', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.byType(Image), findsOneWidget);
+      expect(find.byType(VolumetricLogo), findsOneWidget);
     });
 
-    testWidgets('содержит ScaleTransition с Image внутри',
-        (WidgetTester tester) async {
+    testWidgets('содержит ScaleTransition с логотипом внутри', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
 
       expect(
         find.descendant(
           of: find.byType(ScaleTransition),
-          matching: find.byType(Image),
+          matching: find.byType(VolumetricLogo),
         ),
         findsOneWidget,
       );
     });
 
-    testWidgets('Scaffold имеет прозрачный фон (тайловый фон в builder)',
-        (WidgetTester tester) async {
+    testWidgets('Scaffold имеет прозрачный фон (тайловый фон в builder)', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
 
-      final Scaffold scaffold =
-          tester.widget<Scaffold>(find.byType(Scaffold).first);
+      final Scaffold scaffold = tester.widget<Scaffold>(
+        find.byType(Scaffold).first,
+      );
       // Background is set via MaterialApp.builder, so Scaffold is transparent.
       expect(scaffold.backgroundColor, isNull);
     });
   });
 
   group('SplashScreen pre-warming', () {
-    testWidgets('вызывает database getter в initState',
-        (WidgetTester tester) async {
+    testWidgets('вызывает database getter в initState', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
 
       verify(mockDb.warmUp).called(1);
     });
 
-    testWidgets('повторный pump не дублирует вызовы DB',
-        (WidgetTester tester) async {
+    testWidgets('повторный pump не дублирует вызовы DB', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
       await tester.pump();
@@ -86,8 +91,9 @@ void main() {
       verify(mockDb.warmUp).called(1);
     });
 
-    testWidgets('should open the token screen when the server answers 401',
-        (WidgetTester tester) async {
+    testWidgets('should open the token screen when the server answers 401', (
+      WidgetTester tester,
+    ) async {
       when(mockDb.warmUp).thenAnswer(
         (_) => Future<void>.error(
           const RpcException(kRpcErrorKindAuth, 'Missing or wrong token'),
@@ -101,8 +107,9 @@ void main() {
       expect(find.byType(SplashScreen), findsNothing);
     });
 
-    testWidgets('should keep the splash on a non-auth failure',
-        (WidgetTester tester) async {
+    testWidgets('should keep the splash on a non-auth failure', (
+      WidgetTester tester,
+    ) async {
       when(mockDb.warmUp).thenAnswer(
         (_) => Future<void>.error(
           const RpcException('transport', 'server unreachable'),
@@ -118,8 +125,9 @@ void main() {
       expect(find.byType(SplashScreen), findsOneWidget);
     });
 
-    testWidgets('не навигирует до завершения анимации',
-        (WidgetTester tester) async {
+    testWidgets('не навигирует до завершения анимации', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
 
       await tester.pump();

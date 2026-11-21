@@ -196,13 +196,11 @@ final Provider<TraktImportService> traktImportServiceProvider =
 /// marked directly and titles without TMDB data fall to the text wishlist.
 class TraktImportService implements ImportSource {
   TraktImportService({
-    required TmdbApi tmdbApi,
+    required this._tmdbApi,
     required CollectionRepository repository,
-    required DatabaseService database,
+    required this._database,
     required WishlistRepository wishlistRepository,
-  })  : _tmdbApi = tmdbApi,
-        _database = database,
-        _writer = ImportWriter(
+  })  : _writer = ImportWriter(
           collections: repository,
           wishlist: wishlistRepository,
         );

@@ -19,7 +19,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.46.0+43
 
 environment:
-  sdk: ^3.10.8
+  sdk: ^3.14.0
+  flutter: ">=3.50.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -54,26 +55,27 @@ dependencies:
   web: ^1.1.1
 
   # UI
-  cached_network_image: ^3.3.1
+  material_ui: ^1.11.0
+  cached_network_image: ^4.0.7
   flutter_svg: ^2.0.10
 
   # File Operations
-  file_picker: ^10.0.0
-  permission_handler: ^12.0.1
-  android_intent_plus: ^5.3.0
-  device_info_plus: ^11.3.0
+  file_picker: ^13.3.3
+  permission_handler: ^13.0.2
+  android_intent_plus: ^6.1.0
+  device_info_plus: ^13.3.0
 
   # Archive
   archive: ^4.0.2
 
   # XML (MyAnimeList import)
-  xml: ^6.5.0
+  xml: ^7.0.1
 
   # URL
   url_launcher: ^6.2.0
 
   # App Info
-  package_info_plus: ^8.0.0
+  package_info_plus: ^10.2.2
 
   # WebView
   webview_windows: ^0.4.0
@@ -86,10 +88,10 @@ dependencies:
   dart_discord_presence: ^1.2.0
 
   # Sensors (gyroscope parallax on mobile)
-  sensors_plus: ^6.1.1
+  sensors_plus: ^7.1.1
   calendar_view: ^2.0.0
-  trina_grid: ^2.2.2
-  shadcn_ui: ^0.43.4
+  trina_grid: ^2.4.0
+  shadcn_ui: ^0.57.4
 
 # The real gamepads_windows is native-only and its USB device listener
 # crashes the app (0xc0000005) even though the Dart side never subscribes
@@ -126,6 +128,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/logo_layers/
     - assets/images/platform_overlays/
     - assets/images/collection_hero_defaults/
     # Hand-written release notes for the "What's new" dialog.

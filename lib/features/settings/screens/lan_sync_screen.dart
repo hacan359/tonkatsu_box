@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:core/models/sync_manifest.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -15,7 +15,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/storage_access.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// While open, this device is discoverable and serves its data; the server
 /// stops when the screen closes.
@@ -54,8 +55,9 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
   }
 
   Future<void> _start() async {
-    final SyncDeviceMeta meta =
-        await ref.read(dbSyncServiceProvider).deviceMeta();
+    final SyncDeviceMeta meta = await ref
+        .read(dbSyncServiceProvider)
+        .deviceMeta();
     if (!mounted) return;
     setState(() => _deviceName = meta.deviceName);
     try {
@@ -95,19 +97,21 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setLocal) {
-            return AlertDialog(
+            return GlassAlertDialog(
               title: Text(l10n.lanSyncReceiveTitle),
               scrollable: true,
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(l10n.lanSyncReceiveMessage(
-                    manifest.deviceName,
-                    _formatDate(manifest.createdAt),
-                    manifest.collections,
-                    manifest.items,
-                  )),
+                  Text(
+                    l10n.lanSyncReceiveMessage(
+                      manifest.deviceName,
+                      _formatDate(manifest.createdAt),
+                      manifest.collections,
+                      manifest.items,
+                    ),
+                  ),
                   if (canTransferSettings) ...<Widget>[
                     const SizedBox(height: AppSpacing.sm),
                     CheckboxListTile(
@@ -148,9 +152,10 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
     final S l10n = S.of(context);
     final LanSyncService lan = ref.watch(lanSyncServiceProvider);
 
-    return Column(
+    return FramePage(
+      title: l10n.lanSyncTitle,
+      child: Column(
       children: <Widget>[
-        SubScreenTitleBar(title: l10n.lanSyncTitle),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
@@ -180,49 +185,47 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         Expanded(
           child: ValueListenableBuilder<List<LanPeer>>(
             valueListenable: lan.peers,
-            builder: (
-              BuildContext context,
-              List<LanPeer> peers,
-              Widget? child,
-            ) {
-              if (peers.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(
-                          l10n.lanSyncNoDevices,
-                          textAlign: TextAlign.center,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+            builder:
+                (BuildContext context, List<LanPeer> peers, Widget? child) {
+                  if (peers.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              l10n.lanSyncNoDevices,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              return ListView.builder(
-                itemCount: peers.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final LanPeer peer = peers[index];
-                  return ListTile(
-                    leading: const Icon(Icons.devices),
-                    title: Text(peer.name),
-                    subtitle: Text(l10n.lanSyncPull),
-                    enabled: !_busy,
-                    onTap: () => _pull(peer),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: peers.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final LanPeer peer = peers[index];
+                      return ListTile(
+                        leading: const Icon(Icons.devices),
+                        title: Text(peer.name),
+                        subtitle: Text(l10n.lanSyncPull),
+                        enabled: !_busy,
+                        onTap: () => _pull(peer),
+                      );
+                    },
                   );
                 },
-              );
-            },
           ),
         ),
       ],
+      ),
     );
   }
 
@@ -245,8 +248,9 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
 
       bool imagesFailed = false;
       _showProgress(l10n.lanSyncWaiting(peer.name));
-      final Directory tmpDir =
-          await Directory.systemTemp.createTemp('tonkatsu_box_lan_in');
+      final Directory tmpDir = await Directory.systemTemp.createTemp(
+        'tonkatsu_box_lan_in',
+      );
       try {
         await lan.downloadSnapshot(
           peer,
@@ -254,8 +258,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
           requesterName: _deviceName ?? '',
         );
 
-        final SyncSnapshotInfo info =
-            await dbSync.inspectSnapshot(tmpDir.path);
+        final SyncSnapshotInfo info = await dbSync.inspectSnapshot(tmpDir.path);
         if (info.tooNew) {
           _finish(l10n.lanSyncTooNew, error: true);
           return;
@@ -330,7 +333,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext context) => GlassAlertDialog(
         content: Row(
           children: <Widget>[
             const CircularProgressIndicator(),

@@ -1,5 +1,5 @@
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -136,9 +136,9 @@ class StatsHeroWall extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: <Color>[
-                  AppColors.background,
-                  AppColors.background.withAlpha(140),
-                  AppColors.background,
+                  AppColors.background.withAlpha(215),
+                  AppColors.background.withAlpha(120),
+                  AppColors.background.withAlpha(215),
                 ],
                 stops: const <double>[0.12, 0.55, 1.0],
               ),

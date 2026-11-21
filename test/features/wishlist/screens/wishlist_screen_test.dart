@@ -1,12 +1,13 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tonkatsu_box/data/repositories/wishlist_repository.dart';
 import 'package:tonkatsu_box/features/wishlist/screens/wishlist_screen.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -51,7 +52,7 @@ void main() {
         wishlistRepositoryProvider.overrideWithValue(mockRepo),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: const Locale('en'),
         theme: ThemeData.dark(),

@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:core/api/image_proxy.dart';
 import 'package:core/models/image_type.dart';
 import 'package:core/utils/stable_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../core/selfhost/server_origin.dart';

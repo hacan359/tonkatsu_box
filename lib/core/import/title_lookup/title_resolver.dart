@@ -37,8 +37,8 @@ class ResolvedNotFound extends ResolveOutcome {
 class TitleResolver {
   TitleResolver(
     this._chains, {
-    RateLimitedRetry retry = const RateLimitedRetry(),
-  }) : _retry = retry;
+    this._retry = const RateLimitedRetry(),
+  });
 
   static final Logger _log = Logger('TitleResolver');
 

@@ -58,6 +58,7 @@ import '../database/database_service.dart';
 import '../import/import_progress.dart';
 import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
+import '../../shared/services/file_dialogs.dart';
 
 // Progress types moved to the import layer; re-exported so the many existing
 // `services/import_service.dart` importers keep compiling.
@@ -147,50 +148,29 @@ class ImportResult {
 
 class ImportService {
   ImportService({
-    required CollectionRepository repository,
-    required IgdbApi igdbApi,
-    required DatabaseService database,
-    TmdbApi? tmdbApi,
-    VndbApi? vndbApi,
-    AniListApi? aniListApi,
-    TvMazeApi? tvMazeApi,
-    KitsuApi? kitsuApi,
-    MangaBakaApi? mangaBakaApi,
-    MangaDexApi? mangaDexApi,
-    OpenLibraryApi? openLibraryApi,
-    GoogleBooksApi? googleBooksApi,
-    ComicVineApi? comicVineApi,
-    HardcoverApi? hardcoverApi,
-    FantlabApi? fantlabApi,
-    MusicBrainzApi? musicBrainzApi,
-    PodcastIndexApi? podcastIndexApi,
-    CanvasRepository? canvasRepository,
-    ImageCacheService? imageCacheService,
-    TrackerDao? trackerDao,
-    CollectionHeroService? heroService,
-    TvdbApi? tvdbApi,
-  })  : _repository = repository,
-        _igdbApi = igdbApi,
-        _tmdbApi = tmdbApi,
-        _vndbApi = vndbApi,
-        _aniListApi = aniListApi,
-        _tvMazeApi = tvMazeApi,
-        _tvdbApi = tvdbApi,
-        _kitsuApi = kitsuApi,
-        _mangaBakaApi = mangaBakaApi,
-        _mangaDexApi = mangaDexApi,
-        _openLibraryApi = openLibraryApi,
-        _googleBooksApi = googleBooksApi,
-        _comicVineApi = comicVineApi,
-        _hardcoverApi = hardcoverApi,
-        _fantlabApi = fantlabApi,
-        _musicBrainzApi = musicBrainzApi,
-        _podcastIndexApi = podcastIndexApi,
-        _database = database,
-        _canvasRepository = canvasRepository,
-        _imageCacheService = imageCacheService,
-        _trackerDao = trackerDao,
-        _heroService = heroService;
+    required this._repository,
+    required this._igdbApi,
+    required this._database,
+    this._tmdbApi,
+    this._vndbApi,
+    this._aniListApi,
+    this._tvMazeApi,
+    this._kitsuApi,
+    this._mangaBakaApi,
+    this._mangaDexApi,
+    this._openLibraryApi,
+    this._googleBooksApi,
+    this._comicVineApi,
+    this._hardcoverApi,
+    this._fantlabApi,
+    this._musicBrainzApi,
+    this._podcastIndexApi,
+    this._canvasRepository,
+    this._imageCacheService,
+    this._trackerDao,
+    this._heroService,
+    this._tvdbApi,
+  });
 
   final CollectionRepository _repository;
   final IgdbApi _igdbApi;
@@ -227,21 +207,16 @@ class ImportService {
   Future<XcollFile?> pickAndParseFile() async {
     // Android's FileType.custom does not filter custom extensions.
     final bool useAny = kIsMobile;
-    // withData only on web: the browser has no paths; desktop/Android keep
-    // reading from the path so a large pick is never held in memory twice.
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       dialogTitle: 'Import Collection',
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : _allowedExtensions,
-      allowMultiple: false,
-      withData: kIsWebBuild,
     );
 
-    if (result == null || result.files.isEmpty) {
+    if (picked == null) {
       return null;
     }
 
-    final PlatformFile picked = result.files.first;
     // Android's picker filters nothing and the browser's accept is advisory;
     // the desktop picker already filtered, so don't re-judge its filename.
     if (useAny || kIsWebBuild) {
@@ -254,15 +229,11 @@ class ImportService {
       }
     }
 
-    final Uint8List? bytes = picked.bytes;
-    if (bytes != null) {
-      return XcollFile.fromJsonString(utf8.decode(bytes));
+    final Uint8List? bytes = await picked.readBytesOrNull();
+    if (bytes == null) {
+      throw const FormatException('Could not read file');
     }
-    final String? filePath = picked.path;
-    if (filePath == null) {
-      throw const FormatException('Could not read file path');
-    }
-    return parseFile(File(filePath));
+    return XcollFile.fromJsonString(utf8.decode(bytes));
   }
 
   Future<XcollFile> parseFile(File file) async {

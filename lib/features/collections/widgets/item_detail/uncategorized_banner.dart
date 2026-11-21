@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
@@ -13,7 +13,6 @@ class UncategorizedBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return Card(
-      color: AppColors.surfaceLight,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         side: BorderSide(color: AppColors.surfaceBorder),
@@ -26,26 +25,16 @@ class UncategorizedBanner extends StatelessWidget {
         ),
         child: Row(
           children: <Widget>[
-            Icon(
-              Icons.info_outline,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
+            Icon(Icons.info_outline, color: AppColors.textSecondary, size: 20),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 l.uncategorizedBanner,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            TextButton(
-              onPressed: onMove,
-              child: Text(l.searchAddToCollection),
-            ),
+            TextButton(onPressed: onMove, child: Text(l.searchAddToCollection)),
           ],
         ),
       ),

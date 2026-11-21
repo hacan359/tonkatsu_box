@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/filters/anilist_genre_filter.dart';
 import 'package:tonkatsu_box/features/search/filters/anilist_manga_status_filter.dart';

@@ -7,7 +7,7 @@ import 'package:core/models/collection_import.dart';
 import 'package:core/models/import_source_kind.dart';
 import 'package:core/models/universal_import_result.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_error_extract.dart';
@@ -29,6 +29,7 @@ import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
+import '../../../shared/services/file_dialogs.dart';
 
 /// Flow: file input → progress → navigate to the result screen.
 class MalImportContent extends ConsumerStatefulWidget {
@@ -394,22 +395,18 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
   Future<void> _pickFile(MalFileKind expectedKind) async {
     final S l = S.of(context);
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       dialogTitle: l.malImportPickFiles,
       // Android's FileType.custom does not filter custom extensions.
       type: kIsMobile ? FileType.any : FileType.custom,
       allowedExtensions: kIsMobile ? null : <String>['xml'],
-      allowMultiple: false,
-      // withData: the browser only ever hands out bytes, and reading them at
-      // pick time keeps one code path for every platform.
-      withData: true,
     );
 
-    if (result == null || result.files.isEmpty) return;
-    final Uint8List? bytes = result.files.first.bytes;
+    if (picked == null) return;
+    final Uint8List? bytes = await picked.readBytesOrNull();
     if (bytes == null) return;
 
-    final String fileName = result.files.first.name;
+    final String fileName = picked.name;
     try {
       // Inside the try: a non-UTF8 pick (e.g. MAL's gzipped export) must land
       // in the invalid-file snackbar, not escape as an uncaught exception.

@@ -1,13 +1,13 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/constants/platform_features.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
-import '../../../../shared/widgets/glass_app_bar.dart';
 import '../../../../shared/widgets/screen_app_bar.dart';
+import '../../../../shared/widgets/glass_popup_menu.dart';
 
 enum ItemDetailMenuAction {
   toggleCanvas,
@@ -22,62 +22,30 @@ enum ItemDetailMenuAction {
   remove,
 }
 
-class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ItemDetailAppBar({
-    required this.item,
-    required this.isEditable,
-    required this.hasCanvas,
-    required this.showCanvas,
-    required this.isViewModeLocked,
-    required this.onToggleLock,
-    required this.onEditCustom,
-    required this.onMenuSelected,
-    this.onToggleFavorite,
-    this.canTrackReleases = false,
-    this.isTracked = false,
-    this.onToggleTracked,
-    this.trackTooltip,
-    this.untrackTooltip,
-    super.key,
-  });
-
-  final CollectionItem item;
-  final bool isEditable;
-  final bool hasCanvas;
-  final bool showCanvas;
-  final bool isViewModeLocked;
-  final VoidCallback onToggleLock;
-  final VoidCallback onEditCustom;
-  final ValueChanged<ItemDetailMenuAction> onMenuSelected;
-
-  /// Toggles the favorite flag; when null the heart is hidden.
-  final VoidCallback? onToggleFavorite;
-
-  /// Whether the calendar bell applies to this item.
-  final bool canTrackReleases;
-
-  /// Whether the item is currently on the calendar (tracked / added).
-  final bool isTracked;
-
-  /// Toggles calendar membership; required when [canTrackReleases] is true.
-  final VoidCallback? onToggleTracked;
-
-  /// Bell tooltips; default to the release-tracking wording.
-  final String? trackTooltip;
-  final String? untrackTooltip;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kGlassAppBarHeight);
-
-  String _withShortcut(String label, String shortcut) =>
-      kIsMobile ? label : '$label ($shortcut)';
-
-  @override
-  Widget build(BuildContext context) {
+/// The card's top-zone actions, lent to the frame; the back button is the
+/// frame's own. A null [onToggleFavorite] hides the heart.
+List<Widget> buildItemDetailActions({
+  required BuildContext context,
+  required CollectionItem item,
+  required bool isEditable,
+  required bool hasCanvas,
+  required bool showCanvas,
+  required bool isViewModeLocked,
+  required VoidCallback onToggleLock,
+  required VoidCallback onEditCustom,
+  required ValueChanged<ItemDetailMenuAction> onMenuSelected,
+  VoidCallback? onToggleFavorite,
+  bool canTrackReleases = false,
+  bool isTracked = false,
+  VoidCallback? onToggleTracked,
+  String? trackTooltip,
+  String? untrackTooltip,
+}) {
     final S l = S.of(context);
     final ThemeData theme = Theme.of(context);
-    return GlassAppBar(
-      actions: <Widget>[
+    String withShortcut(String label, String shortcut) =>
+        kIsMobile ? label : '$label ($shortcut)';
+    return <Widget>[
         if (isEditable && onToggleFavorite != null)
           _action(
             iconData: item.isFavorite ? Icons.favorite : Icons.heart_broken,
@@ -106,7 +74,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: isViewModeLocked
                 ? AppColors.warning
                 : AppColors.textSecondary,
-            tooltip: _withShortcut(
+            tooltip: withShortcut(
               isViewModeLocked
                   ? l.collectionUnlockBoard
                   : l.collectionLockBoard,
@@ -124,21 +92,19 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
         // The board toggle lives in the menu, so a read-only card with a
         // board still gets one; the editing entries stay gated below.
         if (isEditable || hasCanvas)
-          PopupMenuButton<ItemDetailMenuAction>(
+          GlassPopupMenuButton<ItemDetailMenuAction>(
             iconSize: kScreenAppBarIconSize - 2,
-            padding: const EdgeInsets.all(AppSpacing.xs),
             icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
             onSelected: onMenuSelected,
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<ItemDetailMenuAction>>[
+            rows: (BuildContext _) => <Widget>[
               if (hasCanvas)
                 _menuItem(
                   ItemDetailMenuAction.toggleCanvas,
                   showCanvas ? Icons.dashboard : Icons.dashboard_outlined,
-                  _withShortcut(l.boardTab, 'Ctrl+B'),
+                  withShortcut(l.boardTab, 'Ctrl+B'),
                   color: showCanvas ? AppColors.brand : null,
                 ),
-              if (hasCanvas && isEditable) const PopupMenuDivider(),
+              if (hasCanvas && isEditable) const GlassMenuDivider(),
               if (isEditable && item.mediaType != MediaType.custom)
                 _menuItem(
                   ItemDetailMenuAction.refresh,
@@ -165,7 +131,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   Icons.settings_backup_restore,
                   l.coverOverrideReset,
                 ),
-              if (isEditable) ...<PopupMenuEntry<ItemDetailMenuAction>>[
+              if (isEditable) ...<Widget>[
                 _menuItem(
                   ItemDetailMenuAction.move,
                   Icons.drive_file_move_outlined,
@@ -187,7 +153,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   Icons.link,
                   l.cardLinkCopy,
                 ),
-                const PopupMenuDivider(),
+                const GlassMenuDivider(),
                 _menuItem(
                   ItemDetailMenuAction.remove,
                   Icons.delete_outline,
@@ -197,8 +163,7 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               ],
             ],
           ),
-      ],
-    );
+    ];
   }
 
   /// Smaller and tighter than Material defaults: with up to six actions the
@@ -220,22 +185,17 @@ class ItemDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  PopupMenuItem<ItemDetailMenuAction> _menuItem(
-    ItemDetailMenuAction value,
-    IconData icon,
-    String label, {
-    Color? color,
-  }) {
-    return PopupMenuItem<ItemDetailMenuAction>(
-      value: value,
-      child: ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(
-          label,
-          style: color != null ? TextStyle(color: color) : null,
-        ),
-        contentPadding: EdgeInsets.zero,
-      ),
-    );
-  }
+GlassMenuRow<ItemDetailMenuAction> _menuItem(
+  ItemDetailMenuAction value,
+  IconData icon,
+  String label, {
+  Color? color,
+}) {
+  return GlassMenuRow<ItemDetailMenuAction>(
+    value: value,
+    icon: icon,
+    iconColor: color,
+    labelColor: color,
+    label: label,
+  );
 }

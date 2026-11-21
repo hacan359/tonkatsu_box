@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'glass_dialog.dart';
 
 /// Default palette for every color-picker dialog (tags, tier lists,
 /// profiles): the color wheel plus neutral tones.
@@ -95,7 +96,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Dialog(
+    return GlassDialogFrame(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 340),
         child: SingleChildScrollView(
@@ -127,7 +128,9 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                     decoration: BoxDecoration(
                       color: _currentColor,
                       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                      border: Border.all(color: AppColors.textPrimary.withAlpha(40)),
+                      border: Border.all(
+                        color: AppColors.textPrimary.withAlpha(40),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -186,10 +189,24 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                 activeColor: _currentColor,
                 gradient: LinearGradient(
                   colors: <Color>[
-                    HSLColor.fromAHSL(1, _hsl.hue, _hsl.saturation, 0).toColor(),
-                    HSLColor.fromAHSL(1, _hsl.hue, _hsl.saturation, 0.5)
-                        .toColor(),
-                    HSLColor.fromAHSL(1, _hsl.hue, _hsl.saturation, 1).toColor(),
+                    HSLColor.fromAHSL(
+                      1,
+                      _hsl.hue,
+                      _hsl.saturation,
+                      0,
+                    ).toColor(),
+                    HSLColor.fromAHSL(
+                      1,
+                      _hsl.hue,
+                      _hsl.saturation,
+                      0.5,
+                    ).toColor(),
+                    HSLColor.fromAHSL(
+                      1,
+                      _hsl.hue,
+                      _hsl.saturation,
+                      1,
+                    ).toColor(),
                   ],
                 ),
                 onChanged: (double v) => setState(
@@ -202,8 +219,9 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () => Navigator.of(context)
-                        .pop(ColorPickerDialog.noColorSentinel),
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).pop(ColorPickerDialog.noColorSentinel),
                     icon: const Icon(Icons.format_color_reset, size: 18),
                     label: Text(l.colorPickerNoColor),
                   ),
@@ -220,8 +238,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
                       child: Text(l.cancel),
                     ),
                     FilledButton(
-                      onPressed: () =>
-                          Navigator.of(context).pop(_currentColor),
+                      onPressed: () => Navigator.of(context).pop(_currentColor),
                       child: Text(l.apply),
                     ),
                   ],

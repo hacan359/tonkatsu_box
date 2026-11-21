@@ -10,7 +10,7 @@ import 'package:core/models/mood_grid_cell.dart';
 import 'package:core/models/movie.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';

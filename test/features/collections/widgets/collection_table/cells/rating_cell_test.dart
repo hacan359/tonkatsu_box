@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/collection_table/cells/rating_cell.dart';
 import 'package:tonkatsu_box/shared/widgets/fractional_star_rating.dart';

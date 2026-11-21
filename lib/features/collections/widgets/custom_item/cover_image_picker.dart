@@ -3,12 +3,15 @@ import 'dart:typed_data';
 
 import 'package:core/models/custom_media.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
+import '../../../../shared/widgets/glass_panel.dart';
+import '../../../../shared/services/file_dialogs.dart';
 
 /// Result of [pickCustomCoverImage]. Either picked bytes or a URL — never
 /// both, since picking one clears the other.
@@ -47,8 +50,8 @@ Future<CoverPickResult?> pickCustomCoverImage(
   final S l = S.of(context);
   final Object? choice = await showDialog<Object>(
     context: context,
-    builder: (BuildContext ctx) => SimpleDialog(
-      title: Text(l.customItemCoverSource),
+    builder: (BuildContext ctx) => GlassDialog(
+      title: l.customItemCoverSource,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -60,7 +63,7 @@ Future<CoverPickResult?> pickCustomCoverImage(
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
-        SimpleDialogOption(
+        GlassDialogOption(
           onPressed: () => Navigator.of(ctx).pop('file'),
           child: ListTile(
             leading: const Icon(Icons.folder_outlined),
@@ -68,7 +71,7 @@ Future<CoverPickResult?> pickCustomCoverImage(
             contentPadding: EdgeInsets.zero,
           ),
         ),
-        SimpleDialogOption(
+        GlassDialogOption(
           onPressed: () => Navigator.of(ctx).pop('url'),
           child: ListTile(
             leading: const Icon(Icons.link),
@@ -77,7 +80,7 @@ Future<CoverPickResult?> pickCustomCoverImage(
           ),
         ),
         for (final CoverPickSource source in extraSources)
-          SimpleDialogOption(
+          GlassDialogOption(
             onPressed: () => Navigator.of(ctx).pop(source),
             child: ListTile(
               leading: Icon(source.icon),
@@ -95,13 +98,11 @@ Future<CoverPickResult?> pickCustomCoverImage(
   }
 
   if (choice == 'file') {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+    final PlatformFile? picked = await FilePicker.pickFile(
       type: FileType.image,
-      allowMultiple: false,
-      withData: true,
     );
-    if (result == null || result.files.isEmpty) return null;
-    final Uint8List? bytes = result.files.first.bytes;
+    if (picked == null) return null;
+    final Uint8List? bytes = await picked.readBytesOrNull();
     if (bytes == null) return null;
     return CoverPickResult.file(bytes);
   }
@@ -131,8 +132,9 @@ class _CoverUrlDialog extends StatefulWidget {
 }
 
 class _CoverUrlDialogState extends State<_CoverUrlDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialUrl);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialUrl,
+  );
 
   @override
   void dispose() {
@@ -143,7 +145,7 @@ class _CoverUrlDialogState extends State<_CoverUrlDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.customItemCoverUrl),
       content: SingleChildScrollView(
         child: TextField(
@@ -194,7 +196,7 @@ class CustomCoverPreview extends StatelessWidget {
         child: Container(
           width: 100,
           height: 150,
-          color: AppColors.surfaceLight,
+          color: glassTileColor(),
           child: _buildPreview(context),
         ),
       ),
@@ -206,8 +208,7 @@ class CustomCoverPreview extends StatelessWidget {
       return Image.memory(
         bytes!,
         fit: BoxFit.cover,
-        errorBuilder: (_, Object e, StackTrace? s) =>
-            _CoverPlaceholder(),
+        errorBuilder: (_, Object e, StackTrace? s) => _CoverPlaceholder(),
       );
     }
     final Uri? cached = cachedUri;
@@ -220,16 +221,14 @@ class CustomCoverPreview extends StatelessWidget {
       return Image(
         image: provider,
         fit: BoxFit.cover,
-        errorBuilder: (_, Object e, StackTrace? s) =>
-            _CoverPlaceholder(),
+        errorBuilder: (_, Object e, StackTrace? s) => _CoverPlaceholder(),
       );
     }
     if (url.isNotEmpty && !CustomMedia.isLocalCover(url)) {
       return Image.network(
         url,
         fit: BoxFit.cover,
-        errorBuilder: (_, Object e, StackTrace? s) =>
-            _CoverPlaceholder(),
+        errorBuilder: (_, Object e, StackTrace? s) => _CoverPlaceholder(),
       );
     }
     return _CoverPlaceholder();
@@ -251,9 +250,7 @@ class _CoverPlaceholder extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           l.customItemAddCover,
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textTertiary,
-          ),
+          style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
           textAlign: TextAlign.center,
         ),
       ],

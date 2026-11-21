@@ -1,9 +1,10 @@
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import 'cached_image.dart';
+import 'glass_panel.dart';
 import 'source_badge.dart';
 import '../constants/collection_item_ui.dart';
 
@@ -41,7 +42,7 @@ class CardLinkChip extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 1),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: AppColors.brand.withAlpha(20),
+              color: glassChipColor(tint: AppColors.brand, tintAlpha: 50),
               borderRadius: BorderRadius.circular(4),
               border: Border.all(color: AppColors.brand.withAlpha(60)),
             ),
@@ -49,7 +50,10 @@ class CardLinkChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 _buildThumb(),
-                SourceBadge(source: item.dataSource, size: SourceBadgeSize.small),
+                SourceBadge(
+                  source: item.dataSource,
+                  size: SourceBadgeSize.small,
+                ),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(

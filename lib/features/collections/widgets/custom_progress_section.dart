@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -8,6 +10,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/utils/custom_progress_units.dart';
 import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// The fine axis ([unitTotal]) is always shown; the coarse axis appears only
 /// for display types that have one (series → seasons, manga → volumes).
@@ -142,13 +145,14 @@ class CustomProgressSection extends ConsumerWidget {
     final String label = isGroup
         ? (CustomProgressUnits.groupLabel(displayType, l) ?? l.progress)
         : CustomProgressUnits.fineLabel(displayType, l);
-    final TextEditingController controller =
-        TextEditingController(text: current > 0 ? current.toString() : '');
+    final TextEditingController controller = TextEditingController(
+      text: current > 0 ? current.toString() : '',
+    );
 
     try {
       final String? result = await showDialog<String>(
         context: context,
-        builder: (BuildContext ctx) => AlertDialog(
+        builder: (BuildContext ctx) => GlassAlertDialog(
           title: Text(label),
           content: SingleChildScrollView(
             child: TextField(
@@ -178,13 +182,13 @@ class CustomProgressSection extends ConsumerWidget {
         if (value != null && value >= 0) {
           final int clamped = total != null && value > total ? total : value;
           if (isGroup) {
-            ref
+            unawaited(ref
                 .read(collectionItemsNotifierProvider(collectionId).notifier)
-                .updateProgress(itemId, currentSeason: clamped);
+                .updateProgress(itemId, currentSeason: clamped));
           } else {
-            ref
+            unawaited(ref
                 .read(collectionItemsNotifierProvider(collectionId).notifier)
-                .updateProgress(itemId, currentEpisode: clamped);
+                .updateProgress(itemId, currentEpisode: clamped));
           }
         }
       }

@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import 'hero_image.dart';
+import '../../../shared/widgets/image_placeholder.dart';
 
 /// The image fills the parent's size; the parent is responsible for sizing
 /// and corner rounding.
@@ -54,8 +55,7 @@ class CollectionHeroBackground extends StatelessWidget {
             fit: BoxFit.cover,
             alignment: Alignment.topRight,
             filterQuality: FilterQuality.medium,
-            errorBuilder: (_, _, _) =>
-                ColoredBox(color: AppColors.surface),
+            errorBuilder: (_, _, _) => const ImagePlaceholder(showIcon: false),
           ),
 
           DecoratedBox(
@@ -97,11 +97,7 @@ class CollectionHeroBackground extends StatelessWidget {
 
 enum HeroGradientStrength {
   /// For grid cards: softer, so a small image is not drowned out.
-  soft(
-    leftDarkOpacity: 0.75,
-    bottomDarkOpacity: 0.90,
-    defaultCacheWidth: 320,
-  ),
+  soft(leftDarkOpacity: 0.75, bottomDarkOpacity: 0.90, defaultCacheWidth: 320),
 
   /// For the full-size banner.
   standard(

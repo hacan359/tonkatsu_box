@@ -2,7 +2,7 @@ import 'package:core/models/card_link.dart';
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/media_type.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

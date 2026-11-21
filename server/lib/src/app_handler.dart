@@ -58,14 +58,17 @@ Handler buildAppHandler({
     api.post('$kProxyPathPrefix/keys', (Request request) async {
       final Object? body = jsonDecode(await request.readAsString());
       if (body is! Map<String, Object?>) {
-        return Response(HttpStatus.badRequest,
-            body: jsonEncode(<String, Object?>{'ok': false}));
+        return Response(
+          HttpStatus.badRequest,
+          body: jsonEncode(<String, Object?>{'ok': false}),
+        );
       }
-      final Map<String, String> stored =
-          proxy.applyCredentials(<String, String>{
-        for (final MapEntry<String, Object?> e in body.entries)
-          if (e.value is String) e.key: e.value! as String,
-      });
+      final Map<String, String> stored = proxy.applyCredentials(
+        <String, String>{
+          for (final MapEntry<String, Object?> e in body.entries)
+            if (e.value is String) e.key: e.value! as String,
+        },
+      );
       return Response.ok(
         jsonEncode(stored),
         headers: <String, String>{
@@ -132,7 +135,8 @@ bool _needsToken(Request request) {
 Handler _withWebFallback(Router api, Handler web) {
   return (Request request) async {
     final String path = '/${request.url.path}';
-    final bool isApi = path == _kHealthPath ||
+    final bool isApi =
+        path == _kHealthPath ||
         path == _kRpcPath ||
         path.startsWith('$kProxyPathPrefix/') ||
         path.startsWith('$kImagePathPrefix/');
@@ -159,19 +163,16 @@ Handler? _webHandler(String? webRoot) {
     defaultDocument: 'index.html',
   );
 
-  // Revalidate every time. Without it the browser heuristically caches
-  // main.dart.js and keeps serving the old app after an update.
+  // Revalidate every file, wasm and assets included: their URLs carry no hash,
+  // so a heuristically cached canvaskit.wasm outlives the engine JS it matches.
   const String cacheControl = 'no-cache';
 
   return (Request request) async {
     final Response response = await files(request);
     if (response.statusCode != HttpStatus.notFound) {
-      // Only the app shell revalidates; fonts, wasm and assets would cost a
-      // conditional round trip each on every page load for nothing.
-      if (!_isAppShell(request.url.path)) return response;
-      return response.change(headers: <String, String>{
-        HttpHeaders.cacheControlHeader: cacheControl,
-      });
+      return response.change(
+        headers: <String, String>{HttpHeaders.cacheControlHeader: cacheControl},
+      );
     }
     return Response.ok(
       await index.readAsBytes(),
@@ -181,10 +182,4 @@ Handler? _webHandler(String? webRoot) {
       },
     );
   };
-}
-
-/// The files that decide which app version the browser runs.
-bool _isAppShell(String path) {
-  if (path.isEmpty || path.endsWith('/')) return true;
-  return path.endsWith('.html') || path.endsWith('.js') || path.endsWith('.json');
 }

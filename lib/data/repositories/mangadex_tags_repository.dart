@@ -9,10 +9,9 @@ import '../../core/database/database_service.dart';
 /// non-empty cache always wins; only `forceRefresh` bypasses it.
 class MangaDexTagsRepository {
   MangaDexTagsRepository({
-    required MangaDexApi api,
-    required MangaDexTagDao dao,
-  })  : _api = api,
-        _dao = dao;
+    required this._api,
+    required this._dao,
+  });
 
   final MangaDexApi _api;
   final MangaDexTagDao _dao;

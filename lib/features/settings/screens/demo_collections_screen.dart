@@ -8,7 +8,7 @@ import 'package:core/models/tv_show.dart';
 import 'package:core/models/xcoll_file.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/constants/platform_features.dart';
@@ -16,7 +16,7 @@ import '../../../core/api/igdb_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../providers/settings_provider.dart';
 
 /// IGDB platform IDs.
@@ -178,7 +178,7 @@ class _DemoCollectionsScreenState
   }
 
   Future<void> _pickDirectoryAndGenerate() async {
-    final String? dir = await FilePicker.platform.getDirectoryPath(
+    final String? dir = await FilePicker.getDirectoryPath(
       dialogTitle: 'Select output folder for .xcollx files',
     );
     if (dir == null) return;
@@ -650,11 +650,9 @@ class _DemoCollectionsScreenState
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
 
-    return Column(
-      children: <Widget>[
-        const SubScreenTitleBar(title: 'Demo Collections'),
-        Expanded(
-          child: Padding(
+    return FramePage(
+      title: 'Demo Collections',
+      child: Padding(
             padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,8 +773,6 @@ class _DemoCollectionsScreenState
               ],
             ),
           ),
-        ),
-      ],
     );
   }
 }

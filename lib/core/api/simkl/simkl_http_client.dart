@@ -7,9 +7,8 @@ import 'simkl_types.dart';
 /// Simkl transport: every request carries the `simkl-api-key` client id;
 /// account requests add the user's PIN-flow Bearer token (persisting is opt-in).
 class SimklHttpClient {
-  SimklHttpClient({required String clientId, Dio? dio})
-      : _clientId = clientId,
-        _dio = dio ??
+  SimklHttpClient({required this._clientId, Dio? dio})
+      : _dio = dio ??
             createApiDio(
               baseUrl: 'https://api.simkl.com/',
               connectTimeout: const Duration(seconds: 15),

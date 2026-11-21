@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/glass_panel.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/source_logo.dart';
@@ -51,7 +52,8 @@ class SourceChipsRow extends ConsumerWidget {
                     _SourceChip(
                       source: source,
                       accent: accent,
-                      on: !state.disabledSourceIds.contains(source.id) &&
+                      on:
+                          !state.disabledSourceIds.contains(source.id) &&
                           !unsupported.contains(source.id) &&
                           (narrowed.isEmpty || narrowed.contains(source.id)),
                       count: state.itemsBySource[source.id]?.length,
@@ -59,9 +61,9 @@ class SourceChipsRow extends ConsumerWidget {
                       blockedReason: unsupported.contains(source.id)
                           ? l.searchSourceLacksValue
                           : (narrowed.isNotEmpty &&
-                                  !narrowed.contains(source.id)
-                              ? l.searchNarrowedBySource
-                              : null),
+                                    !narrowed.contains(source.id)
+                                ? l.searchNarrowedBySource
+                                : null),
                       onTap: () => ref
                           .read(browseProvider.notifier)
                           .toggleSource(source.id),
@@ -75,8 +77,9 @@ class SourceChipsRow extends ConsumerWidget {
           if (state.textQueryOnly && !state.hasSearchQuery)
             Text(
               l.searchTextOnlyHint,
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textTertiary),
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textTertiary,
+              ),
             ),
         ],
       ),
@@ -113,7 +116,9 @@ class _SourceChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget chip = Material(
-      color: on ? accent.withAlpha(30) : Colors.transparent,
+      color: on
+          ? glassChipColor(tint: accent, tintAlpha: 80)
+          : glassChipColor(),
       borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
@@ -159,8 +164,9 @@ class _SourceChip extends StatelessWidget {
                 const SizedBox(width: AppSpacing.xs),
                 Text(
                   '$count',
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.textTertiary),
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
                 ),
               ],
             ],

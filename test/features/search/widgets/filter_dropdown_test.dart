@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/filters/anime_type_filter.dart';
 import 'package:tonkatsu_box/features/search/models/search_source.dart';
 import 'package:tonkatsu_box/features/search/widgets/filter_dropdown.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 void main() {
   Widget buildFilterDropdown({
@@ -14,7 +15,7 @@ void main() {
   }) {
     return ProviderScope(
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: const Locale('en'),
         home: Scaffold(
@@ -35,7 +36,7 @@ void main() {
     bool enabled = true,
   }) {
     return MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
+      localizationsDelegates: kAppLocalizationsDelegates,
       supportedLocales: S.supportedLocales,
       locale: const Locale('en'),
       home: Scaffold(

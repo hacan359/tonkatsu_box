@@ -1,12 +1,13 @@
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_error_extract.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -33,11 +34,8 @@ class BrowseGrid extends ConsumerStatefulWidget {
 
   /// [source] is the provider of a multi-source item, `null` otherwise — the
   /// receiver needs it when two providers share a numeric id.
-  final void Function(
-    int externalId,
-    MediaType mediaType,
-    DataSource? source,
-  )? onOpenInCollection;
+  final void Function(int externalId, MediaType mediaType, DataSource? source)?
+  onOpenInCollection;
 
   /// Platform lookup by IGDB ID, used to render platform labels on game cards.
   final Map<int, Platform> platformMap;
@@ -87,14 +85,17 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   Widget build(BuildContext context) {
     final BrowseState state = ref.watch(browseProvider);
     final String animeMangaTitleLanguage = ref.watch(
-      settingsNotifierProvider
-          .select((SettingsState s) => s.animeMangaTitleLanguage),
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.animeMangaTitleLanguage,
+      ),
     );
     final S l = S.of(context);
 
     // Auto-load more if content doesn't fill the viewport.
-    ref.listen<BrowseState>(browseProvider,
-        (BrowseState? prev, BrowseState next) {
+    ref.listen<BrowseState>(browseProvider, (
+      BrowseState? prev,
+      BrowseState next,
+    ) {
       if (!next.isLoading &&
           !next.isLoadingMore &&
           next.items.isNotEmpty &&
@@ -107,13 +108,16 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       return _buildShimmerGrid(context);
     }
 
-    final bool hasErrors = state.activeSources
-        .any((SearchSource source) => state.errors.containsKey(source.id));
+    final bool hasErrors = state.activeSources.any(
+      (SearchSource source) => state.errors.containsKey(source.id),
+    );
 
     if (state.items.isEmpty && hasErrors) {
-      return ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        children: <Widget>[_buildErrors(state)],
+      return FrameBleed(
+        builder: (BuildContext context, EdgeInsets bars) => ListView(
+          padding: const EdgeInsets.all(AppSpacing.md) + bars,
+          children: <Widget>[_buildErrors(state)],
+        ),
       );
     }
 
@@ -130,54 +134,59 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
     final List<Object> displayItems = state.items;
 
-    final CardVariant variant =
-        useCompactCard(context) ? CardVariant.compact : CardVariant.grid;
+    final CardVariant variant = useCompactCard(context)
+        ? CardVariant.compact
+        : CardVariant.grid;
     final DataSource fallbackSource = state.sources.first.dataSource;
     final ({SliverGridDelegate delegate, double padding}) geometry =
         _gridGeometry(context);
 
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: <Widget>[
-        if (hasErrors)
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => CustomScrollView(
+        controller: _scrollController,
+        slivers: <Widget>[
+          SliverToBoxAdapter(child: SizedBox(height: bars.top)),
+          if (hasErrors)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.md,
+                0,
+              ),
+              sliver: SliverToBoxAdapter(child: _buildErrors(state)),
+            ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              0,
+            padding: EdgeInsets.symmetric(
+              horizontal: geometry.padding,
+              vertical: AppSpacing.sm,
             ),
-            sliver: SliverToBoxAdapter(child: _buildErrors(state)),
-          ),
-        SliverPadding(
-          padding: EdgeInsets.symmetric(
-            horizontal: geometry.padding,
-            vertical: AppSpacing.sm,
-          ),
-          sliver: SliverGrid(
-            gridDelegate: geometry.delegate,
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                if (index >= displayItems.length) {
-                  return const ShimmerPosterCard();
-                }
-                return BrowseCard(
-                  item: displayItems[index],
-                  mediaType: state.mediaType,
-                  fallbackSource: fallbackSource,
-                  collected: collected,
-                  variant: variant,
-                  animeMangaTitleLanguage: animeMangaTitleLanguage,
-                  platformMap: widget.platformMap,
-                  onTap: widget.onItemTap,
-                  onOpenInCollection: widget.onOpenInCollection,
-                );
-              },
-              childCount: displayItems.length + (state.isLoadingMore ? 3 : 0),
+            sliver: SliverGrid(
+              gridDelegate: geometry.delegate,
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  if (index >= displayItems.length) {
+                    return const ShimmerPosterCard();
+                  }
+                  return BrowseCard(
+                    item: displayItems[index],
+                    mediaType: state.mediaType,
+                    fallbackSource: fallbackSource,
+                    collected: collected,
+                    variant: variant,
+                    animeMangaTitleLanguage: animeMangaTitleLanguage,
+                    platformMap: widget.platformMap,
+                    onTap: widget.onItemTap,
+                    onOpenInCollection: widget.onOpenInCollection,
+                  );
+                },
+                childCount: displayItems.length + (state.isLoadingMore ? 3 : 0),
+              ),
             ),
           ),
-        ),
-      ],
+          SliverToBoxAdapter(child: SizedBox(height: bars.bottom)),
+        ],
+      ),
     );
   }
 
@@ -209,8 +218,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppTypography.body
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -232,21 +242,25 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     final int shimmerCount = width >= 800
         ? 18
         : (width >= 500
-            ? AppSpacing.gridColumnsTablet * 3
-            : AppSpacing.gridColumnsMobile * 3);
+              ? AppSpacing.gridColumnsTablet * 3
+              : AppSpacing.gridColumnsMobile * 3);
 
     final ({SliverGridDelegate delegate, double padding}) geometry =
         _gridGeometry(context);
     final bool compact = useCompactCard(context);
-    return GridView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: geometry.padding,
-        vertical: AppSpacing.sm,
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => GridView.builder(
+        padding:
+            EdgeInsets.symmetric(
+              horizontal: geometry.padding,
+              vertical: AppSpacing.sm,
+            ) +
+            bars,
+        gridDelegate: geometry.delegate,
+        itemCount: shimmerCount,
+        itemBuilder: (BuildContext context, int index) =>
+            ShimmerPosterCard(compact: compact),
       ),
-      gridDelegate: geometry.delegate,
-      itemCount: shimmerCount,
-      itemBuilder: (BuildContext context, int index) =>
-          ShimmerPosterCard(compact: compact),
     );
   }
 }

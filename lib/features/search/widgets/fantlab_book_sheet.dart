@@ -1,5 +1,5 @@
 import 'package:core/models/book.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../core/api/fantlab_api.dart';
 import '../../collections/widgets/fantlab_edition_picker.dart';

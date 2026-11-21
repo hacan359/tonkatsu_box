@@ -2,7 +2,7 @@ import 'package:core/models/collected_item_info.dart';
 import 'package:core/models/game.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -13,21 +13,18 @@ import '../../collections/providers/collections_provider.dart';
 import '../services/search_collection_adder.dart';
 import '../widgets/item_details_sheet.dart';
 import 'media_action_handler.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// The picker never blocks a collection: the same game on another platform
 /// is intentionally allowed; a dialog asks for the platform before the add.
 class GameHandler implements MediaActionHandler {
   GameHandler({
-    required WidgetRef ref,
-    required SearchCollectionAdder adder,
-    required Map<int, Platform> Function() platformMap,
-    required Set<int> Function() targetCollections,
-    void Function(Game game)? onGameSelected,
-  })  : _ref = ref,
-        _adder = adder,
-        _platformMap = platformMap,
-        _targetCollections = targetCollections,
-        _onGameSelected = onGameSelected;
+    required this._ref,
+    required this._adder,
+    required this._platformMap,
+    required this._targetCollections,
+    this._onGameSelected,
+  });
 
   final WidgetRef _ref;
   final SearchCollectionAdder _adder;
@@ -102,9 +99,10 @@ class GameHandler implements MediaActionHandler {
   @override
   void showDetails(BuildContext context, Object item, MediaType mediaType) {
     final Game game = item as Game;
-    showModalBottomSheet<void>(
+    showGlassSheet<void>(
       context: context,
       isScrollControlled: true,
+      selfBacked: true,
       builder: (BuildContext _) => ItemDetailsSheet.game(
         game,
         onAddToCollection: () => addToAnyCollection(context, game, mediaType),
@@ -123,8 +121,10 @@ class GameHandler implements MediaActionHandler {
     // Platforms already present in any of the target collections — used only to
     // mark them in the picker, not to block (same game on a new platform is OK).
     final Set<int> alreadyPlatforms = infos
-        .where((CollectedItemInfo i) =>
-            i.collectionId != null && collectionIds.contains(i.collectionId))
+        .where(
+          (CollectedItemInfo i) =>
+              i.collectionId != null && collectionIds.contains(i.collectionId),
+        )
         .map((CollectedItemInfo i) => i.platformId)
         .whereType<int>()
         .toSet();
@@ -152,8 +152,9 @@ class GameHandler implements MediaActionHandler {
   }
 
   Future<List<CollectedItemInfo>> _collectedInfos(int gameId) async {
-    final Map<int, List<CollectedItemInfo>> collected =
-        await _ref.read(collectedGameIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collected = await _ref.read(
+      collectedGameIdsProvider.future,
+    );
     return collected[gameId] ?? <CollectedItemInfo>[];
   }
 
@@ -169,7 +170,7 @@ class GameHandler implements MediaActionHandler {
     final Map<int, Platform> map = _platformMap();
     return showDialog<int>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext context) => GlassAlertDialog(
         scrollable: true,
         title: Text(S.of(context).searchSelectPlatform),
         content: Column(

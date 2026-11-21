@@ -1,5 +1,5 @@
 import 'package:core/models/steamgriddb_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/providers/canvas_provider.dart';
@@ -10,6 +10,7 @@ import 'package:tonkatsu_box/features/collections/widgets/collection_canvas_layo
 import 'package:tonkatsu_box/features/collections/widgets/steamgriddb_panel.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 class _TestCanvasNotifier extends CanvasNotifier {
   _TestCanvasNotifier(this._testState);
@@ -83,7 +84,7 @@ void main() {
             .overrideWith(_FakeSettingsNotifier.new),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: SizedBox(
@@ -331,7 +332,7 @@ void main() {
                 ),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Scaffold(
                   body: SizedBox(
@@ -402,7 +403,7 @@ void main() {
                 ),
               ],
               child: MaterialApp(
-                localizationsDelegates: S.localizationsDelegates,
+                localizationsDelegates: kAppLocalizationsDelegates,
                 supportedLocales: S.supportedLocales,
                 home: Scaffold(
                   body: SizedBox(

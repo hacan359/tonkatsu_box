@@ -5,7 +5,7 @@ import 'package:core/models/collection_sort_mode.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -13,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -89,10 +90,10 @@ class CollectionItemsView extends ConsumerWidget {
       return _withHeader(_buildEmptyState(context));
     }
 
-    final CollectionSortMode sortMode =
-        ref.watch(collectionSortProvider(collectionId));
-    final bool isManualSort =
-        sortMode == CollectionSortMode.manual && canEdit;
+    final CollectionSortMode sortMode = ref.watch(
+      collectionSortProvider(collectionId),
+    );
+    final bool isManualSort = sortMode == CollectionSortMode.manual && canEdit;
 
     if (isTableMode) {
       final Set<int>? selectedIds = canEdit
@@ -107,13 +108,13 @@ class CollectionItemsView extends ConsumerWidget {
         onItemTap: onItemTap,
         onItemSecondaryTap: canEdit
             ? (CollectionItem item, Offset pos) =>
-                _showItemContextMenu(context, ref, pos, item)
+                  _showItemContextMenu(context, ref, pos, item)
             : null,
         selectedIds: selectedIds,
         onToggleSelect: canEdit
             ? (int itemId) => ref
-                .read(collectionSelectionProvider(collectionId).notifier)
-                .toggle(itemId)
+                  .read(collectionSelectionProvider(collectionId).notifier)
+                  .toggle(itemId)
             : null,
         onToggleSelectAll: canEdit
             ? (bool selectAll) {
@@ -121,8 +122,7 @@ class CollectionItemsView extends ConsumerWidget {
                   collectionSelectionProvider(collectionId).notifier,
                 );
                 if (selectAll) {
-                  notifier.selectAll(
-                      items.map((CollectionItem i) => i.id));
+                  notifier.selectAll(items.map((CollectionItem i) => i.id));
                 } else {
                   notifier.clear();
                 }
@@ -131,17 +131,19 @@ class CollectionItemsView extends ConsumerWidget {
         onRatingChanged: canEdit
             ? (int itemId, double? rating) {
                 ref
-                    .read(collectionItemsNotifierProvider(collectionId)
-                        .notifier)
+                    .read(
+                      collectionItemsNotifierProvider(collectionId).notifier,
+                    )
                     .updateUserRating(itemId, rating);
               }
             : null,
         onStatusChanged: canEdit
             ? (int itemId, ItemStatus status, MediaType mediaType) async {
                 final CollectionItemsNotifier notifier = ref.read(
-                    collectionItemsNotifierProvider(collectionId).notifier);
-                final ClearedEpisodeMarks? cleared =
-                    await notifier.updateStatus(itemId, status, mediaType);
+                  collectionItemsNotifierProvider(collectionId).notifier,
+                );
+                final ClearedEpisodeMarks? cleared = await notifier
+                    .updateStatus(itemId, status, mediaType);
                 if (!context.mounted) return;
                 offerStatusEpisodesUndo(context, notifier, cleared);
               }
@@ -151,14 +153,15 @@ class CollectionItemsView extends ConsumerWidget {
             : null,
         onFavoriteToggled: canEdit
             ? (int itemId) => ref
-                .read(collectionItemsNotifierProvider(collectionId).notifier)
-                .toggleFavorite(itemId)
+                  .read(collectionItemsNotifierProvider(collectionId).notifier)
+                  .toggleFavorite(itemId)
             : null,
         onReorder: isManualSort
             ? (int oldIndex, int newIndex) {
                 ref
-                    .read(collectionItemsNotifierProvider(collectionId)
-                        .notifier)
+                    .read(
+                      collectionItemsNotifierProvider(collectionId).notifier,
+                    )
                     .reorderItem(oldIndex, newIndex);
               }
             : null,
@@ -173,13 +176,10 @@ class CollectionItemsView extends ConsumerWidget {
   /// item appears exactly once even when it carries several tags.
   List<_TagGroup> _groupByTag(String untaggedLabel) {
     if (tags.isEmpty) {
-      return <_TagGroup>[
-        _TagGroup(name: null, items: items),
-      ];
+      return <_TagGroup>[_TagGroup(name: null, items: items)];
     }
 
-    final Map<int, List<CollectionItem>> grouped =
-        <int, List<CollectionItem>>{
+    final Map<int, List<CollectionItem>> grouped = <int, List<CollectionItem>>{
       for (final Tag tag in tags) tag.id: <CollectionItem>[],
     };
     final List<CollectionItem> untagged = <CollectionItem>[];
@@ -198,11 +198,13 @@ class CollectionItemsView extends ConsumerWidget {
     for (final Tag tag in tags) {
       final List<CollectionItem> tagItems = grouped[tag.id]!;
       if (tagItems.isNotEmpty) {
-        result.add(_TagGroup(
-          name: tag.name,
-          color: tag.color != null ? Color(tag.color!) : null,
-          items: tagItems,
-        ));
+        result.add(
+          _TagGroup(
+            name: tag.name,
+            color: tag.color != null ? Color(tag.color!) : null,
+            items: tagItems,
+          ),
+        );
       }
     }
     if (untagged.isNotEmpty) {
@@ -237,7 +239,12 @@ class CollectionItemsView extends ConsumerWidget {
 
     if (!_hasTagGroups) {
       return _buildFlatGridView(
-          context, ref, gridDelegate, gridPadding, settings);
+        context,
+        ref,
+        gridDelegate,
+        gridPadding,
+        settings,
+      );
     }
 
     final S l = S.of(context);
@@ -249,48 +256,53 @@ class CollectionItemsView extends ConsumerWidget {
       for (final _TagGroup g in groups) ...g.items,
     ];
 
-    return RefreshIndicator(
-      onRefresh: () => ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh(),
-      child: header == null
-          ? GridView.builder(
-              padding: EdgeInsets.all(gridPadding),
-              gridDelegate: gridDelegate,
-              itemCount: sorted.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildGridCard(
-                  context,
-                  ref,
-                  sorted[index],
-                  compact,
-                  settings,
-                  tagGlow: true,
-                );
-              },
-            )
-          : CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: header),
-                SliverPadding(
-                  padding: EdgeInsets.all(gridPadding),
-                  sliver: SliverGrid.builder(
-                    gridDelegate: gridDelegate,
-                    itemCount: sorted.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _buildGridCard(
-                        context,
-                        ref,
-                        sorted[index],
-                        compact,
-                        settings,
-                        tagGlow: true,
-                      );
-                    },
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => RefreshIndicator(
+        edgeOffset: bars.top,
+        onRefresh: () => ref
+            .read(collectionItemsNotifierProvider(collectionId).notifier)
+            .refresh(),
+        child: header == null
+            ? GridView.builder(
+                padding: EdgeInsets.all(gridPadding) + bars,
+                gridDelegate: gridDelegate,
+                itemCount: sorted.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildGridCard(
+                    context,
+                    ref,
+                    sorted[index],
+                    compact,
+                    settings,
+                    tagGlow: true,
+                  );
+                },
+              )
+            : CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: SizedBox(height: bars.top)),
+                  SliverToBoxAdapter(child: header),
+                  SliverPadding(
+                    padding: EdgeInsets.all(gridPadding),
+                    sliver: SliverGrid.builder(
+                      gridDelegate: gridDelegate,
+                      itemCount: sorted.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return _buildGridCard(
+                          context,
+                          ref,
+                          sorted[index],
+                          compact,
+                          settings,
+                          tagGlow: true,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  SliverToBoxAdapter(child: SizedBox(height: bars.bottom)),
+                ],
+              ),
+      ),
     );
   }
 
@@ -302,36 +314,51 @@ class CollectionItemsView extends ConsumerWidget {
     SettingsState settings,
   ) {
     final bool compact = useCompactCard(context);
-    return RefreshIndicator(
-      onRefresh: () => ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh(),
-      child: header == null
-          ? GridView.builder(
-              padding: EdgeInsets.all(gridPadding),
-              gridDelegate: gridDelegate,
-              itemCount: items.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildGridCard(
-                    context, ref, items[index], compact, settings);
-              },
-            )
-          : CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: header),
-                SliverPadding(
-                  padding: EdgeInsets.all(gridPadding),
-                  sliver: SliverGrid.builder(
-                    gridDelegate: gridDelegate,
-                    itemCount: items.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _buildGridCard(
-                          context, ref, items[index], compact, settings);
-                    },
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => RefreshIndicator(
+        edgeOffset: bars.top,
+        onRefresh: () => ref
+            .read(collectionItemsNotifierProvider(collectionId).notifier)
+            .refresh(),
+        child: header == null
+            ? GridView.builder(
+                padding: EdgeInsets.all(gridPadding) + bars,
+                gridDelegate: gridDelegate,
+                itemCount: items.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildGridCard(
+                    context,
+                    ref,
+                    items[index],
+                    compact,
+                    settings,
+                  );
+                },
+              )
+            : CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: SizedBox(height: bars.top)),
+                  SliverToBoxAdapter(child: header),
+                  SliverPadding(
+                    padding: EdgeInsets.all(gridPadding),
+                    sliver: SliverGrid.builder(
+                      gridDelegate: gridDelegate,
+                      itemCount: items.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return _buildGridCard(
+                          context,
+                          ref,
+                          items[index],
+                          compact,
+                          settings,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  SliverToBoxAdapter(child: SizedBox(height: bars.bottom)),
+                ],
+              ),
+      ),
     );
   }
 
@@ -375,8 +402,8 @@ class CollectionItemsView extends ConsumerWidget {
       enableHoverScale: !isSelected,
       onToggleFavorite: canEdit && !selectionActive
           ? () => ref
-              .read(collectionItemsNotifierProvider(collectionId).notifier)
-              .toggleFavorite(item.id)
+                .read(collectionItemsNotifierProvider(collectionId).notifier)
+                .toggleFavorite(item.id)
           : null,
       tags: cardTags,
       showAllTags: settings.showAllCardTags,
@@ -388,16 +415,16 @@ class CollectionItemsView extends ConsumerWidget {
           : null,
       onTap: selectionActive
           ? () => ref
-              .read(collectionSelectionProvider(collectionId).notifier)
-              .toggle(item.id)
+                .read(collectionSelectionProvider(collectionId).notifier)
+                .toggle(item.id)
           : () => onItemTap(item),
       onSecondaryTap: canEdit
           ? (Offset pos) => _showItemContextMenu(context, ref, pos, item)
           : null,
       onLongPress: canEdit
           ? () => ref
-              .read(collectionSelectionProvider(collectionId).notifier)
-              .toggle(item.id)
+                .read(collectionSelectionProvider(collectionId).notifier)
+                .toggle(item.id)
           : null,
       onFocusChanged: onItemFocusChanged != null
           ? (bool hasFocus) => onItemFocusChanged!(item, hasFocus)
@@ -419,21 +446,25 @@ class CollectionItemsView extends ConsumerWidget {
 
   void _editItemTags(BuildContext context, WidgetRef ref, int itemId) {
     final Set<int> current = Set<int>.of(
-        ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[]);
-    TagPickerDialog.show(context, initialSelection: current)
-        .then((Set<int>? selected) {
+      ref.read(itemTagsProvider).valueOrNull?[itemId] ?? const <int>[],
+    );
+    TagPickerDialog.show(context, initialSelection: current).then((
+      Set<int>? selected,
+    ) {
       if (selected == null || !context.mounted) return;
       final ProviderContainer container = ProviderScope.containerOf(context);
       container
           .read(itemTagsProvider.notifier)
           .setItemTags(itemId, selected)
           .catchError((Object error, StackTrace stack) {
-        _log.warning('Failed to set tags on item $itemId', error, stack);
-        if (context.mounted) {
-          context.showSnack(S.of(context).tagUpdateFailed,
-              type: SnackType.error);
-        }
-      });
+            _log.warning('Failed to set tags on item $itemId', error, stack);
+            if (context.mounted) {
+              context.showSnack(
+                S.of(context).tagUpdateFailed,
+                type: SnackType.error,
+              );
+            }
+          });
     });
   }
 
@@ -446,10 +477,10 @@ class CollectionItemsView extends ConsumerWidget {
     final S l = S.of(context);
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
-    final CollectionSortMode sortMode =
-        ref.read(collectionSortProvider(collectionId));
-    final bool isManualSort =
-        sortMode == CollectionSortMode.manual && canEdit;
+    final CollectionSortMode sortMode = ref.read(
+      collectionSortProvider(collectionId),
+    );
+    final bool isManualSort = sortMode == CollectionSortMode.manual && canEdit;
 
     showMenu<String>(
       context: context,
@@ -462,8 +493,7 @@ class CollectionItemsView extends ConsumerWidget {
           contextMenuItem<String>(
             value: 'favorite',
             icon: item.isFavorite ? Icons.favorite : Icons.favorite_border,
-            label:
-                item.isFavorite ? l.removeFromFavorites : l.addToFavorites,
+            label: item.isFavorite ? l.removeFromFavorites : l.addToFavorites,
           ),
           contextMenuItem<String>(
             value: 'tags',
@@ -502,8 +532,7 @@ class CollectionItemsView extends ConsumerWidget {
           icon: Icons.link,
           label: l.cardLinkCopy,
         ),
-        if ((onItemMove != null || onItemClone != null) &&
-            onItemRemove != null)
+        if ((onItemMove != null || onItemClone != null) && onItemRemove != null)
           const PopupMenuDivider(),
         if (onItemRemove != null)
           contextMenuItem<String>(
@@ -520,14 +549,17 @@ class CollectionItemsView extends ConsumerWidget {
       final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
       if (newStatus != null) {
         if (newStatus != item.status) {
-          final CollectionItemsNotifier notifier =
-              ref.read(collectionItemsNotifierProvider(collectionId).notifier);
-          unawaited(notifier
-              .updateStatus(item.id, newStatus, item.mediaType)
-              .then((ClearedEpisodeMarks? cleared) {
-            if (!context.mounted) return;
-            offerStatusEpisodesUndo(context, notifier, cleared);
-          }));
+          final CollectionItemsNotifier notifier = ref.read(
+            collectionItemsNotifierProvider(collectionId).notifier,
+          );
+          unawaited(
+            notifier.updateStatus(item.id, newStatus, item.mediaType).then((
+              ClearedEpisodeMarks? cleared,
+            ) {
+              if (!context.mounted) return;
+              offerStatusEpisodesUndo(context, notifier, cleared);
+            }),
+          );
         }
         return;
       }

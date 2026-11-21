@@ -1,9 +1,9 @@
 import 'package:core/models/import_source_kind.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../content/kinorium_import_content.dart';
 import '../widgets/remembered_import_collection.dart';
 
@@ -19,11 +19,9 @@ class KinoriumImportScreen extends StatelessWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return Column(
-      children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).settingsKinoriumImport),
-        Expanded(
-          child: Align(
+    return FramePage(
+      title: S.of(context).settingsKinoriumImport,
+      child: Align(
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -43,8 +41,6 @@ class KinoriumImportScreen extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ],
     );
   }
 }

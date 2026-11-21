@@ -1,7 +1,7 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/kodi_application_info.dart';
 import 'package:core/models/profile.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,6 +16,7 @@ import 'package:tonkatsu_box/features/settings/screens/kodi_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_tile.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -102,7 +103,7 @@ void main() {
         ...extraOverrides,
       ],
       child: const MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: Locale('en'),
         home: Scaffold(body: KodiScreen()),

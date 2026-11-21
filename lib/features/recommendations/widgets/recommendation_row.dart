@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -12,6 +12,7 @@ import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../../shared/widgets/genre_chip.dart';
 import '../providers/recommendations_provider.dart';
 import '../utils/recommendation_cover.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Section card for one "because you liked …" group: reason header, the
 /// cluster's genre chips and a horizontal carousel of recommended titles.
@@ -74,11 +75,7 @@ class _RecommendationRowWidgetState extends State<RecommendationRowWidget> {
     );
 
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.surfaceBorder, width: 0.5),
-      ),
+      decoration: glassTileDecoration(radius: AppSpacing.radiusLg, borderWidth: 0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

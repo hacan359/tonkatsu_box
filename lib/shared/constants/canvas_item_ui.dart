@@ -1,6 +1,6 @@
 import 'package:core/models/canvas_item.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'media_type_theme.dart';
 

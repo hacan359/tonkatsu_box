@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -14,6 +14,7 @@ import '../../../shared/utils/storage_access.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import 'settings_group.dart';
 import 'settings_tile.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Switching always requires a restart — the open database connection cannot
 /// be re-pointed in place.
@@ -69,27 +70,28 @@ class _StorageLocationSectionState
           ),
           child: Text(
             l10n.storageLocationDangerWarning,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTypography.bodySmall.copyWith(color: AppColors.error),
           ),
         ),
         FutureBuilder<StorageRootResolution>(
           future: _rootFuture,
-          builder: (
-            BuildContext context,
-            AsyncSnapshot<StorageRootResolution> snapshot,
-          ) {
-            final StorageRootResolution? root = snapshot.data;
-            final bool fellBack = root?.fellBack ?? false;
-            return SettingsTile(
-              title: l10n.storageLocationFolder,
-              value: root?.path ?? '...',
-              valueColor: fellBack ? AppColors.error : null,
-              subtitle: fellBack ? l10n.storageLocationFallbackWarning : null,
-              showChevron: false,
-            );
-          },
+          builder:
+              (
+                BuildContext context,
+                AsyncSnapshot<StorageRootResolution> snapshot,
+              ) {
+                final StorageRootResolution? root = snapshot.data;
+                final bool fellBack = root?.fellBack ?? false;
+                return SettingsTile(
+                  title: l10n.storageLocationFolder,
+                  value: root?.path ?? '...',
+                  valueColor: fellBack ? AppColors.error : null,
+                  subtitle: fellBack
+                      ? l10n.storageLocationFallbackWarning
+                      : null,
+                  showChevron: false,
+                );
+              },
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -98,46 +100,49 @@ class _StorageLocationSectionState
           ),
           child: FutureBuilder<StorageRootResolution>(
             future: _rootFuture,
-            builder: (
-              BuildContext context,
-              AsyncSnapshot<StorageRootResolution> snapshot,
-            ) {
-              final StorageRootResolution? root = snapshot.data;
-              final bool hasCustom =
-                  (root?.isCustom ?? false) || (root?.fellBack ?? false);
-              return LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  final Widget changeButton = OutlinedButton.icon(
-                    onPressed: () => _changeFolder(context),
-                    icon: const Icon(Icons.folder_open, size: 18),
-                    label: Text(l10n.storageLocationChange),
-                  );
-                  final Widget resetButton = OutlinedButton.icon(
-                    onPressed:
-                        hasCustom ? () => _resetFolder(context) : null,
-                    icon: const Icon(Icons.restore, size: 18),
-                    label: Text(l10n.storageLocationReset),
-                  );
-                  if (constraints.maxWidth < 400) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        changeButton,
-                        const SizedBox(height: AppSpacing.sm),
-                        resetButton,
-                      ],
-                    );
-                  }
-                  return Row(
-                    children: <Widget>[
-                      Expanded(child: changeButton),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(child: resetButton),
-                    ],
+            builder:
+                (
+                  BuildContext context,
+                  AsyncSnapshot<StorageRootResolution> snapshot,
+                ) {
+                  final StorageRootResolution? root = snapshot.data;
+                  final bool hasCustom =
+                      (root?.isCustom ?? false) || (root?.fellBack ?? false);
+                  return LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                          final Widget changeButton = OutlinedButton.icon(
+                            onPressed: () => _changeFolder(context),
+                            icon: const Icon(Icons.folder_open, size: 18),
+                            label: Text(l10n.storageLocationChange),
+                          );
+                          final Widget resetButton = OutlinedButton.icon(
+                            onPressed: hasCustom
+                                ? () => _resetFolder(context)
+                                : null,
+                            icon: const Icon(Icons.restore, size: 18),
+                            label: Text(l10n.storageLocationReset),
+                          );
+                          if (constraints.maxWidth < 400) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: <Widget>[
+                                changeButton,
+                                const SizedBox(height: AppSpacing.sm),
+                                resetButton,
+                              ],
+                            );
+                          }
+                          return Row(
+                            children: <Widget>[
+                              Expanded(child: changeButton),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(child: resetButton),
+                            ],
+                          );
+                        },
                   );
                 },
-              );
-            },
           ),
         ),
       ],
@@ -193,8 +198,10 @@ class _StorageLocationSectionState
       );
       if (!useExisting) return;
     } else {
-      final ({bool includeImages})? choice =
-          await _askCopyOptions(context, l10n);
+      final ({bool includeImages})? choice = await _askCopyOptions(
+        context,
+        l10n,
+      );
       if (choice == null) return;
       if (!context.mounted) return;
 
@@ -208,10 +215,7 @@ class _StorageLocationSectionState
       } on Exception catch (e) {
         _log.warning('Data copy to $dir failed', e);
         if (!context.mounted) return;
-        context.showSnack(
-          l10n.storageLocationCopyError,
-          type: SnackType.error,
-        );
+        context.showSnack(l10n.storageLocationCopyError, type: SnackType.error);
         return;
       }
     }
@@ -234,7 +238,7 @@ class _StorageLocationSectionState
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
+            return GlassAlertDialog(
               title: Text(l10n.storageLocationCopyTitle),
               scrollable: true,
               content: Column(
@@ -259,8 +263,8 @@ class _StorageLocationSectionState
                   child: Text(l10n.cancel),
                 ),
                 FilledButton(
-                  onPressed: () => Navigator.of(context)
-                      .pop((includeImages: includeImages)),
+                  onPressed: () =>
+                      Navigator.of(context).pop((includeImages: includeImages)),
                   child: Text(l10n.copy),
                 ),
               ],

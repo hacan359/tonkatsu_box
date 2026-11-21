@@ -1,9 +1,10 @@
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -34,7 +35,7 @@ void main() {
         imageCacheServiceProvider.overrideWithValue(mockCacheService),
       ],
       child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: constrainedWidth != null || constrainedHeight != null
