@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -85,15 +86,11 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
           );
         }
         _scheduleSync(l, data.events);
-        return Column(
-          children: <Widget>[
-            _toolbar(l),
-            Expanded(
-              child: _tab == _ReleasesTab.calendar
-                  ? _calendarBody(l, data)
-                  : _allReleasesBody(l, data),
-            ),
-          ],
+        return FrameStrip(
+          strip: <Widget>[_toolbar(l)],
+          child: _tab == _ReleasesTab.calendar
+              ? _calendarBody(l, data)
+              : _allReleasesBody(l, data),
         );
       },
     );
@@ -156,22 +153,27 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenPadding,
-          AppSpacing.sm,
-          AppSpacing.screenPadding,
-          AppSpacing.lg,
-        ),
-        children: <Widget>[
-          for (final DateTime day in days) ...<Widget>[
-            _dayHeader(day),
-            for (final ReleaseEvent e in byDay[day] ?? const <ReleaseEvent>[])
-              _eventTile(l, e),
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => RefreshIndicator(
+        edgeOffset: bars.top,
+        onRefresh: _refresh,
+        child: ListView(
+          padding:
+              const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                AppSpacing.lg,
+              ) +
+              bars,
+          children: <Widget>[
+            for (final DateTime day in days) ...<Widget>[
+              _dayHeader(day),
+              for (final ReleaseEvent e in byDay[day] ?? const <ReleaseEvent>[])
+                _eventTile(l, e),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -214,12 +216,14 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
 
   Widget _toolbar(S l) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.screenPadding,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
+      padding: frameFloats(context)
+          ? EdgeInsets.zero
+          : const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
       child: Row(
         children: <Widget>[
           Flexible(
@@ -596,7 +600,9 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
     if (picked == null || !mounted) return;
     final DateTime day = _dateOnly(picked);
     if (_view == _CalendarView.month) {
-      unawaited(_monthKey.currentState?.animateToMonth(DateTime(day.year, day.month)));
+      unawaited(
+        _monthKey.currentState?.animateToMonth(DateTime(day.year, day.month)),
+      );
     }
     setState(() {
       _focusedDay = day;
@@ -846,9 +852,9 @@ class _ReleasesScreenState extends ConsumerState<ReleasesScreen> {
   /// Dark weekday header tile. [index] 0 = Monday (matches `startDay`).
   Widget _weekDayTile(int index) {
     // 2024-01-01 was a Monday; offset by the column index for the localized name.
-    final String name = DateFormat.E(
-      _localeName,
-    ).format(DateTime(2024, 1, 1).add(Duration(days: index))).toUpperCase();
+    final String name = DateFormat.E(_localeName)
+        .format(DateTime(2024, 1, 1).add(Duration(days: index)))
+        .toUpperCase();
     return Container(
       height: 34,
       decoration: BoxDecoration(

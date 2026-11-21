@@ -178,7 +178,7 @@ void main() {
         expect(tagTaps, 1);
       });
 
-      testWidgets('should fall back to the classic card off the glass skin', (
+      testWidgets('should draw the chosen look off the glass skin', (
         WidgetTester tester,
       ) async {
         AppSurface.skin = AppSkin.classic;
@@ -186,7 +186,8 @@ void main() {
 
         await tester.pumpApp(card(PosterLook.kino), wrapInScaffold: true);
 
-        expect(find.text(title), findsOneWidget);
+        expect(find.text(title), findsNothing);
+        expect(tester.takeException(), isNull);
       });
     });
   });

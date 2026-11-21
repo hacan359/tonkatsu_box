@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -82,83 +83,86 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             },
       child: Stack(
         children: <Widget>[
-          tierListsAsync.when(
-            loading: () => ListView(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              children: const <Widget>[
-                ShimmerTierListCard(),
-                SizedBox(height: AppSpacing.sm),
-                ShimmerTierListCard(),
-                SizedBox(height: AppSpacing.sm),
-                ShimmerTierListCard(),
-              ],
-            ),
-            error: (Object error, StackTrace stack) =>
-                Center(child: Text(l.errorPrefix(error.toString()))),
-            data: (List<TierList> tierLists) {
-              final List<MoodGrid> grids =
-                  moodGridsAsync?.valueOrNull ?? <MoodGrid>[];
-              final List<_BoardEntry> merged = _mergeAndSort(
-                tierLists,
-                grids,
-                searchQuery,
-              );
-              if (merged.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(
-                        Icons.leaderboard_outlined,
-                        size: 64,
-                        color: AppColors.textTertiary.withAlpha(120),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        (tierLists.isEmpty && grids.isEmpty)
-                            ? l.tierListEmpty
-                            : l.allItemsNoMatch,
-                        style: AppTypography.h2.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
-                      if (tierLists.isEmpty && grids.isEmpty) ...<Widget>[
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          l.tierListEmptyHint,
-                          textAlign: TextAlign.center,
-                          style: AppTypography.body.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+          FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) =>
+                tierListsAsync.when(
+                  loading: () => ListView(
+                    padding: const EdgeInsets.all(AppSpacing.md) + bars,
+                    children: const <Widget>[
+                      ShimmerTierListCard(),
+                      SizedBox(height: AppSpacing.sm),
+                      ShimmerTierListCard(),
+                      SizedBox(height: AppSpacing.sm),
+                      ShimmerTierListCard(),
                     ],
                   ),
-                );
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                itemCount: merged.length,
-                separatorBuilder: (BuildContext context, int index) =>
-                    const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (BuildContext context, int index) {
-                  final _BoardEntry entry = merged[index];
-                  final TierList? tl = entry.tierList;
-                  if (tl != null) {
-                    return _TierListCard(
-                      tierList: tl,
-                      collectionId: collectionId,
-                      onFocusChanged: (bool focused) {
-                        setState(() {
-                          _focusedTierList = focused ? tl : null;
-                        });
+                  error: (Object error, StackTrace stack) =>
+                      Center(child: Text(l.errorPrefix(error.toString()))),
+                  data: (List<TierList> tierLists) {
+                    final List<MoodGrid> grids =
+                        moodGridsAsync?.valueOrNull ?? <MoodGrid>[];
+                    final List<_BoardEntry> merged = _mergeAndSort(
+                      tierLists,
+                      grids,
+                      searchQuery,
+                    );
+                    if (merged.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.leaderboard_outlined,
+                              size: 64,
+                              color: AppColors.textTertiary.withAlpha(120),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              (tierLists.isEmpty && grids.isEmpty)
+                                  ? l.tierListEmpty
+                                  : l.allItemsNoMatch,
+                              style: AppTypography.h2.copyWith(
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                            if (tierLists.isEmpty && grids.isEmpty) ...<Widget>[
+                              const SizedBox(height: AppSpacing.sm),
+                              Text(
+                                l.tierListEmptyHint,
+                                textAlign: TextAlign.center,
+                                style: AppTypography.body.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.md) + bars,
+                      itemCount: merged.length,
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (BuildContext context, int index) {
+                        final _BoardEntry entry = merged[index];
+                        final TierList? tl = entry.tierList;
+                        if (tl != null) {
+                          return _TierListCard(
+                            tierList: tl,
+                            collectionId: collectionId,
+                            onFocusChanged: (bool focused) {
+                              setState(() {
+                                _focusedTierList = focused ? tl : null;
+                              });
+                            },
+                          );
+                        }
+                        return _MoodGridCard(grid: entry.moodGrid!);
                       },
                     );
-                  }
-                  return _MoodGridCard(grid: entry.moodGrid!);
-                },
-              );
-            },
+                  },
+                ),
           ),
           DraggableFab(
             mainAction: DraggableFabItem(

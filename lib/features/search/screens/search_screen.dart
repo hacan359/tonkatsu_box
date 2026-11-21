@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/database/database_service.dart';
@@ -262,23 +263,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
 
     return MinHeightBody(
-      child: Column(
-        children: <Widget>[
+      child: FrameStrip(
+        strip: <Widget>[
           // Same inset as the icon strip on Home, so the two bars line up.
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.xs,
-            ),
+            padding: frameStripInset(context),
             child: FilterBar(onBeforeFilterChange: _syncSearchText),
           ),
           if (!isCompactScreen(context)) const SourceChipsRow(),
           const CollectionChipsRow(),
           const SizedBox(height: AppSpacing.xs),
-          Expanded(child: _buildContent(browseState)),
         ],
+        child: _buildContent(browseState),
       ),
     );
   }

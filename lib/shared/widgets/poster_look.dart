@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import '../theme/app_surface.dart';
 
 /// Selectable poster card looks. [id] is the SharedPreferences value: stable,
 /// never rename.
@@ -35,14 +34,10 @@ class PosterLookScope extends InheritedWidget {
 
   final PosterLook look;
 
-  /// The looks are drawn for glass, so any other skin gets the classic card.
   static PosterLook of(BuildContext context) {
     final PosterLookScope? scope = context
         .dependOnInheritedWidgetOfExactType<PosterLookScope>();
-    if (scope == null || AppSurface.wallpaperBlurSigma <= 0) {
-      return PosterLook.classic;
-    }
-    return scope.look;
+    return scope?.look ?? PosterLook.classic;
   }
 
   @override

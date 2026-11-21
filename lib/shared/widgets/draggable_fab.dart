@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../navigation/frame_inset.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_surface.dart';
@@ -109,7 +110,8 @@ class _DraggableFabState extends State<DraggableFab> {
 
     return Positioned(
       right: _right,
-      bottom: _bottom,
+      // A page running under the floating menu keeps its buttons above it.
+      bottom: _bottom + FrameBleed.insetsOf(context).bottom,
       child: SizedBox(
         width: _blockWidth,
         height: _blockHeight,

@@ -39,6 +39,18 @@ void main() {
       expect(controller.current?.title, 'strip');
     });
 
+    test('should carry a lent strip for the floating top block', () {
+      const Widget below = SizedBox();
+      controller.set(strip, const FrameChrome(below: below));
+      controller.set(title, const FrameChrome(title: 'T', priority: 1));
+
+      expect(controller.current?.below, same(below));
+
+      controller.clear(strip);
+
+      expect(controller.current?.below, isNull);
+    });
+
     test('should hide the search while any lender opts out', () {
       final Object page = Object();
       controller.set(Object(), const FrameChrome(title: 'List'));

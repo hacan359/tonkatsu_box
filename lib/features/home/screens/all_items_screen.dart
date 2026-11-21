@@ -12,6 +12,8 @@ import '../../../shared/constants/media_type_theme.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/navigation/frame_chrome.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -89,29 +91,31 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       search,
     );
 
+    final List<Widget> header = <Widget>[
+      Padding(
+        padding: frameStripInset(context),
+        child: _buildMediaTypeBar(
+          itemsAsync,
+          filterStatuses,
+          favoriteOnly,
+          search,
+        ),
+      ),
+      Column(
+        children: <Widget>[
+          SubfilterBar(groups: _subfilterGroups(itemsAsync)),
+          _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
+        ],
+      ),
+    ];
+    // A floating frame draws the strip in its own top block; the grid then
+    // scrolls under it instead of being cut off below.
+    final bool lendHeader = frameFloats(context);
+
     final Widget page = MinHeightBody(
       child: Column(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.xs,
-            ),
-            child: _buildMediaTypeBar(
-              itemsAsync,
-              filterStatuses,
-              favoriteOnly,
-              search,
-            ),
-          ),
-          Column(
-            children: <Widget>[
-              SubfilterBar(groups: _subfilterGroups(itemsAsync)),
-              _AllItemsBulkBar(allItems: allItems, visibleItems: visibleItems),
-            ],
-          ),
+          if (!lendHeader) ...header,
           Expanded(
             child: itemsAsync.when(
               data: (List<CollectionItem> items) {
@@ -133,7 +137,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ],
       ),
     );
-    return page;
+    if (!lendHeader) return page;
+    return FrameChromeBinding(
+      chrome: FrameChrome(
+        below: Column(mainAxisSize: MainAxisSize.min, children: header),
+      ),
+      child: page,
+    );
   }
 
   List<CollectionItem> _applyFilter(
@@ -451,55 +461,65 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       allItemsSelectionProvider.select((Set<int> s) => s.isNotEmpty),
     );
 
-    return RefreshIndicator(
-      onRefresh: () => ref.read(allItemsNotifierProvider.notifier).refresh(),
-      child: CustomScrollView(
-        slivers: <Widget>[
-          for (int i = 0; i < groups.length; i++) ...<Widget>[
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => RefreshIndicator(
+        edgeOffset: bars.top,
+        onRefresh: () => ref.read(allItemsNotifierProvider.notifier).refresh(),
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverToBoxAdapter(child: SizedBox(height: bars.top)),
+            for (int i = 0; i < groups.length; i++) ...<Widget>[
+              SliverToBoxAdapter(
+                child: _buildCollectionDivider(
+                  groups[i],
+                  isFirst: i == 0,
+                  selectionActive: selectionActive,
+                ),
+              ),
+              if (groups[i].isUncategorized)
+                const SliverToBoxAdapter(
+                  child: UncategorizedDeprecationBanner(),
+                ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  gridPadding,
+                  AppSpacing.sm,
+                  gridPadding,
+                  0,
+                ),
+                sliver: SliverGrid(
+                  gridDelegate: gridDelegate,
+                  delegate: SliverChildBuilderDelegate((
+                    BuildContext context,
+                    int index,
+                  ) {
+                    final CollectionItem item = groups[i].items[index];
+                    final List<int>? tagIds = itemTags[item.id];
+                    return _AllItemsCard(
+                      key: ValueKey<int>(item.id),
+                      item: item,
+                      variant: isLandscape || isCompactScreen(context)
+                          ? CardVariant.compact
+                          : CardVariant.grid,
+                      tags: tagsMap.orderedFor(tagIds),
+                      onShowDetails: () =>
+                          _showItemDetails(item, collectionNames),
+                      onShowContextMenu: (Offset pos) =>
+                          _showItemContextMenu(pos, item),
+                    );
+                  }, childCount: groups[i].items.length),
+                ),
+              ),
+              if (i < groups.length - 1)
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.sm),
+                ),
+            ],
             SliverToBoxAdapter(
-              child: _buildCollectionDivider(
-                groups[i],
-                isFirst: i == 0,
-                selectionActive: selectionActive,
-              ),
+              child: SizedBox(height: AppSpacing.md + bars.bottom),
             ),
-            if (groups[i].isUncategorized)
-              const SliverToBoxAdapter(child: UncategorizedDeprecationBanner()),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                gridPadding,
-                AppSpacing.sm,
-                gridPadding,
-                0,
-              ),
-              sliver: SliverGrid(
-                gridDelegate: gridDelegate,
-                delegate: SliverChildBuilderDelegate((
-                  BuildContext context,
-                  int index,
-                ) {
-                  final CollectionItem item = groups[i].items[index];
-                  final List<int>? tagIds = itemTags[item.id];
-                  return _AllItemsCard(
-                    key: ValueKey<int>(item.id),
-                    item: item,
-                    variant: isLandscape || isCompactScreen(context)
-                        ? CardVariant.compact
-                        : CardVariant.grid,
-                    tags: tagsMap.orderedFor(tagIds),
-                    onShowDetails: () =>
-                        _showItemDetails(item, collectionNames),
-                    onShowContextMenu: (Offset pos) =>
-                        _showItemContextMenu(pos, item),
-                  );
-                }, childCount: groups[i].items.length),
-              ),
-            ),
-            if (i < groups.length - 1)
-              const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
           ],
-          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-        ],
+        ),
       ),
     );
   }

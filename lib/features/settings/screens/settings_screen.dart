@@ -17,6 +17,7 @@ import '../../../core/selfhost/server_credentials.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/widgets/glass_tab_bar.dart';
 import '../../../shared/widgets/whats_new_dialog.dart';
@@ -146,12 +147,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       groups = _filterSections(groups, searchQuery.toLowerCase());
     }
 
-    final Widget list = ListView(
-      padding: EdgeInsets.symmetric(
-        horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-        vertical: AppSpacing.sm,
+    final Widget list = FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => ListView(
+        padding:
+            EdgeInsets.symmetric(
+              horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ) +
+            bars,
+        children: _withGaps(groups),
       ),
-      children: _withGaps(groups),
     );
 
     return Material(
@@ -685,16 +690,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       value: _skinLabel(l, settings.appSkin),
       onTap: () => _showSkinPicker(settings),
     ),
-    // The looks are drawn for glass; other skins keep the plain card.
-    if (settings.appSkin == AppSkinId.glass)
-      SettingsTile(
-        leadingIcon: Icons.style_outlined,
-        leadingColor: _kAppearanceColor,
-        title: l.settingsCardLook,
-        subtitle: l.settingsCardLookSubtitle,
-        value: _posterLookLabel(l, settings.posterLook),
-        onTap: () => _showPosterLookPicker(settings),
-      ),
+    SettingsTile(
+      leadingIcon: Icons.style_outlined,
+      leadingColor: _kAppearanceColor,
+      title: l.settingsCardLook,
+      subtitle: l.settingsCardLookSubtitle,
+      value: _posterLookLabel(l, settings.posterLook),
+      onTap: () => _showPosterLookPicker(settings),
+    ),
     if (!kIsWebBuild &&
         settings.appSkin.skin.wallpaper == SkinWallpaper.picture)
       SettingsTile(

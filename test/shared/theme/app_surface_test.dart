@@ -50,6 +50,29 @@ void main() {
       );
     });
 
+    test('should give chips their own density per palette brightness', () {
+      AppSurface.skin = AppSkin.glass;
+
+      AppColors.palette = AppPalette.dark;
+      expect(
+        AppSurface.chipFill(),
+        AppPalette.dark.surface.withAlpha(glassSkin.chipAlpha.dark),
+      );
+
+      AppColors.palette = AppPalette.sakura;
+      expect(
+        AppSurface.chipFill(),
+        AppPalette.sakura.surface.withAlpha(glassSkin.chipAlpha.light),
+      );
+    });
+
+    test('should keep a floating panel translucent', () {
+      AppSurface.skin = AppSkin.glass;
+      AppColors.palette = AppPalette.dark;
+
+      expect(AppSurface.floatingFill().a, lessThan(1));
+    });
+
     test('плитка на картинке остаётся полупрозрачной в классике', () {
       AppSurface.skin = AppSkin.classic;
       AppColors.palette = AppPalette.dark;

@@ -40,6 +40,7 @@ class AppSkin {
     required this.panelHighlight,
     required this.panelRadius,
     required this.frameGap,
+    required this.floatingBars,
     required this.wallpaper,
     required this.contentOnWallpaper,
     required this.tileAlpha,
@@ -77,6 +78,10 @@ class AppSkin {
   /// Gap between the window edge and the panels, and between the panels.
   final double frameGap;
 
+  /// On a phone the search block and the menu float over the content, which
+  /// scrolls under them, instead of taking bands of their own.
+  final bool floatingBars;
+
   final SkinWallpaper wallpaper;
 
   /// The content panel paints no fill, so pages sit straight on the
@@ -91,7 +96,7 @@ class AppSkin {
   final double cardElevation;
 
   /// Small controls with text sit on a near-solid surface, or they do not read.
-  final int chipAlpha;
+  final SkinAlpha chipAlpha;
 
   final SkinAlpha cardAlpha;
 

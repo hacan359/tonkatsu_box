@@ -8,6 +8,7 @@ class FrameChrome {
     this.onBack,
     this.actions = const <Widget>[],
     this.center,
+    this.below,
     this.showSearch = true,
     this.priority = 0,
   });
@@ -18,6 +19,10 @@ class FrameChrome {
 
   /// A screen's own filter strip for the middle of the zone (desktop).
   final Widget? center;
+
+  /// A screen's filter strip, drawn under the search row when the frame
+  /// floats its top block over the content.
+  final Widget? below;
 
   /// False on a screen with nothing to search; any visible lender can veto.
   final bool showSearch;
@@ -63,6 +68,7 @@ class FrameChromeController extends ChangeNotifier {
       VoidCallback? onBack;
       List<Widget> actions = const <Widget>[];
       Widget? center;
+      Widget? below;
       // List.sort is not stable; ties must keep mount order.
       final List<FrameChrome> mounted = _visible.values.toList();
       final List<FrameChrome> ordered = <FrameChrome>[
@@ -76,12 +82,14 @@ class FrameChromeController extends ChangeNotifier {
         onBack = c.onBack ?? onBack;
         if (c.actions.isNotEmpty) actions = c.actions;
         center = c.center ?? center;
+        below = c.below ?? below;
       }
       _current = FrameChrome(
         title: title,
         onBack: onBack,
         actions: actions,
         center: center,
+        below: below,
         showSearch: ordered.every((FrameChrome c) => c.showSearch),
         priority: ordered.last.priority,
       );

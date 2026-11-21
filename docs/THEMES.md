@@ -108,19 +108,20 @@ for light ones, because frost needs more body on a dark background.
 | `wallpaperBlurSigma` | Blur of the wallpaper under the frame, applied once | 4.2 | 0 |
 | `modalBlurSigma` | Blur behind dialogs, sheets and popups | 5.6 | 0 |
 | `panelFill` | Panel material: neutral `frost` (white on light, black on dark) or the palette `surface` | frost | surface |
-| `panelFrost` | Panel fill alpha | 70 / 60 | 255 |
+| `panelFrost` | Panel fill alpha | 70 / 48 | 255 |
 | `panelEdge` | Panel border alpha | 30 / 70 | 255 |
-| `panelHighlight` | White highlight along a panel's top edge | 10 / 28 | 0 |
+| `panelHighlight` | White highlight along a panel's top edge | 10 / 18 | 0 |
 | `panelRadius` | Corner radius of the three frame panels | 22 | 0 |
 | `frameGap` | Gap between the window edge and the panels, and between panels | 10 | 0 |
+| `floatingBars` | On a phone the search block and the menu float over the content | yes | no |
 | `wallpaper` | What sits under everything: a `picture` (the user's, set in Settings → Appearance → Wallpaper; the palette tile until one is set) or the palette `tile` | picture | tile |
 | `contentOnWallpaper` | Content panel paints no fill; pages sit straight on the wallpaper | no | yes |
-| `tileAlpha` | Fill of a big block (`GlassTile`, `glassTileDecoration`) | 110 / 120 | 255 |
-| `tileEdge` | Border of that block | 34 / 180 | 255 |
+| `tileAlpha` | Fill of a big block (`GlassTile`, `glassTileDecoration`) | 110 / 88 | 255 |
+| `tileEdge` | Border of that block | 34 / 110 | 255 |
 | `tileShadow` | Drop shadow under a `GlassTile` | yes | no |
 | `cardElevation` | Material elevation of a `Card` | 0 | 2 |
-| `chipAlpha` | Fill of small controls with text (chips, tags, filter tiles); keep near-solid | 225 | 255 |
-| `cardAlpha` | Fill of a Material `Card` | 16 / 70 | 255 |
+| `chipAlpha` | Fill of small controls with text (chips, tags, filter tiles); keep near-solid | 225 / 200 | 255 |
+| `cardAlpha` | Fill of a Material `Card` | 16 / 28 | 255 |
 | `sheenAlpha` | Highlight sweeping across a loading placeholder | 50 / 150 | 60 / 120 |
 | `inputFillAlpha` | Text field fill | 150 | 255 |
 | `modalAlpha` | Dialog and bottom sheet fill | 225 | 255 |

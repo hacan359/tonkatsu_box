@@ -14,7 +14,9 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   The app is laid out as glass panels over a wallpaper: a search row on top,
   the menu rail on the left (a bottom band on phones) and the content panel.
   A sub-screen's back button, title and actions sit in the top row instead of
-  a second bar; pages switch with a shrink-and-grow transition.
+  a second bar; pages switch with a shrink-and-grow transition. On a phone
+  with the Glass style the search block and the menu float over the content:
+  lists scroll under them and a screen's filter strip sits in the top block.
 
   * lib/shared/navigation/app_frame.dart (AppFrame, frameChromeHeight): New.
   * lib/shared/navigation/frame_chrome.dart (FrameChrome, FrameChromeController,
@@ -38,6 +40,30 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/shared/widgets/media_detail/detail_sections.dart,
     lib/features/collections/widgets/item_detail/item_detail_app_bar.dart:
     The title card lays out on glass tiles and lends its buttons to the top row.
+  * lib/shared/navigation/frame_inset.dart (frameFloats, frameStripInset,
+    FrameBarInsets, FrameRouteInset, FrameBleed, FrameStrip): New; a page
+    stays clear of the floating bars until its list opts in to run under them.
+  * lib/shared/navigation/frame_chrome.dart (FrameChrome.below): A filter
+    strip lent to the floating top block.
+  * lib/shared/theme/app_skin.dart (AppSkin.floatingBars),
+    lib/shared/theme/app_surface.dart (AppSurface.floatingBars,
+    AppSurface.floatingFill): New.
+  * lib/features/collections/screens/collection_screen.dart,
+    lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/widgets/collection_filter_bar.dart,
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/home/screens/all_items_screen.dart,
+    lib/features/releases/screens/releases_screen.dart,
+    lib/features/search/screens/search_screen.dart,
+    lib/features/search/widgets/browse_grid.dart,
+    lib/features/search/widgets/browse_sections_compact.dart,
+    lib/features/settings/screens/settings_screen.dart,
+    lib/features/tier_lists/screens/tier_lists_screen.dart,
+    lib/features/wishlist/screens/wishlist_screen.dart,
+    lib/features/wishlist/widgets/wishlist_tag_header.dart: Lists run under
+    the floating bars and lend their filter strip to the top block.
+  * lib/shared/widgets/draggable_fab.dart (DraggableFab): Stays above the
+    floating menu.
 
 - **Dialogs, sheets and menus on glass**
 
@@ -130,8 +156,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   grids. Classic keeps the card as it was. Cinema and Hover sheet drop the
   caption under the poster and write the title on the picture. Shelf, Minimal
   and Ribbon move status, progress and tags to new places. Tilt, Curved glass,
-  Slab and Jewel case give the poster depth. The setting shows with the Glass
-  style.
+  Slab and Jewel case give the poster depth.
 
   * lib/shared/widgets/poster_look.dart (PosterLook, PosterLookScope,
     PosterObject, PosterTilt, PosterCurvedGlass, PosterSlab, PosterJewel): New.
@@ -253,6 +278,15 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/features/collections/helpers/item_refresh.dart: An animation item
     without the series flag is refetched as a movie.
+
+- **Selfhost web client loads after a server update**
+
+  The server asks the browser to revalidate every file of the web client, and
+  `docker compose build` pulls the current base images.
+
+  * server/lib/src/app_handler.dart (_webHandler): `Cache-Control: no-cache`
+    on every static file.
+  * docker-compose.yml: `pull: true` for the build.
 
 ## [0.46.0] - 2026-11-01
 

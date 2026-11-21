@@ -15,6 +15,7 @@ import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/widgets/collection_picker_field.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
@@ -247,16 +248,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _showEmptyAreaContextMenu(context, ref, details.globalPosition),
           onLongPressStart: (LongPressStartDetails details) =>
               _showEmptyAreaContextMenu(context, ref, details.globalPosition),
-          child: GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 273,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 1,
-            ),
-            itemCount: gridItems.length,
-            itemBuilder: (BuildContext context, int index) => gridItems[index],
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) =>
+                GridView.builder(
+                  padding: const EdgeInsets.all(AppSpacing.md) + bars,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 273,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: gridItems.length,
+                  itemBuilder: (BuildContext context, int index) =>
+                      gridItems[index],
+                ),
           ),
         ),
       ),
@@ -283,25 +288,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _showEmptyAreaContextMenu(context, ref, details.globalPosition),
         onLongPressStart: (LongPressStartDetails details) =>
             _showEmptyAreaContextMenu(context, ref, details.globalPosition),
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          itemCount: collections.length + offset,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 0 && offset == 1) {
-              return UncategorizedListTile(
-                count: uncategorizedCount,
-                onTap: () => _navigateToUncategorized(context),
+        child: FrameBleed(
+          builder: (BuildContext context, EdgeInsets bars) => ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm) + bars,
+            itemCount: collections.length + offset,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == 0 && offset == 1) {
+                return UncategorizedListTile(
+                  count: uncategorizedCount,
+                  onTap: () => _navigateToUncategorized(context),
+                );
+              }
+              final Collection c = collections[index - offset];
+              return CollectionListTile(
+                collection: c,
+                onTap: () => _navigateToCollection(context, c),
+                onLongPress: () => _showCollectionOptions(context, ref, c),
+                onSecondaryTap: (Offset pos) =>
+                    _showCollectionContextMenu(context, ref, c, pos),
               );
-            }
-            final Collection c = collections[index - offset];
-            return CollectionListTile(
-              collection: c,
-              onTap: () => _navigateToCollection(context, c),
-              onLongPress: () => _showCollectionOptions(context, ref, c),
-              onSecondaryTap: (Offset pos) =>
-                  _showCollectionContextMenu(context, ref, c, pos),
-            );
-          },
+            },
+          ),
         ),
       ),
     );

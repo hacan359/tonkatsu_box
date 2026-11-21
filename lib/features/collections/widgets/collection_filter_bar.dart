@@ -7,6 +7,7 @@ import 'package:core/models/tag.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -134,12 +135,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-            AppSpacing.xs,
-          ),
+          padding: frameStripInset(context),
           child: _buildTypeStrip(l, stats),
         ),
         SubfilterBar(

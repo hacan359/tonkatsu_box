@@ -57,14 +57,14 @@ void main() {
         );
       });
 
-      testWidgets('should return classic on a skin without glass', (
+      testWidgets('should return the scoped look on the classic skin', (
         WidgetTester tester,
       ) async {
         AppSurface.skin = AppSkin.classic;
 
         expect(
           await resolve(tester, scoped: PosterLook.shelf),
-          PosterLook.classic,
+          PosterLook.shelf,
         );
       });
     });

@@ -13,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/collection_item_ui.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -255,48 +256,53 @@ class CollectionItemsView extends ConsumerWidget {
       for (final _TagGroup g in groups) ...g.items,
     ];
 
-    return RefreshIndicator(
-      onRefresh: () => ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh(),
-      child: header == null
-          ? GridView.builder(
-              padding: EdgeInsets.all(gridPadding),
-              gridDelegate: gridDelegate,
-              itemCount: sorted.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildGridCard(
-                  context,
-                  ref,
-                  sorted[index],
-                  compact,
-                  settings,
-                  tagGlow: true,
-                );
-              },
-            )
-          : CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: header),
-                SliverPadding(
-                  padding: EdgeInsets.all(gridPadding),
-                  sliver: SliverGrid.builder(
-                    gridDelegate: gridDelegate,
-                    itemCount: sorted.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _buildGridCard(
-                        context,
-                        ref,
-                        sorted[index],
-                        compact,
-                        settings,
-                        tagGlow: true,
-                      );
-                    },
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => RefreshIndicator(
+        edgeOffset: bars.top,
+        onRefresh: () => ref
+            .read(collectionItemsNotifierProvider(collectionId).notifier)
+            .refresh(),
+        child: header == null
+            ? GridView.builder(
+                padding: EdgeInsets.all(gridPadding) + bars,
+                gridDelegate: gridDelegate,
+                itemCount: sorted.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildGridCard(
+                    context,
+                    ref,
+                    sorted[index],
+                    compact,
+                    settings,
+                    tagGlow: true,
+                  );
+                },
+              )
+            : CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: SizedBox(height: bars.top)),
+                  SliverToBoxAdapter(child: header),
+                  SliverPadding(
+                    padding: EdgeInsets.all(gridPadding),
+                    sliver: SliverGrid.builder(
+                      gridDelegate: gridDelegate,
+                      itemCount: sorted.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return _buildGridCard(
+                          context,
+                          ref,
+                          sorted[index],
+                          compact,
+                          settings,
+                          tagGlow: true,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  SliverToBoxAdapter(child: SizedBox(height: bars.bottom)),
+                ],
+              ),
+      ),
     );
   }
 
@@ -308,46 +314,51 @@ class CollectionItemsView extends ConsumerWidget {
     SettingsState settings,
   ) {
     final bool compact = useCompactCard(context);
-    return RefreshIndicator(
-      onRefresh: () => ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh(),
-      child: header == null
-          ? GridView.builder(
-              padding: EdgeInsets.all(gridPadding),
-              gridDelegate: gridDelegate,
-              itemCount: items.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildGridCard(
-                  context,
-                  ref,
-                  items[index],
-                  compact,
-                  settings,
-                );
-              },
-            )
-          : CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: header),
-                SliverPadding(
-                  padding: EdgeInsets.all(gridPadding),
-                  sliver: SliverGrid.builder(
-                    gridDelegate: gridDelegate,
-                    itemCount: items.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return _buildGridCard(
-                        context,
-                        ref,
-                        items[index],
-                        compact,
-                        settings,
-                      );
-                    },
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => RefreshIndicator(
+        edgeOffset: bars.top,
+        onRefresh: () => ref
+            .read(collectionItemsNotifierProvider(collectionId).notifier)
+            .refresh(),
+        child: header == null
+            ? GridView.builder(
+                padding: EdgeInsets.all(gridPadding) + bars,
+                gridDelegate: gridDelegate,
+                itemCount: items.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildGridCard(
+                    context,
+                    ref,
+                    items[index],
+                    compact,
+                    settings,
+                  );
+                },
+              )
+            : CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: SizedBox(height: bars.top)),
+                  SliverToBoxAdapter(child: header),
+                  SliverPadding(
+                    padding: EdgeInsets.all(gridPadding),
+                    sliver: SliverGrid.builder(
+                      gridDelegate: gridDelegate,
+                      itemCount: items.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return _buildGridCard(
+                          context,
+                          ref,
+                          items[index],
+                          compact,
+                          settings,
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  SliverToBoxAdapter(child: SizedBox(height: bars.bottom)),
+                ],
+              ),
+      ),
     );
   }
 

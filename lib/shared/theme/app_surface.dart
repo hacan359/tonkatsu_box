@@ -29,6 +29,13 @@ abstract final class AppSurface {
     };
   }
 
+  /// A panel floating over artwork: denser than [panelFill], or icons on it
+  /// drown in a bright poster.
+  static Color floatingFill([AppPalette? palette]) =>
+      _p(palette).surface.withAlpha(_floatingAlpha);
+
+  static const int _floatingAlpha = 150;
+
   static Color panelEdge([AppPalette? palette]) {
     final int alpha = skin.panelEdge.of(_b(palette));
     return switch (skin.panelFill) {
@@ -69,7 +76,7 @@ abstract final class AppSurface {
     final Color base = tint == null
         ? surface
         : Color.alphaBlend(tint.withAlpha(tintAlpha), surface);
-    return base.withAlpha(skin.chipAlpha);
+    return base.withAlpha(skin.chipAlpha.of(_b(palette)));
   }
 
   static Color cardFill([AppPalette? palette]) {
@@ -95,6 +102,8 @@ abstract final class AppSurface {
   static double get panelRadius => skin.panelRadius;
 
   static double get frameGap => skin.frameGap;
+
+  static bool get floatingBars => skin.floatingBars;
 
   static double get wallpaperBlurSigma => skin.wallpaperBlurSigma;
 

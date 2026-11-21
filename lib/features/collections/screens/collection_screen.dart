@@ -24,6 +24,7 @@ import '../widgets/create_custom_item_dialog.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/frame_page.dart';
@@ -220,76 +221,68 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ? null
           : (_isUncategorized ? l.collectionsUncategorized : _collection!.name),
       child: wrapWithScreenShortcuts(
-      bindings: _buildScreenShortcuts(l),
-      child: Stack(
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              if (!_isCanvasMode)
-                _buildFilterBar(itemsAsync, statsAsync, searchQuery, tags),
-              if (_canEdit && !_isCanvasMode)
-                CollectionBulkActionBar(
-                  collectionId: widget.collectionId,
-                  collectionName: _isUncategorized
-                      ? l.collectionsUncategorized
-                      : _collection?.name,
-                  filters: activeFilters,
-                  tags: tags,
-                ),
-              Expanded(
-                child: _isCanvasMode
-                    ? CollectionCanvasLayout(
-                        collectionId: widget.collectionId,
-                        isEditable: _effectiveIsEditable,
-                        collectionName: _collection!.name,
-                        onAddSteamGridDbImage: (SteamGridDbImage image) {
-                          CollectionActions.addSteamGridDbImage(
-                            context: context,
-                            ref: ref,
-                            collectionId: widget.collectionId,
-                            image: image,
-                          );
-                        },
-                        onAddVgMapsImage:
-                            (String url, int? width, int? height) {
-                              CollectionActions.addVgMapsImage(
-                                context: context,
-                                ref: ref,
-                                collectionId: widget.collectionId,
-                                url: url,
-                                width: width,
-                                height: height,
-                              );
-                            },
-                      )
-                    : _buildListLayout(
-                        itemsAsync,
-                        activeFilters,
-                        tags,
-                        itemTags,
-                      ),
-              ),
-            ],
-          ),
-          CollectionScreenFab(
-            canEdit: _canEdit,
-            isUncategorized: _isUncategorized,
-            isCollectionEditable: _collection?.isEditable ?? false,
-            isCanvasMode: _isCanvasMode,
-            isTableMode: _isTableMode,
-            isViewModeLocked: _isViewModeLocked,
-            onAddItems: () => CollectionActions.addItems(
-              ref: ref,
-              collectionId: widget.collectionId,
+        bindings: _buildScreenShortcuts(l),
+        child: Stack(
+          children: <Widget>[
+            FrameStrip(
+              strip: <Widget>[
+                if (!_isCanvasMode)
+                  _buildFilterBar(itemsAsync, statsAsync, searchQuery, tags),
+                if (_canEdit && !_isCanvasMode)
+                  CollectionBulkActionBar(
+                    collectionId: widget.collectionId,
+                    collectionName: _isUncategorized
+                        ? l.collectionsUncategorized
+                        : _collection?.name,
+                    filters: activeFilters,
+                    tags: tags,
+                  ),
+              ],
+              child: _isCanvasMode
+                  ? CollectionCanvasLayout(
+                      collectionId: widget.collectionId,
+                      isEditable: _effectiveIsEditable,
+                      collectionName: _collection!.name,
+                      onAddSteamGridDbImage: (SteamGridDbImage image) {
+                        CollectionActions.addSteamGridDbImage(
+                          context: context,
+                          ref: ref,
+                          collectionId: widget.collectionId,
+                          image: image,
+                        );
+                      },
+                      onAddVgMapsImage: (String url, int? width, int? height) {
+                        CollectionActions.addVgMapsImage(
+                          context: context,
+                          ref: ref,
+                          collectionId: widget.collectionId,
+                          url: url,
+                          width: width,
+                          height: height,
+                        );
+                      },
+                    )
+                  : _buildListLayout(itemsAsync, activeFilters, tags, itemTags),
             ),
-            onCycleViewMode: _handleCycleViewMode,
-            onToggleLock: _toggleLock,
-            onToggleCanvas: () =>
-                setState(() => _isCanvasMode = !_isCanvasMode),
-            onMenuAction: _handleMenuAction,
-          ),
-        ],
-      ),
+            CollectionScreenFab(
+              canEdit: _canEdit,
+              isUncategorized: _isUncategorized,
+              isCollectionEditable: _collection?.isEditable ?? false,
+              isCanvasMode: _isCanvasMode,
+              isTableMode: _isTableMode,
+              isViewModeLocked: _isViewModeLocked,
+              onAddItems: () => CollectionActions.addItems(
+                ref: ref,
+                collectionId: widget.collectionId,
+              ),
+              onCycleViewMode: _handleCycleViewMode,
+              onToggleLock: _toggleLock,
+              onToggleCanvas: () =>
+                  setState(() => _isCanvasMode = !_isCanvasMode),
+              onMenuAction: _handleMenuAction,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -815,9 +808,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       case SavedImportCancelled():
         return;
       case SavedImportOpenScreen(:final Widget screen):
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute<void>(builder: (BuildContext _) => screen));
+        Navigator.of(context)
+            .push(MaterialPageRoute<void>(builder: (BuildContext _) => screen));
       case SavedImportReady(
         :final ImportSource source,
         :final ImportOptions options,

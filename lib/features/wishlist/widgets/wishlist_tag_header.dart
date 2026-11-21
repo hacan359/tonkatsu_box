@@ -2,6 +2,7 @@ import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/wishlist_tag.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -39,12 +40,7 @@ class WishlistTagHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.xs,
-      ),
+      padding: frameStripInset(context),
       child: SizedBox(
         height: kMediaTypeTileSize,
         child: Row(
