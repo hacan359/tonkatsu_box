@@ -13,10 +13,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   The app is laid out as glass panels over a wallpaper: a search row on top,
   the menu rail on the left (a bottom band on phones) and the content panel.
-  A sub-screen's back button, title and actions sit in the top row instead of
-  a second bar; pages switch with a shrink-and-grow transition. On a phone
-  with the Glass style the search block and the menu float over the content:
-  lists scroll under them and a screen's filter strip sits in the top block.
+  A sub-screen's back button, title and actions sit in the top row; pages
+  switch with a shrink-and-grow transition. On a phone with the Glass style
+  the search block and the menu float over the content: pages take the full
+  width, lists scroll under the bars and a screen's filter strip sits in the
+  top block. The strip folds away while the list scrolls down and comes back
+  on the way up or when the list has nothing left to scroll; page-wide
+  backings line up with the edges of the bars.
 
   * lib/shared/navigation/app_frame.dart (AppFrame, frameChromeHeight): New.
   * lib/shared/navigation/frame_chrome.dart (FrameChrome, FrameChromeController,
@@ -43,8 +46,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/shared/navigation/frame_inset.dart (frameFloats, frameStripInset,
     FrameBarInsets, FrameRouteInset, FrameBleed, FrameStrip): New; a page
     stays clear of the floating bars until its list opts in to run under them.
-  * lib/shared/navigation/frame_chrome.dart (FrameChrome.below): A filter
-    strip lent to the floating top block.
+  * lib/shared/navigation/frame_chrome.dart (FrameChrome.below,
+    FrameChromeController.belowOwner): A filter strip lent to the floating
+    top block; it folds on scroll down and unfolds for each new page.
+  * lib/shared/navigation/app_frame.dart (AppFrame): The strip follows the
+    page's own list and ignores lists nested in it.
+  * lib/shared/navigation/frame_inset.dart (frameBackingInset): New; the
+    statistics hero and the title card line up with the floating bars.
   * lib/shared/theme/app_skin.dart (AppSkin.floatingBars),
     lib/shared/theme/app_surface.dart (AppSurface.floatingBars,
     AppSurface.floatingFill): New.
@@ -52,15 +60,24 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/collections/screens/home_screen.dart,
     lib/features/collections/widgets/collection_filter_bar.dart,
     lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/genre_cloud/screens/genre_cloud_screen.dart,
     lib/features/home/screens/all_items_screen.dart,
+    lib/features/likes/screens/likes_screen.dart,
+    lib/features/personalization/screens/personalization_hub_screen.dart,
+    lib/features/recommendations/screens/recommendations_screen.dart,
     lib/features/releases/screens/releases_screen.dart,
     lib/features/search/screens/search_screen.dart,
     lib/features/search/widgets/browse_grid.dart,
     lib/features/search/widgets/browse_sections_compact.dart,
-    lib/features/settings/screens/settings_screen.dart,
+    lib/features/settings/screens/settings_screen.dart and the scrolling
+    settings sub-screens,
+    lib/features/showcase/screens/showcase_screen.dart,
+    lib/features/statistics/screens/statistics_screen.dart,
+    lib/features/statistics/views/statistics_view_mobile.dart,
     lib/features/tier_lists/screens/tier_lists_screen.dart,
     lib/features/wishlist/screens/wishlist_screen.dart,
-    lib/features/wishlist/widgets/wishlist_tag_header.dart: Lists run under
+    lib/features/wishlist/widgets/wishlist_tag_header.dart,
+    lib/shared/widgets/media_detail/mobile_detail_layout.dart: Lists run under
     the floating bars and lend their filter strip to the top block.
   * lib/shared/widgets/draggable_fab.dart (DraggableFab): Stays above the
     floating menu.
@@ -89,10 +106,13 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 - **Style setting: Glass or Classic**
 
-  Settings → Appearance gains "Style" next to "Theme". Glass puts translucent
-  panels over the palette background or a blurred photo of your own; Classic keeps the opaque tiled look of 0.46. Either works
-  with any palette. With Glass, "Wallpaper" sets your own picture behind the
-  frame or resets it to the palette background (desktop and Android).
+  Settings → Appearance gains "Style" next to "Theme". Glass is clear liquid
+  glass in the iOS style: the search row, the menu, dialogs, sheets, menus and
+  floating buttons refract and blur what is under them, and pages lie straight
+  on your own photo or on the palette's background. Classic is the opaque
+  tiled look. Either works with any palette. With Glass,
+  "Wallpaper" sets your own picture behind the frame or resets it to the
+  palette's background (desktop and Android).
 
   * lib/shared/theme/app_skin.dart (AppSkin, SkinAlpha),
     lib/shared/theme/app_skin_id.dart (AppSkinId),
@@ -111,8 +131,20 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     shared with lib/core/services/collection_hero_service.dart
     (CollectionHeroService).
   * lib/shared/navigation/app_wallpaper.dart (AppWallpaper): Shows the user's
-    picture as loaded; without one, or when the file is unreadable, the
-    palette tile.
+    picture under the skin's wash; without one, or when the file is
+    unreadable, the palette tile on either skin.
+  * lib/shared/widgets/glass_panel.dart (GlassPanel): On Glass a clear
+    refracting `GlassContainer`; overlays get a heavier blur.
+  * lib/shared/widgets/draggable_fab.dart (DraggableFab): Glass buttons on
+    Glass.
+  * lib/shared/navigation/app_frame.dart (AppFrame): No content panel on
+    Glass; the floating bars read the backdrop together.
+  * lib/features/search/widgets/filter_sheet.dart,
+    lib/features/collections/widgets/collection_filter_sheet.dart: No inner
+    tile on Glass.
+  * lib/main.dart: Warms up the glass shaders while the app state loads and
+    wraps the app for them.
+  * pubspec.yaml: liquid_glass_widgets.
   * lib/app.dart: Applies the selected skin.
   * lib/shared/theme/palettes/sakura_palette.dart: Deeper text colours.
   * lib/l10n/app_*.arb (settingsSkin, settingsSkinSubtitle, settingsSkinGlass,
@@ -153,8 +185,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - **Card style setting**
 
   Settings → Appearance gains "Card style" with ten looks for poster cards in
-  grids. Classic keeps the card as it was. Cinema and Hover sheet drop the
-  caption under the poster and write the title on the picture. Shelf, Minimal
+  grids. Classic is the poster with a caption under it. Cinema and Hover
+  sheet drop the caption and write the title on the picture. Shelf, Minimal
   and Ribbon move status, progress and tags to new places. Tilt, Curved glass,
   Slab and Jewel case give the poster depth.
 
@@ -227,6 +259,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     `cached_network_image` to 4, `xml` to 7, `trina_grid` to 2.4 and
     `shadcn_ui` to 0.57.
   * packages/core/pubspec.yaml, server/pubspec.yaml: Dart `^3.14.0`.
+  * Dockerfile: The web stage builds on Flutter's stable branch and follows
+    its head on every rebuild.
   * android/settings.gradle.kts, android/gradle/wrapper/gradle-wrapper.properties,
     android/gradle.properties, android/app/build.gradle.kts: Gradle 9.5.0,
     Android Gradle Plugin 9.3.1, Kotlin 2.4.20, compile SDK 37.
@@ -243,7 +277,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     built on the in-SDK Material library.
   * lib/features/collections/widgets/collection_table/table_style.dart
     (collectionTableConfiguration): Column resize grip and sort arrows sit at
-    the column edge instead of over the header text.
+    the column edge.
 
 - **Author review on the wide item card**
 

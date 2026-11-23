@@ -1,5 +1,6 @@
 import 'dart:ui' show ImageFilter;
 
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_colors.dart';
@@ -40,6 +41,7 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (AppSurface.liquidGlass) return _liquid();
     final BorderRadius r =
         borderRadius ?? BorderRadius.circular(radius ?? AppSurface.panelRadius);
     final double sigma = blurSigma ?? AppSurface.modalBlurSigma;
@@ -81,6 +83,54 @@ class GlassPanel extends StatelessWidget {
               child: box,
             )
           : box,
+    );
+  }
+
+  /// Clear glass on every palette: the iOS presets milk it white on light
+  /// and shade it black on dark, which reads as a tinted veil, not glass.
+  static final LiquidGlassSettings _clear = LiquidGlassSettings.ios27Light
+      .copyWith(glassColor: Colors.transparent, frost: 0, bodyShade: 0);
+
+  // An overlay covers text a crisp pane would let through to compete with
+  // its own, and boosted colour behind its rows would drown them too.
+  static final LiquidGlassSettings _overlay = _clear.copyWith(
+    blur: 24,
+    saturation: 1,
+  );
+
+  /// One radius for every corner, taken from the roundest one asked for.
+  double _liquidRadius() {
+    final BorderRadius? r = borderRadius;
+    if (r == null) return radius ?? AppSurface.panelRadius;
+    return <double>[
+      r.topLeft.x,
+      r.topRight.x,
+      r.bottomLeft.x,
+      r.bottomRight.x,
+    ].reduce((double a, double b) => a > b ? a : b);
+  }
+
+  /// Refracts what is under it itself, so [fill] does not apply.
+  Widget _liquid() {
+    return GlassContainer(
+      width: width,
+      height: height,
+      // One radius for every corner: a sheet floats rounded all round, the
+      // way iOS sheets do, instead of a top-only curve.
+      shape: LiquidRoundedSuperellipse(borderRadius: _liquidRadius()),
+      // The frame's fixed chrome passes 0 and stays a clear lens.
+      settings: switch (blurSigma) {
+        null => _overlay,
+        final double sigma => _clear.copyWith(blur: sigma),
+      },
+      quality: GlassQuality.premium,
+      useOwnLayer: true,
+      clipBehavior: Clip.antiAlias,
+      // Ink and ListTile backgrounds paint on the nearest Material.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Padding(padding: padding, child: child),
+      ),
     );
   }
 }

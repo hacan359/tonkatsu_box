@@ -23,6 +23,12 @@ EdgeInsets frameStripInset(BuildContext context) => frameFloats(context)
         AppSpacing.xs,
       );
 
+/// Side inset of a page-wide backing, so its edges line up with the floating
+/// bars instead of jutting past them.
+EdgeInsets frameBackingInset(BuildContext context) => frameFloats(context)
+    ? EdgeInsets.symmetric(horizontal: AppSurface.frameGap)
+    : EdgeInsets.zero;
+
 /// How much of the content panel the floating bars cover, top and bottom.
 class FrameBarInsets extends InheritedWidget {
   const FrameBarInsets({required this.insets, required super.child, super.key});

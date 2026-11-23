@@ -92,6 +92,7 @@ dependencies:
   calendar_view: ^2.0.0
   trina_grid: ^2.4.0
   shadcn_ui: ^0.57.4
+  liquid_glass_widgets: ^1.19.0
 
 # The real gamepads_windows is native-only and its USB device listener
 # crashes the app (0xc0000005) even though the Dart side never subscribes

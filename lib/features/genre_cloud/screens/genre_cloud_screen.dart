@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/services/png_export_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -84,13 +85,13 @@ class _GenreCloudScreenState extends ConsumerState<GenreCloudScreen> {
     return FramePage(
       child: Stack(
         children: <Widget>[
-          Column(
-            children: <Widget>[
+          FrameStrip(
+            strip: <Widget>[
               if (widget.showTitle) _buildHeader(l),
               if (facets.length > 1) _buildFacetLegend(l, facets),
               if (types.length > 1) _buildTypeLegend(l, types),
-              Expanded(child: _buildBody(l, itemsAsync, words)),
             ],
+            child: _buildBody(l, itemsAsync, words),
           ),
           if (hasWords && _exporting)
             Positioned(

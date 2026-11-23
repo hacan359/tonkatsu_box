@@ -51,6 +51,17 @@ void main() {
       expect(controller.current?.below, isNull);
     });
 
+    test('should name the owner of the strip it shows', () {
+      controller.set(title, const FrameChrome(title: 'T', priority: 1));
+      expect(controller.belowOwner, isNull);
+
+      controller.set(strip, const FrameChrome(below: SizedBox()));
+      expect(controller.belowOwner, same(strip));
+
+      controller.clear(strip);
+      expect(controller.belowOwner, isNull);
+    });
+
     test('should hide the search while any lender opts out', () {
       final Object page = Object();
       controller.set(Object(), const FrameChrome(title: 'List'));

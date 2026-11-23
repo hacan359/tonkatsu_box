@@ -34,6 +34,7 @@ class AppSkin {
   const AppSkin({
     required this.wallpaperBlurSigma,
     required this.modalBlurSigma,
+    required this.liquidGlass,
     required this.panelFill,
     required this.panelFrost,
     required this.panelEdge,
@@ -42,6 +43,7 @@ class AppSkin {
     required this.frameGap,
     required this.floatingBars,
     required this.wallpaper,
+    required this.wallpaperWash,
     required this.contentOnWallpaper,
     required this.tileAlpha,
     required this.tileEdge,
@@ -67,6 +69,10 @@ class AppSkin {
   /// Blur behind dialogs, sheets and popups; 0 turns it off.
   final double modalBlurSigma;
 
+  /// Panels are refracting liquid glass, iOS style, instead of a tinted veil;
+  /// the panel fill, edge and highlight below then go unused.
+  final bool liquidGlass;
+
   final SkinFill panelFill;
   final SkinAlpha panelFrost;
   final SkinAlpha panelEdge;
@@ -83,6 +89,10 @@ class AppSkin {
   final bool floatingBars;
 
   final SkinWallpaper wallpaper;
+
+  /// Palette background laid over a picture: with pages on the picture and no
+  /// panel of their own, this is what keeps their text readable.
+  final SkinAlpha wallpaperWash;
 
   /// The content panel paints no fill, so pages sit straight on the
   /// wallpaper the way they did before the frame.

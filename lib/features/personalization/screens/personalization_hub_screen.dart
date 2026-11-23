@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../likes/screens/likes_screen.dart';
@@ -33,67 +34,71 @@ class PersonalizationHubScreen extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: wide ? _maxContentWidth : double.infinity,
           ),
-          child: ListView(
-            padding: EdgeInsets.symmetric(
-              horizontal: wide ? AppSpacing.lg : AppSpacing.md,
-              vertical: AppSpacing.md,
-            ),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.xs,
-                  bottom: AppSpacing.md,
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) => ListView(
+              padding:
+                  EdgeInsets.symmetric(
+                    horizontal: wide ? AppSpacing.lg : AppSpacing.md,
+                    vertical: AppSpacing.md,
+                  ) +
+                  bars,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.xs,
+                    bottom: AppSpacing.md,
+                  ),
+                  child: Text(l.personalizationTitle, style: AppTypography.h2),
                 ),
-                child: Text(l.personalizationTitle, style: AppTypography.h2),
-              ),
-              HubSectionCard(
-                icon: Icons.insights_outlined,
-                title: l.statsTabTitle,
-                hint: l.personalizationStatsHint,
-                preview: const HubStatsPreview(),
-                onTap: () => pushPersonalizationSection(
-                  context,
+                HubSectionCard(
+                  icon: Icons.insights_outlined,
                   title: l.statsTabTitle,
-                  child: const StatisticsScreen(),
+                  hint: l.personalizationStatsHint,
+                  preview: const HubStatsPreview(),
+                  onTap: () => pushPersonalizationSection(
+                    context,
+                    title: l.statsTabTitle,
+                    child: const StatisticsScreen(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              HubSectionCard(
-                icon: Icons.auto_awesome_outlined,
-                title: l.recommendationsTitle,
-                hint: l.personalizationRecommendationsHint,
-                preview: const HubRecommendationsPreview(),
-                onTap: () => pushPersonalizationSection(
-                  context,
+                const SizedBox(height: AppSpacing.md),
+                HubSectionCard(
+                  icon: Icons.auto_awesome_outlined,
                   title: l.recommendationsTitle,
-                  child: const RecommendationsScreen(),
+                  hint: l.personalizationRecommendationsHint,
+                  preview: const HubRecommendationsPreview(),
+                  onTap: () => pushPersonalizationSection(
+                    context,
+                    title: l.recommendationsTitle,
+                    child: const RecommendationsScreen(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              HubSectionCard(
-                icon: Icons.storefront_outlined,
-                title: l.showcaseTitle,
-                hint: l.showcaseHint,
-                preview: const HubShowcasePreview(),
-                onTap: () => pushPersonalizationSection(
-                  context,
+                const SizedBox(height: AppSpacing.md),
+                HubSectionCard(
+                  icon: Icons.storefront_outlined,
                   title: l.showcaseTitle,
-                  child: const ShowcaseScreen(),
+                  hint: l.showcaseHint,
+                  preview: const HubShowcasePreview(),
+                  onTap: () => pushPersonalizationSection(
+                    context,
+                    title: l.showcaseTitle,
+                    child: const ShowcaseScreen(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              HubSectionCard(
-                icon: Icons.favorite_border,
-                title: l.likesTitle,
-                hint: l.personalizationLikesHint,
-                preview: const HubLikesPreview(),
-                onTap: () => pushPersonalizationSection(
-                  context,
+                const SizedBox(height: AppSpacing.md),
+                HubSectionCard(
+                  icon: Icons.favorite_border,
                   title: l.likesTitle,
-                  child: const LikesScreen(),
+                  hint: l.personalizationLikesHint,
+                  preview: const HubLikesPreview(),
+                  onTap: () => pushPersonalizationSection(
+                    context,
+                    title: l.likesTitle,
+                    child: const LikesScreen(),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

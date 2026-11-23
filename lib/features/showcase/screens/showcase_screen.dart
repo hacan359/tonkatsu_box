@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -78,15 +79,15 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return FramePage(
-      child: Column(
-        children: <Widget>[
+      child: FrameStrip(
+        strip: <Widget>[
           _Header(
             onRefresh: () => refreshShowcase(ref),
             onSettings: () => ShowcaseSettingsSheet.show(context),
           ),
           CollectionChipsRow(targetProvider: showcaseTargetCollectionsProvider),
-          Expanded(child: _buildBody(l)),
         ],
+        child: _buildBody(l),
       ),
     );
   }
@@ -125,9 +126,11 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen> {
         ),
       );
     }
-    return ListView(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      children: children,
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => ListView(
+        padding: const EdgeInsets.only(bottom: AppSpacing.md) + bars,
+        children: children,
+      ),
     );
   }
 }

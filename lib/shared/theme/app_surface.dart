@@ -115,6 +115,11 @@ abstract final class AppSurface {
 
   static bool get contentOnWallpaper => skin.contentOnWallpaper;
 
+  static Color wallpaperWash([AppPalette? palette]) =>
+      _p(palette).background.withAlpha(skin.wallpaperWash.of(_b(palette)));
+
+  static bool get liquidGlass => skin.liquidGlass;
+
   static double get cardElevation => skin.cardElevation;
 
   static bool get detailBackdrop => skin.detailBackdrop;

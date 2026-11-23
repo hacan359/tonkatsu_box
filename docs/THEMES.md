@@ -14,9 +14,10 @@ Any skin pairs with any palette. The code never special-cases a combination;
 if one looks wrong, fix the palette's colours or the skin's alphas, not a widget.
 
 Built-in palettes: `dark`, `sakura`, `ps1`, `eva`
-(`lib/shared/theme/palettes/`). Built-in skins: `glass` (frosted panels over a
-blurred picture) and `classic` (the pre-0.47 look: opaque square panels on the
-palette's tile, no gaps) (`lib/shared/theme/skins/`).
+(`lib/shared/theme/palettes/`). Built-in skins: `glass` (clear liquid glass
+chrome, iOS style, over pages that lie straight on the picture) and `classic`
+(the pre-0.47 look: opaque square panels on the palette's tile, no gaps)
+(`lib/shared/theme/skins/`).
 
 ## How a theme reaches the widgets
 
@@ -107,6 +108,7 @@ for light ones, because frost needs more body on a dark background.
 |-------|----------|-------|---------|
 | `wallpaperBlurSigma` | Blur of the wallpaper under the frame, applied once | 4.2 | 0 |
 | `modalBlurSigma` | Blur behind dialogs, sheets and popups | 5.6 | 0 |
+| `liquidGlass` | Panels, dialogs, sheets, menus and FAB buttons are refracting glass from `liquid_glass_widgets`; the `panel*` fields below then go unused | yes | no |
 | `panelFill` | Panel material: neutral `frost` (white on light, black on dark) or the palette `surface` | frost | surface |
 | `panelFrost` | Panel fill alpha | 70 / 48 | 255 |
 | `panelEdge` | Panel border alpha | 30 / 70 | 255 |
@@ -115,7 +117,8 @@ for light ones, because frost needs more body on a dark background.
 | `frameGap` | Gap between the window edge and the panels, and between panels | 10 | 0 |
 | `floatingBars` | On a phone the search block and the menu float over the content | yes | no |
 | `wallpaper` | What sits under everything: a `picture` (the user's, set in Settings → Appearance → Wallpaper; the palette tile until one is set) or the palette `tile` | picture | tile |
-| `contentOnWallpaper` | Content panel paints no fill; pages sit straight on the wallpaper | no | yes |
+| `wallpaperWash` | Palette background laid over a picture, so text on pages with no panel stays readable | 130 / 165 | 0 |
+| `contentOnWallpaper` | Content panel paints no fill; pages sit straight on the wallpaper | yes | yes |
 | `tileAlpha` | Fill of a big block (`GlassTile`, `glassTileDecoration`) | 110 / 88 | 255 |
 | `tileEdge` | Border of that block | 34 / 110 | 255 |
 | `tileShadow` | Drop shadow under a `GlassTile` | yes | no |
@@ -164,6 +167,11 @@ toggles.
   skin the latter is opaque and hides the picture.
 - Modals get their blur from `GlassPanel`; pages never add a `BackdropFilter`
   of their own. The wallpaper is blurred once, in `AppWallpaper`.
+- On liquid glass the glass is never tinted white or black. The frame's fixed
+  chrome passes `blurSigma: 0` and stays a clear lens; floating bars pass their
+  own blur; dialogs, sheets and menus leave it null and get a heavier one.
+- Nothing sits on a tile inside a liquid `GlassPanel`: the panel is the one
+  surface.
 - Scrims over images (`AppColors.scrim.withAlpha(...)`) are fine; they do not
   belong to the skin. Scrims behind routes go through `AppSurface.barrier()`.
 - `BoxDecoration` with a `gradient` drops its `color`. Keep a tint and a

@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/services/png_export_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -85,11 +86,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    final AsyncValue<LibraryStats> statsAsync =
-        ref.watch(libraryStatsProvider);
+    final AsyncValue<LibraryStats> statsAsync = ref.watch(libraryStatsProvider);
     final String titleLanguage = ref.watch(
-      settingsNotifierProvider
-          .select((SettingsState s) => s.animeMangaTitleLanguage),
+      settingsNotifierProvider.select(
+        (SettingsState s) => s.animeMangaTitleLanguage,
+      ),
     );
 
     return statsAsync.when(
@@ -136,24 +137,28 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     if (stats.isEmpty) {
       // No hero to host the dropdown, so it stands on its own — the year
       // picker still has to work when the period has no data.
-      return SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                0,
-              ),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: StatsPeriodPicker(data: picker),
+      return FrameBleed(
+        builder: (BuildContext context, EdgeInsets bars) =>
+            SingleChildScrollView(
+              padding: bars,
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      0,
+                    ),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: StatsPeriodPicker(data: picker),
+                    ),
+                  ),
+                  _buildEmptyState(l),
+                ],
               ),
             ),
-            _buildEmptyState(l),
-          ],
-        ),
       );
     }
     return LayoutBuilder(
@@ -236,8 +241,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             const SizedBox(height: AppSpacing.xs),
             Text(
               l.statsEmptyBody,
-              style: AppTypography.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

@@ -8,6 +8,7 @@ import '../../../core/services/profile_service.dart';
 import '../providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -67,10 +68,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     ref.read(profilesDataProvider.notifier).state = updated;
 
     if (mounted) {
-      context.showSnack(
-        S.of(context).profileCreated,
-        type: SnackType.success,
-      );
+      context.showSnack(S.of(context).profileCreated, type: SnackType.success);
     }
     await _loadStats();
   }
@@ -92,10 +90,7 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
 
     switch (result) {
       case ProfileUpdated(:final String name, :final String color):
-        await service.updateProfile(profile.copyWith(
-          name: name,
-          color: color,
-        ));
+        await service.updateProfile(profile.copyWith(name: name, color: color));
       case ProfileDeleteRequested():
         await service.deleteProfile(profile.id);
         if (mounted) {
@@ -151,90 +146,102 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     return FramePage(
       title: l.profiles,
       child: Stack(
-      children: <Widget>[
-        Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                itemCount: data.profiles.length,
-                itemBuilder: (BuildContext context, int index) {
-          final Profile profile = data.profiles[index];
-          final bool isCurrent =
-              profile.id == data.currentProfileId;
-          final ProfileStats stats =
-              _stats[profile.id] ?? ProfileStats.empty;
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              Expanded(
+                child: FrameBleed(
+                  builder: (BuildContext context, EdgeInsets bars) =>
+                      ListView.builder(
+                        padding: const EdgeInsets.all(AppSpacing.md) + bars,
+                        itemCount: data.profiles.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final Profile profile = data.profiles[index];
+                          final bool isCurrent =
+                              profile.id == data.currentProfileId;
+                          final ProfileStats stats =
+                              _stats[profile.id] ?? ProfileStats.empty;
 
-          return Card(
-            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-            color: isCurrent
-                ? profile.displayColor.withAlpha(15)
-                : AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              side: BorderSide(
-                color: isCurrent
-                    ? profile.displayColor.withAlpha(60)
-                    : AppColors.surfaceBorder,
-              ),
-            ),
-            child: ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: profile.displayColor,
-                  shape: BoxShape.circle,
+                          return Card(
+                            margin: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
+                            ),
+                            color: isCurrent
+                                ? profile.displayColor.withAlpha(15)
+                                : AppColors.surface,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusMd,
+                              ),
+                              side: BorderSide(
+                                color: isCurrent
+                                    ? profile.displayColor.withAlpha(60)
+                                    : AppColors.surfaceBorder,
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: profile.displayColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    profile.name.isNotEmpty
+                                        ? profile.name[0].toUpperCase()
+                                        : '?',
+                                    style: AppTypography.h2.copyWith(
+                                      color: AppColors.onOverlay,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              title: Row(
+                                children: <Widget>[
+                                  Text(profile.name, style: AppTypography.h3),
+                                  if (isCurrent) ...<Widget>[
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Icon(
+                                      Icons.check_circle,
+                                      size: 16,
+                                      color: profile.displayColor,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              subtitle: Text(
+                                l.profileStats(
+                                  stats.collectionsCount,
+                                  stats.itemsCount,
+                                ),
+                                style: AppTypography.bodySmall,
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.settings, size: 18),
+                                color: AppColors.textTertiary,
+                                onPressed: () => _editProfile(profile),
+                              ),
+                              onTap: isCurrent
+                                  ? null
+                                  : () => _switchProfile(profile),
+                            ),
+                          );
+                        },
+                      ),
                 ),
-                child: Center(
-                  child: Text(
-                    profile.name.isNotEmpty
-                        ? profile.name[0].toUpperCase()
-                        : '?',
-                    style: AppTypography.h2.copyWith(
-                      color: AppColors.onOverlay,
-                    ),
-                  ),
-                ),
               ),
-              title: Row(
-                children: <Widget>[
-                  Text(profile.name, style: AppTypography.h3),
-                  if (isCurrent) ...<Widget>[
-                    const SizedBox(width: AppSpacing.sm),
-                    Icon(
-                      Icons.check_circle,
-                      size: 16,
-                      color: profile.displayColor,
-                    ),
-                  ],
-                ],
-              ),
-              subtitle: Text(
-                l.profileStats(stats.collectionsCount, stats.itemsCount),
-                style: AppTypography.bodySmall,
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.settings, size: 18),
-                color: AppColors.textTertiary,
-                onPressed: () => _editProfile(profile),
-              ),
-              onTap: isCurrent ? null : () => _switchProfile(profile),
-            ),
-          );
-              },
-              ),
-            ),
-          ],
-        ),
-        DraggableFab(
-          mainAction: DraggableFabItem(
-            icon: Icons.add,
-            label: l.addProfile,
-            onTap: _createProfile,
+            ],
           ),
-        ),
-      ],
+          DraggableFab(
+            mainAction: DraggableFabItem(
+              icon: Icons.add,
+              label: l.addProfile,
+              onTap: _createProfile,
+            ),
+          ),
+        ],
       ),
     );
   }

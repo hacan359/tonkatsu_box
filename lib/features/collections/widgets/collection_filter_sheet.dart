@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_surface.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../settings/widgets/settings_tile.dart';
 import '../helpers/tag_name_filter.dart';
@@ -165,7 +166,11 @@ class _CollectionFilterSheetState extends ConsumerState<CollectionFilterSheet> {
             controller: widget.scrollController,
             padding: const EdgeInsets.all(AppSpacing.md),
             child: DecoratedBox(
-              decoration: glassTileDecoration(radius: AppSpacing.radiusMd),
+              // On liquid glass the sheet is the one surface; a tile in it would
+              // stack a second backing.
+              decoration: AppSurface.liquidGlass
+                  ? const BoxDecoration()
+                  : glassTileDecoration(radius: AppSpacing.radiusMd),
               child: Material(
                 type: MaterialType.transparency,
                 child: Column(
