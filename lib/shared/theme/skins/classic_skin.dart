@@ -5,6 +5,7 @@ import '../app_skin.dart';
 const AppSkin classicSkin = AppSkin(
   wallpaperBlurSigma: 0,
   modalBlurSigma: 0,
+  liquidGlass: false,
   panelFill: SkinFill.surface,
   panelFrost: SkinAlpha.same(255),
   panelEdge: SkinAlpha.same(255),
@@ -13,6 +14,7 @@ const AppSkin classicSkin = AppSkin(
   frameGap: 0,
   floatingBars: false,
   wallpaper: SkinWallpaper.tile,
+  wallpaperWash: SkinAlpha.same(0),
   contentOnWallpaper: true,
   tileAlpha: SkinAlpha.same(255),
   tileEdge: SkinAlpha.same(255),

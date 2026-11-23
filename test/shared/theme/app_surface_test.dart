@@ -40,6 +40,32 @@ void main() {
       );
     });
 
+    test('should wash a picture with the palette background per skin', () {
+      AppSurface.skin = AppSkin.glass;
+      AppColors.palette = AppPalette.sakura;
+      expect(
+        AppSurface.wallpaperWash(),
+        AppPalette.sakura.background.withAlpha(glassSkin.wallpaperWash.light),
+      );
+
+      AppColors.palette = AppPalette.dark;
+      expect(
+        AppSurface.wallpaperWash(),
+        AppPalette.dark.background.withAlpha(glassSkin.wallpaperWash.dark),
+      );
+
+      AppSurface.skin = AppSkin.classic;
+      expect(AppSurface.wallpaperWash().a, 0);
+    });
+
+    test('should report liquid glass from the active skin', () {
+      AppSurface.skin = AppSkin.glass;
+      expect(AppSurface.liquidGlass, isTrue);
+
+      AppSurface.skin = AppSkin.classic;
+      expect(AppSurface.liquidGlass, isFalse);
+    });
+
     test('явная палитра побеждает активную', () {
       AppSurface.skin = AppSkin.classic;
       AppColors.palette = AppPalette.dark;

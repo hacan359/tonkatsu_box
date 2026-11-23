@@ -11,6 +11,7 @@ import '../../../core/database/database_service.dart';
 import '../../../core/services/kodi_sync_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -237,31 +238,33 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     return FramePage(
       title: 'Kodi',
       child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isWide ? 600 : double.infinity,
-              ),
-              child: ListView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                children: <Widget>[
-                  _buildTargetSection(settings),
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) => ListView(
+              padding:
+                  EdgeInsets.symmetric(
+                    horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ) +
+                  bars,
+              children: <Widget>[
+                _buildTargetSection(settings),
+                const SizedBox(height: AppSpacing.md),
+                _buildConnectionSection(settings),
+                const SizedBox(height: AppSpacing.md),
+                _buildSyncSection(settings),
+                if (settings.hasConnection) ...<Widget>[
                   const SizedBox(height: AppSpacing.md),
-                  _buildConnectionSection(settings),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildSyncSection(settings),
-                  if (settings.hasConnection) ...<Widget>[
-                    const SizedBox(height: AppSpacing.md),
-                    _buildDebugSection(settings),
-                  ],
-                  const SizedBox(height: AppSpacing.md),
+                  _buildDebugSection(settings),
                 ],
-              ),
+                const SizedBox(height: AppSpacing.md),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 

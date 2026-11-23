@@ -61,7 +61,8 @@ List<BoxShadow> posterLift(double t) => <BoxShadow>[
   ),
 ];
 
-/// The poster as a lifted object with a rim and a hover shadow.
+/// The poster as a lifted object with a hover shadow; no rim, which would
+/// box in a cut-out picture.
 class PosterObject extends StatelessWidget {
   const PosterObject({
     required this.child,
@@ -87,14 +88,7 @@ class PosterObject extends StatelessWidget {
           child: child,
         );
       },
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: posterRim(30)),
-        ),
-        position: DecorationPosition.foreground,
-        child: child,
-      ),
+      child: child,
     );
   }
 }
@@ -320,14 +314,7 @@ class PosterSlab extends StatelessWidget {
           ],
         );
       },
-      child: DecoratedBox(
-        position: DecorationPosition.foreground,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: posterRim(45)),
-        ),
-        child: child,
-      ),
+      child: child,
     );
   }
 }

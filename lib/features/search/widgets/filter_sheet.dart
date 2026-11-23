@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_surface.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/source_logo.dart';
 import '../models/common_filter.dart';
@@ -78,7 +79,11 @@ class FilterSheet extends ConsumerWidget {
             controller: scrollController,
             padding: const EdgeInsets.all(AppSpacing.md),
             child: DecoratedBox(
-              decoration: glassTileDecoration(radius: AppSpacing.radiusMd),
+              // On liquid glass the sheet is the one surface; a tile in it would
+              // stack a second backing.
+              decoration: AppSurface.liquidGlass
+                  ? const BoxDecoration()
+                  : glassTileDecoration(radius: AppSpacing.radiusMd),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[

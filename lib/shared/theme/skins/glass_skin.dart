@@ -1,9 +1,10 @@
 import '../app_skin.dart';
 
-/// Frosted panels over a blurred picture; the values the redesign was tuned on.
+/// Liquid glass chrome over pages that sit straight on the picture.
 const AppSkin glassSkin = AppSkin(
   wallpaperBlurSigma: 4.2,
   modalBlurSigma: 5.6,
+  liquidGlass: true,
   panelFill: SkinFill.frost,
   panelFrost: SkinAlpha(dark: 70, light: 48),
   panelEdge: SkinAlpha(dark: 30, light: 70),
@@ -12,7 +13,8 @@ const AppSkin glassSkin = AppSkin(
   frameGap: 10,
   floatingBars: true,
   wallpaper: SkinWallpaper.picture,
-  contentOnWallpaper: false,
+  wallpaperWash: SkinAlpha(dark: 130, light: 165),
+  contentOnWallpaper: true,
   tileAlpha: SkinAlpha(dark: 110, light: 88),
   tileEdge: SkinAlpha(dark: 34, light: 110),
   tileShadow: true,

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -26,86 +27,89 @@ class ImportResultScreen extends StatelessWidget {
 
     return FramePage(
       title: l.importResultTitle,
-      child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                _buildHeader(context, l),
-                const SizedBox(height: AppSpacing.lg),
-                if (result.totalImported > 0) ...<Widget>[
-                  _ResultCard(
-                    title: l.importResultImported,
-                    icon: Icons.check_circle,
-                    iconColor: AppColors.statusCompleted,
-                    total: result.totalImported,
-                    breakdown: result.importedByType,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                if (result.hasWishlistItems) ...<Widget>[
-                  _ResultCard(
-                    title: l.importResultWishlisted,
-                    icon: Icons.bookmark_add,
-                    iconColor: AppColors.brand,
-                    total: result.totalWishlisted,
-                    breakdown: result.wishlistedByType,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
+      child: FrameBleed(
+        builder: (BuildContext context, EdgeInsets bars) =>
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg) + bars,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  _buildHeader(context, l),
+                  const SizedBox(height: AppSpacing.lg),
+                  if (result.totalImported > 0) ...<Widget>[
+                    _ResultCard(
+                      title: l.importResultImported,
+                      icon: Icons.check_circle,
+                      iconColor: AppColors.statusCompleted,
+                      total: result.totalImported,
+                      breakdown: result.importedByType,
                     ),
-                    child: Text(
-                      l.importResultWishlistHint,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textTertiary,
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  if (result.hasWishlistItems) ...<Widget>[
+                    _ResultCard(
+                      title: l.importResultWishlisted,
+                      icon: Icons.bookmark_add,
+                      iconColor: AppColors.brand,
+                      total: result.totalWishlisted,
+                      breakdown: result.wishlistedByType,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
+                      child: Text(
+                        l.importResultWishlistHint,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  if (result.totalUpdated > 0) ...<Widget>[
+                    _ResultCard(
+                      title: l.importResultUpdated,
+                      icon: Icons.sync,
+                      iconColor: AppColors.statusInProgress,
+                      total: result.totalUpdated,
+                      breakdown: result.updatedByType,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  if (result.skipped > 0)
+                    _StatRow(
+                      icon: Icons.skip_next,
+                      color: AppColors.textTertiary,
+                      text: l.importResultSkipped(result.skipped),
+                    ),
+                  if (result.unresolvedTitles.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    _LinesCard(
+                      lines: result.unresolvedTitles,
+                      title: l.importResultUnresolved,
+                      copiedMessage: l.importResultUnresolvedCopied,
+                      icon: Icons.call_split,
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                  if (result.errors.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    _LinesCard(
+                      lines: result.errors,
+                      title: l.importResultErrors(result.errors.length),
+                      copiedMessage: l.importResultErrorsCopied,
+                      icon: Icons.error_outline,
+                      color: AppColors.error,
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.xl),
+                  _buildActions(context, l),
                 ],
-                if (result.totalUpdated > 0) ...<Widget>[
-                  _ResultCard(
-                    title: l.importResultUpdated,
-                    icon: Icons.sync,
-                    iconColor: AppColors.statusInProgress,
-                    total: result.totalUpdated,
-                    breakdown: result.updatedByType,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                if (result.skipped > 0)
-                  _StatRow(
-                    icon: Icons.skip_next,
-                    color: AppColors.textTertiary,
-                    text: l.importResultSkipped(result.skipped),
-                  ),
-                if (result.unresolvedTitles.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  _LinesCard(
-                    lines: result.unresolvedTitles,
-                    title: l.importResultUnresolved,
-                    copiedMessage: l.importResultUnresolvedCopied,
-                    icon: Icons.call_split,
-                    color: AppColors.textSecondary,
-                  ),
-                ],
-                if (result.errors.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  _LinesCard(
-                    lines: result.errors,
-                    title: l.importResultErrors(result.errors.length),
-                    copiedMessage: l.importResultErrorsCopied,
-                    icon: Icons.error_outline,
-                    color: AppColors.error,
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.xl),
-                _buildActions(context, l),
-              ],
+              ),
             ),
-          ),
+      ),
     );
   }
 

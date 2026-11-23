@@ -169,30 +169,38 @@ class _DraggableFabState extends State<DraggableFab> {
     bool isSmall = false,
   }) {
     final double size = isSmall ? _menuFabSize : _fabSize;
+    final Widget glyph = Icon(
+      icon,
+      color: iconColor ?? AppColors.brand,
+      size: isSmall ? 20 : 24,
+    );
     // A floating glass disc with the accent in the icon, not the fill, so
     // the buttons sit on the panel like the other tiles.
-    final Widget circle = Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: glassTileColor(),
-        border: Border.all(color: glassTileBorderColor()),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: AppColors.shadow.withAlpha(70),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-            spreadRadius: -4,
-          ),
-        ],
-      ),
-      child: Icon(
-        icon,
-        color: iconColor ?? AppColors.brand,
-        size: isSmall ? 20 : 24,
-      ),
-    );
+    final Widget circle = AppSurface.liquidGlass
+        ? GlassPanel(
+            width: size,
+            height: size,
+            radius: size / 2,
+            child: Center(child: glyph),
+          )
+        : Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: glassTileColor(),
+              border: Border.all(color: glassTileBorderColor()),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: AppColors.shadow.withAlpha(70),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                  spreadRadius: -4,
+                ),
+              ],
+            ),
+            child: glyph,
+          );
 
     final Widget hosted = GestureDetector(
       behavior: HitTestBehavior.opaque,

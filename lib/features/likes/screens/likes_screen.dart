@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/media_type_ui.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -63,33 +64,31 @@ class _LikesScreenState extends ConsumerState<LikesScreen> {
         ref.watch(likesEntriesProvider).valueOrNull?.isNotEmpty ?? false;
 
     return FramePage(
-      child: Column(
-        children: <Widget>[
+      child: FrameStrip(
+        strip: <Widget>[
           if (hasAnyMarks) _FilterRow(filter: filter, types: types),
-          Expanded(
-            child: groups.when(
-              loading: () => const Center(child: LogoLoader()),
-              error: (Object error, StackTrace _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Text(
-                    '${l.settingsError}: $error',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+        ],
+        child: groups.when(
+          loading: () => const Center(child: LogoLoader()),
+          error: (Object error, StackTrace _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Text(
+                '${l.settingsError}: $error',
+                textAlign: TextAlign.center,
+                style: AppTypography.body.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
-              data: (List<MarkedUnitGroup> shown) => shown.isEmpty
-                  ? _Empty(
-                      title: hasAnyMarks ? l.likesNoMatches : l.likesEmptyTitle,
-                      body: hasAnyMarks ? null : l.likesEmptyBody,
-                    )
-                  : _GroupList(groups: shown, onOpen: _openItem),
             ),
           ),
-        ],
+          data: (List<MarkedUnitGroup> shown) => shown.isEmpty
+              ? _Empty(
+                  title: hasAnyMarks ? l.likesNoMatches : l.likesEmptyTitle,
+                  body: hasAnyMarks ? null : l.likesEmptyBody,
+                )
+              : _GroupList(groups: shown, onOpen: _openItem),
+        ),
       ),
     );
   }
@@ -128,12 +127,7 @@ class _FilterRow extends ConsumerWidget {
     final bool allKinds = filter.kinds.isEmpty;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.xs,
-      ),
+      padding: frameStripInset(context),
       child: Row(
         children: <Widget>[
           _FilterChip(
@@ -277,22 +271,26 @@ class _GroupList extends StatelessWidget {
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: _maxWidth),
-        child: ListView.separated(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          itemCount: rows.length,
-          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-          itemBuilder: (BuildContext context, int index) =>
-              switch (rows[index]) {
-                _Heading(:final String title) => _SectionTitle(
-                  title: title,
-                  first: index == 0,
-                ),
-                _Card(:final MarkedUnitGroup group) => MarkedGroupTile(
-                  key: ValueKey<int>(group.item.id),
-                  group: group,
-                  onOpen: () => onOpen(group),
-                ),
-              },
+        child: FrameBleed(
+          builder: (BuildContext context, EdgeInsets bars) =>
+              ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.md) + bars,
+                itemCount: rows.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (BuildContext context, int index) =>
+                    switch (rows[index]) {
+                      _Heading(:final String title) => _SectionTitle(
+                        title: title,
+                        first: index == 0,
+                      ),
+                      _Card(:final MarkedUnitGroup group) => MarkedGroupTile(
+                        key: ValueKey<int>(group.item.id),
+                        group: group,
+                        onOpen: () => onOpen(group),
+                      ),
+                    },
+              ),
         ),
       ),
     );

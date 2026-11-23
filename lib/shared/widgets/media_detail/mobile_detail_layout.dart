@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../navigation/frame_inset.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../copyable_text.dart';
@@ -25,18 +26,20 @@ class MobileDetailLayout extends StatelessWidget {
     // The backing's own padding is the only outer inset, so narrow screens
     // don't lose width to a doubled-up margin.
     final String? backdropUrl = sections.backdropUrl;
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: <Widget>[
-        // Descendant ListTile/ExpansionTile need a Material ancestor for ink —
-        // Flutter 3.44 asserts when a coloured DecoratedBox sits between.
-        GlassTile(
-          background: backdropUrl == null
-              ? null
-              : MediaDetailBackdrop(imageUrl: backdropUrl),
-          child: _buildBody(),
-        ),
-      ],
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => ListView(
+        padding: bars + frameBackingInset(context),
+        children: <Widget>[
+          // Descendant ListTile/ExpansionTile need a Material ancestor for ink —
+          // Flutter 3.44 asserts when a coloured DecoratedBox sits between.
+          GlassTile(
+            background: backdropUrl == null
+                ? null
+                : MediaDetailBackdrop(imageUrl: backdropUrl),
+            child: _buildBody(),
+          ),
+        ],
+      ),
     );
   }
 

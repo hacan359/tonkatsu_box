@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/whats_new_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/frame_page.dart';
 import '../../../shared/widgets/whats_new_dialog.dart';
@@ -26,74 +27,75 @@ class DebugHubScreen extends ConsumerWidget {
     return FramePage(
       title: S.of(context).settingsDebug,
       child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isWide ? 600 : double.infinity,
-              ),
-              child: ListView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                  vertical: AppSpacing.sm,
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) => ListView(
+              padding:
+                  EdgeInsets.symmetric(
+                    horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ) +
+                  bars,
+              children: <Widget>[
+                SettingsGroup(
+                  title: 'Debug Tools',
+                  children: <Widget>[
+                    SettingsTile(
+                      title: 'SteamGridDB Debug Panel',
+                      value: settings.hasSteamGridDbKey
+                          ? 'Test API endpoints'
+                          : 'Set API key first',
+                      onTap: settings.hasSteamGridDbKey
+                          ? () => _push(context, const SteamGridDbDebugScreen())
+                          : null,
+                    ),
+                    SettingsTile(
+                      title: 'Image Debug Panel',
+                      value: 'Check poster URLs and loading',
+                      onTap: () => _push(context, const ImageDebugScreen()),
+                    ),
+                    SettingsTile(
+                      title: 'Gamepad Debug Panel',
+                      value: 'Test controller input events',
+                      onTap: () => _push(context, const GamepadDebugScreen()),
+                    ),
+                    SettingsTile(
+                      title: "What's New Preview",
+                      value: 'Show the release-notes dialog',
+                      onTap: () => _previewWhatsNew(context, ref),
+                    ),
+                    SettingsTile(
+                      title: 'Demo Collections Generator',
+                      value: settings.hasCredentials && settings.hasTmdbKey
+                          ? 'Generate .xcollx files'
+                          : 'Set IGDB + TMDB keys first',
+                      onTap: settings.hasCredentials && settings.hasTmdbKey
+                          ? () => _push(context, const DemoCollectionsScreen())
+                          : null,
+                    ),
+                  ],
                 ),
-                children: <Widget>[
-                  SettingsGroup(
-                    title: 'Debug Tools',
-                    children: <Widget>[
-                      SettingsTile(
-                        title: 'SteamGridDB Debug Panel',
-                        value: settings.hasSteamGridDbKey
-                            ? 'Test API endpoints'
-                            : 'Set API key first',
-                        onTap: settings.hasSteamGridDbKey
-                            ? () => _push(context, const SteamGridDbDebugScreen())
-                            : null,
-                      ),
-                      SettingsTile(
-                        title: 'Image Debug Panel',
-                        value: 'Check poster URLs and loading',
-                        onTap: () => _push(context, const ImageDebugScreen()),
-                      ),
-                      SettingsTile(
-                        title: 'Gamepad Debug Panel',
-                        value: 'Test controller input events',
-                        onTap: () => _push(context, const GamepadDebugScreen()),
-                      ),
-                      SettingsTile(
-                        title: "What's New Preview",
-                        value: 'Show the release-notes dialog',
-                        onTap: () => _previewWhatsNew(context, ref),
-                      ),
-                      SettingsTile(
-                        title: 'Demo Collections Generator',
-                        value: settings.hasCredentials && settings.hasTmdbKey
-                            ? 'Generate .xcollx files'
-                            : 'Set IGDB + TMDB keys first',
-                        onTap: settings.hasCredentials && settings.hasTmdbKey
-                            ? () => _push(context, const DemoCollectionsScreen())
-                            : null,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 
   Future<void> _previewWhatsNew(BuildContext context, WidgetRef ref) async {
-    final WhatsNewContent? content =
-        await ref.read(whatsNewServiceProvider).previewLatest();
+    final WhatsNewContent? content = await ref
+        .read(whatsNewServiceProvider)
+        .previewLatest();
     if (content == null || !context.mounted) return;
     await showWhatsNewDialog(context, content);
   }
 
   void _push(BuildContext context, Widget screen) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => screen,
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (BuildContext context) => screen));
   }
 }

@@ -3,9 +3,21 @@
 # Both halves are built here, so an image needs nothing but this repo and a
 # Docker daemon — no Flutter SDK on the machine doing the build.
 
-# `stable` rather than a pin: cirruslabs publishes no tag for the SDK this repo
-# is developed against, and an image older than pubspec's floor cannot build it.
-FROM ghcr.io/cirruslabs/flutter:stable AS web
+# The stable branch rather than a prebuilt image: cirruslabs' `stable` tag lags
+# behind the SDK floor in pubspec, and an older SDK cannot resolve it.
+FROM debian:stable-slim AS web
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       ca-certificates curl git unzip xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+# The branch head as a cache key: without it the clone layer is cached by its
+# command text and a rebuild keeps an SDK older than the pubspec floor.
+ADD https://api.github.com/repos/flutter/flutter/git/refs/heads/stable \
+    /tmp/flutter-stable.json
+RUN git clone --depth 1 --branch stable \
+    https://github.com/flutter/flutter.git /opt/flutter
+ENV PATH="/opt/flutter/bin:${PATH}"
+RUN flutter config --no-analytics && flutter precache --web
 WORKDIR /src
 # Manifests first: the dependency layer survives an edit to lib/.
 COPY pubspec.yaml pubspec.lock ./

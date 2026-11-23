@@ -39,6 +39,9 @@ void main() {
       expect(classicSkin.panelRadius, 0);
       expect(classicSkin.panelFill, SkinFill.surface);
       expect(classicSkin.detailBackdrop, isTrue);
+      expect(classicSkin.liquidGlass, isFalse);
+      expect(classicSkin.wallpaperWash.dark, 0);
+      expect(classicSkin.wallpaperWash.light, 0);
     });
 
     test('стеклянный скин размывает и показывает картинку', () {
@@ -48,6 +51,13 @@ void main() {
       expect(glassSkin.wallpaper, SkinWallpaper.picture);
       expect(glassSkin.panelRadius, greaterThan(0));
       expect(glassSkin.detailBackdrop, isFalse);
+    });
+
+    test('should lay glass pages straight on a washed picture', () {
+      expect(glassSkin.liquidGlass, isTrue);
+      expect(glassSkin.contentOnWallpaper, isTrue);
+      expect(glassSkin.wallpaperWash.dark, greaterThan(0));
+      expect(glassSkin.wallpaperWash.light, greaterThan(0));
     });
   });
 }

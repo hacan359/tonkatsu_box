@@ -2,6 +2,7 @@ import 'package:core/models/import_source_kind.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/frame_page.dart';
 import '../content/ra_import_content.dart';
@@ -21,25 +22,28 @@ class RaImportScreen extends StatelessWidget {
     return FramePage(
       title: S.of(context).settingsRaImport,
       child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isWide ? 600 : double.infinity,
-              ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                  vertical: AppSpacing.sm,
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) =>
+                SingleChildScrollView(
+                  padding:
+                      EdgeInsets.symmetric(
+                        horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ) +
+                      bars,
+                  child: RememberedImportCollection(
+                    source: ImportSourceKind.retroAchievements,
+                    initialCollectionId: initialCollectionId,
+                    builder: (int? collectionId) =>
+                        RaImportContent(initialCollectionId: collectionId),
+                  ),
                 ),
-                child: RememberedImportCollection(
-                  source: ImportSourceKind.retroAchievements,
-                  initialCollectionId: initialCollectionId,
-                  builder: (int? collectionId) =>
-                      RaImportContent(initialCollectionId: collectionId),
-                ),
-              ),
-            ),
           ),
+        ),
+      ),
     );
   }
 }

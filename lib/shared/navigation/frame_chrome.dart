@@ -35,9 +35,13 @@ class FrameChrome {
 class FrameChromeController extends ChangeNotifier {
   final Map<Object, FrameChrome> _visible = <Object, FrameChrome>{};
   FrameChrome? _current;
+  Object? _belowOwner;
   bool _disposed = false;
 
   FrameChrome? get current => _current;
+
+  /// The binding whose strip [current] shows; it changes with the page.
+  Object? get belowOwner => _belowOwner;
 
   /// One screen may lend several pieces from different widgets (its title
   /// bar, its filter strip); per field the latest binding wins.
@@ -63,27 +67,44 @@ class FrameChromeController extends ChangeNotifier {
   void _recompute() {
     if (_visible.isEmpty) {
       _current = null;
+      _belowOwner = null;
     } else {
       String? title;
       VoidCallback? onBack;
       List<Widget> actions = const <Widget>[];
       Widget? center;
       Widget? below;
+      Object? belowOwner;
       // List.sort is not stable; ties must keep mount order.
-      final List<FrameChrome> mounted = _visible.values.toList();
+      final List<MapEntry<Object, FrameChrome>> mounted = _visible.entries
+          .toList();
+      final List<MapEntry<Object, FrameChrome>> entries =
+          <MapEntry<Object, FrameChrome>>[
+            for (final int p
+                in mounted
+                    .map((MapEntry<Object, FrameChrome> e) => e.value.priority)
+                    .toSet()
+                    .toList()
+                  ..sort())
+              ...mounted.where(
+                (MapEntry<Object, FrameChrome> e) => e.value.priority == p,
+              ),
+          ];
       final List<FrameChrome> ordered = <FrameChrome>[
-        for (final int p
-            in mounted.map((FrameChrome c) => c.priority).toSet().toList()
-              ..sort())
-          ...mounted.where((FrameChrome c) => c.priority == p),
+        for (final MapEntry<Object, FrameChrome> e in entries) e.value,
       ];
-      for (final FrameChrome c in ordered) {
+      for (final MapEntry<Object, FrameChrome> e in entries) {
+        final FrameChrome c = e.value;
         title = c.title ?? title;
         onBack = c.onBack ?? onBack;
         if (c.actions.isNotEmpty) actions = c.actions;
         center = c.center ?? center;
-        below = c.below ?? below;
+        if (c.below != null) {
+          below = c.below;
+          belowOwner = e.key;
+        }
       }
+      _belowOwner = belowOwner;
       _current = FrameChrome(
         title: title,
         onBack: onBack,
