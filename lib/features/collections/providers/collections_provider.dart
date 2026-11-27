@@ -431,8 +431,8 @@ final NotifierProviderFamily<CollectionItemsNotifier,
 /// What leaving `completed` erased: the item as it was and its marks.
 typedef ClearedEpisodeMarks = ({CollectionItem before, WatchedMarks marks});
 
-/// Reverse of the tracker's auto-status. Marking runs in the background (it
-/// may hit the API); the future completes with what an unmark erased.
+/// Reverse of the tracker's auto-status. Only `notStarted` erases marks: any
+/// other status still means "watched", and the dates feed the statistics.
 Future<WatchedMarks> syncEpisodesToStatus(
   T Function<T>(ProviderListenable<T> provider) read,
   CollectionItem before,
@@ -441,11 +441,12 @@ Future<WatchedMarks> syncEpisodesToStatus(
 }) async {
   const WatchedMarks none = <(int, int), DateTime?>{};
   final bool entering = newStatus == ItemStatus.completed;
-  final bool leaving = before.status == ItemStatus.completed;
-  // Building a tracker costs DB reads; only a completed edge needs one.
+  final bool resetting = before.status == ItemStatus.completed &&
+      newStatus == ItemStatus.notStarted;
+  // Building a tracker costs DB reads; only these two edges need one.
   if (before.status == newStatus ||
       !before.usesEpisodeTracker ||
-      (!entering && !leaving)) {
+      (!entering && !resetting)) {
     return none;
   }
   final EpisodeTrackerNotifier tracker = read(
@@ -868,8 +869,13 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Non-null when leaving `completed` erased episode marks, for an undo. The
-  /// tracker passes `syncEpisodes: false`: its own marks caused the change.
+  /// The item as loaded here or on All Items; null before either has it.
+  CollectionItem? loadedItem(int id) =>
+      _findLoaded(state, id) ??
+      _findLoaded(ref.read(allItemsNotifierProvider), id);
+
+  /// Non-null when `completed` to `notStarted` erased episode marks, for an
+  /// undo. [syncEpisodes] off changes the status and leaves the marks alone.
   Future<ClearedEpisodeMarks?> updateStatus(
     int id,
     ItemStatus status,
@@ -878,8 +884,7 @@ class CollectionItemsNotifier
   }) async {
     // All Items calls in before this collection has loaded; its own list
     // still knows the old status.
-    final CollectionItem? before = _findLoaded(state, id) ??
-        _findLoaded(ref.read(allItemsNotifierProvider), id);
+    final CollectionItem? before = loadedItem(id);
     await _repository.updateItemStatus(id, status, mediaType: mediaType);
 
     final DateTime now = DateTime.now();
@@ -1043,6 +1048,7 @@ class CollectionItemsNotifier
     DateTime? lastActivityAt,
     bool clearStartedAt = false,
     bool clearCompletedAt = false,
+    bool syncEpisodes = true,
   }) async {
     final List<CollectionItem>? items = state.valueOrNull;
     ItemStatus? newStatus;
@@ -1065,7 +1071,7 @@ class CollectionItemsNotifier
       await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
       final CollectionItem? before =
           items?.where((CollectionItem i) => i.id == id).firstOrNull;
-      if (before != null) {
+      if (before != null && syncEpisodes) {
         unawaited(syncEpisodesToStatus(ref.read, before, newStatus,
             completedAt: completedAt));
       }

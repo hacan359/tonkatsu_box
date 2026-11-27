@@ -11221,6 +11221,54 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{source} synced: {count} new'**
   String collectionImportSynced(String source, int count);
+
+  /// No description provided for @completeEpisodesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not every episode is watched'**
+  String get completeEpisodesTitle;
+
+  /// No description provided for @completeEpisodesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Some episodes are not marked as watched. What should happen to them?'**
+  String get completeEpisodesBody;
+
+  /// No description provided for @completeEpisodesMarkRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark the rest as watched today'**
+  String get completeEpisodesMarkRest;
+
+  /// No description provided for @completeEpisodesKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete without marking'**
+  String get completeEpisodesKeep;
+
+  /// No description provided for @clearEpisodesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove episode marks?'**
+  String get clearEpisodesTitle;
+
+  /// No description provided for @clearEpisodesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Some episodes are marked as watched. Their watch dates feed your statistics.'**
+  String get clearEpisodesBody;
+
+  /// No description provided for @clearEpisodesRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove marks'**
+  String get clearEpisodesRemove;
+
+  /// No description provided for @clearEpisodesKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep marks'**
+  String get clearEpisodesKeep;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

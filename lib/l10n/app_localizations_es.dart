@@ -6433,4 +6433,30 @@ class SEs extends S {
   String collectionImportSynced(String source, int count) {
     return '$source sincronizado: $count nuevos';
   }
+
+  @override
+  String get completeEpisodesTitle => 'No todos los episodios están vistos';
+
+  @override
+  String get completeEpisodesBody =>
+      'Quedan episodios sin marcar como vistos. ¿Qué hacer con ellos?';
+
+  @override
+  String get completeEpisodesMarkRest => 'Marcar el resto como vistos hoy';
+
+  @override
+  String get completeEpisodesKeep => 'Completar sin marcar';
+
+  @override
+  String get clearEpisodesTitle => '¿Quitar las marcas de episodios?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Hay episodios marcados como vistos. Sus fechas cuentan en tus estadísticas.';
+
+  @override
+  String get clearEpisodesRemove => 'Quitar marcas';
+
+  @override
+  String get clearEpisodesKeep => 'Conservar marcas';
 }

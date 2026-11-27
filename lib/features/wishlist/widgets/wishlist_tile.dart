@@ -6,6 +6,7 @@ import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/mini_markdown_text.dart';
 import '../../../shared/constants/media_type_ui.dart';
+import '../../../shared/utils/menu_position.dart';
 
 enum _TileAction { search, edit, resolve, delete }
 
@@ -70,7 +71,7 @@ class WishlistTile extends StatelessWidget {
     final _TileAction? picked = await showMenu<_TileAction>(
       context: context,
       position: RelativeRect.fromRect(
-        position & const Size(1, 1),
+        toMenuSpace(context, position) & const Size(1, 1),
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<_TileAction>>[

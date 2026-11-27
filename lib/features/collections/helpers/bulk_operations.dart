@@ -139,13 +139,14 @@ class BulkOperations {
     return (cloned: cloned, skipped: skipped);
   }
 
-  /// Changes the status of every item. Returns how many actually changed
-  /// (skipped = already in the target status).
+  /// Returns how many actually changed. [syncEpisodes] off changes the status
+  /// and leaves every episode mark as it is.
   static Future<int> updateItemsStatus(
     WidgetRef ref,
     List<CollectionItem> items,
-    ItemStatus status,
-  ) async {
+    ItemStatus status, {
+    bool syncEpisodes = true,
+  }) async {
     if (items.isEmpty) return 0;
     final CollectionRepository repo =
         ref.read(collectionRepositoryProvider);
@@ -160,7 +161,9 @@ class BulkOperations {
         status,
         mediaType: item.mediaType,
       );
-      unawaited(syncEpisodesToStatus(ref.read, item, status));
+      if (syncEpisodes) {
+        unawaited(syncEpisodesToStatus(ref.read, item, status));
+      }
       changedIds.add(item.id);
       affectedCollections.add(item.collectionId);
     }

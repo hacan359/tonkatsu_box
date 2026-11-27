@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/data_source.dart';
@@ -168,24 +169,27 @@ class EpisodeTrackerNotifier
   /// the cached show row has none; specials excluded ([totalWatchedCount]).
   Future<void> _resolveCachedTotals() async {
     try {
-      final TvShow? show =
-          await _db.tvShowDao.getTvShowByTmdbId(_showId, source: _source);
-      int total = show?.totalEpisodes ?? 0;
-      if (total == 0) {
-        final List<TvSeason> seasons =
-            await _db.tvShowDao.getTvSeasonsByShowId(_source, _showId);
-        for (final TvSeason season in seasons) {
-          if (season.seasonNumber > 0) {
-            total += season.episodeCount ?? 0;
-          }
-        }
-      }
+      final int total = await _readCachedTotal();
       if (total > 0 && state.totalEpisodes == null) {
         state = state.copyWith(totalEpisodes: total);
       }
     } on Exception catch (_) {
       // Cache read failed — totals stay unknown, badges show bare counts.
     }
+  }
+
+  /// The cached show's episode count, else its seasons summed; 0 if unknown.
+  Future<int> _readCachedTotal() async {
+    final TvShow? show =
+        await _db.tvShowDao.getTvShowByTmdbId(_showId, source: _source);
+    int total = show?.totalEpisodes ?? 0;
+    if (total > 0) return total;
+    final List<TvSeason> seasons =
+        await _db.tvShowDao.getTvSeasonsByShowId(_source, _showId);
+    for (final TvSeason season in seasons) {
+      if (season.seasonNumber > 0) total += season.episodeCount ?? 0;
+    }
+    return total;
   }
 
   Future<void> _loadWatchedEpisodes() async {
@@ -315,6 +319,7 @@ class EpisodeTrackerNotifier
     final int? collId = _collectionId;
     if (collId == null) return const <(int, int), DateTime?>{};
     final bool isWatched = state.isEpisodeWatched(season, episode);
+    final int watchedBefore = state.totalWatchedCount;
     WatchedMarks removed = const <(int, int), DateTime?>{};
 
     if (isWatched) {
@@ -336,7 +341,7 @@ class EpisodeTrackerNotifier
       state = state.copyWith(watchedEpisodes: updated);
     }
 
-    unawaited(_updateAutoStatus());
+    unawaited(_updateAutoStatus(watchedBefore: watchedBefore));
     return removed;
   }
 
@@ -351,6 +356,7 @@ class EpisodeTrackerNotifier
 
     final int watchedCount = state.watchedCountForSeason(season);
     final bool allWatched = watchedCount == episodes.length;
+    final int watchedBefore = state.totalWatchedCount;
     WatchedMarks removed = const <(int, int), DateTime?>{};
 
     if (allWatched) {
@@ -374,13 +380,14 @@ class EpisodeTrackerNotifier
       final DateTime now = DateTime.now();
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);
+      // The DAO insert ignores conflicts, so earlier marks keep their dates.
       for (final int ep in episodeNumbers) {
-        updated[(season, ep)] = now;
+        updated.putIfAbsent((season, ep), () => now);
       }
       state = state.copyWith(watchedEpisodes: updated);
     }
 
-    unawaited(_updateAutoStatus());
+    unawaited(_updateAutoStatus(watchedBefore: watchedBefore));
     return removed;
   }
 
@@ -441,7 +448,9 @@ class EpisodeTrackerNotifier
     }
   }
 
-  Future<void> _updateAutoStatus() async {
+  /// [watchedBefore] is the regular-episode count ahead of the toggle: marks
+  /// kept under a hand-set status must not complete the title on their own.
+  Future<void> _updateAutoStatus({int? watchedBefore}) async {
     final int? collId = _collectionId;
     if (collId == null) return;
 
@@ -524,10 +533,17 @@ class EpisodeTrackerNotifier
       state = state.copyWith(totalEpisodes: totalInShow);
     }
 
+    final bool isFull = totalInShow > 0 && totalWatched >= totalInShow;
+    // Only the mark that fills the set completes it; a special, or a toggle
+    // on a title already full, would undo a status the user picked.
+    if (isFull && watchedBefore != null && watchedBefore >= totalInShow) {
+      return;
+    }
+
     final ItemStatus? targetStatus = computeStatusFromProgress(
       currentStatus: targetItem.status,
       hasAnyProgress: totalWatched > 0,
-      isFullyCompleted: totalInShow > 0 && totalWatched >= totalInShow,
+      isFullyCompleted: isFull,
     );
     if (targetStatus != null) {
       await ref
@@ -538,6 +554,41 @@ class EpisodeTrackerNotifier
             targetItem.mediaType,
             syncEpisodes: false,
           );
+    }
+  }
+
+  /// Regular episodes still unmarked, read from the database so a tracker
+  /// that is still loading answers right; null while the total is unknown.
+  Future<int?> unwatchedEpisodeCount() async {
+    final int? collId = _collectionId;
+    if (collId == null) return 0;
+    try {
+      // A cached 0 means "the source had no total", not "no episodes".
+      int total = math.max(_cachedTotalEpisodes ?? 0, state.totalEpisodes ?? 0);
+      if (total == 0) total = await _readCachedTotal();
+      if (total == 0) return null;
+      final WatchedMarks watched =
+          await _db.tvShowDao.getWatchedEpisodes(collId, _source, _showId);
+      final int regular =
+          watched.keys.where(((int, int) key) => key.$1 > 0).length;
+      return math.max(0, total - regular);
+    } on Exception catch (e) {
+      _log.warning('Failed to count unwatched episodes of show $_showId', e);
+      return null;
+    }
+  }
+
+  /// Asked of the database: a freshly built tracker has not loaded its marks.
+  Future<bool> hasWatchedEpisodes() async {
+    final int? collId = _collectionId;
+    if (collId == null) return false;
+    try {
+      final WatchedMarks watched =
+          await _db.tvShowDao.getWatchedEpisodes(collId, _source, _showId);
+      return watched.isNotEmpty;
+    } on Exception catch (e) {
+      _log.warning('Failed to read episode marks of show $_showId', e);
+      return false;
     }
   }
 

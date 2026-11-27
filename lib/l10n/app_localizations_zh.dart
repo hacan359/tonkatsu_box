@@ -6039,4 +6039,28 @@ class SZh extends S {
   String collectionImportSynced(String source, int count) {
     return '$source 已同步：新增 $count';
   }
+
+  @override
+  String get completeEpisodesTitle => '还有未看的剧集';
+
+  @override
+  String get completeEpisodesBody => '部分剧集尚未标记为已看。要如何处理？';
+
+  @override
+  String get completeEpisodesMarkRest => '将其余剧集标记为今天已看';
+
+  @override
+  String get completeEpisodesKeep => '仅标记完成，不标记剧集';
+
+  @override
+  String get clearEpisodesTitle => '移除剧集标记？';
+
+  @override
+  String get clearEpisodesBody => '有剧集已标记为已看，其日期会计入统计。';
+
+  @override
+  String get clearEpisodesRemove => '移除标记';
+
+  @override
+  String get clearEpisodesKeep => '保留标记';
 }

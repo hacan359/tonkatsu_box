@@ -2803,5 +2803,13 @@
       "source": {"type": "String"},
       "count": {"type": "int"}
     }
-  }
+  },
+  "completeEpisodesTitle": "Not every episode is watched",
+  "completeEpisodesBody": "Some episodes are not marked as watched. What should happen to them?",
+  "completeEpisodesMarkRest": "Mark the rest as watched today",
+  "completeEpisodesKeep": "Complete without marking",
+  "clearEpisodesTitle": "Remove episode marks?",
+  "clearEpisodesBody": "Some episodes are marked as watched. Their watch dates feed your statistics.",
+  "clearEpisodesRemove": "Remove marks",
+  "clearEpisodesKeep": "Keep marks"
 }

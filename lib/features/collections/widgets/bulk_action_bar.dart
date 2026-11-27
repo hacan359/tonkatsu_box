@@ -17,6 +17,7 @@ import '../../../shared/widgets/import_progress_dialog.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../helpers/bulk_operations.dart';
 import '../helpers/bulk_refresh.dart';
+import '../helpers/status_episodes_prompt.dart';
 import '../helpers/item_refresh.dart';
 import '../providers/collections_provider.dart';
 import '../providers/item_tags_provider.dart';
@@ -275,10 +276,18 @@ class BulkActionBar extends ConsumerWidget {
   ) async {
     final S l = S.of(context);
     final List<CollectionItem> snapshot = List<CollectionItem>.of(items);
+    final bool? syncEpisodes = await askEpisodeSync(
+      context,
+      ref.read,
+      snapshot,
+      status,
+    );
+    if (syncEpisodes == null) return;
     final int changed = await BulkOperations.updateItemsStatus(
       ref,
       snapshot,
       status,
+      syncEpisodes: syncEpisodes,
     );
     onClearSelection();
     if (!context.mounted) return;

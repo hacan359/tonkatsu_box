@@ -6,7 +6,7 @@ import '../theme/app_typography.dart';
 import 'glass_panel.dart';
 
 /// A popup menu drawn on a [GlassPanel]: the route's own Material stays
-/// clear and one disabled entry carries the frosted body with [rows].
+/// clear and one entry carries the frosted body with [rows].
 class GlassPopupMenuButton<T> extends StatelessWidget {
   const GlassPopupMenuButton({
     required this.rows,
@@ -47,21 +47,14 @@ class GlassPopupMenuButton<T> extends StatelessWidget {
       iconSize: iconSize,
       onSelected: onSelected,
       itemBuilder: (BuildContext ctx) => <PopupMenuEntry<T>>[
-        PopupMenuItem<T>(
-          enabled: false,
-          height: 0,
-          padding: EdgeInsets.zero,
+        _GlassMenuBody<T>(
           child: GlassPanel(
             radius: AppSpacing.radiusMd,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-            // The disabled entry dims descendant icons; restore them.
-            child: IconTheme.merge(
-              data: const IconThemeData(opacity: 1),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: rows(ctx),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: rows(ctx),
             ),
           ),
         ),
@@ -69,6 +62,28 @@ class GlassPopupMenuButton<T> extends StatelessWidget {
       child: child,
     );
   }
+}
+
+/// Not a disabled [PopupMenuItem]: that merges its subtree into one disabled
+/// semantics node, and a screen reader could not reach a single row.
+class _GlassMenuBody<T> extends PopupMenuEntry<T> {
+  const _GlassMenuBody({required this.child});
+
+  final Widget child;
+
+  @override
+  double get height => 0;
+
+  @override
+  bool represents(T? value) => false;
+
+  @override
+  State<_GlassMenuBody<T>> createState() => _GlassMenuBodyState<T>();
+}
+
+class _GlassMenuBodyState<T> extends State<_GlassMenuBody<T>> {
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// One row of a [GlassPopupMenuButton]; tapping pops the menu with [value]

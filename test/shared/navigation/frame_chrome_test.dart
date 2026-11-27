@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/shared/navigation/frame_chrome.dart';
@@ -112,6 +114,75 @@ void main() {
         returnsNormally,
       );
       expect(() => gone.clear(title), returnsNormally);
+    });
+  });
+
+  group('FrameChromeBinding', () {
+    late FrameChromeController controller;
+    late FramePageObserver pages;
+    final GlobalKey<NavigatorState> nav = GlobalKey<NavigatorState>();
+
+    setUp(() {
+      controller = FrameChromeController();
+      pages = FramePageObserver();
+    });
+    tearDown(() => controller.dispose());
+
+    Future<void> pumpPage(WidgetTester tester) => tester.pumpWidget(
+      MaterialApp(
+        home: FrameChromeScope(
+          controller: controller,
+          child: Navigator(
+            key: nav,
+            observers: <NavigatorObserver>[pages],
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (_) => const FrameChromeBinding(
+                chrome: FrameChrome(title: 'page'),
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('should keep the chrome while a menu is open over the page', (
+      WidgetTester tester,
+    ) async {
+      await pumpPage(tester);
+      await tester.pump();
+      expect(controller.current?.title, 'page');
+
+      final BuildContext page = tester.element(find.byType(SizedBox).last);
+      unawaited(
+        showMenu<void>(
+          context: page,
+          position: RelativeRect.fill,
+          items: const <PopupMenuEntry<void>>[
+            PopupMenuItem<void>(child: Text('row')),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('row'), findsOneWidget);
+      expect(controller.current?.title, 'page');
+    });
+
+    testWidgets('should drop the chrome once another page covers it', (
+      WidgetTester tester,
+    ) async {
+      await pumpPage(tester);
+      await tester.pump();
+
+      unawaited(
+        nav.currentState?.push(
+          MaterialPageRoute<void>(builder: (_) => const Text('next')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(controller.current, isNull);
     });
   });
 }

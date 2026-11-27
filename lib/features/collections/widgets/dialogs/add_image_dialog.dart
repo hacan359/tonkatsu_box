@@ -69,14 +69,13 @@ class _AddImageDialogState extends State<AddImageDialog> {
   }
 
   Future<void> _pickFile() async {
-    final PlatformFile? file = await FilePicker.pickFile(
-      type: FileType.image,
-    );
+    final PlatformFile? file = await FilePicker.pickFile(type: FileType.image);
 
     if (file == null) return;
 
     final Uint8List? bytes = await file.readBytesOrNull();
-    if (bytes == null) return;
+    // The dialog may have been dismissed while the system picker was open.
+    if (bytes == null || !mounted) return;
 
     final String base64String = base64Encode(bytes);
 
@@ -103,9 +102,8 @@ class _AddImageDialogState extends State<AddImageDialog> {
 
     switch (_source) {
       case _ImageSource.url:
-        Navigator.of(
-          context,
-        ).pop(<String, dynamic>{'url': _urlController.text.trim()});
+        Navigator.of(context)
+            .pop(<String, dynamic>{'url': _urlController.text.trim()});
       case _ImageSource.file:
         Navigator.of(
           context,

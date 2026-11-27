@@ -24,6 +24,7 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/navigation/frame_metrics.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_popup_menu.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail/identity_header.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
 import 'package:tonkatsu_box/shared/widgets/source_badge.dart';
@@ -377,7 +378,10 @@ void main() {
         await tester.tap(find.byIcon(Icons.more_vert));
         await tester.pumpAndSettle();
         expect(find.text('Board (Ctrl+B)'), findsOneWidget);
-        expect(find.byType(PopupMenuItem<ItemDetailMenuAction>), findsOneWidget);
+        expect(
+          find.byType(GlassMenuRow<ItemDetailMenuAction>),
+          findsOneWidget,
+        );
       });
 
       testWidgets('должен начинать с detail view (не canvas)',

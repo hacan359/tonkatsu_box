@@ -23,6 +23,7 @@ import '../../../shared/utils/url_launch.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/status_episodes_prompt.dart';
 import '../helpers/tracker_card_progress.dart';
 import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
@@ -35,6 +36,7 @@ import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 import '../../../shared/constants/platform_ui.dart';
 import '../helpers/episode_undo.dart';
+import '../../../shared/utils/menu_position.dart';
 
 /// Grid or table view picked by [isTableMode]; in table mode a manual sort
 /// enables drag-to-reorder rows.
@@ -142,8 +144,20 @@ class CollectionItemsView extends ConsumerWidget {
                 final CollectionItemsNotifier notifier = ref.read(
                   collectionItemsNotifierProvider(collectionId).notifier,
                 );
+                final bool? syncEpisodes = await askEpisodeSync(
+                  context,
+                  ref.read,
+                  <CollectionItem?>[notifier.loadedItem(itemId)],
+                  status,
+                );
+                if (syncEpisodes == null) return;
                 final ClearedEpisodeMarks? cleared = await notifier
-                    .updateStatus(itemId, status, mediaType);
+                    .updateStatus(
+                      itemId,
+                      status,
+                      mediaType,
+                      syncEpisodes: syncEpisodes,
+                    );
                 if (!context.mounted) return;
                 offerStatusEpisodesUndo(context, notifier, cleared);
               }
@@ -468,6 +482,30 @@ class CollectionItemsView extends ConsumerWidget {
     });
   }
 
+  Future<void> _changeStatus(
+    BuildContext context,
+    WidgetRef ref,
+    CollectionItemsNotifier notifier,
+    CollectionItem item,
+    ItemStatus status,
+  ) async {
+    final bool? syncEpisodes = await askEpisodeSync(
+      context,
+      ref.read,
+      <CollectionItem?>[item],
+      status,
+    );
+    if (syncEpisodes == null) return;
+    final ClearedEpisodeMarks? cleared = await notifier.updateStatus(
+      item.id,
+      status,
+      item.mediaType,
+      syncEpisodes: syncEpisodes,
+    );
+    if (!context.mounted) return;
+    offerStatusEpisodesUndo(context, notifier, cleared);
+  }
+
   void _showItemContextMenu(
     BuildContext context,
     WidgetRef ref,
@@ -485,7 +523,7 @@ class CollectionItemsView extends ConsumerWidget {
     showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
-        position & const Size(1, 1),
+        toMenuSpace(context, position) & const Size(1, 1),
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[
@@ -549,17 +587,11 @@ class CollectionItemsView extends ConsumerWidget {
       final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
       if (newStatus != null) {
         if (newStatus != item.status) {
+          if (!context.mounted) return;
           final CollectionItemsNotifier notifier = ref.read(
             collectionItemsNotifierProvider(collectionId).notifier,
           );
-          unawaited(
-            notifier.updateStatus(item.id, newStatus, item.mediaType).then((
-              ClearedEpisodeMarks? cleared,
-            ) {
-              if (!context.mounted) return;
-              offerStatusEpisodesUndo(context, notifier, cleared);
-            }),
-          );
+          unawaited(_changeStatus(context, ref, notifier, item, newStatus));
         }
         return;
       }

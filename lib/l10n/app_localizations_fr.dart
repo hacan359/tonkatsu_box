@@ -6457,4 +6457,31 @@ class SFr extends S {
   String collectionImportSynced(String source, int count) {
     return '$source synchronisé : $count nouveaux';
   }
+
+  @override
+  String get completeEpisodesTitle => 'Tous les épisodes ne sont pas vus';
+
+  @override
+  String get completeEpisodesBody =>
+      'Certains épisodes ne sont pas marqués comme vus. Que faire d\'eux ?';
+
+  @override
+  String get completeEpisodesMarkRest =>
+      'Marquer le reste comme vu aujourd\'hui';
+
+  @override
+  String get completeEpisodesKeep => 'Terminer sans marquer';
+
+  @override
+  String get clearEpisodesTitle => 'Retirer les marques d\'épisodes ?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Des épisodes sont marqués comme vus. Leurs dates comptent dans vos statistiques.';
+
+  @override
+  String get clearEpisodesRemove => 'Retirer les marques';
+
+  @override
+  String get clearEpisodesKeep => 'Garder les marques';
 }

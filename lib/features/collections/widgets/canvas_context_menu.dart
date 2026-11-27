@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/utils/menu_position.dart';
 
 class CanvasContextMenu {
   CanvasContextMenu._();
@@ -22,12 +23,7 @@ class CanvasContextMenu {
     final S l = S.of(context);
     final String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: 'add_text',
@@ -59,7 +55,8 @@ class CanvasContextMenu {
             ],
           ),
         ),
-        if (onFindImages != null || onBrowseMaps != null) ...<PopupMenuEntry<String>>[
+        if (onFindImages != null ||
+            onBrowseMaps != null) ...<PopupMenuEntry<String>>[
           const PopupMenuDivider(),
           if (onFindImages != null)
             PopupMenuItem<String>(
@@ -118,12 +115,7 @@ class CanvasContextMenu {
 
     final String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<String>>[
         if (showEdit)
           PopupMenuItem<String>(
@@ -206,12 +198,7 @@ class CanvasContextMenu {
     final S l = S.of(context);
     final String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: 'edit',
