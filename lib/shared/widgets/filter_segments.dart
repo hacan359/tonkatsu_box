@@ -313,34 +313,29 @@ class _StatusMenuListState extends State<_StatusMenuList> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    // The enclosing PopupMenuItem is disabled so its InkWell lets taps through;
-    // that also dims icons, hence the explicit full opacity.
-    return IconTheme.merge(
-      data: const IconThemeData(opacity: 1),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _StatusMenuRow(
+          icon: Icons.filter_list_off,
+          label: l.all,
+          selected: _selected.isEmpty,
+          accent: null,
+          showCheckbox: false,
+          onTap: _clear,
+        ),
+        const PopupMenuDivider(height: 8),
+        for (final ItemStatus s in widget.order)
           _StatusMenuRow(
-            icon: Icons.filter_list_off,
-            label: l.all,
-            selected: _selected.isEmpty,
-            accent: null,
-            showCheckbox: false,
-            onTap: _clear,
+            icon: s.materialIcon,
+            label: s.genericLabel(l),
+            selected: _selected.contains(s),
+            accent: s.color,
+            showCheckbox: true,
+            onTap: () => _toggle(s),
           ),
-          const PopupMenuDivider(height: 8),
-          for (final ItemStatus s in widget.order)
-            _StatusMenuRow(
-              icon: s.materialIcon,
-              label: s.genericLabel(l),
-              selected: _selected.contains(s),
-              accent: s.color,
-              showCheckbox: true,
-              onTap: () => _toggle(s),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }

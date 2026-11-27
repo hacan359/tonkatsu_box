@@ -181,6 +181,8 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   /// tapped, and tapping it again collapses it.
   int? _pickedSeason;
 
+  final Map<int, GlobalKey> _tileKeys = <int, GlobalKey>{};
+
   @override
   void initState() {
     super.initState();
@@ -338,6 +340,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
                   trackerState,
                   marks,
                   seasonPostersPerRow(constraints.maxWidth),
+                  constraints.maxWidth,
                 ),
           ),
       ],
@@ -352,7 +355,16 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     EpisodeTrackerState trackerState,
     ItemMarksState marks,
     int perRow,
+    double maxWidth,
   ) {
+    // The grid is centred as one block, so a short last row still starts
+    // under the first column instead of drifting to the middle.
+    final int columns = math.min(perRow, ordered.length);
+    final double blockWidth =
+        columns * _SeasonPosterTile._width + (columns - 1) * AppSpacing.sm;
+    final double inset = maxWidth.isFinite
+        ? math.max(0, (maxWidth - blockWidth) / 2)
+        : 0;
     final List<Widget> children = <Widget>[];
     bool panelAbove = false;
     for (int start = 0; start < ordered.length; start += perRow) {
@@ -367,28 +379,35 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
       }
       panelAbove = false;
       children.add(
-        Row(
+        Padding(
           // Keyed so a panel moving between rows does not remount the posters.
           key: ValueKey<String>('season-row-${row.first.seasonNumber}'),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            for (int i = 0; i < row.length; i++) ...<Widget>[
-              if (i > 0) const SizedBox(width: AppSpacing.sm),
-              _SeasonPosterTile(
-                key: ValueKey<int>(row[i].seasonNumber),
-                season: row[i],
-                source: widget.source,
-                watchedCount: trackerState.watchedCountForSeason(
-                  row[i].seasonNumber,
+          padding: EdgeInsets.only(left: inset),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              for (int i = 0; i < row.length; i++) ...<Widget>[
+                if (i > 0) const SizedBox(width: AppSpacing.sm),
+                _SeasonPosterTile(
+                  key: ValueKey<int>(row[i].seasonNumber),
+                  anchorKey: _tileKeys.putIfAbsent(
+                    row[i].seasonNumber,
+                    GlobalKey.new,
+                  ),
+                  season: row[i],
+                  source: widget.source,
+                  watchedCount: trackerState.watchedCountForSeason(
+                    row[i].seasonNumber,
+                  ),
+                  rating: marks.ratingFor(kUnitSeason, row[i].seasonNumber, 0),
+                  selected: row[i].seasonNumber == selected?.seasonNumber,
+                  accentColor: widget.accentColor,
+                  fallbackCover: widget.fallbackCover,
+                  onTap: () => _pick(row[i].seasonNumber, selected),
                 ),
-                rating: marks.ratingFor(kUnitSeason, row[i].seasonNumber, 0),
-                selected: row[i].seasonNumber == selected?.seasonNumber,
-                accentColor: widget.accentColor,
-                fallbackCover: widget.fallbackCover,
-                onTap: () => _pick(row[i].seasonNumber, selected),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       );
       if (selected != null &&
@@ -422,11 +441,35 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   }
 
   void _pick(int seasonNumber, TvSeason? current) {
+    final double? before = _tileTop(seasonNumber);
     setState(() {
       _pickedSeason = current?.seasonNumber == seasonNumber
           ? null
           : seasonNumber;
     });
+    if (before == null) return;
+    // A panel closing above the tapped poster pulls the page up under the
+    // finger; scroll by the same amount so the poster stays where it was.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final BuildContext? tile = _tileKeys[seasonNumber]?.currentContext;
+      final double? after = _tileTop(seasonNumber);
+      if (tile == null || after == null || after == before) return;
+      final ScrollPosition? position = Scrollable.maybeOf(tile)?.position;
+      if (position == null) return;
+      position.jumpTo(
+        (position.pixels + after - before).clamp(
+          position.minScrollExtent,
+          position.maxScrollExtent,
+        ),
+      );
+    });
+  }
+
+  double? _tileTop(int seasonNumber) {
+    final RenderObject? box = _tileKeys[seasonNumber]?.currentContext
+        ?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset.zero).dy;
   }
 
   /// Summary (`❤ N · 💬 M`, episode marks only) plus filter chips.
@@ -793,9 +836,8 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
       if (airYear != null) '$airYear',
     ].join(' • ');
     final String? note = ref.watch(
-      itemMarksProvider(
-        itemId,
-      ).select((ItemMarksState s) => s.noteFor(kUnitSeason, seasonNum, 0)),
+      itemMarksProvider(itemId)
+          .select((ItemMarksState s) => s.noteFor(kUnitSeason, seasonNum, 0)),
     );
 
     return Column(
@@ -1209,10 +1251,14 @@ class _SeasonPosterTile extends StatelessWidget {
     required this.selected,
     required this.accentColor,
     required this.onTap,
+    this.anchorKey,
     this.rating,
     this.fallbackCover,
     super.key,
   });
+
+  /// Lets the list read where the poster sits on screen.
+  final GlobalKey? anchorKey;
 
   final TvSeason season;
   final DataSource source;
@@ -1261,6 +1307,7 @@ class _SeasonPosterTile extends StatelessWidget {
     );
 
     return SizedBox(
+      key: anchorKey,
       width: _width,
       child: Material(
         type: MaterialType.transparency,

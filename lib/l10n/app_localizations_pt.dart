@@ -6412,4 +6412,30 @@ class SPt extends S {
   String collectionImportSynced(String source, int count) {
     return '$source sincronizado: $count novos';
   }
+
+  @override
+  String get completeEpisodesTitle => 'Nem todos os episódios foram vistos';
+
+  @override
+  String get completeEpisodesBody =>
+      'Há episódios não marcados como vistos. O que fazer com eles?';
+
+  @override
+  String get completeEpisodesMarkRest => 'Marcar o restante como visto hoje';
+
+  @override
+  String get completeEpisodesKeep => 'Concluir sem marcar';
+
+  @override
+  String get clearEpisodesTitle => 'Remover as marcações de episódios?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Há episódios marcados como vistos. As datas contam nas suas estatísticas.';
+
+  @override
+  String get clearEpisodesRemove => 'Remover marcações';
+
+  @override
+  String get clearEpisodesKeep => 'Manter marcações';
 }

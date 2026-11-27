@@ -404,7 +404,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
     if (picked == null) return;
     final Uint8List? bytes = await picked.readBytesOrNull();
-    if (bytes == null) return;
+    if (bytes == null || !mounted) return;
 
     final String fileName = picked.name;
     try {

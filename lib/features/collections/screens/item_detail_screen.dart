@@ -44,6 +44,7 @@ import '../../../shared/widgets/media_detail/media_cover_image.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/status_episodes_prompt.dart';
 import '../helpers/custom_duplicate.dart';
 import '../widgets/create_custom_item_dialog.dart';
 import '../widgets/cover_override/igdb_cover_picker.dart';
@@ -705,9 +706,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final DatabaseService db = ref.read(databaseServiceProvider);
     await db.customMediaDao.update(updated);
 
-    unawaited(ref
-        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .refresh());
+    unawaited(
+      ref
+          .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+          .refresh(),
+    );
     // The edit can change display type / platform / format, which drive the
     // All Items filters — reload so it re-buckets instead of staying stale.
     ref.invalidate(allItemsNotifierProvider);
@@ -1477,10 +1480,18 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final CollectionItemsNotifier notifier = ref.read(
       collectionItemsNotifierProvider(widget.collectionId).notifier,
     );
+    final bool? syncEpisodes = await askEpisodeSync(
+      context,
+      ref.read,
+      <CollectionItem?>[notifier.loadedItem(id)],
+      status,
+    );
+    if (syncEpisodes == null) return;
     final ClearedEpisodeMarks? cleared = await notifier.updateStatus(
       id,
       status,
       mediaType,
+      syncEpisodes: syncEpisodes,
     );
     if (!mounted) return;
     offerStatusEpisodesUndo(context, notifier, cleared);
@@ -1498,16 +1509,25 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       ActivityDateField.completed => (false, true),
       ActivityDateField.both => (true, true),
     };
-    await ref
-        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateActivityDates(
-          id,
-          startedAt: touchesStart ? date : null,
-          completedAt: touchesCompletion ? date : null,
-          clearStartedAt: touchesStart && date == null,
-          clearCompletedAt: touchesCompletion && date == null,
-          lastActivityAt: DateTime.now(),
-        );
+    final CollectionItemsNotifier notifier = ref.read(
+      collectionItemsNotifierProvider(widget.collectionId).notifier,
+    );
+    // A completion date completes the title, the same as picking the status.
+    final bool? syncEpisodes = touchesCompletion && date != null
+        ? await askEpisodeSync(context, ref.read, <CollectionItem?>[
+            notifier.loadedItem(id),
+          ], ItemStatus.completed)
+        : true;
+    if (syncEpisodes == null) return;
+    await notifier.updateActivityDates(
+      id,
+      syncEpisodes: syncEpisodes,
+      startedAt: touchesStart ? date : null,
+      completedAt: touchesCompletion ? date : null,
+      clearStartedAt: touchesStart && date == null,
+      clearCompletedAt: touchesCompletion && date == null,
+      lastActivityAt: DateTime.now(),
+    );
   }
 
   Future<void> _saveAuthorComment(int id, String? text) async {

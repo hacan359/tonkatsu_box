@@ -2685,5 +2685,13 @@
   "collectionImportRerunTitle": "Relancer l'import depuis {source} ?",
   "collectionImportRerunMessage": "Les nouveaux éléments de {source} seront ajoutés à « {collection} » avec les mêmes réglages que la dernière fois.",
   "collectionImportRun": "Lancer",
-  "collectionImportSynced": "{source} synchronisé : {count} nouveaux"
+  "collectionImportSynced": "{source} synchronisé : {count} nouveaux",
+  "completeEpisodesTitle": "Tous les épisodes ne sont pas vus",
+  "completeEpisodesBody": "Certains épisodes ne sont pas marqués comme vus. Que faire d'eux ?",
+  "completeEpisodesMarkRest": "Marquer le reste comme vu aujourd'hui",
+  "completeEpisodesKeep": "Terminer sans marquer",
+  "clearEpisodesTitle": "Retirer les marques d'épisodes ?",
+  "clearEpisodesBody": "Des épisodes sont marqués comme vus. Leurs dates comptent dans vos statistiques.",
+  "clearEpisodesRemove": "Retirer les marques",
+  "clearEpisodesKeep": "Garder les marques"
 }

@@ -11,7 +11,7 @@ import 'horizontal_mouse_scroll.dart';
 const double kMediaTypeTileSize = 40;
 
 /// Headroom above a tile for the count badge that overhangs it.
-const double _badgeRoom = 6;
+const double kMediaTypeBadgeRoom = 6;
 
 /// Horizontal strip of filter tiles under the glass: wheel and drag both
 /// scroll it, because on a narrow window it is longer than the panel.
@@ -37,7 +37,7 @@ class _MediaTypeIconStripState extends State<MediaTypeIconStrip> {
   Widget build(BuildContext context) {
     // Six extra points keep the count badge clear of the clip edge.
     return SizedBox(
-      height: kMediaTypeTileSize + 6,
+      height: kMediaTypeTileSize + kMediaTypeBadgeRoom,
       child: HorizontalMouseScroll(
         controller: _controller,
         child: ScrollConfiguration(
@@ -84,7 +84,10 @@ class MediaTypeIconTile extends StatelessWidget {
         : glassChipColor(tint: accent, tintAlpha: 80);
     final Color fg = selected ? AppColors.background : accent.withAlpha(230);
     return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.xs, top: _badgeRoom),
+      padding: const EdgeInsets.only(
+        right: AppSpacing.xs,
+        top: kMediaTypeBadgeRoom,
+      ),
       child: Tooltip(
         message: count > 0 ? '$label ($count)' : label,
         child: Stack(
@@ -151,7 +154,10 @@ class StripActionTile extends StatelessWidget {
     final Color bg = active ? AppColors.brand : glassChipColor();
     final Color fg = active ? AppColors.onBrand : AppColors.textSecondary;
     return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.xs, top: _badgeRoom),
+      padding: const EdgeInsets.only(
+        right: AppSpacing.xs,
+        top: kMediaTypeBadgeRoom,
+      ),
       child: ChipTile(
         color: bg,
         width: kMediaTypeTileSize,

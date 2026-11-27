@@ -3113,5 +3113,13 @@
   "collectionImportRerunTitle": "Repetir a importação de {source}?",
   "collectionImportRerunMessage": "Os itens novos de {source} serão adicionados a «{collection}» com as mesmas configurações da última vez.",
   "collectionImportRun": "Executar",
-  "collectionImportSynced": "{source} sincronizado: {count} novos"
+  "collectionImportSynced": "{source} sincronizado: {count} novos",
+  "completeEpisodesTitle": "Nem todos os episódios foram vistos",
+  "completeEpisodesBody": "Há episódios não marcados como vistos. O que fazer com eles?",
+  "completeEpisodesMarkRest": "Marcar o restante como visto hoje",
+  "completeEpisodesKeep": "Concluir sem marcar",
+  "clearEpisodesTitle": "Remover as marcações de episódios?",
+  "clearEpisodesBody": "Há episódios marcados como vistos. As datas contam nas suas estatísticas.",
+  "clearEpisodesRemove": "Remover marcações",
+  "clearEpisodesKeep": "Manter marcações"
 }

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
 import 'package:tonkatsu_box/shared/constants/item_status_ui.dart';
 import 'package:tonkatsu_box/shared/widgets/filter_segments.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_panel.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -32,7 +33,7 @@ void main() {
     Finder rowFor(WidgetTester tester, ItemStatus status) {
       final S l = S.of(tester.element(find.byType(StatusDropdownSegment)));
       return find.descendant(
-        of: find.byType(PopupMenuItem<void>),
+        of: find.byType(GlassPanel),
         matching: find.text(status.genericLabel(l)),
       );
     }
@@ -86,7 +87,7 @@ void main() {
       final S l = S.of(tester.element(find.byType(StatusDropdownSegment)));
       await tester.tap(
         find.descendant(
-          of: find.byType(PopupMenuItem<void>),
+          of: find.byType(GlassPanel),
           matching: find.text(l.all),
         ),
       );

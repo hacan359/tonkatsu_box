@@ -23,6 +23,7 @@ import '../widgets/create_tier_list_dialog.dart';
 import 'tier_list_detail_screen.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
 import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/utils/menu_position.dart';
 
 /// When [collectionId] is set, shows only that collection's tier lists;
 /// when null, shows all tier lists (the global navigation tab).
@@ -347,12 +348,7 @@ class _TierListCard extends ConsumerWidget {
     Offset globalPosition,
   ) {
     final S l = S.of(context);
-    final RelativeRect position = RelativeRect.fromLTRB(
-      globalPosition.dx,
-      globalPosition.dy,
-      globalPosition.dx,
-      globalPosition.dy,
-    );
+    final RelativeRect position = menuRectAt(context, globalPosition);
     showMenu<String>(
       context: context,
       position: position,
@@ -597,7 +593,7 @@ class _MoodGridCard extends ConsumerWidget {
     final S l = S.of(context);
     showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(pos.dx, pos.dy, pos.dx, pos.dy),
+      position: menuRectAt(context, pos),
       items: <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: 'rename',

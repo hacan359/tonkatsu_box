@@ -119,6 +119,48 @@ class FrameChromeController extends ChangeNotifier {
   }
 }
 
+/// Tracks a tab's route stack. A menu or a sheet is a route too, so "is the
+/// current route" would take the chrome away from the page under an open menu.
+class FramePageObserver extends NavigatorObserver with ChangeNotifier {
+  final List<Route<Object?>> _routes = <Route<Object?>>[];
+
+  /// Whether [route] is the topmost page, whatever popups sit above it.
+  bool isTopPage(Route<Object?> route) {
+    for (final Route<Object?> r in _routes.reversed) {
+      if (r is PageRoute<Object?>) return identical(r, route);
+    }
+    return true;
+  }
+
+  @override
+  void didPush(Route<Object?> route, Route<Object?>? previousRoute) {
+    _routes.add(route);
+    notifyListeners();
+  }
+
+  @override
+  void didPop(Route<Object?> route, Route<Object?>? previousRoute) {
+    _routes.remove(route);
+    notifyListeners();
+  }
+
+  @override
+  void didRemove(Route<Object?> route, Route<Object?>? previousRoute) {
+    _routes.remove(route);
+    notifyListeners();
+  }
+
+  @override
+  void didReplace({Route<Object?>? newRoute, Route<Object?>? oldRoute}) {
+    final int at = oldRoute == null ? -1 : _routes.indexOf(oldRoute);
+    if (at >= 0) _routes.removeAt(at);
+    if (newRoute != null) {
+      _routes.insert(at >= 0 ? at : _routes.length, newRoute);
+    }
+    notifyListeners();
+  }
+}
+
 class FrameChromeScope extends InheritedNotifier<FrameChromeController> {
   const FrameChromeScope({
     required FrameChromeController controller,
@@ -154,11 +196,21 @@ class FrameChromeBinding extends StatefulWidget {
 
 class _FrameChromeBindingState extends State<FrameChromeBinding> {
   FrameChromeController? _controller;
+  FramePageObserver? _pages;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _controller = FrameChromeScope.maybeOf(context);
+    final FramePageObserver? pages = Navigator.maybeOf(context)
+        ?.widget
+        .observers
+        .whereType<FramePageObserver>()
+        .firstOrNull;
+    if (!identical(pages, _pages)) {
+      _pages?.removeListener(_publish);
+      _pages = pages?..addListener(_publish);
+    }
     _publish();
   }
 
@@ -172,10 +224,13 @@ class _FrameChromeBindingState extends State<FrameChromeBinding> {
   /// under a pushed one — only the visible top route may speak.
   void _publish() {
     final FrameChromeController? controller = _controller;
-    if (controller == null) return;
-    final bool visible =
-        TickerMode.valuesOf(context).enabled &&
-        (ModalRoute.of(context)?.isCurrent ?? true);
+    if (controller == null || !mounted) return;
+    final ModalRoute<Object?>? route = ModalRoute.of(context);
+    final FramePageObserver? pages = _pages;
+    final bool onTop = route is PageRoute<Object?> && pages != null
+        ? pages.isTopPage(route)
+        : route?.isCurrent ?? true;
+    final bool visible = TickerMode.valuesOf(context).enabled && onTop;
     // The scope sits above this subtree, so it must not be marked dirty
     // from inside a build; the zone catches up on the next frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -190,6 +245,7 @@ class _FrameChromeBindingState extends State<FrameChromeBinding> {
 
   @override
   void dispose() {
+    _pages?.removeListener(_publish);
     final FrameChromeController? controller = _controller;
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => controller?.clear(this),

@@ -6354,4 +6354,30 @@ class SEn extends S {
   String collectionImportSynced(String source, int count) {
     return '$source synced: $count new';
   }
+
+  @override
+  String get completeEpisodesTitle => 'Not every episode is watched';
+
+  @override
+  String get completeEpisodesBody =>
+      'Some episodes are not marked as watched. What should happen to them?';
+
+  @override
+  String get completeEpisodesMarkRest => 'Mark the rest as watched today';
+
+  @override
+  String get completeEpisodesKeep => 'Complete without marking';
+
+  @override
+  String get clearEpisodesTitle => 'Remove episode marks?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Some episodes are marked as watched. Their watch dates feed your statistics.';
+
+  @override
+  String get clearEpisodesRemove => 'Remove marks';
+
+  @override
+  String get clearEpisodesKeep => 'Keep marks';
 }

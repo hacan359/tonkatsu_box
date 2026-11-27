@@ -44,6 +44,15 @@ class AppProxyConfig {
 
   static const String _direct = 'DIRECT';
 
+  // Names a home router or a private DNS zone hands out; never public.
+  static const List<String> _lanSuffixes = <String>[
+    '.local',
+    '.localhost',
+    '.lan',
+    '.home.arpa',
+    '.internal',
+  ];
+
   /// Loopback, private ranges and bare LAN names: a proxy cannot reach Kodi,
   /// LAN sync or a selfhost server on the user's own network.
   static bool isLocalHost(String host) {
@@ -63,7 +72,7 @@ class AppProxyConfig {
           (ip[0] == 192 && ip[1] == 168) ||
           (ip[0] == 169 && ip[1] == 254);
     }
-    return !h.contains('.') || h.endsWith('.local') || h.endsWith('.localhost');
+    return !h.contains('.') || _lanSuffixes.any(h.endsWith);
   }
 
   static List<int>? _parseIpv4(String host) {

@@ -20,6 +20,7 @@ class GlassDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextStyle? titleStyle = Theme.of(context).dialogTheme.titleTextStyle;
+    final String? title = this.title;
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -43,7 +44,7 @@ class GlassDialog extends StatelessWidget {
                     AppSpacing.lg,
                     AppSpacing.sm,
                   ),
-                  child: Text(title!, style: titleStyle),
+                  child: Text(title, style: titleStyle),
                 ),
               // A long option list (languages) must scroll, not overflow.
               Flexible(
@@ -141,6 +142,27 @@ class GlassAlertDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DialogThemeData dialogTheme = Theme.of(context).dialogTheme;
+    final Widget? title = this.title;
+    final Widget? content = this.content;
+    final List<Widget>? actions = this.actions;
+    final Widget? titleBlock = title == null
+        ? null
+        : Padding(
+            padding: titlePadding ?? _titleDefault,
+            child: DefaultTextStyle.merge(
+              style: dialogTheme.titleTextStyle,
+              child: title,
+            ),
+          );
+    final Widget? contentBlock = content == null
+        ? null
+        : Padding(
+            padding: contentPadding ?? _contentDefault,
+            child: DefaultTextStyle.merge(
+              style: dialogTheme.contentTextStyle,
+              child: content,
+            ),
+          );
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -155,33 +177,29 @@ class GlassAlertDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              if (title != null)
-                Padding(
-                  padding: titlePadding ?? _titleDefault,
-                  child: DefaultTextStyle.merge(
-                    style: dialogTheme.titleTextStyle,
-                    child: title!,
-                  ),
-                ),
-              if (content != null)
+              // Like AlertDialog, the title scrolls with the content: pinned,
+              // it would leave a keyboard-squeezed dialog no room for a field.
+              if (scrollable && (titleBlock != null || contentBlock != null))
                 Flexible(
-                  child: Padding(
-                    padding: contentPadding ?? _contentDefault,
-                    child: DefaultTextStyle.merge(
-                      style: dialogTheme.contentTextStyle,
-                      child: scrollable
-                          ? SingleChildScrollView(child: content)
-                          : content!,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[?titleBlock, ?contentBlock],
                     ),
                   ),
-                ),
-              if (actions != null && actions!.isNotEmpty)
+                )
+              else ...<Widget>[
+                ?titleBlock,
+                if (contentBlock != null) Flexible(child: contentBlock),
+              ],
+              if (actions != null && actions.isNotEmpty)
                 Padding(
                   padding: actionsPadding ?? _actionsDefault,
                   child: OverflowBar(
                     alignment: actionsAlignment,
                     spacing: AppSpacing.sm,
-                    children: actions!,
+                    children: actions,
                   ),
                 ),
             ],

@@ -21,6 +21,7 @@ import '../widgets/mood_grid_item_picker.dart';
 import '../widgets/mood_grid_view.dart';
 import '../../../shared/widgets/glass_dialog.dart';
 import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/utils/menu_position.dart';
 
 /// Detail screen for a single mood grid.
 class MoodGridDetailScreen extends ConsumerStatefulWidget {
@@ -271,12 +272,7 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
 
   Future<void> _showCellContextMenu(MoodGridCell cell, Offset pos, S l) async {
     if (cell.id < 0) return;
-    final RelativeRect position = RelativeRect.fromLTRB(
-      pos.dx,
-      pos.dy,
-      pos.dx,
-      pos.dy,
-    );
+    final RelativeRect position = menuRectAt(context, pos);
     final String? action = await showMenu<String>(
       context: context,
       position: position,

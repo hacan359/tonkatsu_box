@@ -89,9 +89,8 @@ double frameChromeHeight({required bool compact}) {
   return compact ? wide + kAppBottomBarHeight + gap : wide;
 }
 
-/// Glass panels over the wallpaper: search row, menu rail (bottom band on
-/// phones) and content. Where the skin floats its bars, a phone gets one
-/// content panel with the search block and the menu laid over it.
+/// Glass panels over the wallpaper: search row, menu rail and content. On a
+/// phone whose skin floats its bars, the search block and menu lie over it.
 class AppFrame extends StatefulWidget {
   const AppFrame({
     required this.compact,
@@ -188,8 +187,21 @@ class _AppFrameState extends State<AppFrame> {
     if (shown != _stripShown) {
       _foldSource = shown ? null : source;
       setState(() => _stripShown = shown);
+      if (!shown) _watchFoldSource();
     }
     return false;
+  }
+
+  /// A folded strip comes back only on its list's scroll; if the page swaps
+  /// that list out (an empty state), nothing would ever unfold it.
+  void _watchFoldSource() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _stripShown) return;
+      if (_foldSource?.mounted ?? false) return _watchFoldSource();
+      _travel = 0;
+      _foldSource = null;
+      setState(() => _stripShown = true);
+    });
   }
 
   @override
@@ -324,10 +336,8 @@ class _AppFrameState extends State<AppFrame> {
                     fit: StackFit.expand,
                     children: <Widget>[
                       body,
-                      // The floating bars blur for themselves: posters scroll
-                      // under them, out of reach of the wallpaper's one blur.
-                      // Grouped, they share one read of the screen; apart, each bar
-                      // costs a phone its own full-screen copies every frame.
+                      // Posters scroll under the bars, so they blur for
+                      // themselves; grouped, they share one read of the screen.
                       if (floating)
                         GlassBackdropGroup(
                           child: Stack(

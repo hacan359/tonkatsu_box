@@ -2346,5 +2346,13 @@
   "collectionImportRerunTitle": "Повторить импорт из {source}?",
   "collectionImportRerunMessage": "Новые записи из {source} добавятся в «{collection}» с теми же настройками, что и в прошлый раз.",
   "collectionImportRun": "Запустить",
-  "collectionImportSynced": "{source} синхронизирован: новых {count}"
+  "collectionImportSynced": "{source} синхронизирован: новых {count}",
+  "completeEpisodesTitle": "Не все серии просмотрены",
+  "completeEpisodesBody": "Остались неотмеченные серии. Что с ними сделать?",
+  "completeEpisodesMarkRest": "Отметить оставшиеся сегодняшней датой",
+  "completeEpisodesKeep": "Завершить, серии не отмечать",
+  "clearEpisodesTitle": "Снять отметки серий?",
+  "clearEpisodesBody": "Есть серии, отмеченные просмотренными. Их даты учитываются в статистике.",
+  "clearEpisodesRemove": "Снять отметки",
+  "clearEpisodesKeep": "Оставить отметки"
 }

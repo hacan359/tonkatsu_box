@@ -23,7 +23,7 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
   * lib/shared/navigation/app_frame.dart (AppFrame, frameChromeHeight): New.
   * lib/shared/navigation/frame_chrome.dart (FrameChrome, FrameChromeController,
-    FrameChromeScope, FrameChromeBinding): New; a page lends its title, back
+    FrameChromeScope, FrameChromeBinding, FramePageObserver): New; a page lends its title, back
     button, actions and filter strip to the top row.
   * lib/shared/navigation/app_wallpaper.dart (AppWallpaper),
     lib/shared/navigation/frame_metrics.dart,
@@ -295,6 +295,40 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
     lib/features/settings/widgets/settings_tile.dart (SettingsTile.build):
     textTertiary → textSecondary.
 
+- **Completing a series asks about its unwatched episodes**
+
+  Setting a series to Completed while episodes are unmarked offers to mark
+  the rest with today's date or to complete without marking. Only Completed
+  to Not started removes the marks, after asking; every other status keeps
+  them. A bulk status change asks once for the whole selection.
+
+  * lib/features/collections/helpers/status_episodes_prompt.dart
+    (askEpisodeSync): New.
+  * lib/features/collections/providers/collections_provider.dart
+    (syncEpisodesToStatus): Erases marks only on Completed to Not started.
+    (CollectionItemsNotifier.loadedItem): New.
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier.unwatchedEpisodeCount,
+    EpisodeTrackerNotifier.hasWatchedEpisodes): New.
+  * lib/features/collections/helpers/bulk_operations.dart
+    (BulkOperations.updateItemsStatus): Takes `syncEpisodes`.
+  * lib/features/collections/screens/item_detail_screen.dart,
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/collections/widgets/bulk_action_bar.dart,
+    lib/features/home/screens/all_items_screen.dart: Ask before the change.
+  * lib/l10n/app_*.arb (completeEpisodesTitle, completeEpisodesBody,
+    completeEpisodesMarkRest, completeEpisodesKeep, clearEpisodesTitle,
+    clearEpisodesBody, clearEpisodesRemove, clearEpisodesKeep): New strings.
+
+- **Season posters are centred**
+
+  The season grid sits in the middle of the card as one block. Opening a
+  season keeps the tapped poster where it was on screen.
+
+  * lib/features/collections/widgets/episode_tracker_section.dart
+    (SeasonsListWidget): Centres the grid and holds the scroll position on a
+    pick.
+
 ### Removed
 
 - **Old per-screen chrome**
@@ -321,6 +355,32 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * server/lib/src/app_handler.dart (_webHandler): `Cache-Control: no-cache`
     on every static file.
   * docker-compose.yml: `pull: true` for the build.
+
+- **Marking a season watched keeps the dates of episodes already watched**
+
+  * lib/features/collections/providers/episode_tracker_provider.dart
+    (EpisodeTrackerNotifier.toggleSeason): Stamps only the unmarked episodes.
+
+- **Context menus open at the cursor**
+
+  * lib/shared/utils/menu_position.dart (toMenuSpace, menuRectAt): New.
+  * lib/features/collections/screens/home_screen.dart,
+    lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/collections/widgets/canvas_context_menu.dart,
+    lib/features/collections/widgets/screenscraper_gallery_section.dart,
+    lib/features/collections/widgets/collection_table/cells/status_cell.dart,
+    lib/features/home/screens/all_items_screen.dart,
+    lib/features/mood_grids/screens/mood_grid_detail_screen.dart,
+    lib/features/tier_lists/screens/tier_lists_screen.dart,
+    lib/features/wishlist/widgets/wishlist_tile.dart,
+    lib/shared/widgets/rating_popup.dart: Position the menu in the tab's own
+    space.
+
+- **Closing a dialog while the system file picker is open no longer shows an error**
+
+  * lib/features/collections/widgets/dialogs/add_image_dialog.dart,
+    lib/features/settings/content/mal_import_content.dart: Check `mounted`
+    after the pick.
 
 ## [0.46.0] - 2026-11-01
 
@@ -11384,4 +11444,3 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 - Изменён `SettingsNotifier.clearSettings()` — очищает также SteamGridDB API ключ
 - Изменён `settings_screen.dart` — добавлены секции SteamGridDB API и Developer Tools
 - Обновлены тесты `settings_state_test.dart` и `settings_screen_test.dart` для покрытия новых полей
-

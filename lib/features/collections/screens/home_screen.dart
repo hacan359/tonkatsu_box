@@ -39,6 +39,7 @@ import '../../../shared/constants/collection_list_sort_mode_ui.dart';
 import '../../../shared/keyboard/shortcut_helper.dart';
 import '../../../shared/widgets/import_progress_dialog.dart';
 import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/utils/menu_position.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -407,7 +408,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
-        position & const Size(1, 1),
+        toMenuSpace(context, position) & const Size(1, 1),
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[
@@ -465,7 +466,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
-        position & const Size(1, 1),
+        toMenuSpace(context, position) & const Size(1, 1),
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[

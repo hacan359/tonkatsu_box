@@ -89,11 +89,15 @@ class _TagTopBarState extends State<TagTopBar> {
   @override
   Widget build(BuildContext context) {
     final bool searchable = widget.tags.length >= kTagSearchMinTags;
-    final List<Tag> visibleTags = filterTagsByName(
-      widget.tags,
-      _query.text,
-      keepIds: widget.selectedTagIds,
-    );
+    // The field hides below the threshold; a query left in it must not keep
+    // narrowing a row that offers no way to clear it.
+    final List<Tag> visibleTags = searchable
+        ? filterTagsByName(
+            widget.tags,
+            _query.text,
+            keepIds: widget.selectedTagIds,
+          )
+        : widget.tags;
     return Container(
       height: TagTopBar.height,
       decoration: BoxDecoration(

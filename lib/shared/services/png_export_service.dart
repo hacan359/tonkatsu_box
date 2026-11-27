@@ -37,8 +37,6 @@ class BulkExportResult {
   final Object? error;
 }
 
-/// On mobile file_picker writes the bytes itself through SAF; on desktop it
-/// only returns a path, so the write happens here.
 Future<BulkExportResult> saveBoundaryAsPng({
   required GlobalKey repaintKey,
   required String suggestedFileName,
@@ -46,15 +44,16 @@ Future<BulkExportResult> saveBoundaryAsPng({
   double pixelRatio = 2.0,
 }) async {
   try {
-    final RenderRepaintBoundary? boundary = repaintKey.currentContext
-        ?.findRenderObject() as RenderRepaintBoundary?;
+    final RenderRepaintBoundary? boundary =
+        repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) {
       return const BulkExportResult(BulkExportStatus.failed);
     }
 
     final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
-    final ByteData? byteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     if (byteData == null) {
       return const BulkExportResult(BulkExportStatus.failed);
     }

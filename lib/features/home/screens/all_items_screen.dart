@@ -30,6 +30,7 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/min_height_body.dart';
 import '../../../shared/widgets/uncategorized_deprecation_banner.dart';
 import '../../collections/helpers/collection_actions.dart';
+import '../../collections/helpers/status_episodes_prompt.dart';
 import '../../collections/helpers/item_editability.dart';
 import '../../collections/helpers/tracker_card_progress.dart';
 import '../../collections/providers/all_items_selection_provider.dart';
@@ -45,6 +46,7 @@ import '../providers/all_items_provider.dart';
 import '../../collections/providers/item_tags_provider.dart';
 import '../../../shared/constants/platform_ui.dart';
 import '../../collections/helpers/episode_undo.dart';
+import '../../../shared/utils/menu_position.dart';
 
 /// Grid of all items across all collections (Home tab). The platforms
 /// filter row appears only while Games is selected.
@@ -289,7 +291,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           ),
         const SizedBox(width: AppSpacing.sm),
         Padding(
-          padding: const EdgeInsets.only(top: 6),
+          padding: const EdgeInsets.only(top: kMediaTypeBadgeRoom),
           child: StatusDropdownSegment(
             statuses: filterStatuses,
             compact: false,
@@ -738,7 +740,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(
-        position & const Size(1, 1),
+        toMenuSpace(context, position) & const Size(1, 1),
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[
@@ -781,10 +783,18 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         final CollectionItemsNotifier notifier = ref.read(
           collectionItemsNotifierProvider(item.collectionId).notifier,
         );
+        final bool? syncEpisodes = await askEpisodeSync(
+          context,
+          ref.read,
+          <CollectionItem?>[item],
+          newStatus,
+        );
+        if (syncEpisodes == null) return;
         final ClearedEpisodeMarks? cleared = await notifier.updateStatus(
           item.id,
           newStatus,
           item.mediaType,
+          syncEpisodes: syncEpisodes,
         );
         if (!mounted) return;
         offerStatusEpisodesUndo(context, notifier, cleared);

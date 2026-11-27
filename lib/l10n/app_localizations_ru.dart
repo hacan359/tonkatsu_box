@@ -6460,4 +6460,31 @@ class SRu extends S {
   String collectionImportSynced(String source, int count) {
     return '$source синхронизирован: новых $count';
   }
+
+  @override
+  String get completeEpisodesTitle => 'Не все серии просмотрены';
+
+  @override
+  String get completeEpisodesBody =>
+      'Остались неотмеченные серии. Что с ними сделать?';
+
+  @override
+  String get completeEpisodesMarkRest =>
+      'Отметить оставшиеся сегодняшней датой';
+
+  @override
+  String get completeEpisodesKeep => 'Завершить, серии не отмечать';
+
+  @override
+  String get clearEpisodesTitle => 'Снять отметки серий?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Есть серии, отмеченные просмотренными. Их даты учитываются в статистике.';
+
+  @override
+  String get clearEpisodesRemove => 'Снять отметки';
+
+  @override
+  String get clearEpisodesKeep => 'Оставить отметки';
 }

@@ -17,6 +17,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/screenscraper_provider.dart';
 import '../../../shared/widgets/glass_panel.dart';
 import '../../../shared/widgets/image_placeholder.dart';
+import '../../../shared/utils/menu_position.dart';
 
 /// Display preference for the SS gallery: full set vs only in-game screenshots.
 enum ScreenScraperGalleryMode { full, screenshotsOnly }
@@ -281,12 +282,7 @@ class _Thumbnail extends StatelessWidget {
     if (setAsCover == null) return;
     final bool? picked = await showMenu<bool>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<bool>>[
         PopupMenuItem<bool>(
           value: true,

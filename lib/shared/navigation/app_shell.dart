@@ -92,6 +92,9 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// rebuild would drop a new Navigator in and lose its route history.
   final List<Widget?> _navigatorWidgets = List<Widget?>.filled(_tabCount, null);
 
+  final List<FramePageObserver> _pageObservers =
+      List<FramePageObserver>.generate(_tabCount, (_) => FramePageObserver());
+
   @override
   void dispose() {
     _frameChrome.dispose();
@@ -363,6 +366,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget _buildTabNavigator(int tabIndex) {
     _navigatorWidgets[tabIndex] ??= Navigator(
       key: _navigatorKeys[tabIndex],
+      observers: <NavigatorObserver>[_pageObservers[tabIndex]],
       onGenerateRoute: (RouteSettings settings) {
         final Widget screen = switch (NavTab.values[tabIndex]) {
           NavTab.home => const AllItemsScreen(),

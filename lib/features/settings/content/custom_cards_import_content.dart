@@ -131,7 +131,6 @@ class _CustomCardsImportContentState
                   onPressed: () => _saveTemplate(
                     fileName: CustomCardsTemplate.csvFileName,
                     content: CustomCardsTemplate.csv(),
-                    extension: 'csv',
                   ),
                   icon: const Icon(Icons.grid_on, size: 18),
                   label: Text(l.customImportCsvTemplate),
@@ -146,7 +145,6 @@ class _CustomCardsImportContentState
                   onPressed: () => _saveTemplate(
                     fileName: CustomCardsTemplate.jsonFileName,
                     content: CustomCardsTemplate.json(),
-                    extension: 'json',
                   ),
                   icon: const Icon(Icons.data_object, size: 18),
                   label: Text(l.customImportJsonTemplate),
@@ -292,7 +290,6 @@ class _CustomCardsImportContentState
   Future<void> _saveTemplate({
     required String fileName,
     required String content,
-    required String extension,
   }) async {
     final S l = S.of(context);
     final String? path = await saveBytesWithDialog(

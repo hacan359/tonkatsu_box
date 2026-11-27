@@ -235,7 +235,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
           ),
         const SizedBox(width: AppSpacing.sm),
         Padding(
-          padding: const EdgeInsets.only(top: 6),
+          padding: const EdgeInsets.only(top: kMediaTypeBadgeRoom),
           child: StatusDropdownSegment(
             statuses: widget.filterStatuses,
             compact: false,
