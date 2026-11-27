@@ -2,16 +2,16 @@ import 'package:core/models/book.dart';
 import 'package:core/models/data_source.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/utils/cover_image_id.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/services/image_cache_service.dart';
 import '../constants/platform_features.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../utils/url_launch.dart';
 import 'media_poster_card.dart';
 import 'scrollable_row_with_arrows.dart';
 import 'shimmer_loading.dart';
+import 'glass_panel.dart';
 
 /// Lazy paging runs through [onEndReached]; per-book hover tooltips come from
 /// [tooltipOf].
@@ -141,8 +141,10 @@ class _BookCarouselState extends State<BookCarousel> {
         year: book.publishYear,
         apiRating: widget.showRating ? book.rating : null,
         splitRatings: true,
-        isInCollection:
-            widget.ownedKeys.contains((book.source, book.externalIdInt)),
+        isInCollection: widget.ownedKeys.contains((
+          book.source,
+          book.externalIdInt,
+        )),
         placeholderIcon: Icons.menu_book,
         source: book.source,
         onSourceTap: openUrlCallback(book.externalUrl),
@@ -183,7 +185,7 @@ class BookCarouselShimmer extends StatelessWidget {
           width: 150,
           height: 20,
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: glassTileColor(),
             borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
           ),
         ),

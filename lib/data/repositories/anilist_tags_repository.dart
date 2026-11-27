@@ -9,10 +9,9 @@ import '../../core/database/database_service.dart';
 /// picker's manual Refresh (`forceRefresh: true`) bypasses it.
 class AniListTagsRepository {
   AniListTagsRepository({
-    required AniListApi api,
-    required AniListTagDao dao,
-  })  : _api = api,
-        _dao = dao;
+    required this._api,
+    required this._dao,
+  });
 
   final AniListApi _api;
   final AniListTagDao _dao;

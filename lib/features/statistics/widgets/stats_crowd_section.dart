@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -34,10 +34,7 @@ class StatsCrowdSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        StatsSectionHeader(
-          title: l.statsCrowdTitle,
-          hint: l.statsCrowdHint,
-        ),
+        StatsSectionHeader(title: l.statsCrowdTitle, hint: l.statsCrowdHint),
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             final bool wide = constraints.maxWidth >= 860;
@@ -103,8 +100,10 @@ class _CrowdCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(title,
-              style: AppTypography.body.copyWith(fontWeight: FontWeight.w600)),
+          Text(
+            title,
+            style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: AppSpacing.md),
           for (final RatingDelta row in rows)
             Padding(
@@ -156,8 +155,9 @@ class _CrowdRow extends StatelessWidget {
             children: <Widget>[
               Text(
                 delta.item.displayName(titleLanguage),
-                style: AppTypography.caption
-                    .copyWith(color: AppColors.textSecondary),
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -172,8 +172,10 @@ class _CrowdRow extends StatelessWidget {
           child: Text(
             '${gap > 0 ? '+' : ''}${gap.toStringAsFixed(1)}',
             textAlign: TextAlign.right,
-            style: AppTypography.bodySmall
-                .copyWith(color: accent, fontWeight: FontWeight.w700),
+            style: AppTypography.bodySmall.copyWith(
+              color: accent,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -208,7 +210,10 @@ class _DumbbellTrack extends StatelessWidget {
                 left: 0,
                 right: 0,
                 top: 6.5,
-                child: Container(height: 1, color: AppColors.surfaceLight),
+                child: Container(
+                  height: 1,
+                  color: AppColors.textPrimary.withAlpha(30),
+                ),
               ),
               Positioned(
                 left: left,
@@ -253,9 +258,11 @@ class _Dot extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.surface, width: 2),
+        border: Border.all(
+          color: AppColors.textPrimary.withAlpha(40),
+          width: 2,
+        ),
       ),
     );
   }
 }
-

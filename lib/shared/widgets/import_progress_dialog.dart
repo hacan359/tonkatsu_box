@@ -1,14 +1,16 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/import/import_progress.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/import_stage_ui.dart';
 import '../theme/app_spacing.dart';
 import 'logo_loader.dart';
+import 'glass_dialog.dart';
 
 typedef ImportTalliesBuilder = String? Function(S l, ImportProgress progress);
 
-typedef ImportResultBuilder<T> = Widget? Function(BuildContext context, T result);
+typedef ImportResultBuilder<T> =
+    Widget? Function(BuildContext context, T result);
 
 /// Locked until the import future settles: a dismissed dialog would leave
 /// the write running with nothing on screen to report it.
@@ -63,7 +65,7 @@ class _ImportProgressDialogState<T> extends State<ImportProgressDialog<T>> {
             : null;
         return PopScope(
           canPop: done,
-          child: AlertDialog(
+          child: GlassAlertDialog(
             scrollable: true,
             title: Text(widget.title),
             content: Column(
@@ -75,15 +77,15 @@ class _ImportProgressDialogState<T> extends State<ImportProgressDialog<T>> {
                   builder:
                       (BuildContext context, ImportProgress? p, Widget? _) =>
                           p == null
-                              ? const SizedBox(
-                                  height: 100,
-                                  child: Center(child: LogoLoader()),
-                                )
-                              : _ProgressBody(
-                                  progress: p,
-                                  running: !done,
-                                  talliesBuilder: widget.talliesBuilder,
-                                ),
+                          ? const SizedBox(
+                              height: 100,
+                              child: Center(child: LogoLoader()),
+                            )
+                          : _ProgressBody(
+                              progress: p,
+                              running: !done,
+                              talliesBuilder: widget.talliesBuilder,
+                            ),
                 ),
                 if (resultView != null) ...<Widget>[
                   const SizedBox(height: AppSpacing.md),
@@ -155,7 +157,12 @@ class _ProgressBody extends StatelessWidget {
         ),
         if (crumb != null) ...<Widget>[
           const SizedBox(height: AppSpacing.xs),
-          Text(crumb, maxLines: 1, overflow: TextOverflow.ellipsis, style: muted),
+          Text(
+            crumb,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: muted,
+          ),
         ],
         const SizedBox(height: AppSpacing.md),
         LinearProgressIndicator(
@@ -179,7 +186,8 @@ class _ProgressBody extends StatelessWidget {
   String? _tallies(S l) {
     final ImportTalliesBuilder? custom = talliesBuilder;
     if (custom != null) return custom(l, progress);
-    final bool hasTallies = progress.imported > 0 ||
+    final bool hasTallies =
+        progress.imported > 0 ||
         progress.customCards > 0 ||
         progress.ambiguous > 0;
     if (!hasTallies) return null;

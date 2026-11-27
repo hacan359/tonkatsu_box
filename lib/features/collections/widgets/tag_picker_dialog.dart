@@ -1,5 +1,5 @@
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -8,6 +8,7 @@ import '../providers/global_tags_provider.dart';
 import '../providers/item_tags_provider.dart';
 import 'tag_row.dart';
 import 'tag_search_list.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// Multi-select picker over the global tag set; pops the chosen id set, or
 /// null when dismissed. Row edits ([TagRow]) are global and instant.
@@ -89,7 +90,7 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
     final S l = S.of(context);
     final Map<int, int> usage = ref.watch(tagUsageCountsProvider);
 
-    return AlertDialog(
+    return GlassAlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.md,
@@ -107,8 +108,7 @@ class _TagPickerDialogState extends ConsumerState<TagPickerDialog> {
         width: 400,
         child: TagSearchList(
           onCreate: _createTag,
-          onSubmitExisting: (Tag tag) =>
-              setState(() => _selected.add(tag.id)),
+          onSubmitExisting: (Tag tag) => setState(() => _selected.add(tag.id)),
           rowBuilder: (Tag tag, int index, bool reorderable) => TagRow(
             key: ValueKey<int>(tag.id),
             tag: tag,

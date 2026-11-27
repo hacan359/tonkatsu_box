@@ -1,6 +1,10 @@
 services:
   tonkatsu:
-    build: .
+    build:
+      context: .
+      # The Dockerfile builds on floating `stable` tags; without a pull the
+      # locally cached Flutter stays below pubspec's SDK floor forever.
+      pull: true
     image: tonkatsu-box:local
     ports:
       # TONKATSU_BIND=127.0.0.1 keeps the UI reachable from this host only.

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_typography.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 /// Pops the entered amount as total minutes (`int`) via `Navigator.pop`.
 class AddTimeDialog extends StatefulWidget {
@@ -27,10 +27,8 @@ class AddTimeDialog extends StatefulWidget {
   }) {
     return showDialog<int>(
       context: context,
-      builder: (BuildContext context) => AddTimeDialog(
-        initialMinutes: initialMinutes,
-        isEdit: isEdit,
-      ),
+      builder: (BuildContext context) =>
+          AddTimeDialog(initialMinutes: initialMinutes, isEdit: isEdit),
     );
   }
 
@@ -72,8 +70,7 @@ class _AddTimeDialogState extends State<AddTimeDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
+    return GlassAlertDialog(
       title: Text(
         widget.isEdit ? l.timeSpentEdit : l.timeSpentAdd,
         style: AppTypography.h2,

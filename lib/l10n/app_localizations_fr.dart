@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -100,6 +101,9 @@ class SFr extends S {
 
   @override
   String get statusListening => 'En écoute';
+
+  @override
+  String get statusReading => 'En lecture';
 
   @override
   String get statusInProgress => 'En cours';
@@ -661,6 +665,101 @@ class SFr extends S {
 
   @override
   String get settingsThemeEva => 'Eva Azur';
+
+  @override
+  String get settingsSkin => 'Style';
+
+  @override
+  String get settingsSkinSubtitle => 'Verre ou aspect classique';
+
+  @override
+  String get settingsSkinGlass => 'Verre';
+
+  @override
+  String get settingsSkinClassic => 'Classique';
+
+  @override
+  String get settingsCardLook => 'Style des cartes';
+
+  @override
+  String get settingsCardLookSubtitle =>
+      'Apparence des affiches dans les grilles';
+
+  @override
+  String get settingsCardLookClassic => 'Classique';
+
+  @override
+  String get settingsCardLookCurved => 'Verre incurvé';
+
+  @override
+  String get settingsCardLookSlab => 'Bloc';
+
+  @override
+  String get settingsCardLookJewel => 'Boîtier';
+
+  @override
+  String get settingsCardLookCinema => 'Cinéma';
+
+  @override
+  String get settingsCardLookShelf => 'Étagère';
+
+  @override
+  String get settingsCardLookTilt => 'Inclinaison';
+
+  @override
+  String get settingsCardLookKino => 'Volet au survol';
+
+  @override
+  String get settingsCardLookMinimal => 'Minimaliste';
+
+  @override
+  String get settingsCardLookRibbon => 'Ruban';
+
+  @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Fait passer le trafic de l\'app par un proxy HTTP local';
+
+  @override
+  String get settingsProxyHint =>
+      'Indiquez le port HTTP local ouvert par votre app VPN (le port mixte de Clash est en général 7890). Les adresses de votre réseau local se connectent toujours directement.';
+
+  @override
+  String get settingsProxyEnabled => 'Activer le proxy';
+
+  @override
+  String get settingsProxyHost => 'Hôte';
+
+  @override
+  String get settingsProxyPort => 'Port';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Saisissez un nom d\'hôte ou une adresse IP et un port de 1 à 65535';
+
+  @override
+  String get settingsWallpaper => 'Fond d\'écran';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Image derrière le cadre en verre';
+
+  @override
+  String get settingsWallpaperDefault => 'Par défaut';
+
+  @override
+  String get settingsWallpaperCustom => 'Votre image';
+
+  @override
+  String get settingsWallpaperChoose => 'Choisir une image…';
+
+  @override
+  String get settingsWallpaperReset => 'Réinitialiser';
+
+  @override
+  String get settingsWallpaperError =>
+      'Impossible d\'enregistrer le fond d\'écran';
 
   @override
   String get settingsAppLanguageSubtitle => 'Langue de l\'interface';
@@ -4769,6 +4868,21 @@ class SFr extends S {
   String get settingsIntegrations => 'Intégrations';
 
   @override
+  String get settingsTabProfile => 'Profil';
+
+  @override
+  String get settingsTabData => 'Données';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Thème et langue';
+
+  @override
+  String get settingsAppearanceLibrary => 'Bibliothèque';
+
+  @override
+  String get settingsAppearanceScale => 'Échelle';
+
+  @override
   String get settingsKodiSubtitle =>
       'Synchronisation vidéo depuis le lecteur média Kodi';
 
@@ -6343,4 +6457,31 @@ class SFr extends S {
   String collectionImportSynced(String source, int count) {
     return '$source synchronisé : $count nouveaux';
   }
+
+  @override
+  String get completeEpisodesTitle => 'Tous les épisodes ne sont pas vus';
+
+  @override
+  String get completeEpisodesBody =>
+      'Certains épisodes ne sont pas marqués comme vus. Que faire d\'eux ?';
+
+  @override
+  String get completeEpisodesMarkRest =>
+      'Marquer le reste comme vu aujourd\'hui';
+
+  @override
+  String get completeEpisodesKeep => 'Terminer sans marquer';
+
+  @override
+  String get clearEpisodesTitle => 'Retirer les marques d\'épisodes ?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Des épisodes sont marqués comme vus. Leurs dates comptent dans vos statistiques.';
+
+  @override
+  String get clearEpisodesRemove => 'Retirer les marques';
+
+  @override
+  String get clearEpisodesKeep => 'Garder les marques';
 }

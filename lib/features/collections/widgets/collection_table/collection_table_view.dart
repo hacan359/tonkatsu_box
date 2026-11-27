@@ -4,16 +4,16 @@ import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart' show ShadTheme, ShadThemeData;
 import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../settings/providers/profile_provider.dart';
 import '../../../settings/providers/settings_provider.dart';
+import 'legacy_grid_scope.dart';
 import 'table_columns.dart';
 import 'table_fields.dart';
 import 'table_filter.dart';
@@ -159,19 +159,7 @@ class _CollectionTableViewState extends ConsumerState<CollectionTableView> {
     // recreate the grid; ShadTheme is required by trina's shadcn filter popups.
     final Widget grid = ShadTheme(
       data: ShadThemeData(brightness: Brightness.dark),
-      // Grid-scoped checkbox theme: rounds the otherwise-square Material
-      // checkbox trina renders and gives it a soft unselected border.
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          checkboxTheme: CheckboxThemeData(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-            ),
-            side: BorderSide(color: AppColors.textTertiary, width: 1.5),
-            visualDensity: VisualDensity.compact,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ),
+      child: LegacyGridScope(
         child: TrinaGrid(
           key: ValueKey<String>(
             'collection_table_${isReorderable}_'

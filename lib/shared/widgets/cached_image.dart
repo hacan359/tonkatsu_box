@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:core/api/image_proxy.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/selfhost/server_origin.dart';

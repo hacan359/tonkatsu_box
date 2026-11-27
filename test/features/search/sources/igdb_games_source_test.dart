@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/filters/igdb_game_mode_filter.dart';
 import 'package:tonkatsu_box/features/search/filters/igdb_genre_filter.dart';

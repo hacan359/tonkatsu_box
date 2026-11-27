@@ -1,5 +1,5 @@
 import 'package:core/models/canvas_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/utils/url_launch.dart';
 

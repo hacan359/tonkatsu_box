@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/app_binding.dart';
@@ -11,12 +11,17 @@ import 'features/settings/providers/kodi_settings_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'features/splash/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
+import 'shared/constants/localization_delegates.dart';
 import 'shared/gamepad/gamepad_provider.dart';
 import 'shared/theme/app_colors.dart';
+import 'shared/theme/app_surface.dart';
 import 'shared/theme/app_theme.dart';
 import 'shared/constants/platform_features.dart';
+import 'shared/theme/app_skin_id.dart';
 import 'shared/theme/app_theme_id.dart';
+import 'shared/widgets/legacy_material_bridge.dart';
 import 'shared/widgets/ui_scale_scope.dart';
+import 'shared/widgets/poster_look.dart';
 
 /// Root app widget. A top-level [Listener] watches mouse movement to switch
 /// [InputMode] (gamepad ↔ mouse).
@@ -72,9 +77,16 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
     final AppThemeId themeId = ref.watch(
       settingsNotifierProvider.select((SettingsState s) => s.appTheme),
     );
-    // AppColors getters read a static palette, so it must be swapped before
+    final AppSkinId skinId = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.appSkin),
+    );
+    final PosterLook posterLook = ref.watch(
+      settingsNotifierProvider.select((SettingsState s) => s.posterLook),
+    );
+    // AppColors and AppSurface read statics, so both must be swapped before
     // the subtree builds; the ValueKey below remounts everything on switch.
     AppColors.palette = themeId.palette;
+    AppSurface.skin = skinId.skin;
     final ThemeData theme = AppTheme.build(themeId.palette);
 
     // Kodi sync provider is lazy — a read is required to start it.
@@ -85,13 +97,13 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
         ref.read(inputModeProvider.notifier).setMouseMode();
       },
       child: MaterialApp(
-        key: ValueKey<AppThemeId>(themeId),
+        key: ValueKey<String>('${themeId.id}-${skinId.id}'),
         title: 'Tonkatsu Box',
         debugShowCheckedModeBanner: false,
         theme: theme,
         locale: Locale(appLanguage),
         supportedLocales: S.supportedLocales,
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         // The tiled background is applied via PageTransitionsTheme
         // (each route gets its own opaque DecoratedBox).
         home: const SplashScreen(),
@@ -102,8 +114,15 @@ class _TonkatsuBoxAppState extends ConsumerState<TonkatsuBoxApp> {
             valueListenable: startupError,
             builder: (BuildContext context, StartupErrorInfo? info, _) {
               if (info == null) {
-                return UiScaleScope(
-                  child: _TextScaleScope(child: child ?? const SizedBox.shrink()),
+                return LegacyMaterialBridge(
+                  child: PosterLookScope(
+                    look: posterLook,
+                    child: UiScaleScope(
+                      child: _TextScaleScope(
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
                 );
               }
               return StartupErrorView(info: info);

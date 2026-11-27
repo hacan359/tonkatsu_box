@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/glass_panel.dart';
 import '../../../shared/theme/app_durations.dart';
 
 /// Receives the current dim animation, usable in an [AnimatedBuilder] for
 /// hover effects.
-typedef CollectionCardContentBuilder = Widget Function(
-  BuildContext context,
-  Animation<double> dimAnimation,
-);
+typedef CollectionCardContentBuilder =
+    Widget Function(BuildContext context, Animation<double> dimAnimation);
 
 class CollectionCardShell extends StatefulWidget {
   const CollectionCardShell({
@@ -95,11 +94,11 @@ class _CollectionCardShellState extends State<CollectionCardShell>
       borderRadius: BorderRadius.circular(CollectionCardShell.radius),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          color: glassTileColor(),
           borderRadius: BorderRadius.circular(CollectionCardShell.radius),
           border: Border.all(
-            color: _hasFocus ? AppColors.brand : Colors.transparent,
-            width: 2,
+            color: _hasFocus ? AppColors.brand : glassTileBorderColor(),
+            width: _hasFocus ? 2 : 1,
           ),
         ),
         clipBehavior: Clip.antiAlias,

@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/theme/app_surface.dart';
 import 'package:tonkatsu_box/shared/widgets/draggable_fab.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_panel.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -26,6 +28,44 @@ Future<void> _pumpFab(
 
 void main() {
   group('DraggableFab', () {
+    group('buttons', () {
+      tearDown(() => AppSurface.skin = AppSkin.glass);
+
+      Future<void> pumpMain(WidgetTester tester, VoidCallback onTap) =>
+          _pumpFab(
+            tester,
+            mainAction: DraggableFabItem(
+              icon: Icons.add,
+              label: 'main',
+              onTap: onTap,
+            ),
+          );
+
+      testWidgets('should draw the buttons as glass and keep them tappable', (
+        WidgetTester tester,
+      ) async {
+        AppSurface.skin = AppSkin.glass;
+        int taps = 0;
+        await pumpMain(tester, () => taps++);
+
+        expect(find.byType(GlassPanel), findsOneWidget);
+        await tester.tap(find.byIcon(Icons.add));
+        expect(taps, 1);
+      });
+
+      testWidgets('should keep plain discs on a skin without glass', (
+        WidgetTester tester,
+      ) async {
+        AppSurface.skin = AppSkin.classic;
+        int taps = 0;
+        await pumpMain(tester, () => taps++);
+
+        expect(find.byType(GlassPanel), findsNothing);
+        await tester.tap(find.byIcon(Icons.add));
+        expect(taps, 1);
+      });
+    });
+
     group('sideActions', () {
       testWidgets('should fire the side and main callbacks separately',
           (WidgetTester tester) async {

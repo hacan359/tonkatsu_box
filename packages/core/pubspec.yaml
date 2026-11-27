@@ -6,7 +6,7 @@ publish_to: 'none'
 version: 0.0.1
 
 environment:
-  sdk: ^3.10.8
+  sdk: ^3.14.0
 
 dependencies:
   # Podcast Index request signature, shared by the app and the server proxy.

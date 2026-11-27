@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'fractional_star_rating.dart';
+import '../utils/menu_position.dart';
 
 /// Opens the star picker right under [anchor]. [onCommit] fires once, on OK
 /// or on dismiss, and only when the value changed.
@@ -13,7 +14,7 @@ void showRatingPopup(
   required ValueChanged<double?> onCommit,
 }) {
   final RenderBox box = anchor.findRenderObject()! as RenderBox;
-  final Offset offset = box.localToGlobal(Offset.zero);
+  final Offset offset = toMenuSpace(anchor, box.localToGlobal(Offset.zero));
   final Size size = box.size;
 
   showMenu<void>(

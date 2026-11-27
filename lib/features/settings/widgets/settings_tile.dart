@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../shared/constants/platform_features.dart';
@@ -121,7 +121,7 @@ class SettingsTile extends StatelessWidget {
                       subtitle!,
                       style: AppTypography.bodySmall.copyWith(
                         fontSize: subtitleSize,
-                        color: AppColors.textTertiary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                 ],
@@ -134,7 +134,7 @@ class SettingsTile extends StatelessWidget {
                   value!,
                   style: AppTypography.body.copyWith(
                     fontSize: valueSize,
-                    color: valueColor ?? AppColors.textTertiary,
+                    color: valueColor ?? AppColors.textSecondary,
                     fontWeight:
                         valueColor != null ? FontWeight.w600 : FontWeight.w400,
                   ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -9,6 +9,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/focusable_surface.dart';
 import '../models/search_source.dart';
 import '../utils/filter_ui.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 
 class FilterDropdown extends ConsumerStatefulWidget {
   const FilterDropdown({
@@ -64,8 +66,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
 
     try {
       final S l = S.of(context);
-      final List<FilterOption> options =
-          await widget.filter.options(ref, l);
+      final List<FilterOption> options = await widget.filter.options(ref, l);
       if (_loadGeneration != gen || !mounted) return;
       setState(() {
         _options = options;
@@ -105,7 +106,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
     final S l = S.of(context);
     final bool isActive = widget.filter.multiSelect
         ? widget.value is List<Object> &&
-            (widget.value! as List<Object>).isNotEmpty
+              (widget.value! as List<Object>).isNotEmpty
         : widget.value != null;
     final String label = _getSelectedLabel(l);
 
@@ -125,20 +126,15 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
             Text(
               label,
               style: AppTypography.body.copyWith(
-                color: isActive
-                    ? AppColors.brand
-                    : AppColors.textTertiary,
-                fontWeight:
-                    isActive ? FontWeight.w600 : FontWeight.normal,
+                color: isActive ? AppColors.brand : AppColors.textTertiary,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
             const SizedBox(width: 4),
             Icon(
               Icons.keyboard_arrow_down,
               size: 16,
-              color: isActive
-                  ? AppColors.brand
-                  : AppColors.textTertiary,
+              color: isActive ? AppColors.brand : AppColors.textTertiary,
             ),
           ],
         ),
@@ -154,65 +150,42 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
       );
     }
 
-    final Widget button = PopupMenuButton<Object>(
+    final Widget button = GlassPopupMenuButton<Object>(
       onSelected: (Object value) {
         widget.onChanged(value == kFilterResetSentinel ? null : value);
       },
       offset: const Offset(0, 36),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      color: AppColors.surface,
       constraints: const BoxConstraints(maxHeight: 400),
-      itemBuilder: (BuildContext context) {
+      rows: (BuildContext _) {
         if (_options == null || _isLoadingOptions) {
-          return <PopupMenuEntry<Object>>[
-            const PopupMenuItem<Object>(
-              enabled: false,
-              child: SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+          return <Widget>[
+            const Padding(
+              padding: EdgeInsets.all(AppSpacing.sm),
+              child: Center(
+                child: SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
               ),
             ),
           ];
         }
-
-        return <PopupMenuEntry<Object>>[
+        return <Widget>[
           // The reset option uses a sentinel: a null value would never
           // reach onSelected.
-          PopupMenuItem<Object>(
+          GlassMenuRow<Object>(
             value: kFilterResetSentinel,
-            height: 36,
-            child: Text(
-              l.all,
-              style: AppTypography.body.copyWith(
-                color: widget.value == null
-                    ? AppColors.brand
-                    : AppColors.textSecondary,
-                fontWeight: widget.value == null
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-              ),
-            ),
+            label: l.all,
+            checked: widget.value == null,
           ),
-          const PopupMenuDivider(height: 1),
+          const GlassMenuDivider(),
           for (final FilterOption option in _options!)
             if (option.value != null)
-              PopupMenuItem<Object>(
+              GlassMenuRow<Object>(
                 value: option.value,
-                height: 36,
-                child: Text(
-                  option.label,
-                  style: AppTypography.body.copyWith(
-                    color: option.value == widget.value
-                        ? AppColors.brand
-                        : AppColors.textPrimary,
-                    fontWeight: option.value == widget.value
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                ),
+                label: option.label,
+                checked: option.value == widget.value,
               ),
         ];
       },
@@ -264,8 +237,7 @@ class SearchableFilterDialog extends StatefulWidget {
   final bool showAllOption;
 
   @override
-  State<SearchableFilterDialog> createState() =>
-      SearchableFilterDialogState();
+  State<SearchableFilterDialog> createState() => SearchableFilterDialogState();
 }
 
 class SearchableFilterDialogState extends State<SearchableFilterDialog> {
@@ -326,11 +298,8 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return AlertDialog(
-      title: Text(
-        widget.title,
-        style: AppTypography.h3,
-      ),
+    return GlassAlertDialog(
+      title: Text(widget.title, style: AppTypography.h3),
       contentPadding: const EdgeInsets.only(
         top: AppSpacing.sm,
         bottom: AppSpacing.xs,
@@ -341,9 +310,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
         child: Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: SizedBox(
                 height: 36,
                 child: TextField(
@@ -388,18 +355,15 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
                       vertical: AppSpacing.xs,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -410,9 +374,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            Expanded(
-              child: _buildList(),
-            ),
+            Expanded(child: _buildList()),
           ],
         ),
       ),
@@ -449,9 +411,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
 
   Widget _buildList() {
     if (widget.isLoading || widget.options == null) {
-      return const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
 
     final List<FilterOption> filtered = _filteredOptions;
@@ -459,8 +419,7 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
     // Single-select with no query shows an extra "All" row at the top.
     final bool showAll =
         !widget.multiSelect && _query.isEmpty && widget.showAllOption;
-    final int itemCount =
-        showAll ? filtered.length + 1 : filtered.length;
+    final int itemCount = showAll ? filtered.length + 1 : filtered.length;
 
     return ListView.builder(
       padding: EdgeInsets.zero,
@@ -556,11 +515,8 @@ class SearchableFilterDialogState extends State<SearchableFilterDialog> {
               child: Text(
                 label,
                 style: AppTypography.body.copyWith(
-                  color: isSelected
-                      ? AppColors.brand
-                      : AppColors.textPrimary,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected ? AppColors.brand : AppColors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ),
@@ -639,39 +595,23 @@ class SortDropdown extends StatelessWidget {
 
     if (!enabled) {
       return FocusableSurface(
-        child: Tooltip(
-          message: l.browseSortDisabledHint,
-          child: content,
-        ),
+        child: Tooltip(message: l.browseSortDisabledHint, child: content),
       );
     }
 
-    final Widget button = PopupMenuButton<String>(
+    final Widget button = GlassPopupMenuButton<String>(
       onSelected: onChanged,
       offset: const Offset(0, 36),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      color: AppColors.surface,
-      itemBuilder: (BuildContext context) {
-        final S menuL = S.of(context);
-        return options.map((BrowseSortOption option) {
-          final bool isSelected = option.apiValue == current;
-          return PopupMenuItem<String>(
-            value: option.apiValue,
-            height: 36,
-            child: Text(
-              option.label(menuL),
-              style: AppTypography.body.copyWith(
-                color: isSelected
-                    ? AppColors.brand
-                    : AppColors.textPrimary,
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
+      rows: (BuildContext ctx) {
+        final S menuL = S.of(ctx);
+        return <Widget>[
+          for (final BrowseSortOption option in options)
+            GlassMenuRow<String>(
+              value: option.apiValue,
+              label: option.label(menuL),
+              checked: option.apiValue == current,
             ),
-          );
-        }).toList();
+        ];
       },
       child: content,
     );

@@ -1,12 +1,13 @@
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/constants/platform_ui.dart';
+import '../../../shared/widgets/image_placeholder.dart';
 
 const double kTierItemWidth = 90;
 const double kTierItemImageHeight = 120;
@@ -49,15 +50,9 @@ class TierItemCard extends StatelessWidget {
 
     final Widget feedback = Material(
       color: Colors.transparent,
-      child: Opacity(
-        opacity: 0.7,
-        child: _buildCard(displayName),
-      ),
+      child: Opacity(opacity: 0.7, child: _buildCard(displayName)),
     );
-    final Widget childWhenDragging = Opacity(
-      opacity: 0.3,
-      child: card,
-    );
+    final Widget childWhenDragging = Opacity(opacity: 0.3, child: card);
 
     // Tap-drag conflicts with scrolling on mobile — require long-press there.
     if (kIsMobile) {
@@ -129,7 +124,9 @@ class TierItemCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: item.platform!.familyColor.withAlpha(210),
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radiusXs,
+                            ),
                           ),
                           child: Text(
                             item.platform!.displayName,
@@ -156,10 +153,7 @@ class TierItemCard extends StatelessWidget {
                     bottomRight: Radius.circular(AppSpacing.radiusXs),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 2,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                 alignment: Alignment.center,
                 child: Text(
                   displayName,
@@ -183,17 +177,9 @@ class TierItemCard extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
-    return Container(
-      width: width,
-      height: height,
-      color: AppColors.surfaceLight,
-      child: Center(
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          color: AppColors.textTertiary,
-          size: 24,
-        ),
-      ),
+    return const ImagePlaceholder(
+      icon: Icons.image_not_supported_outlined,
+      iconSize: 24,
     );
   }
 }

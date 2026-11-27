@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../content/database_content.dart';
 
 class DatabaseScreen extends StatelessWidget {
@@ -13,27 +14,26 @@ class DatabaseScreen extends StatelessWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return Column(
-      children: <Widget>[
-        SubScreenTitleBar(title: S.of(context).databaseTitle),
-        Expanded(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isWide ? 600 : double.infinity,
-              ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                  vertical: AppSpacing.sm,
+    return FramePage(
+      title: S.of(context).databaseTitle,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) =>
+                SingleChildScrollView(
+                  padding:
+                      EdgeInsets.symmetric(
+                        horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ) +
+                      bars,
+                  child: const DatabaseContent(),
                 ),
-                child: const DatabaseContent(),
-              ),
-            ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

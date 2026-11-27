@@ -2,13 +2,14 @@ import 'package:core/database/dao/wishlist_dao.dart';
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
 import 'package:core/models/wishlist_tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -33,14 +34,16 @@ class WishlistScreen extends ConsumerStatefulWidget {
   const WishlistScreen({super.key});
 
   static ShortcutGroup shortcutGroup(S l) => ShortcutGroup(
-        title: l.navWishlist,
-        entries: <ShortcutEntry>[
-          ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItem),
-          ShortcutEntry(keys: 'Ctrl+H', description: l.shortcutToggleCompleted),
-          ShortcutEntry(
-              keys: 'Ctrl+Shift+D', description: l.shortcutClearCompleted),
-        ],
-      );
+    title: l.navWishlist,
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: l.shortcutAddItem),
+      ShortcutEntry(keys: 'Ctrl+H', description: l.shortcutToggleCompleted),
+      ShortcutEntry(
+        keys: 'Ctrl+Shift+D',
+        description: l.shortcutClearCompleted,
+      ),
+    ],
+  );
 
   @override
   ConsumerState<WishlistScreen> createState() => _WishlistScreenState();
@@ -52,8 +55,9 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<WishlistItem>> itemsAsync =
-        ref.watch(wishlistProvider);
+    final AsyncValue<List<WishlistItem>> itemsAsync = ref.watch(
+      wishlistProvider,
+    );
     final String searchQuery = ref.watch(wishlistSearchQueryProvider);
     final List<WishlistTagCount> tags = ref.watch(wishlistTagsProvider);
 
@@ -75,8 +79,8 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
               // doesn't flicker as tags appear and disappear during edits.
               final bool showHeader = items.isNotEmpty;
 
-              return Column(
-                children: <Widget>[
+              return FrameStrip(
+                strip: <Widget>[
                   if (showHeader)
                     WishlistTagHeader(
                       tags: tags,
@@ -90,26 +94,26 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                       onBulkAction: (WishlistBulkAction a) =>
                           _runBulkAction(a, filtered),
                     ),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? _buildEmptyState(context)
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(bottom: 80),
-                            itemCount: filtered.length,
-                            itemBuilder:
-                                (BuildContext context, int index) {
-                              final WishlistItem item = filtered[index];
-                              return WishlistTile(
-                                item: item,
-                                onTap: () => _searchForItem(item),
-                                onResolve: () => _toggleResolved(item),
-                                onEdit: () => _editItem(context, item),
-                                onDelete: () => _deleteItem(context, item),
-                              );
-                            },
-                          ),
-                  ),
                 ],
+                child: filtered.isEmpty
+                    ? _buildEmptyState(context)
+                    : FrameBleed(
+                        builder: (BuildContext context, EdgeInsets bars) =>
+                            ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 80) + bars,
+                              itemCount: filtered.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final WishlistItem item = filtered[index];
+                                return WishlistTile(
+                                  item: item,
+                                  onTap: () => _searchForItem(item),
+                                  onResolve: () => _toggleResolved(item),
+                                  onEdit: () => _editItem(context, item),
+                                  onDelete: () => _deleteItem(context, item),
+                                );
+                              },
+                            ),
+                      ),
               );
             },
           ),
@@ -136,8 +140,9 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     if (tagFilter is WishlistTagFilterUntagged) {
       filtered = filtered.where((WishlistItem item) => item.tag == null);
     } else if (tagFilter is WishlistTagFilterNamed) {
-      filtered =
-          filtered.where((WishlistItem item) => item.tag == tagFilter.tag);
+      filtered = filtered.where(
+        (WishlistItem item) => item.tag == tagFilter.tag,
+      );
     }
 
     if (searchQuery.isNotEmpty) {
@@ -166,9 +171,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     return <DraggableFabItem>[
       DraggableFabItem(
         icon: _showResolved ? Icons.visibility_off : Icons.visibility,
-        label: _showResolved
-            ? l.wishlistHideResolved
-            : l.wishlistShowResolved,
+        label: _showResolved ? l.wishlistHideResolved : l.wishlistShowResolved,
         onTap: () => setState(() => _showResolved = !_showResolved),
       ),
       DraggableFabItem(
@@ -183,12 +186,16 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts() {
     if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
     return <ShortcutActivator, VoidCallback>{
-      const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-          () => _addItem(context),
-      const SingleActivator(LogicalKeyboardKey.keyH, control: true):
-          () => setState(() => _showResolved = !_showResolved),
-      const SingleActivator(LogicalKeyboardKey.keyD, control: true, shift: true):
-          () => _confirmClearResolved(context),
+      const SingleActivator(LogicalKeyboardKey.keyN, control: true): () =>
+          _addItem(context),
+      const SingleActivator(LogicalKeyboardKey.keyH, control: true): () =>
+          setState(() => _showResolved = !_showResolved),
+      const SingleActivator(
+        LogicalKeyboardKey.keyD,
+        control: true,
+        shift: true,
+      ): () =>
+          _confirmClearResolved(context),
     };
   }
 
@@ -206,17 +213,13 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
           const SizedBox(height: AppSpacing.md),
           Text(
             l.wishlistEmpty,
-            style: AppTypography.h2.copyWith(
-              color: AppColors.textTertiary,
-            ),
+            style: AppTypography.h2.copyWith(color: AppColors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             l.wishlistEmptyHint,
             textAlign: TextAlign.center,
-            style: AppTypography.body.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -226,7 +229,9 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   Future<void> _addItem(BuildContext context) async {
     final WishlistDialogResult? result = await AddWishlistForm.show(context);
     if (result == null || !mounted) return;
-    await ref.read(wishlistProvider.notifier).add(
+    await ref
+        .read(wishlistProvider.notifier)
+        .add(
           text: result.text,
           mediaTypeHint: result.mediaTypeHint,
           note: result.note,
@@ -240,7 +245,9 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       existing: item,
     );
     if (result == null || !mounted) return;
-    await ref.read(wishlistProvider.notifier).updateItem(
+    await ref
+        .read(wishlistProvider.notifier)
+        .updateItem(
           item.id,
           text: result.text,
           mediaTypeHint: result.mediaTypeHint,
@@ -261,8 +268,10 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _deleteItem(BuildContext context, WishlistItem item) async {
-    final bool confirmed =
-        await WishlistDialogs.confirmDeleteItem(context, item.text);
+    final bool confirmed = await WishlistDialogs.confirmDeleteItem(
+      context,
+      item.text,
+    );
     if (!confirmed || !mounted) return;
     await ref.read(wishlistProvider.notifier).delete(item.id);
   }
@@ -285,23 +294,29 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
     switch (action) {
       case WishlistBulkAction.applyTag:
-        final String? tag =
-            await WishlistDialogs.promptBulkTag(context, ids.length);
+        final String? tag = await WishlistDialogs.promptBulkTag(
+          context,
+          ids.length,
+        );
         if (tag == null || !mounted) return;
         await ref.read(wishlistProvider.notifier).applyTagToIds(ids, tag);
       case WishlistBulkAction.removeTag:
         await ref.read(wishlistProvider.notifier).applyTagToIds(ids, null);
       case WishlistBulkAction.delete:
-        final bool confirmed =
-            await WishlistDialogs.confirmBulkDelete(context, ids.length);
+        final bool confirmed = await WishlistDialogs.confirmBulkDelete(
+          context,
+          ids.length,
+        );
         if (!confirmed || !mounted) return;
         await ref.read(wishlistProvider.notifier).deleteIds(ids);
     }
   }
 
   Future<void> _handleRenameTag(String? currentTag) async {
-    final String? newTag =
-        await WishlistDialogs.promptRenameTag(context, currentTag);
+    final String? newTag = await WishlistDialogs.promptRenameTag(
+      context,
+      currentTag,
+    );
     if (newTag == null || !mounted) return;
     await ref.read(wishlistProvider.notifier).renameTag(currentTag, newTag);
     if (mounted) {
@@ -310,8 +325,11 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _handleDeleteTag(String? tag, int itemCount) async {
-    final bool confirmed =
-        await WishlistDialogs.confirmDeleteTag(context, tag, itemCount);
+    final bool confirmed = await WishlistDialogs.confirmDeleteTag(
+      context,
+      tag,
+      itemCount,
+    );
     if (!confirmed || !mounted) return;
     await ref.read(wishlistProvider.notifier).deleteByTag(tag);
     if (mounted) {
@@ -320,7 +338,8 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _confirmClearResolved(BuildContext context) async {
-    final int resolvedCount = ref
+    final int resolvedCount =
+        ref
             .read(wishlistProvider)
             .valueOrNull
             ?.where((WishlistItem item) => item.isResolved)
@@ -328,8 +347,10 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
         0;
     if (resolvedCount == 0) return;
 
-    final bool confirmed =
-        await WishlistDialogs.confirmClearResolved(context, resolvedCount);
+    final bool confirmed = await WishlistDialogs.confirmClearResolved(
+      context,
+      resolvedCount,
+    );
     if (!confirmed || !mounted) return;
     await ref.read(wishlistProvider.notifier).clearResolved();
   }

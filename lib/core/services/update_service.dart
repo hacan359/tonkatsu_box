@@ -26,14 +26,12 @@ class UpdateInfo {
 
 /// Checks for updates via the GitHub Releases API.
 class UpdateService {
-  /// [currentVersionOverride] replaces `PackageInfo.fromPlatform()` in tests.
+  /// [_currentVersionOverride] replaces `PackageInfo.fromPlatform()` in tests.
   UpdateService({
-    required SharedPreferences prefs,
-    required Dio dio,
-    String? currentVersionOverride,
-  })  : _prefs = prefs,
-        _dio = dio,
-        _currentVersionOverride = currentVersionOverride;
+    required this._prefs,
+    required this._dio,
+    this._currentVersionOverride,
+  });
 
   // ignore: unused_field
   static final Logger _log = Logger('UpdateService');

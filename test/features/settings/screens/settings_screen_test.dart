@@ -1,5 +1,5 @@
 import 'package:core/models/profile.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +11,10 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/features/settings/screens/settings_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_tile.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
+import 'package:tonkatsu_box/shared/navigation/search_providers.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_tab_bar.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_dialog.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -22,9 +26,14 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  Widget createWidget({double width = 400, double height = 2000}) {
+  Widget createWidget({
+    double width = 400,
+    double height = 2000,
+    String searchQuery = '',
+  }) {
     return ProviderScope(
       overrides: <Override>[
+        settingsSearchQueryProvider.overrideWith((Ref ref) => searchQuery),
         sharedPreferencesProvider.overrideWithValue(prefs),
         apiKeysProvider.overrideWithValue(const ApiKeys()),
         profilesDataProvider.overrideWith(
@@ -34,7 +43,7 @@ void main() {
         raApiProvider.overrideWithValue(MockRaApi()),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(size: Size(width, height)),
@@ -44,10 +53,17 @@ void main() {
     );
   }
 
+  final Finder tabBar = find.byWidgetPredicate(
+    (Widget w) => w is GlassTabBar<Object?>,
+  );
+
   Future<Finder> scrollTo(WidgetTester tester, String text) async {
     final Finder finder = find.text(text);
-    await tester.scrollUntilVisible(finder, 200,
-        scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     return finder;
   }
@@ -61,28 +77,87 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('wide layout constrains content width',
-          (WidgetTester tester) async {
+      testWidgets('wide layout constrains content width', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget(width: 1200));
         await tester.pumpAndSettle();
 
         final Finder boxes = find.byType(ConstrainedBox);
         bool found600 = false;
         for (int i = 0; i < boxes.evaluate().length; i++) {
-          final ConstrainedBox box =
-              tester.widget<ConstrainedBox>(boxes.at(i));
-          if (box.constraints.maxWidth == 600) {
+          final ConstrainedBox box = tester.widget<ConstrainedBox>(boxes.at(i));
+          if (box.constraints.maxWidth == 720) {
             found600 = true;
             break;
           }
         }
         expect(found600, isTrue);
       });
+
+      testWidgets('narrow layout has no tab bar and lists every group', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(tabBar, findsNothing);
+        expect(find.text('Backup All Data'), findsOneWidget);
+        await scrollTo(tester, 'API Keys');
+        expect(find.text('API Keys'), findsOneWidget);
+      });
+
+      testWidgets('wide layout shows only the selected tab', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(createWidget(width: 1200));
+        await tester.pumpAndSettle();
+
+        expect(tabBar, findsOneWidget);
+        expect(find.text('Author name'), findsOneWidget);
+        expect(find.text('Backup All Data'), findsNothing);
+
+        await tester.tap(find.text('Data'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Backup All Data'), findsOneWidget);
+        expect(find.text('Author name'), findsNothing);
+      });
+
+      testWidgets('wide layout splits Appearance into sub-groups', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(createWidget(width: 1200));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Appearance'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('THEME & LANGUAGE'), findsOneWidget);
+        expect(find.text('Theme'), findsOneWidget);
+        await scrollTo(tester, 'SCALE');
+        expect(find.text('LIBRARY'), findsOneWidget);
+        expect(find.text('SCALE'), findsOneWidget);
+      });
+
+      testWidgets('search on a wide layout spans every tab', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createWidget(width: 1200, searchQuery: 'backup'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tabBar, findsNothing);
+        expect(find.text('Backup All Data'), findsOneWidget);
+        expect(find.text('Author name'), findsNothing);
+      });
     });
 
     group('Appearance section', () {
-      testWidgets('tapping App Language opens picker dialog',
-          (WidgetTester tester) async {
+      testWidgets('tapping App Language opens picker dialog', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -96,11 +171,12 @@ void main() {
         await tester.tap(find.text('App Language'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        expect(find.byType(SimpleDialog), findsOneWidget);
+        expect(find.byType(GlassDialog), findsOneWidget);
       });
 
-      testWidgets('picking a language in the dialog saves it to prefs',
-          (WidgetTester tester) async {
+      testWidgets('picking a language in the dialog saves it to prefs', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -118,11 +194,12 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(prefs.getString(SettingsKeys.appLanguage), 'es');
-        expect(find.byType(SimpleDialog), findsNothing);
+        expect(find.byType(GlassDialog), findsNothing);
       });
 
-      testWidgets('tapping Content Language opens picker dialog',
-          (WidgetTester tester) async {
+      testWidgets('tapping Content Language opens picker dialog', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -136,13 +213,14 @@ void main() {
         await tester.tap(find.text('Content Language'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
-        expect(find.byType(SimpleDialog), findsOneWidget);
+        expect(find.byType(GlassDialog), findsOneWidget);
       });
     });
 
     group('Profile section', () {
-      testWidgets('shows custom author name from SharedPreferences',
-          (WidgetTester tester) async {
+      testWidgets('shows custom author name from SharedPreferences', (
+        WidgetTester tester,
+      ) async {
         await prefs.setString(SettingsKeys.defaultAuthor, 'Hacan');
 
         await tester.pumpWidget(createWidget());
@@ -153,8 +231,9 @@ void main() {
     });
 
     group('Navigation', () {
-      testWidgets('Database tile navigates without crash',
-          (WidgetTester tester) async {
+      testWidgets('Database tile navigates without crash', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -169,8 +248,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Trakt Import tile navigates without crash',
-          (WidgetTester tester) async {
+      testWidgets('Trakt Import tile navigates without crash', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -187,8 +267,9 @@ void main() {
     });
 
     group('Version', () {
-      testWidgets('shows version placeholder before PackageInfo loads',
-          (WidgetTester tester) async {
+      testWidgets('shows version placeholder before PackageInfo loads', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
@@ -198,26 +279,27 @@ void main() {
     });
 
     group('Data Sources section', () {
-      testWidgets('API Keys value counts every configured source out of total',
-          (WidgetTester tester) async {
-        // 6 of 9 sources set — the Podcast Index pair counts as one source
-        // and only counts when both halves are present.
-        await prefs.setString(SettingsKeys.clientId, 'cid');
-        await prefs.setString(SettingsKeys.clientSecret, 'secret');
-        await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb');
-        await prefs.setString(SettingsKeys.comicVineApiKey, 'cv');
-        await prefs.setString(SettingsKeys.googleBooksApiKey, 'gb');
-        await prefs.setString(SettingsKeys.hardcoverApiKey, 'hc');
-        await prefs.setString(SettingsKeys.podcastIndexApiKey, 'pik');
-        await prefs.setString(SettingsKeys.podcastIndexApiSecret, 'pis');
+      testWidgets(
+        'API Keys value counts every configured source out of total',
+        (WidgetTester tester) async {
+          // 6 of 9 sources set — the Podcast Index pair counts as one source
+          // and only counts when both halves are present.
+          await prefs.setString(SettingsKeys.clientId, 'cid');
+          await prefs.setString(SettingsKeys.clientSecret, 'secret');
+          await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb');
+          await prefs.setString(SettingsKeys.comicVineApiKey, 'cv');
+          await prefs.setString(SettingsKeys.googleBooksApiKey, 'gb');
+          await prefs.setString(SettingsKeys.hardcoverApiKey, 'hc');
+          await prefs.setString(SettingsKeys.podcastIndexApiKey, 'pik');
+          await prefs.setString(SettingsKeys.podcastIndexApiSecret, 'pis');
 
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
+          await tester.pumpWidget(createWidget());
+          await tester.pumpAndSettle();
 
-        await scrollTo(tester, '6/9');
-        expect(find.text('6/9'), findsOneWidget);
-      });
+          await scrollTo(tester, '6/9');
+          expect(find.text('6/9'), findsOneWidget);
+        },
+      );
     });
   });
 }
-

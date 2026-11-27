@@ -1,6 +1,6 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/import_source_kind.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -11,6 +11,7 @@ import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart'
 import 'package:tonkatsu_box/features/settings/screens/trakt_import_screen.dart';
 import 'package:tonkatsu_box/features/settings/widgets/settings_group.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -46,7 +47,7 @@ void main() {
         settingsNotifierProvider.overrideWith(() => _FakeSettingsNotifier()),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(size: Size(width, height)),

@@ -1,5 +1,5 @@
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/genre_cloud/providers/genre_cloud_provider.dart';
@@ -18,7 +18,6 @@ import 'package:tonkatsu_box/features/showcase/providers/showcase_settings_provi
 import 'package:tonkatsu_box/features/showcase/screens/showcase_screen.dart';
 import 'package:tonkatsu_box/features/statistics/providers/statistics_provider.dart';
 import 'package:tonkatsu_box/features/statistics/screens/statistics_screen.dart';
-import 'package:tonkatsu_box/shared/widgets/sub_screen_title_bar.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -86,15 +85,10 @@ void main() {
       await tester.tap(cards().at(0));
       await tester.pumpAndSettle();
       expect(find.byType(StatisticsScreen), findsOneWidget);
-      expect(find.byType(SubScreenTitleBar), findsOneWidget);
+      expect(find.byTooltip('Back'), findsOneWidget);
       expect(key.currentState?.canPop(), isTrue);
 
-      await tester.tap(
-        find.descendant(
-          of: find.byType(SubScreenTitleBar),
-          matching: find.byType(IconButton),
-        ),
-      );
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.byType(StatisticsScreen), findsNothing);
       expect(find.byType(PersonalizationHubScreen), findsOneWidget);

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/filters/anilist_studio_filter.dart';
 import 'package:tonkatsu_box/features/search/filters/anilist_tag_filter.dart';

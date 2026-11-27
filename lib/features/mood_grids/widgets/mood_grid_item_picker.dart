@@ -1,10 +1,9 @@
 import 'package:core/models/collection.dart';
 import 'package:core/models/collection_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
@@ -12,6 +11,8 @@ import '../../../shared/widgets/collection_picker_field.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/extensions/item_display_name.dart';
 import '../providers/mood_grid_picker_session_provider.dart';
+import '../../../shared/widgets/glass_dialog.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// Result of [showMoodGridItemPicker].
 class MoodGridItemPickerResult {
@@ -22,10 +23,8 @@ class MoodGridItemPickerResult {
 
 /// Modal picker over all collection items with filter/search; null when
 /// cancelled. State and item cache live in [moodGridPickerSessionProvider].
-Future<MoodGridItemPickerResult?> showMoodGridItemPicker(
-  BuildContext context,
-) {
-  return showModalBottomSheet<MoodGridItemPickerResult>(
+Future<MoodGridItemPickerResult?> showMoodGridItemPicker(BuildContext context) {
+  return showGlassSheet<MoodGridItemPickerResult>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
@@ -53,8 +52,9 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
   @override
   void initState() {
     super.initState();
-    final MoodGridPickerSession session =
-        ref.read(moodGridPickerSessionProvider);
+    final MoodGridPickerSession session = ref.read(
+      moodGridPickerSessionProvider,
+    );
     _queryController = TextEditingController(text: session.query);
     _refreshItems();
   }
@@ -79,16 +79,20 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
     final S l = S.of(context);
     // A landed background refresh re-reads the cache without resetting the
     // scroll window; refresh: false breaks the reload→revision cycle.
-    ref.listen(moodGridPickerSessionProvider,
-        (MoodGridPickerSession? prev, MoodGridPickerSession next) {
+    ref.listen(moodGridPickerSessionProvider, (
+      MoodGridPickerSession? prev,
+      MoodGridPickerSession next,
+    ) {
       if (prev != null && prev.revision != next.revision) {
         _refreshItems(resetWindow: false, refresh: false);
       }
     });
-    final MoodGridPickerSession session =
-        ref.watch(moodGridPickerSessionProvider);
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.watch(collectionsProvider);
+    final MoodGridPickerSession session = ref.watch(
+      moodGridPickerSessionProvider,
+    );
+    final AsyncValue<List<Collection>> collectionsAsync = ref.watch(
+      collectionsProvider,
+    );
     final double maxHeight = MediaQuery.sizeOf(context).height * 0.8;
 
     return ConstrainedBox(
@@ -101,10 +105,7 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: Text(
-                    l.moodGridPickItem,
-                    style: AppTypography.h3,
-                  ),
+                  child: Text(l.moodGridPickItem, style: AppTypography.h3),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -127,8 +128,7 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
                   _refreshItems();
                 },
               ),
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => const SizedBox.shrink(),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -149,52 +149,55 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
             Expanded(
               child: FutureBuilder<List<CollectionItem>>(
                 future: _itemsFuture,
-                builder: (BuildContext ctx,
-                    AsyncSnapshot<List<CollectionItem>> snap) {
-                  if (snap.connectionState != ConnectionState.done) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final List<CollectionItem> items = _filterItems(
-                    snap.data ?? <CollectionItem>[],
-                    session.query.trim(),
-                  );
-                  if (items.isEmpty) {
-                    return Center(child: Text(l.moodGridPickerEmpty));
-                  }
-                  final int visible = _visibleCount < items.length
-                      ? _visibleCount
-                      : items.length;
-                  return NotificationListener<ScrollNotification>(
-                    onNotification: (ScrollNotification n) {
-                      if (n.metrics.extentAfter < 400 &&
-                          _visibleCount < items.length) {
-                        setState(() => _visibleCount += _pageSize);
+                builder:
+                    (
+                      BuildContext ctx,
+                      AsyncSnapshot<List<CollectionItem>> snap,
+                    ) {
+                      if (snap.connectionState != ConnectionState.done) {
+                        return const Center(child: CircularProgressIndicator());
                       }
-                      return false;
+                      final List<CollectionItem> items = _filterItems(
+                        snap.data ?? <CollectionItem>[],
+                        session.query.trim(),
+                      );
+                      if (items.isEmpty) {
+                        return Center(child: Text(l.moodGridPickerEmpty));
+                      }
+                      final int visible = _visibleCount < items.length
+                          ? _visibleCount
+                          : items.length;
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (ScrollNotification n) {
+                          if (n.metrics.extentAfter < 400 &&
+                              _visibleCount < items.length) {
+                            setState(() => _visibleCount += _pageSize);
+                          }
+                          return false;
+                        },
+                        child: GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 120,
+                                mainAxisSpacing: AppSpacing.sm,
+                                crossAxisSpacing: AppSpacing.sm,
+                                // 2:3 poster + two bodySmall lines: 0.62 left ~10px
+                                // for text and clipped it to half a line.
+                                childAspectRatio: 0.51,
+                              ),
+                          itemCount: visible,
+                          itemBuilder: (BuildContext c, int i) {
+                            final CollectionItem item = items[i];
+                            return _PickerItemCard(
+                              item: item,
+                              onTap: () => Navigator.of(
+                                context,
+                              ).pop(MoodGridItemPickerResult(item: item)),
+                            );
+                          },
+                        ),
+                      );
                     },
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 120,
-                        mainAxisSpacing: AppSpacing.sm,
-                        crossAxisSpacing: AppSpacing.sm,
-                        // 2:3 poster + two bodySmall lines: 0.62 left ~10px
-                        // for text and clipped it to half a line.
-                        childAspectRatio: 0.51,
-                      ),
-                      itemCount: visible,
-                      itemBuilder: (BuildContext c, int i) {
-                        final CollectionItem item = items[i];
-                        return _PickerItemCard(
-                          item: item,
-                          onTap: () => Navigator.of(context).pop(
-                            MoodGridItemPickerResult(item: item),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
               ),
             ),
           ],
@@ -207,8 +210,10 @@ class _MoodGridItemPickerState extends ConsumerState<_MoodGridItemPicker> {
     if (query.isEmpty) return all;
     final String lowered = query.toLowerCase();
     return all
-        .where((CollectionItem it) =>
-            ref.currentDisplayNameOf(it).toLowerCase().contains(lowered))
+        .where(
+          (CollectionItem it) =>
+              ref.currentDisplayNameOf(it).toLowerCase().contains(lowered),
+        )
         .toList();
   }
 }
@@ -232,7 +237,7 @@ class _PickerItemCard extends ConsumerWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               child: url == null
-                  ? Container(color: AppColors.surfaceLight)
+                  ? Container(color: glassTileColor())
                   : CachedImage(
                       imageType: item.imageType,
                       imageId: item.coverImageId,

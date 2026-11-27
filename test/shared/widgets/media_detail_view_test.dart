@@ -1,10 +1,16 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
+import 'package:tonkatsu_box/shared/theme/app_surface.dart';
+import 'package:tonkatsu_box/shared/widgets/copyable_text.dart';
+import 'package:tonkatsu_box/shared/widgets/glass_panel.dart';
+import 'package:tonkatsu_box/shared/widgets/media_detail/media_detail_backdrop.dart';
 import 'package:tonkatsu_box/shared/utils/stopped_at_progress.dart';
 import 'package:tonkatsu_box/shared/widgets/media_detail_view.dart';
 import 'package:tonkatsu_box/shared/widgets/mini_markdown_text.dart';
@@ -27,6 +33,7 @@ void main() {
     String title = 'Test Title',
     String? coverUrl,
     String? externalUrl,
+    String? backdropUrl,
     IconData placeholderIcon = Icons.videogame_asset,
     DataSource source = DataSource.igdb,
     IconData typeIcon = Icons.sports_esports,
@@ -60,45 +67,46 @@ void main() {
         settingsNotifierProvider.overrideWith(_DefaultSettingsNotifier.new),
       ],
       child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
-            supportedLocales: S.supportedLocales,
-      // The layout picks mobile or desktop from its own width.
-      home: Align(
-        alignment: Alignment.topCenter,
-        child: SizedBox(
-          width: width,
-          child: MediaDetailView(
-        statusListWidget: statusListWidget,
-        title: title,
-        coverUrl: coverUrl,
-        externalUrl: externalUrl,
-        placeholderIcon: placeholderIcon,
-        source: source,
-        typeIcon: typeIcon,
-        typeLabel: typeLabel,
-        infoChips: infoChips,
-        description: description,
-        statusWidget: statusWidget,
-        extraSections: extraSections,
-        authorComment: authorComment,
-        userComment: userComment,
-        hasAuthorComment: hasAuthorComment,
-        hasUserComment: hasUserComment,
-        isEditable: isEditable,
-        onAuthorCommentSave: onAuthorCommentSave ?? (_) {},
-        onUserCommentSave: onUserCommentSave ?? (_) {},
-        userRating: userRating,
-        onUserRatingChanged: onUserRatingChanged,
-        addedAt: addedAt,
-        startedAt: startedAt,
-        completedAt: completedAt,
-        lastActivityAt: lastActivityAt,
-        completionTime: completionTime,
-        onActivityDateChanged: onActivityDateChanged,
-        stoppedAt: stoppedAt,
+        localizationsDelegates: kAppLocalizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        // The layout picks mobile or desktop from its own width.
+        home: Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: width,
+            child: MediaDetailView(
+              statusListWidget: statusListWidget,
+              title: title,
+              coverUrl: coverUrl,
+              externalUrl: externalUrl,
+              backdropUrl: backdropUrl,
+              placeholderIcon: placeholderIcon,
+              source: source,
+              typeIcon: typeIcon,
+              typeLabel: typeLabel,
+              infoChips: infoChips,
+              description: description,
+              statusWidget: statusWidget,
+              extraSections: extraSections,
+              authorComment: authorComment,
+              userComment: userComment,
+              hasAuthorComment: hasAuthorComment,
+              hasUserComment: hasUserComment,
+              isEditable: isEditable,
+              onAuthorCommentSave: onAuthorCommentSave ?? (_) {},
+              onUserCommentSave: onUserCommentSave ?? (_) {},
+              userRating: userRating,
+              onUserRatingChanged: onUserRatingChanged,
+              addedAt: addedAt,
+              startedAt: startedAt,
+              completedAt: completedAt,
+              lastActivityAt: lastActivityAt,
+              completionTime: completionTime,
+              onActivityDateChanged: onActivityDateChanged,
+              stoppedAt: stoppedAt,
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -132,18 +140,18 @@ void main() {
     });
 
     group('Header', () {
-      testWidgets('должен отображать placeholder когда coverUrl == null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          placeholderIcon: Icons.movie_outlined,
-        ));
+      testWidgets('должен отображать placeholder когда coverUrl == null', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(placeholderIcon: Icons.movie_outlined),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
       });
 
-      testWidgets('должен отображать SourceBadge',
-          (WidgetTester tester) async {
+      testWidgets('должен отображать SourceBadge', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(source: DataSource.igdb));
         await tester.pumpAndSettle();
 
@@ -151,26 +159,23 @@ void main() {
         expect(find.text('IGDB'), findsOneWidget);
       });
 
-      testWidgets('должен отображать SourceBadge TMDB',
-          (WidgetTester tester) async {
+      testWidgets('должен отображать SourceBadge TMDB', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(source: DataSource.tmdb));
         await tester.pumpAndSettle();
 
         expect(find.text('TMDB'), findsOneWidget);
       });
 
-      testWidgets('должен отображать typeIcon',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          typeIcon: Icons.tv_outlined,
-        ));
+      testWidgets('должен отображать typeIcon', (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(typeIcon: Icons.tv_outlined));
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.tv_outlined), findsOneWidget);
       });
 
-      testWidgets('должен отображать typeLabel',
-          (WidgetTester tester) async {
+      testWidgets('должен отображать typeLabel', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(typeLabel: 'TV Show'));
         await tester.pumpAndSettle();
 
@@ -179,20 +184,24 @@ void main() {
     });
 
     group('External URL', () {
-      testWidgets('не should show иконку open_in_new без externalUrl',
-          (WidgetTester tester) async {
+      testWidgets('не should show иконку open_in_new без externalUrl', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(source: DataSource.igdb));
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.open_in_new), findsNothing);
       });
 
-      testWidgets('should show иконку open_in_new с externalUrl',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          source: DataSource.igdb,
-          externalUrl: 'https://www.igdb.com/games/test',
-        ));
+      testWidgets('should show иконку open_in_new с externalUrl', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            source: DataSource.igdb,
+            externalUrl: 'https://www.igdb.com/games/test',
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.open_in_new), findsOneWidget);
@@ -200,25 +209,29 @@ void main() {
     });
 
     group('Info Chips', () {
-      testWidgets('должен отображать чипы когда список не пуст',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          infoChips: const <MediaDetailChip>[
-            MediaDetailChip(icon: Icons.calendar_today, text: '1995'),
-            MediaDetailChip(icon: Icons.star, text: '8.5/10'),
-          ],
-        ));
+      testWidgets('должен отображать чипы когда список не пуст', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            infoChips: const <MediaDetailChip>[
+              MediaDetailChip(icon: Icons.calendar_today, text: '1995'),
+              MediaDetailChip(icon: Icons.star, text: '8.5/10'),
+            ],
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('1995'), findsOneWidget);
         expect(find.text('8.5/10'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать info chip Wrap когда список пуст',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          infoChips: const <MediaDetailChip>[],
-        ));
+      testWidgets('не должен отображать info chip Wrap когда список пуст', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(infoChips: const <MediaDetailChip>[]),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(Wrap), findsOneWidget);
@@ -226,18 +239,20 @@ void main() {
     });
 
     group('Description', () {
-      testWidgets('должен отображать описание когда не null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          description: 'A great RPG adventure.',
-        ));
+      testWidgets('должен отображать описание когда не null', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(description: 'A great RPG adventure.'),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('A great RPG adventure.'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать описание когда null',
-          (WidgetTester tester) async {
+      testWidgets('не должен отображать описание когда null', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -245,8 +260,9 @@ void main() {
         expect(find.text('My Notes'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать описание когда пустая строка',
-          (WidgetTester tester) async {
+      testWidgets('не должен отображать описание когда пустая строка', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(description: ''));
         await tester.pumpAndSettle();
 
@@ -255,18 +271,20 @@ void main() {
     });
 
     group('Status Section', () {
-      testWidgets('должен отображать statusWidget когда не null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          statusWidget: const Text('Playing'),
-        ));
+      testWidgets('должен отображать statusWidget когда не null', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(statusWidget: const Text('Playing')),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Playing'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать statusWidget когда null',
-          (WidgetTester tester) async {
+      testWidgets('не должен отображать statusWidget когда null', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -275,22 +293,26 @@ void main() {
     });
 
     group('Extra Sections', () {
-      testWidgets('должен отображать дополнительные секции напрямую',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          extraSections: <Widget>[
-            const Text('Progress Section'),
-            const Text('Another Section'),
-          ],
-        ));
+      testWidgets('должен отображать дополнительные секции напрямую', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            extraSections: <Widget>[
+              const Text('Progress Section'),
+              const Text('Another Section'),
+            ],
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Progress Section'), findsOneWidget);
         expect(find.text('Another Section'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать секции когда extraSections == null',
-          (WidgetTester tester) async {
+      testWidgets('не должен отображать секции когда extraSections == null', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -299,32 +321,34 @@ void main() {
     });
 
     group("Author's Review Section", () {
-      testWidgets('должен отображать заголовок',
-          (WidgetTester tester) async {
+      testWidgets('должен отображать заголовок', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
         expect(find.text("Author's Review"), findsOneWidget);
       });
 
-      testWidgets('должен отображать комментарий через MiniMarkdownText',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          authorComment: 'Best RPG ever!',
-          hasAuthorComment: true,
-        ));
+      testWidgets('должен отображать комментарий через MiniMarkdownText', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            authorComment: 'Best RPG ever!',
+            hasAuthorComment: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(MiniMarkdownText), findsOneWidget);
         expect(find.text('Best RPG ever!'), findsOneWidget);
       });
 
-      testWidgets('should show placeholder для editable без комментария',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          hasAuthorComment: false,
-        ));
+      testWidgets('should show placeholder для editable без комментария', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(isEditable: true, hasAuthorComment: false),
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -333,30 +357,29 @@ void main() {
         );
       });
 
-      testWidgets('should show placeholder для readonly без комментария',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: false,
-          hasAuthorComment: false,
-        ));
+      testWidgets('should show placeholder для readonly без комментария', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(isEditable: false, hasAuthorComment: false),
+        );
         await tester.pumpAndSettle();
 
-        expect(
-          find.text('No review from the author.'),
-          findsOneWidget,
-        );
+        expect(find.text('No review from the author.'), findsOneWidget);
       });
 
-      testWidgets('should show кнопку Edit когда isEditable',
-          (WidgetTester tester) async {
+      testWidgets('should show кнопку Edit когда isEditable', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.edit), findsNWidgets(2));
       });
 
-      testWidgets('не should show кнопку Edit автора когда !isEditable',
-          (WidgetTester tester) async {
+      testWidgets('не should show кнопку Edit автора когда !isEditable', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
 
@@ -365,28 +388,31 @@ void main() {
     });
 
     group('User Notes Section', () {
-      testWidgets('должен отображать заголовок',
-          (WidgetTester tester) async {
+      testWidgets('должен отображать заголовок', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
         expect(find.text('My Notes'), findsOneWidget);
       });
 
-      testWidgets('должен отображать заметки через MiniMarkdownText',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          userComment: 'Finished on Jan 15',
-          hasUserComment: true,
-        ));
+      testWidgets('должен отображать заметки через MiniMarkdownText', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            userComment: 'Finished on Jan 15',
+            hasUserComment: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(MiniMarkdownText), findsOneWidget);
         expect(find.text('Finished on Jan 15'), findsOneWidget);
       });
 
-      testWidgets('should show placeholder когда нет заметок',
-          (WidgetTester tester) async {
+      testWidgets('should show placeholder когда нет заметок', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(hasUserComment: false));
         await tester.pumpAndSettle();
 
@@ -396,8 +422,9 @@ void main() {
         );
       });
 
-      testWidgets('должен всегда показывать кнопку Edit',
-          (WidgetTester tester) async {
+      testWidgets('должен всегда показывать кнопку Edit', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
 
@@ -408,8 +435,9 @@ void main() {
     group('Inline Editing', () {
       // Order: My Notes (first edit icon) -> Author's Review (last).
 
-      testWidgets('should show TextField when pressed Edit заметок',
-          (WidgetTester tester) async {
+      testWidgets('should show TextField when pressed Edit заметок', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
@@ -422,8 +450,9 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('should show TextField when pressed Edit автора',
-          (WidgetTester tester) async {
+      testWidgets('should show TextField when pressed Edit автора', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
@@ -434,13 +463,16 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('should preserve и закрывать when pressed галочки',
-          (WidgetTester tester) async {
+      testWidgets('should preserve и закрывать when pressed галочки', (
+        WidgetTester tester,
+      ) async {
         String? savedValue;
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onAuthorCommentSave: (String? value) => savedValue = value,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onAuthorCommentSave: (String? value) => savedValue = value,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).last);
@@ -454,13 +486,16 @@ void main() {
         expect(find.byType(TextField), findsNothing);
       });
 
-      testWidgets('should call onSave с null when empty тексте',
-          (WidgetTester tester) async {
+      testWidgets('should call onSave с null when empty тексте', (
+        WidgetTester tester,
+      ) async {
         String? savedValue = 'initial';
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onAuthorCommentSave: (String? value) => savedValue = value,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onAuthorCommentSave: (String? value) => savedValue = value,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).last);
@@ -472,8 +507,9 @@ void main() {
         expect(savedValue, isNull);
       });
 
-      testWidgets('should show тулбар markdown при inline-редактировании',
-          (WidgetTester tester) async {
+      testWidgets('should show тулбар markdown при inline-редактировании', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
@@ -485,30 +521,37 @@ void main() {
         expect(find.byIcon(Icons.link), findsOneWidget);
       });
 
-      testWidgets('should show initialValue в поле',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          authorComment: 'Existing comment',
-          hasAuthorComment: true,
-        ));
+      testWidgets('should show initialValue в поле', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            authorComment: 'Existing comment',
+            hasAuthorComment: true,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
-        final TextField textField =
-            tester.widget<TextField>(find.byType(TextField));
+        final TextField textField = tester.widget<TextField>(
+          find.byType(TextField),
+        );
         expect(textField.controller?.text, 'Existing comment');
       });
 
-      testWidgets('should call onUserCommentSave для заметок',
-          (WidgetTester tester) async {
+      testWidgets('should call onUserCommentSave для заметок', (
+        WidgetTester tester,
+      ) async {
         String? savedValue;
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onUserCommentSave: (String? value) => savedValue = value,
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onUserCommentSave: (String? value) => savedValue = value,
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).first);
@@ -523,13 +566,16 @@ void main() {
     });
 
     group('Autosave', () {
-      testWidgets('should auto-save user notes after 1 second debounce',
-          (WidgetTester tester) async {
+      testWidgets('should auto-save user notes after 1 second debounce', (
+        WidgetTester tester,
+      ) async {
         final List<String?> savedValues = <String?>[];
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onUserCommentSave: (String? value) => savedValues.add(value),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onUserCommentSave: (String? value) => savedValues.add(value),
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).first);
@@ -544,13 +590,16 @@ void main() {
         expect(savedValues, <String?>['Auto saved note']);
       });
 
-      testWidgets('should auto-save author comment after 1 second debounce',
-          (WidgetTester tester) async {
+      testWidgets('should auto-save author comment after 1 second debounce', (
+        WidgetTester tester,
+      ) async {
         final List<String?> savedValues = <String?>[];
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onAuthorCommentSave: (String? value) => savedValues.add(value),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onAuthorCommentSave: (String? value) => savedValues.add(value),
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).last);
@@ -562,13 +611,16 @@ void main() {
         expect(savedValues, <String?>['Auto review']);
       });
 
-      testWidgets('should debounce rapid typing into single save',
-          (WidgetTester tester) async {
+      testWidgets('should debounce rapid typing into single save', (
+        WidgetTester tester,
+      ) async {
         final List<String?> savedValues = <String?>[];
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onUserCommentSave: (String? value) => savedValues.add(value),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onUserCommentSave: (String? value) => savedValues.add(value),
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).first);
@@ -587,13 +639,16 @@ void main() {
         expect(savedValues, <String?>['Hello']);
       });
 
-      testWidgets('should save on check button even before debounce fires',
-          (WidgetTester tester) async {
+      testWidgets('should save on check button even before debounce fires', (
+        WidgetTester tester,
+      ) async {
         final List<String?> savedValues = <String?>[];
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onUserCommentSave: (String? value) => savedValues.add(value),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            onUserCommentSave: (String? value) => savedValues.add(value),
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).first);
@@ -607,15 +662,18 @@ void main() {
         expect(savedValues, <String?>['Immediate']);
       });
 
-      testWidgets('should save with null when text is empty on autosave',
-          (WidgetTester tester) async {
+      testWidgets('should save with null when text is empty on autosave', (
+        WidgetTester tester,
+      ) async {
         final List<String?> savedValues = <String?>[];
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          userComment: 'Old note',
-          hasUserComment: true,
-          onUserCommentSave: (String? value) => savedValues.add(value),
-        ));
+        await tester.pumpWidget(
+          buildTestWidget(
+            isEditable: true,
+            userComment: 'Old note',
+            hasUserComment: true,
+            onUserCommentSave: (String? value) => savedValues.add(value),
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.edit).first);
@@ -629,14 +687,17 @@ void main() {
     });
 
     group('Activity Dates Row', () {
-      testWidgets('должен отображать даты когда addedAt задан',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          startedAt: DateTime(2025, 2, 1),
-          completedAt: DateTime(2025, 3, 10),
-          lastActivityAt: DateTime(2025, 3, 12),
-        ));
+      testWidgets('должен отображать даты когда addedAt задан', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            startedAt: DateTime(2025, 2, 1),
+            completedAt: DateTime(2025, 3, 10),
+            lastActivityAt: DateTime(2025, 3, 12),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Started'), findsOneWidget);
@@ -650,18 +711,16 @@ void main() {
 
         await tester.tap(find.byIcon(Icons.info_outline));
         await tester.pumpAndSettle();
-        expect(
-          find.textContaining('Added: Jan 15, 2025'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('Added: Jan 15, 2025'), findsOneWidget);
         expect(
           find.textContaining('Last Activity: Mar 12, 2025'),
           findsOneWidget,
         );
       });
 
-      testWidgets('не должен отображать даты когда addedAt == null',
-          (WidgetTester tester) async {
+      testWidgets('не должен отображать даты когда addedAt == null', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
@@ -669,11 +728,12 @@ void main() {
         expect(find.text('Started'), findsNothing);
       });
 
-      testWidgets('should show тире для null Started/Completed',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-        ));
+      testWidgets('should show тире для null Started/Completed', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(addedAt: DateTime(2025, 1, 15)),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Started'), findsOneWidget);
@@ -682,43 +742,53 @@ void main() {
         expect(find.text('\u2014'), findsNWidgets(2));
       });
 
-      testWidgets('не should show Last Activity когда null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-        ));
+      testWidgets('не should show Last Activity когда null', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(addedAt: DateTime(2025, 1, 15)),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Last Activity'), findsNothing);
       });
 
-      testWidgets('should show иконки редактирования для editable дат',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
-        ));
+      testWidgets('should show иконки редактирования для editable дат', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            onActivityDateChanged:
+                (ActivityDateField field, DateTime? date) async {},
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
       });
 
-      testWidgets('не should show иконки редактирования без колбэка',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-        ));
+      testWidgets('не should show иконки редактирования без колбэка', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(addedAt: DateTime(2025, 1, 15)),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);
       });
 
-      testWidgets('должен оборачивать editable даты в InkWell',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
-        ));
+      testWidgets('должен оборачивать editable даты в InkWell', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            onActivityDateChanged:
+                (ActivityDateField field, DateTime? date) async {},
+          ),
+        );
         await tester.pumpAndSettle();
 
         final Finder inkWells = find.byType(InkWell);
@@ -726,57 +796,69 @@ void main() {
       });
 
       testWidgets(
-          'should pass null to the callback when the set date is cleared',
-          (WidgetTester tester) async {
-        ActivityDateField? clearedField;
-        DateTime? clearedDate = DateTime(2099);
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          completedAt: DateTime(2025, 2, 1),
-          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {
-            clearedField = field;
-            clearedDate = date;
-          },
-        ));
-        await tester.pumpAndSettle();
+        'should pass null to the callback when the set date is cleared',
+        (WidgetTester tester) async {
+          ActivityDateField? clearedField;
+          DateTime? clearedDate = DateTime(2099);
+          await tester.pumpWidget(
+            buildTestWidget(
+              addedAt: DateTime(2025, 1, 15),
+              completedAt: DateTime(2025, 2, 1),
+              onActivityDateChanged:
+                  (ActivityDateField field, DateTime? date) async {
+                    clearedField = field;
+                    clearedDate = date;
+                  },
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Completed'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('No date'));
-        await tester.pumpAndSettle();
+          await tester.tap(find.text('Completed'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('No date'));
+          await tester.pumpAndSettle();
 
-        expect(clearedField, ActivityDateField.completed);
-        expect(clearedDate, isNull);
-      });
+          expect(clearedField, ActivityDateField.completed);
+          expect(clearedDate, isNull);
+        },
+      );
 
-      testWidgets('should report both fields when the same-day action is used',
-          (WidgetTester tester) async {
-        ActivityDateField? field;
-        DateTime? date;
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (ActivityDateField f, DateTime? d) async {
-            field = f;
-            date = d;
-          },
-        ));
-        await tester.pumpAndSettle();
+      testWidgets(
+        'should report both fields when the same-day action is used',
+        (WidgetTester tester) async {
+          ActivityDateField? field;
+          DateTime? date;
+          await tester.pumpWidget(
+            buildTestWidget(
+              addedAt: DateTime(2025, 1, 15),
+              onActivityDateChanged: (ActivityDateField f, DateTime? d) async {
+                field = f;
+                date = d;
+              },
+            ),
+          );
+          await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Started'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Started and finished this day'));
-        await tester.pumpAndSettle();
+          await tester.tap(find.text('Started'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Started and finished this day'));
+          await tester.pumpAndSettle();
 
-        expect(field, ActivityDateField.both);
-        expect(date, isNotNull);
-      });
+          expect(field, ActivityDateField.both);
+          expect(date, isNotNull);
+        },
+      );
 
-      testWidgets('should offer the same-day action from the Completed tile',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
-        ));
+      testWidgets('should offer the same-day action from the Completed tile', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            onActivityDateChanged:
+                (ActivityDateField field, DateTime? date) async {},
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Completed'));
@@ -785,12 +867,16 @@ void main() {
         expect(find.text('Started and finished this day'), findsOneWidget);
       });
 
-      testWidgets('should not offer clearing while the date is unset',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          onActivityDateChanged: (ActivityDateField field, DateTime? date) async {},
-        ));
+      testWidgets('should not offer clearing while the date is unset', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            onActivityDateChanged:
+                (ActivityDateField field, DateTime? date) async {},
+          ),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Completed'));
@@ -799,12 +885,15 @@ void main() {
         expect(find.text('No date'), findsNothing);
       });
 
-      testWidgets('should display completion time when set',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          completionTime: const Duration(days: 14),
-        ));
+      testWidgets('should display completion time when set', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            completionTime: const Duration(days: 14),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Auto-derived completion time is a tooltip on the Completed tile.
@@ -816,22 +905,26 @@ void main() {
         );
       });
 
-      testWidgets('should not display completion time when null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-        ));
+      testWidgets('should not display completion time when null', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(addedAt: DateTime(2025, 1, 15)),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Completed in'), findsNothing);
       });
 
-      testWidgets('should format completion time correctly',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          addedAt: DateTime(2025, 1, 15),
-          completionTime: const Duration(hours: 5),
-        ));
+      testWidgets('should format completion time correctly', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            addedAt: DateTime(2025, 1, 15),
+            completionTime: const Duration(hours: 5),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -845,25 +938,26 @@ void main() {
     });
 
     group('Полный layout', () {
-      testWidgets('должен рендерить все секции',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          title: 'Full Test',
-          typeLabel: 'Platform',
-          infoChips: const <MediaDetailChip>[
-            MediaDetailChip(icon: Icons.star, text: '9.0'),
-          ],
-          description: 'Test description',
-          statusWidget: const Text('Status Widget'),
-          extraSections: <Widget>[const Text('Extra')],
-          authorComment: 'Author text',
-          hasAuthorComment: true,
-          userComment: 'User text',
-          hasUserComment: true,
-          isEditable: true,
-          addedAt: DateTime(2025, 6, 1),
-          startedAt: DateTime(2025, 6, 5),
-        ));
+      testWidgets('должен рендерить все секции', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildTestWidget(
+            title: 'Full Test',
+            typeLabel: 'Platform',
+            infoChips: const <MediaDetailChip>[
+              MediaDetailChip(icon: Icons.star, text: '9.0'),
+            ],
+            description: 'Test description',
+            statusWidget: const Text('Status Widget'),
+            extraSections: <Widget>[const Text('Extra')],
+            authorComment: 'Author text',
+            hasAuthorComment: true,
+            userComment: 'User text',
+            hasUserComment: true,
+            isEditable: true,
+            addedAt: DateTime(2025, 6, 1),
+            startedAt: DateTime(2025, 6, 5),
+          ),
+        );
         await tester.pumpAndSettle();
 
         // Standalone AppBar title plus the phone layout's own heading.
@@ -896,8 +990,9 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      testWidgets('should render title and description without exceptions',
-          (WidgetTester tester) async {
+      testWidgets('should render title and description without exceptions', (
+        WidgetTester tester,
+      ) async {
         await pumpDesktop(
           tester,
           buildTestWidget(
@@ -912,8 +1007,43 @@ void main() {
         expect(find.text('Desk description'), findsOneWidget);
       });
 
-      testWidgets('should hide the author review but keep the notes',
-          (WidgetTester tester) async {
+      testWidgets('should copy the title to the clipboard on tap', (
+        WidgetTester tester,
+      ) async {
+        String? copied;
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          (MethodCall call) async {
+            if (call.method == 'Clipboard.setData') {
+              copied =
+                  (call.arguments as Map<Object?, Object?>)['text'] as String?;
+            }
+            return null;
+          },
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            null,
+          ),
+        );
+
+        await pumpDesktop(
+          tester,
+          buildTestWidget(title: 'Desk Title', width: _desktopWidth),
+        );
+
+        await tester.tap(find.byType(CopyableText));
+        await tester.pump();
+        expect(copied, 'Desk Title');
+
+        // The copied badge resets on a 1s timer; flush it.
+        await tester.pump(const Duration(seconds: 1));
+      });
+
+      testWidgets('should show the author review next to the notes', (
+        WidgetTester tester,
+      ) async {
         await pumpDesktop(
           tester,
           buildTestWidget(
@@ -925,12 +1055,13 @@ void main() {
           ),
         );
 
-        expect(find.text('Author text'), findsNothing);
+        expect(find.text('Author text'), findsOneWidget);
         expect(find.text('User text'), findsOneWidget);
       });
 
-      testWidgets('should prefer the status list over the chip row',
-          (WidgetTester tester) async {
+      testWidgets('should prefer the status list over the chip row', (
+        WidgetTester tester,
+      ) async {
         await pumpDesktop(
           tester,
           buildTestWidget(
@@ -943,6 +1074,63 @@ void main() {
         expect(find.text('Status list'), findsOneWidget);
         expect(find.text('Status row'), findsNothing);
       });
+    });
+  });
+
+  group('MediaDetailView desktop block height', () {
+    testWidgets('текстовый блок растягивается минимум на высоту окна', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestWidget(description: 'short', width: _desktopWidth),
+      );
+      await tester.pump();
+
+      final Finder block = find.ancestor(
+        of: find.text('Test Title'),
+        matching: find.byType(GlassTile),
+      );
+      final double viewport =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      expect(tester.getSize(block).height, greaterThan(viewport * 0.8));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('MediaDetailView backdrop', () {
+    tearDown(() => AppSurface.skin = AppSkin.glass);
+
+    testWidgets('классика кладёт артворк под карточку на телефоне и десктопе', (
+      WidgetTester tester,
+    ) async {
+      AppSurface.skin = AppSkin.classic;
+      for (final double width in <double>[_phoneWidth, _desktopWidth]) {
+        await tester.pumpWidget(
+          buildTestWidget(backdropUrl: 'https://x/backdrop.jpg', width: width),
+        );
+        await tester.pump();
+        expect(find.byType(MediaDetailBackdrop), findsOneWidget);
+      }
+    });
+
+    testWidgets('стекло не рисует артворк даже при наличии ссылки', (
+      WidgetTester tester,
+    ) async {
+      AppSurface.skin = AppSkin.glass;
+      await tester.pumpWidget(
+        buildTestWidget(backdropUrl: 'https://x/backdrop.jpg'),
+      );
+      await tester.pump();
+      expect(find.byType(MediaDetailBackdrop), findsNothing);
+    });
+
+    testWidgets('без ссылки артворка нет и в классике', (
+      WidgetTester tester,
+    ) async {
+      AppSurface.skin = AppSkin.classic;
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
+      expect(find.byType(MediaDetailBackdrop), findsNothing);
     });
   });
 }

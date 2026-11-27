@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
 
 import '../../l10n/app_localizations.dart';
@@ -8,6 +8,7 @@ import '../extensions/snackbar_extension.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import 'glass_dialog.dart';
 
 /// A browsable picker root: a storage volume or any fixed directory.
 class FolderPickerRoot {
@@ -78,8 +79,9 @@ class _FolderPickerDialogState extends State<FolderPickerDialog> {
   bool get _atRoot {
     final String? current = _currentPath;
     if (current == null) return false;
-    return widget.roots
-        .any((FolderPickerRoot root) => p.equals(root.path, current));
+    return widget.roots.any(
+      (FolderPickerRoot root) => p.equals(root.path, current),
+    );
   }
 
   // Sync IO keeps the state machine trivial; a single directory listing
@@ -88,18 +90,19 @@ class _FolderPickerDialogState extends State<FolderPickerDialog> {
     final String? current = _currentPath;
     if (current == null) return;
     try {
-      final List<String> dirs = Directory(current)
-          .listSync()
-          .whereType<Directory>()
-          .map((Directory d) => d.path)
-          .where((String path) => !p.basename(path).startsWith('.'))
-          .toList()
-        ..sort(
-          (String a, String b) => p
-              .basename(a)
-              .toLowerCase()
-              .compareTo(p.basename(b).toLowerCase()),
-        );
+      final List<String> dirs =
+          Directory(current)
+              .listSync()
+              .whereType<Directory>()
+              .map((Directory d) => d.path)
+              .where((String path) => !p.basename(path).startsWith('.'))
+              .toList()
+            ..sort(
+              (String a, String b) => p
+                  .basename(a)
+                  .toLowerCase()
+                  .compareTo(p.basename(b).toLowerCase()),
+            );
       setState(() {
         _subDirs = dirs;
         _readError = false;
@@ -155,10 +158,12 @@ class _FolderPickerDialogState extends State<FolderPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final S l10n = S.of(context);
-    final double listHeight =
-        (MediaQuery.of(context).size.height * 0.45).clamp(200.0, 400.0);
+    final double listHeight = (MediaQuery.of(context).size.height * 0.45).clamp(
+      200.0,
+      400.0,
+    );
 
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(widget.title),
       content: SizedBox(
         width: double.maxFinite,
@@ -233,9 +238,7 @@ class _FolderPickerDialogState extends State<FolderPickerDialog> {
         Center(
           child: Text(
             l10n.folderPickerReadError,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTypography.bodySmall.copyWith(color: AppColors.error),
           ),
         ),
       );
@@ -336,7 +339,7 @@ class _FolderNameDialogState extends State<_FolderNameDialog> {
   @override
   Widget build(BuildContext context) {
     final S l10n = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l10n.folderPickerNewFolder),
       scrollable: true,
       content: Form(

@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:core/models/profile.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,7 @@ import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'shared/constants/platform_features.dart';
+import 'shared/theme/app_skin_id.dart';
 
 late SharedPreferences _prefs;
 late ApiKeys _apiKeys;
@@ -35,6 +37,17 @@ Future<void> main() async {
       TonkatsuBinding.ensureInitialized();
       AppLogger.setupErrorHandlers();
       initPlatform();
+      // The package skips the refracting shaders on Windows by default; the
+      // glass skin asks for them, so they are warmed up everywhere but web.
+      final Future<void> glassWarmUp =
+          LiquidGlassWidgets.initialize(
+            warmUpMode: kIsWebBuild
+                ? GlassWarmUpMode.auto
+                : GlassWarmUpMode.always,
+          ).catchError((Object error, StackTrace stack) {
+            // Unwarmed glass only compiles on first paint; still start.
+            Logger('main').warning('Glass shader warm-up failed', error, stack);
+          });
 
       // setPrefix must run before the first getInstance() and exactly once
       // per process — otherwise a restart via AppRestartScope hits StateError.
@@ -48,13 +61,28 @@ Future<void> main() async {
         // Pre-runApp crash: no real app to overlay, so show a standalone
         // error screen instead of a frozen native splash.
         Logger('main').severe('Startup _loadAppState failed', error, stack);
-        final StartupErrorInfo info =
-            recordStartupError('_loadAppState', error, stack);
+        final StartupErrorInfo info = recordStartupError(
+          '_loadAppState',
+          error,
+          stack,
+        );
         runApp(StartupErrorApp(info: info));
         return;
       }
 
-      runApp(const AppRestartScope(child: TonkatsuBoxApp()));
+      // Warmed alongside the state load; a skin that draws no glass does not
+      // wait for shaders it never uses.
+      final AppSkinId skin = AppSkinId.fromId(
+        _prefs.getString(SettingsKeys.appSkin),
+      );
+      if (skin == AppSkinId.glass) await glassWarmUp;
+
+      runApp(
+        LiquidGlassWidgets.wrap(
+          brightnessResolver: Theme.maybeBrightnessOf,
+          child: const AppRestartScope(child: TonkatsuBoxApp()),
+        ),
+      );
     },
     (Object error, StackTrace stack) {
       Logger('main').severe('Unhandled exception', error, stack);
@@ -95,8 +123,8 @@ class AppRestartScope extends StatefulWidget {
 
   /// Reloads profiles and recreates the ProviderScope.
   static Future<void> restart(BuildContext context) async {
-    final _AppRestartScopeState? state =
-        context.findAncestorStateOfType<_AppRestartScopeState>();
+    final _AppRestartScopeState? state = context
+        .findAncestorStateOfType<_AppRestartScopeState>();
     await state?._restart();
   }
 
@@ -122,9 +150,7 @@ class _AppRestartScopeState extends State<AppRestartScope> {
         sharedPreferencesProvider.overrideWithValue(_prefs),
         apiKeysProvider.overrideWithValue(_apiKeys),
         collectionsHeroDirProvider.overrideWithValue(_heroDir),
-        profilesDataProvider.overrideWith(
-          (Ref ref) => _profilesData,
-        ),
+        profilesDataProvider.overrideWith((Ref ref) => _profilesData),
       ],
       child: widget.child,
     );

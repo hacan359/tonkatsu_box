@@ -37,7 +37,8 @@ void main() {
 
   /// The default logger writes to stdout on every request, which would bury
   /// the test output.
-  Middleware silent() => (Handler inner) => inner;
+  Middleware silent() =>
+      (Handler inner) => inner;
 
   setUp(() {
     webRoot = Directory.systemTemp.createTempSync('tonkatsu_web_root');
@@ -53,8 +54,10 @@ void main() {
 
   group('buildAppHandler', () {
     test('should report the schema and protocol version on /health', () async {
-      final Handler handler =
-          buildAppHandler(schemaVersion: 42, logger: silent());
+      final Handler handler = buildAppHandler(
+        schemaVersion: 42,
+        logger: silent(),
+      );
 
       final Response response = await get(handler, '/health');
 
@@ -67,8 +70,10 @@ void main() {
     });
 
     test('should 404 an unknown path when no web client is built', () async {
-      final Handler handler =
-          buildAppHandler(schemaVersion: 1, logger: silent());
+      final Handler handler = buildAppHandler(
+        schemaVersion: 1,
+        logger: silent(),
+      );
 
       final Response response = await get(handler, '/collections');
 
@@ -104,6 +109,31 @@ void main() {
       expect(response.headers[HttpHeaders.cacheControlHeader], 'no-cache');
       expect(await response.readAsString(), 'console;');
     });
+
+    test(
+      'should make the browser revalidate engine binaries and assets',
+      () async {
+        File(p.join(webRoot.path, 'index.html')).writeAsStringSync('<html>');
+        Directory(p.join(webRoot.path, 'canvaskit')).createSync();
+        File(p.join(webRoot.path, 'canvaskit', 'canvaskit.wasm'))
+            .writeAsBytesSync(<int>[0, 97, 115, 109]);
+        final Handler handler = buildAppHandler(
+          schemaVersion: 1,
+          webRoot: webRoot.path,
+          logger: silent(),
+        );
+
+        final Response response = await get(
+          handler,
+          '/canvaskit/canvaskit.wasm',
+        );
+
+        expect(response.statusCode, HttpStatus.ok);
+        // A stale wasm next to a fresh canvaskit.js leaves the page unusable
+        // after the image is rebuilt on a newer Flutter.
+        expect(response.headers[HttpHeaders.cacheControlHeader], 'no-cache');
+      },
+    );
 
     test('should fall back to index.html on a client-side route', () async {
       File(p.join(webRoot.path, 'index.html')).writeAsStringSync('<html>');

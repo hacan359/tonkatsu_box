@@ -1,0 +1,30 @@
+import '../app_skin.dart';
+
+/// Liquid glass chrome over pages that sit straight on the picture.
+const AppSkin glassSkin = AppSkin(
+  wallpaperBlurSigma: 4.2,
+  modalBlurSigma: 5.6,
+  liquidGlass: true,
+  panelFill: SkinFill.frost,
+  panelFrost: SkinAlpha(dark: 70, light: 48),
+  panelEdge: SkinAlpha(dark: 30, light: 70),
+  panelHighlight: SkinAlpha(dark: 10, light: 18),
+  panelRadius: 22,
+  frameGap: 10,
+  floatingBars: true,
+  wallpaper: SkinWallpaper.picture,
+  wallpaperWash: SkinAlpha(dark: 130, light: 165),
+  contentOnWallpaper: true,
+  tileAlpha: SkinAlpha(dark: 110, light: 88),
+  tileEdge: SkinAlpha(dark: 34, light: 110),
+  tileShadow: true,
+  cardElevation: 0,
+  chipAlpha: SkinAlpha(dark: 225, light: 200),
+  cardAlpha: SkinAlpha(dark: 16, light: 28),
+  sheenAlpha: SkinAlpha(dark: 50, light: 150),
+  inputFillAlpha: 150,
+  modalAlpha: 225,
+  popupAlpha: 215,
+  detailBackdrop: false,
+  barrierAlpha: SkinAlpha(dark: 80, light: 60),
+);

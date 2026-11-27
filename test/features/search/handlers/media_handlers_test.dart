@@ -6,7 +6,7 @@ import 'package:core/models/movie.dart';
 import 'package:core/models/platform.dart';
 import 'package:core/models/tv_show.dart';
 import 'package:core/models/visual_novel.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/search/handlers/game_handler.dart';
 import 'package:tonkatsu_box/features/search/handlers/media_action_handler.dart';

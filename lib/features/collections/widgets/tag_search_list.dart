@@ -1,6 +1,6 @@
 import 'package:core/models/tag.dart';
 import 'package:core/models/tag_sort_mode.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -11,6 +11,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/global_tags_provider.dart';
 import '../providers/tag_sort_provider.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 
 /// The shared body of both tag dialogs: one field driving search and
 /// quick-create, the persisted sort mode, and the filtered tag list.
@@ -135,18 +136,17 @@ class _TagSearchListState extends ConsumerState<TagSearchList> {
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
-            PopupMenuButton<TagSortMode>(
+            GlassPopupMenuButton<TagSortMode>(
               tooltip: l.tagSortTooltip,
               icon: const Icon(Icons.sort_by_alpha, size: 20),
               onSelected: (TagSortMode mode) =>
                   ref.read(tagSortModeProvider.notifier).setMode(mode),
-              itemBuilder: (BuildContext context) =>
-                  <PopupMenuEntry<TagSortMode>>[
+              rows: (BuildContext _) => <Widget>[
                 for (final TagSortMode mode in TagSortMode.values)
-                  CheckedPopupMenuItem<TagSortMode>(
+                  GlassMenuRow<TagSortMode>(
                     value: mode,
+                    label: mode.localizedLabel(l),
                     checked: sortMode == mode,
-                    child: Text(mode.localizedLabel(l)),
                   ),
               ],
             ),

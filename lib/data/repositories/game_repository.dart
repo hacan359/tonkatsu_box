@@ -18,10 +18,9 @@ final Provider<GameRepository> gameRepositoryProvider =
 /// [cacheMaxAge] seconds are stale and refetched.
 class GameRepository {
   GameRepository({
-    required IgdbApi api,
-    required GameDao gameDao,
-  })  : _api = api,
-        _gameDao = gameDao;
+    required this._api,
+    required this._gameDao,
+  });
 
   final IgdbApi _api;
   final GameDao _gameDao;

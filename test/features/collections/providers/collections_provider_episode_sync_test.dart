@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core/models/collection_item.dart';
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
@@ -141,15 +143,28 @@ void main() {
         expect(unmarkCalls, isEmpty);
       });
 
+      test('completed to not started clears every episode', () async {
+        final ProviderContainer container = createContainer(
+            <CollectionItem>[tvItem(status: ItemStatus.completed)]);
+        final CollectionItemsNotifier notifier = await loadNotifier(container);
+
+        await notifier.updateStatus(
+            1, ItemStatus.notStarted, MediaType.tvShow);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(unmarkCalls, hasLength(1));
+        expect(markCalls, isEmpty);
+      });
+
       for (final ItemStatus target in <ItemStatus>[
-        ItemStatus.notStarted,
         ItemStatus.inProgress,
         ItemStatus.planned,
         ItemStatus.dropped,
         ItemStatus.replaying,
         ItemStatus.ignored,
       ]) {
-        test('leaving completed for $target clears every episode', () async {
+        test('leaving completed for $target keeps the episode marks',
+            () async {
           final ProviderContainer container = createContainer(
               <CollectionItem>[tvItem(status: ItemStatus.completed)]);
           final CollectionItemsNotifier notifier =
@@ -158,10 +173,27 @@ void main() {
           await notifier.updateStatus(1, target, MediaType.tvShow);
           await Future<void>.delayed(Duration.zero);
 
-          expect(unmarkCalls, hasLength(1));
+          expect(unmarkCalls, isEmpty);
           expect(markCalls, isEmpty);
         });
       }
+
+      test('syncEpisodes: false keeps the marks on the way to not started',
+          () async {
+        final ProviderContainer container = createContainer(
+            <CollectionItem>[tvItem(status: ItemStatus.completed)]);
+        final CollectionItemsNotifier notifier = await loadNotifier(container);
+
+        await notifier.updateStatus(
+          1,
+          ItemStatus.notStarted,
+          MediaType.tvShow,
+          syncEpisodes: false,
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        expect(unmarkCalls, isEmpty);
+      });
 
       test('a transition not touching completed leaves episodes alone',
           () async {
@@ -256,7 +288,7 @@ void main() {
         final CollectionItemsNotifier notifier = await loadNotifier(container);
 
         final ClearedEpisodeMarks? cleared = await notifier.updateStatus(
-            1, ItemStatus.inProgress, MediaType.tvShow);
+            1, ItemStatus.notStarted, MediaType.tvShow);
 
         expect(cleared, isNotNull);
         expect(cleared?.marks, marks);
@@ -270,7 +302,7 @@ void main() {
 
         expect(
           await notifier.updateStatus(
-              1, ItemStatus.inProgress, MediaType.tvShow),
+              1, ItemStatus.notStarted, MediaType.tvShow),
           isNull,
         );
       });
@@ -297,7 +329,7 @@ void main() {
         );
         final CollectionItemsNotifier notifier = await loadNotifier(container);
         final ClearedEpisodeMarks? cleared = await notifier.updateStatus(
-            1, ItemStatus.inProgress, MediaType.tvShow);
+            1, ItemStatus.notStarted, MediaType.tvShow);
         markCalls.clear();
         unmarkCalls.clear();
 
@@ -364,11 +396,11 @@ void main() {
         final ProviderContainer container =
             createContainer(<CollectionItem>[]);
 
-        syncEpisodesToStatus(
+        unawaited(syncEpisodesToStatus(
           container.read,
           tvItem(status: ItemStatus.completed),
-          ItemStatus.dropped,
-        );
+          ItemStatus.notStarted,
+        ));
         await Future<void>.delayed(Duration.zero);
 
         expect(unmarkCalls, hasLength(1));

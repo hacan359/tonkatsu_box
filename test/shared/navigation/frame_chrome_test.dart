@@ -1,0 +1,188 @@
+import 'dart:async';
+
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:tonkatsu_box/shared/navigation/frame_chrome.dart';
+
+void main() {
+  group('FrameChromeController', () {
+    late FrameChromeController controller;
+    final Object title = Object();
+    final Object strip = Object();
+    const Widget center = SizedBox();
+
+    setUp(() => controller = FrameChromeController());
+    tearDown(() => controller.dispose());
+
+    test('пустой контроллер ничего не отдаёт', () {
+      expect(controller.current, isNull);
+    });
+
+    test('заголовок старшего и центр младшего, порядок set не важен', () {
+      controller.set(strip, const FrameChrome(center: center));
+      controller.set(title, const FrameChrome(title: 'T', priority: 1));
+      expect(controller.current?.title, 'T');
+      expect(controller.current?.center, same(center));
+
+      final FrameChromeController reversed = FrameChromeController();
+      reversed.set(title, const FrameChrome(title: 'T', priority: 1));
+      reversed.set(strip, const FrameChrome(center: center));
+      expect(reversed.current?.title, 'T');
+      expect(reversed.current?.center, same(center));
+      reversed.dispose();
+    });
+
+    test('старший приоритет побеждает по полю, не по арендатору', () {
+      controller.set(title, const FrameChrome(title: 'page', priority: 1));
+      controller.set(strip, const FrameChrome(title: 'strip'));
+      expect(controller.current?.title, 'page');
+
+      controller.set(strip, const FrameChrome(title: 'strip', priority: 2));
+      expect(controller.current?.title, 'strip');
+    });
+
+    test('should carry a lent strip for the floating top block', () {
+      const Widget below = SizedBox();
+      controller.set(strip, const FrameChrome(below: below));
+      controller.set(title, const FrameChrome(title: 'T', priority: 1));
+
+      expect(controller.current?.below, same(below));
+
+      controller.clear(strip);
+
+      expect(controller.current?.below, isNull);
+    });
+
+    test('should name the owner of the strip it shows', () {
+      controller.set(title, const FrameChrome(title: 'T', priority: 1));
+      expect(controller.belowOwner, isNull);
+
+      controller.set(strip, const FrameChrome(below: SizedBox()));
+      expect(controller.belowOwner, same(strip));
+
+      controller.clear(strip);
+      expect(controller.belowOwner, isNull);
+    });
+
+    test('should hide the search while any lender opts out', () {
+      final Object page = Object();
+      controller.set(Object(), const FrameChrome(title: 'List'));
+      controller.set(page, const FrameChrome(showSearch: false, priority: 1));
+
+      expect(controller.current?.showSearch, isFalse);
+
+      controller.clear(page);
+
+      expect(controller.current?.showSearch, isTrue);
+    });
+
+    test('should keep mount order for equal priorities', () {
+      final List<Object> owners = List<Object>.generate(40, (_) => Object());
+      for (int i = 0; i < owners.length; i++) {
+        controller.set(owners[i], FrameChrome(title: 't$i'));
+      }
+      expect(controller.current?.title, 't39');
+
+      controller.set(owners.first, const FrameChrome(title: 'again'));
+      expect(controller.current?.title, 't39');
+    });
+
+    test('clear одного оставляет поля другого', () {
+      controller.set(strip, const FrameChrome(center: center));
+      controller.set(title, const FrameChrome(title: 'T', priority: 1));
+
+      controller.clear(title);
+      expect(controller.current?.title, isNull);
+      expect(controller.current?.center, same(center));
+
+      controller.clear(strip);
+      expect(controller.current, isNull);
+    });
+
+    test('уведомляет слушателей на set и clear', () {
+      int calls = 0;
+      controller.addListener(() => calls++);
+      controller.set(title, const FrameChrome(title: 'T'));
+      controller.clear(title);
+      expect(calls, 2);
+    });
+
+    test('после dispose set и clear не бросают', () {
+      final FrameChromeController gone = FrameChromeController()..dispose();
+      expect(
+        () => gone.set(title, const FrameChrome(title: 'T')),
+        returnsNormally,
+      );
+      expect(() => gone.clear(title), returnsNormally);
+    });
+  });
+
+  group('FrameChromeBinding', () {
+    late FrameChromeController controller;
+    late FramePageObserver pages;
+    final GlobalKey<NavigatorState> nav = GlobalKey<NavigatorState>();
+
+    setUp(() {
+      controller = FrameChromeController();
+      pages = FramePageObserver();
+    });
+    tearDown(() => controller.dispose());
+
+    Future<void> pumpPage(WidgetTester tester) => tester.pumpWidget(
+      MaterialApp(
+        home: FrameChromeScope(
+          controller: controller,
+          child: Navigator(
+            key: nav,
+            observers: <NavigatorObserver>[pages],
+            onGenerateRoute: (_) => MaterialPageRoute<void>(
+              builder: (_) => const FrameChromeBinding(
+                chrome: FrameChrome(title: 'page'),
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('should keep the chrome while a menu is open over the page', (
+      WidgetTester tester,
+    ) async {
+      await pumpPage(tester);
+      await tester.pump();
+      expect(controller.current?.title, 'page');
+
+      final BuildContext page = tester.element(find.byType(SizedBox).last);
+      unawaited(
+        showMenu<void>(
+          context: page,
+          position: RelativeRect.fill,
+          items: const <PopupMenuEntry<void>>[
+            PopupMenuItem<void>(child: Text('row')),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('row'), findsOneWidget);
+      expect(controller.current?.title, 'page');
+    });
+
+    testWidgets('should drop the chrome once another page covers it', (
+      WidgetTester tester,
+    ) async {
+      await pumpPage(tester);
+      await tester.pump();
+
+      unawaited(
+        nav.currentState?.push(
+          MaterialPageRoute<void>(builder: (_) => const Text('next')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(controller.current, isNull);
+    });
+  });
+}

@@ -1,5 +1,5 @@
 import 'package:core/models/item_mark.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -8,6 +8,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// For media with no ready-made unit list (anime, manga, custom, books). Empty
 /// unit rows are never synthesised — only marks the user created are shown.
@@ -58,19 +59,22 @@ class ItemMarksListSection extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             child: Text(
               l.itemMarkEmpty,
-              style: AppTypography.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           )
         else
-          ...all.map((ItemMark m) => _MarkRow(
-                key: ValueKey<String>(
-                  '${m.unitType}:${m.parentNumber}:${m.unitNumber}',
-                ),
-                itemId: itemId,
-                mark: m,
-                accentColor: accentColor,
-              )),
+          ...all.map(
+            (ItemMark m) => _MarkRow(
+              key: ValueKey<String>(
+                '${m.unitType}:${m.parentNumber}:${m.unitNumber}',
+              ),
+              itemId: itemId,
+              mark: m,
+              accentColor: accentColor,
+            ),
+          ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
           width: double.infinity,
@@ -91,10 +95,8 @@ class ItemMarksListSection extends ConsumerWidget {
   Future<void> _showAddForm(BuildContext context, WidgetRef ref) {
     return showDialog<void>(
       context: context,
-      builder: (BuildContext ctx) => _AddMarkDialog(
-        itemId: itemId,
-        unitPresets: unitPresets,
-      ),
+      builder: (BuildContext ctx) =>
+          _AddMarkDialog(itemId: itemId, unitPresets: unitPresets),
     );
   }
 }
@@ -188,10 +190,7 @@ class _MarkRowState extends ConsumerState<_MarkRow> {
 }
 
 class _AddMarkDialog extends ConsumerStatefulWidget {
-  const _AddMarkDialog({
-    required this.itemId,
-    required this.unitPresets,
-  });
+  const _AddMarkDialog({required this.itemId, required this.unitPresets});
 
   final int itemId;
   final List<String> unitPresets;
@@ -237,10 +236,10 @@ class _AddMarkDialogState extends ConsumerState<_AddMarkDialog> {
     final String unitType = _customType
         ? _customTypeController.text.trim()
         : _unitType;
-    final ({int parent, int unit}) coords =
-        unitCoordsFor(unitType, number);
-    final ItemMarksNotifier notifier =
-        ref.read(itemMarksProvider(widget.itemId).notifier);
+    final ({int parent, int unit}) coords = unitCoordsFor(unitType, number);
+    final ItemMarksNotifier notifier = ref.read(
+      itemMarksProvider(widget.itemId).notifier,
+    );
     if (_liked) {
       await notifier.setFavorite(
         unitType,
@@ -259,7 +258,7 @@ class _AddMarkDialogState extends ConsumerState<_AddMarkDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       title: Text(l.itemMarkAdd),
       content: SingleChildScrollView(
         child: Column(
@@ -296,8 +295,7 @@ class _AddMarkDialogState extends ConsumerState<_AddMarkDialog> {
               const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _customTypeController,
-                decoration:
-                    InputDecoration(labelText: l.itemMarkCustomType),
+                decoration: InputDecoration(labelText: l.itemMarkCustomType),
                 onChanged: (_) => setState(() {}),
               ),
             ],
@@ -338,10 +336,7 @@ class _AddMarkDialogState extends ConsumerState<_AddMarkDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l.cancel),
         ),
-        TextButton(
-          onPressed: _canSave ? _save : null,
-          child: Text(l.save),
-        ),
+        TextButton(onPressed: _canSave ? _save : null, child: Text(l.save)),
       ],
     );
   }

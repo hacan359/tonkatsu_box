@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:core/models/canvas_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/utils/menu_position.dart';
 
 class CanvasContextMenu {
   CanvasContextMenu._();
@@ -20,12 +23,7 @@ class CanvasContextMenu {
     final S l = S.of(context);
     final String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: 'add_text',
@@ -57,7 +55,8 @@ class CanvasContextMenu {
             ],
           ),
         ),
-        if (onFindImages != null || onBrowseMaps != null) ...<PopupMenuEntry<String>>[
+        if (onFindImages != null ||
+            onBrowseMaps != null) ...<PopupMenuEntry<String>>[
           const PopupMenuDivider(),
           if (onFindImages != null)
             PopupMenuItem<String>(
@@ -116,12 +115,7 @@ class CanvasContextMenu {
 
     final String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<String>>[
         if (showEdit)
           PopupMenuItem<String>(
@@ -185,7 +179,7 @@ class CanvasContextMenu {
         onEdit?.call();
       case 'delete':
         if (!context.mounted) return;
-        _showDeleteConfirmation(context, onDelete);
+        unawaited(_showDeleteConfirmation(context, onDelete));
       case 'connect':
         onConnect?.call();
       case 'bring_to_front':
@@ -204,12 +198,7 @@ class CanvasContextMenu {
     final S l = S.of(context);
     final String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: 'edit',
@@ -240,7 +229,7 @@ class CanvasContextMenu {
         onEdit();
       case 'delete':
         if (!context.mounted) return;
-        _showDeleteConfirmation(context, onDelete);
+        unawaited(_showDeleteConfirmation(context, onDelete));
     }
   }
 

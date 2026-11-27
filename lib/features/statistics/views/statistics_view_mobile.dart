@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../layout/stats_layout.dart';
 import '../layout/stats_layout_mobile.dart';
@@ -38,32 +39,53 @@ class StatisticsViewMobile extends StatelessWidget {
   Widget build(BuildContext context) {
     return StatsLayoutScope(
       layout: _layout,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            StatsHeroMobile(
-              stats: stats,
-              periodPicker: StatsPeriodPicker(data: picker),
-            ),
-            if (stats.hasTypeBreakdown)
-              _inset(StatsTypesSection(stats: stats)),
-            // Full-bleed: the ribbon applies the page inset to its own header
-            // and list padding so a swipe runs to the screen edge.
-            if (stats.hasMonthActivity)
-              Padding(
-                padding: EdgeInsets.only(bottom: _layout.sectionGap),
-                child: StatsMonthsRibbonMobile(
-                  stats: stats,
-                  edgeInset: _layout.horizontalPadding,
-                ),
+      child: FrameBleed(
+        builder: (BuildContext context, EdgeInsets bars) =>
+            SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xl) + bars,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  _alignedWithBars(
+                    context,
+                    StatsHeroMobile(
+                      stats: stats,
+                      periodPicker: StatsPeriodPicker(data: picker),
+                    ),
+                  ),
+                  if (stats.hasTypeBreakdown)
+                    _inset(StatsTypesSection(stats: stats)),
+                  // Full-bleed: the ribbon applies the page inset to its own header
+                  // and list padding so a swipe runs to the screen edge.
+                  if (stats.hasMonthActivity)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: _layout.sectionGap),
+                      child: StatsMonthsRibbonMobile(
+                        stats: stats,
+                        edgeInset: _layout.horizontalPadding,
+                      ),
+                    ),
+                  for (final Widget section in statsSectionsAfterMonths(
+                    stats,
+                    titleLanguage,
+                  ))
+                    _inset(section),
+                ],
               ),
-            for (final Widget section
-                in statsSectionsAfterMonths(stats, titleLanguage))
-              _inset(section),
-          ],
-        ),
+            ),
+      ),
+    );
+  }
+
+  /// Under floating bars the edge-to-edge hero would jut past them; there it
+  /// takes their width and corners.
+  Widget _alignedWithBars(BuildContext context, Widget hero) {
+    if (!frameFloats(context)) return hero;
+    return Padding(
+      padding: frameBackingInset(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: hero,
       ),
     );
   }
@@ -82,5 +104,4 @@ class StatisticsViewMobile extends StatelessWidget {
       child: section,
     );
   }
-
 }

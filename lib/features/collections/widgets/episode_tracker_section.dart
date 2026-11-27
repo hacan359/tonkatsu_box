@@ -5,7 +5,7 @@ import 'package:core/models/item_mark.dart';
 import 'package:core/models/tv_episode.dart';
 import 'package:core/models/tv_season.dart';
 import 'package:core/models/tv_show.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/episode_source/tv_episode_source.dart';
@@ -26,6 +26,7 @@ import '../providers/item_marks_provider.dart';
 import 'item_mark_controls.dart';
 import '../../../shared/widgets/dual_date_picker_dialog.dart';
 import '../helpers/episode_undo.dart';
+import '../../../shared/widgets/image_placeholder.dart';
 
 enum _EpisodeMarkFilter { all, liked, commented }
 
@@ -71,11 +72,15 @@ class EpisodeTrackerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final EpisodeTrackerArg trackerArg =
-        (collectionId: collectionId, showId: externalId, source: source);
+    final EpisodeTrackerArg trackerArg = (
+      collectionId: collectionId,
+      showId: externalId,
+      source: source,
+    );
 
-    final EpisodeTrackerState trackerState =
-        ref.watch(episodeTrackerNotifierProvider(trackerArg));
+    final EpisodeTrackerState trackerState = ref.watch(
+      episodeTrackerNotifierProvider(trackerArg),
+    );
 
     // Sparse cached rows have no totals — fall back to the count the
     // tracker resolved from the seasons cache.
@@ -96,9 +101,7 @@ class EpisodeTrackerSection extends ConsumerWidget {
                 l.episodeProgress,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.h3.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -178,26 +181,33 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   /// tapped, and tapping it again collapses it.
   int? _pickedSeason;
 
+  final Map<int, GlobalKey> _tileKeys = <int, GlobalKey>{};
+
   @override
   void initState() {
     super.initState();
     // Episode metadata is skipped on grid-card builds; the detail list is
     // the consumer that needs it (marks titles, expanded seasons).
-    Future<void>.microtask(() => ref
-        .read(episodeTrackerNotifierProvider(_trackerArg).notifier)
-        .ensureCachedEpisodesLoaded());
+    Future<void>.microtask(
+      () => ref
+          .read(episodeTrackerNotifierProvider(_trackerArg).notifier)
+          .ensureCachedEpisodesLoaded(),
+    );
     _loadSeasons();
   }
 
   Future<void> _loadSeasons() async {
     final DatabaseService db = ref.read(databaseServiceProvider);
-    List<TvSeason> seasons =
-        await db.tvShowDao.getTvSeasonsByShowId(widget.source, widget.showId);
+    List<TvSeason> seasons = await db.tvShowDao.getTvSeasonsByShowId(
+      widget.source,
+      widget.showId,
+    );
 
     if (seasons.isEmpty) {
       try {
-        final TvEpisodeSource episodeSource =
-            ref.read(tvEpisodeSourceResolverProvider)(widget.source);
+        final TvEpisodeSource episodeSource = ref.read(
+          tvEpisodeSourceResolverProvider,
+        )(widget.source);
         seasons = await episodeSource.getSeasons(widget.showId);
         if (seasons.isNotEmpty) {
           await db.tvShowDao.upsertTvSeasons(seasons);
@@ -224,11 +234,13 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
 
     try {
       final DatabaseService db = ref.read(databaseServiceProvider);
-      final TvEpisodeSource episodeSource =
-          ref.read(tvEpisodeSourceResolverProvider)(widget.source);
+      final TvEpisodeSource episodeSource = ref.read(
+        tvEpisodeSourceResolverProvider,
+      )(widget.source);
 
-      final List<TvSeason> seasons =
-          await episodeSource.getSeasons(widget.showId);
+      final List<TvSeason> seasons = await episodeSource.getSeasons(
+        widget.showId,
+      );
       if (seasons.isNotEmpty) {
         await db.tvShowDao.upsertTvSeasons(seasons);
       }
@@ -259,10 +271,10 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   }
 
   EpisodeTrackerArg get _trackerArg => (
-        collectionId: widget.collectionId,
-        showId: widget.showId,
-        source: widget.source,
-      );
+    collectionId: widget.collectionId,
+    showId: widget.showId,
+    source: widget.source,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -298,10 +310,10 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
       );
     }
 
-    final EpisodeTrackerState trackerState =
-        ref.watch(episodeTrackerNotifierProvider(_trackerArg));
-    final ItemMarksState marks =
-        ref.watch(itemMarksProvider(widget.itemId));
+    final EpisodeTrackerState trackerState = ref.watch(
+      episodeTrackerNotifierProvider(_trackerArg),
+    );
+    final ItemMarksState marks = ref.watch(itemMarksProvider(widget.itemId));
 
     // Specials (season 0) go last; they are excluded from overall progress.
     final List<TvSeason> orderedSeasons = <TvSeason>[
@@ -323,12 +335,13 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
           LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) =>
                 _buildSeasonGrid(
-              orderedSeasons,
-              selected,
-              trackerState,
-              marks,
-              seasonPostersPerRow(constraints.maxWidth),
-            ),
+                  orderedSeasons,
+                  selected,
+                  trackerState,
+                  marks,
+                  seasonPostersPerRow(constraints.maxWidth),
+                  constraints.maxWidth,
+                ),
           ),
       ],
     );
@@ -342,52 +355,76 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     EpisodeTrackerState trackerState,
     ItemMarksState marks,
     int perRow,
+    double maxWidth,
   ) {
+    // The grid is centred as one block, so a short last row still starts
+    // under the first column instead of drifting to the middle.
+    final int columns = math.min(perRow, ordered.length);
+    final double blockWidth =
+        columns * _SeasonPosterTile._width + (columns - 1) * AppSpacing.sm;
+    final double inset = maxWidth.isFinite
+        ? math.max(0, (maxWidth - blockWidth) / 2)
+        : 0;
     final List<Widget> children = <Widget>[];
     bool panelAbove = false;
     for (int start = 0; start < ordered.length; start += perRow) {
-      final List<TvSeason> row =
-          ordered.sublist(start, math.min(start + perRow, ordered.length));
+      final List<TvSeason> row = ordered.sublist(
+        start,
+        math.min(start + perRow, ordered.length),
+      );
       if (start > 0) {
         children.add(
-            SizedBox(height: panelAbove ? AppSpacing.md : AppSpacing.sm));
+          SizedBox(height: panelAbove ? AppSpacing.md : AppSpacing.sm),
+        );
       }
       panelAbove = false;
-      children.add(Row(
-        // Keyed so a panel moving between rows does not remount the posters.
-        key: ValueKey<String>('season-row-${row.first.seasonNumber}'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          for (int i = 0; i < row.length; i++) ...<Widget>[
-            if (i > 0) const SizedBox(width: AppSpacing.sm),
-            _SeasonPosterTile(
-              key: ValueKey<int>(row[i].seasonNumber),
-              season: row[i],
-              source: widget.source,
-              watchedCount:
-                  trackerState.watchedCountForSeason(row[i].seasonNumber),
-              rating: marks.ratingFor(kUnitSeason, row[i].seasonNumber, 0),
-              selected: row[i].seasonNumber == selected?.seasonNumber,
-              accentColor: widget.accentColor,
-              fallbackCover: widget.fallbackCover,
-              onTap: () => _pick(row[i].seasonNumber, selected),
-            ),
-          ],
-        ],
-      ));
+      children.add(
+        Padding(
+          // Keyed so a panel moving between rows does not remount the posters.
+          key: ValueKey<String>('season-row-${row.first.seasonNumber}'),
+          padding: EdgeInsets.only(left: inset),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              for (int i = 0; i < row.length; i++) ...<Widget>[
+                if (i > 0) const SizedBox(width: AppSpacing.sm),
+                _SeasonPosterTile(
+                  key: ValueKey<int>(row[i].seasonNumber),
+                  anchorKey: _tileKeys.putIfAbsent(
+                    row[i].seasonNumber,
+                    GlobalKey.new,
+                  ),
+                  season: row[i],
+                  source: widget.source,
+                  watchedCount: trackerState.watchedCountForSeason(
+                    row[i].seasonNumber,
+                  ),
+                  rating: marks.ratingFor(kUnitSeason, row[i].seasonNumber, 0),
+                  selected: row[i].seasonNumber == selected?.seasonNumber,
+                  accentColor: widget.accentColor,
+                  fallbackCover: widget.fallbackCover,
+                  onTap: () => _pick(row[i].seasonNumber, selected),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
       if (selected != null &&
           row.any((TvSeason s) => s.seasonNumber == selected.seasonNumber)) {
         panelAbove = true;
         children
           ..add(const SizedBox(height: AppSpacing.md))
-          ..add(SeasonPanel(
-            key: ValueKey<String>('season-panel-${selected.seasonNumber}'),
-            season: selected,
-            trackerState: trackerState,
-            trackerArg: _trackerArg,
-            itemId: widget.itemId,
-            accentColor: widget.accentColor,
-          ));
+          ..add(
+            SeasonPanel(
+              key: ValueKey<String>('season-panel-${selected.seasonNumber}'),
+              season: selected,
+              trackerState: trackerState,
+              trackerArg: _trackerArg,
+              itemId: widget.itemId,
+              accentColor: widget.accentColor,
+            ),
+          );
       }
     }
     return Column(
@@ -404,10 +441,35 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
   }
 
   void _pick(int seasonNumber, TvSeason? current) {
+    final double? before = _tileTop(seasonNumber);
     setState(() {
-      _pickedSeason =
-          current?.seasonNumber == seasonNumber ? null : seasonNumber;
+      _pickedSeason = current?.seasonNumber == seasonNumber
+          ? null
+          : seasonNumber;
     });
+    if (before == null) return;
+    // A panel closing above the tapped poster pulls the page up under the
+    // finger; scroll by the same amount so the poster stays where it was.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final BuildContext? tile = _tileKeys[seasonNumber]?.currentContext;
+      final double? after = _tileTop(seasonNumber);
+      if (tile == null || after == null || after == before) return;
+      final ScrollPosition? position = Scrollable.maybeOf(tile)?.position;
+      if (position == null) return;
+      position.jumpTo(
+        (position.pixels + after - before).clamp(
+          position.minScrollExtent,
+          position.maxScrollExtent,
+        ),
+      );
+    });
+  }
+
+  double? _tileTop(int seasonNumber) {
+    final RenderObject? box = _tileKeys[seasonNumber]?.currentContext
+        ?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset.zero).dy;
   }
 
   /// Summary (`❤ N · 💬 M`, episode marks only) plus filter chips.
@@ -424,28 +486,34 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
           const SizedBox(width: 2),
           Text(
             '$liked',
-            style: AppTypography.caption
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Icon(Icons.sticky_note_2,
-              size: 13, color: AppColors.textSecondary),
+          Icon(Icons.sticky_note_2, size: 13, color: AppColors.textSecondary),
           const SizedBox(width: 2),
           Text(
             '$commented',
-            style: AppTypography.caption
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           const Spacer(),
-          _filterChip(Icons.list, l.all,
-              _EpisodeMarkFilter.all),
+          _filterChip(Icons.list, l.all, _EpisodeMarkFilter.all),
           const SizedBox(width: 4),
-          _filterChip(Icons.favorite, l.itemMarkFilterLiked,
-              _EpisodeMarkFilter.liked,
-              color: AppColors.favorite),
+          _filterChip(
+            Icons.favorite,
+            l.itemMarkFilterLiked,
+            _EpisodeMarkFilter.liked,
+            color: AppColors.favorite,
+          ),
           const SizedBox(width: 4),
-          _filterChip(Icons.sticky_note_2, l.itemMarkFilterCommented,
-              _EpisodeMarkFilter.commented),
+          _filterChip(
+            Icons.sticky_note_2,
+            l.itemMarkFilterCommented,
+            _EpisodeMarkFilter.commented,
+          ),
           const SizedBox(width: AppSpacing.sm),
           if (_refreshing)
             const Padding(
@@ -512,22 +580,26 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     EpisodeTrackerState trackerState,
   ) {
     final S l = S.of(context);
-    final List<ItemMark> episodeMarks = marks.all
-        .where((ItemMark m) => m.unitType == kUnitEpisode && _matchesFilter(m))
-        .toList()
-      ..sort((ItemMark a, ItemMark b) {
-        final int byParent = a.parentNumber.compareTo(b.parentNumber);
-        if (byParent != 0) return byParent;
-        return a.unitNumber.compareTo(b.unitNumber);
-      });
+    final List<ItemMark> episodeMarks =
+        marks.all
+            .where(
+              (ItemMark m) => m.unitType == kUnitEpisode && _matchesFilter(m),
+            )
+            .toList()
+          ..sort((ItemMark a, ItemMark b) {
+            final int byParent = a.parentNumber.compareTo(b.parentNumber);
+            if (byParent != 0) return byParent;
+            return a.unitNumber.compareTo(b.unitNumber);
+          });
 
     if (episodeMarks.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Text(
           l.itemMarkEmpty,
-          style:
-              AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+          ),
         ),
       );
     }
@@ -546,15 +618,10 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
     );
   }
 
-  bool _matchesFilter(ItemMark m) => _filter == _EpisodeMarkFilter.liked
-      ? m.isFavorite
-      : m.note != null;
+  bool _matchesFilter(ItemMark m) =>
+      _filter == _EpisodeMarkFilter.liked ? m.isFavorite : m.note != null;
 
-  String _episodeTitle(
-    ItemMark m,
-    EpisodeTrackerState trackerState,
-    S l,
-  ) {
+  String _episodeTitle(ItemMark m, EpisodeTrackerState trackerState, S l) {
     final List<TvEpisode>? episodes =
         trackerState.episodesBySeason[m.parentNumber];
     if (episodes != null) {
@@ -613,8 +680,9 @@ class _FilteredEpisodeRowState extends State<_FilteredEpisodeRow> {
                           mark.parentNumber,
                           mark.unitNumber,
                         ),
-                        style: AppTypography.caption
-                            .copyWith(color: AppColors.textTertiary),
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
                       ),
                       const TextSpan(text: '  '),
                       TextSpan(text: title, style: AppTypography.bodySmall),
@@ -685,20 +753,24 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
   @override
   void initState() {
     super.initState();
-    Future<void>.microtask(() => ref
-        .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
-        .loadSeason(widget.season.seasonNumber));
+    Future<void>.microtask(
+      () => ref
+          .read(episodeTrackerNotifierProvider(widget.trackerArg).notifier)
+          .loadSeason(widget.season.seasonNumber),
+    );
   }
 
   /// Marks the season's first not-yet-watched episode, loading the season
   /// from the source first if its episodes aren't in memory.
   Future<void> _markNextWatched() async {
     final int seasonNum = widget.season.seasonNumber;
-    final EpisodeTrackerNotifier notifier =
-        ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+    final EpisodeTrackerNotifier notifier = ref.read(
+      episodeTrackerNotifierProvider(widget.trackerArg).notifier,
+    );
 
-    EpisodeTrackerState state =
-        ref.read(episodeTrackerNotifierProvider(widget.trackerArg));
+    EpisodeTrackerState state = ref.read(
+      episodeTrackerNotifierProvider(widget.trackerArg),
+    );
     if (state.episodesBySeason[seasonNum]?.isEmpty ?? true) {
       await notifier.loadSeason(seasonNum);
       if (!mounted) return;
@@ -710,8 +782,10 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
     if (episodes.isEmpty) return;
 
     final List<TvEpisode> ordered = <TvEpisode>[...episodes]
-      ..sort((TvEpisode a, TvEpisode b) =>
-          a.episodeNumber.compareTo(b.episodeNumber));
+      ..sort(
+        (TvEpisode a, TvEpisode b) =>
+            a.episodeNumber.compareTo(b.episodeNumber),
+      );
     for (final TvEpisode ep in ordered) {
       if (!state.isEpisodeWatched(seasonNum, ep.episodeNumber)) {
         await notifier.toggleEpisode(seasonNum, ep.episodeNumber);
@@ -722,8 +796,9 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
 
   Future<void> _toggleSeason(List<TvEpisode>? episodes) async {
     final int seasonNum = widget.season.seasonNumber;
-    final EpisodeTrackerNotifier tracker =
-        ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+    final EpisodeTrackerNotifier tracker = ref.read(
+      episodeTrackerNotifierProvider(widget.trackerArg).notifier,
+    );
     final String message = S.of(context).seasonUnmarkedSnack;
     if (episodes == null || episodes.isEmpty) {
       await tracker.loadSeason(seasonNum);
@@ -747,11 +822,9 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
     final int watchedCount = trackerState.watchedCountForSeason(seasonNum);
     final bool allWatched = episodeCount > 0 && watchedCount >= episodeCount;
     final bool isLoading = trackerState.loadingSeasons[seasonNum] == true;
-    final List<TvEpisode>? episodes =
-        trackerState.episodesBySeason[seasonNum];
+    final List<TvEpisode>? episodes = trackerState.episodesBySeason[seasonNum];
 
-    final String seasonTitle =
-        season.name ?? l.seasonName(seasonNum);
+    final String seasonTitle = season.name ?? l.seasonName(seasonNum);
     final String? airDate = season.airDate;
     final int? airYear = airDate != null && airDate.length >= 4
         ? int.tryParse(airDate.substring(0, 4))
@@ -763,9 +836,8 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
       if (airYear != null) '$airYear',
     ].join(' • ');
     final String? note = ref.watch(
-      itemMarksProvider(itemId).select(
-        (ItemMarksState s) => s.noteFor(kUnitSeason, seasonNum, 0),
-      ),
+      itemMarksProvider(itemId)
+          .select((ItemMarksState s) => s.noteFor(kUnitSeason, seasonNum, 0)),
     );
 
     return Column(
@@ -778,9 +850,7 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
                 seasonTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.body.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             _SeasonRatingButton(itemId: itemId, seasonNumber: seasonNum),
@@ -790,8 +860,7 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
               parentNumber: seasonNum,
               unitNumber: 0,
               showLike: false,
-              onNotePressed: () =>
-                  setState(() => _editingNote = !_editingNote),
+              onNotePressed: () => setState(() => _editingNote = !_editingNote),
             ),
             if (!allWatched && episodeCount > 0)
               IconButton(
@@ -844,26 +913,26 @@ class _SeasonPanelState extends ConsumerState<SeasonPanel> {
         if (isLoading)
           const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           )
         else if (episodes != null && episodes.isNotEmpty)
-          ...episodes.map((TvEpisode episode) => EpisodeTile(
-                episode: episode,
-                isWatched: trackerState.isEpisodeWatched(
-                  seasonNum,
-                  episode.episodeNumber,
-                ),
-                watchedAt: trackerState.getWatchedAt(
-                  seasonNum,
-                  episode.episodeNumber,
-                ),
-                trackerArg: trackerArg,
-                itemId: itemId,
-                accentColor: accentColor,
-                seasonPosterUrl: season.posterUrl,
-              ))
+          ...episodes.map(
+            (TvEpisode episode) => EpisodeTile(
+              episode: episode,
+              isWatched: trackerState.isEpisodeWatched(
+                seasonNum,
+                episode.episodeNumber,
+              ),
+              watchedAt: trackerState.getWatchedAt(
+                seasonNum,
+                episode.episodeNumber,
+              ),
+              trackerArg: trackerArg,
+              itemId: itemId,
+              accentColor: accentColor,
+              seasonPosterUrl: season.posterUrl,
+            ),
+          )
         else if (episodes != null && episodes.isEmpty)
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -921,11 +990,12 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     final bool isWatched = widget.isWatched;
     final DateTime? watchedAt = widget.watchedAt;
     final DateFormatPreset preset = DateFormatPreset.fromId(
-      ref.watch(settingsNotifierProvider.select((SettingsState s) => s.dateFormat)),
+      ref.watch(
+        settingsNotifierProvider.select((SettingsState s) => s.dateFormat),
+      ),
     );
     final String localeName = Localizations.localeOf(context).toLanguageTag();
-    final String title =
-        'E${episode.episodeNumber}: ${episode.name}';
+    final String title = 'E${episode.episodeNumber}: ${episode.name}';
     final List<String> subtitleParts = <String>[];
     if (episode.airDate != null) {
       subtitleParts.add(episode.airDate!);
@@ -935,9 +1005,9 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     }
     if (isWatched && watchedAt != null) {
       subtitleParts.add(
-        S.of(context).episodeWatchedDate(
-          preset.format(watchedAt, locale: localeName),
-        ),
+        S
+            .of(context)
+            .episodeWatchedDate(preset.format(watchedAt, locale: localeName)),
       );
     }
     final String? note = ref.watch(
@@ -963,11 +1033,14 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
     final double stillHeight = kIsMobile ? 40 : 54;
 
     Future<void> toggle() async {
-      final EpisodeTrackerNotifier tracker =
-          ref.read(episodeTrackerNotifierProvider(widget.trackerArg).notifier);
+      final EpisodeTrackerNotifier tracker = ref.read(
+        episodeTrackerNotifierProvider(widget.trackerArg).notifier,
+      );
       final String message = S.of(context).episodeUnmarkedSnack;
       final WatchedMarks removed = await tracker.toggleEpisode(
-          episode.seasonNumber, episode.episodeNumber);
+        episode.seasonNumber,
+        episode.episodeNumber,
+      );
       if (!context.mounted) return;
       offerWatchedUndo(context, tracker, removed, message);
     }
@@ -997,21 +1070,19 @@ class _EpisodeTileState extends ConsumerState<EpisodeTile> {
                         // not cache under the episode id, or it would stick.
                         imageId: hasOwnStill
                             ? '${widget.trackerArg.source.name}_'
-                                '${episode.tmdbShowId}_'
-                                's${episode.seasonNumber}'
-                                'e${episode.episodeNumber}'
+                                  '${episode.tmdbShowId}_'
+                                  's${episode.seasonNumber}'
+                                  'e${episode.episodeNumber}'
                             : '${widget.trackerArg.source.name}_'
-                                '${episode.tmdbShowId}_'
-                                's${episode.seasonNumber}_poster',
+                                  '${episode.tmdbShowId}_'
+                                  's${episode.seasonNumber}_poster',
                         remoteUrl: stillUrl,
                         width: stillWidth,
                         height: stillHeight,
                         fit: BoxFit.cover,
                         memCacheWidth: 192,
-                        placeholder:
-                            ColoredBox(color: AppColors.surfaceLight),
-                        errorWidget:
-                            ColoredBox(color: AppColors.surfaceLight),
+                        placeholder: const ImagePlaceholder(showIcon: false),
+                        errorWidget: const ImagePlaceholder(showIcon: false),
                       ),
                     ),
                   ),
@@ -1130,13 +1201,15 @@ class _WatchedDateButton extends ConsumerWidget {
   static final DateTime _firstDate = DateTime(1950);
 
   Future<void> _pick(BuildContext context, WidgetRef ref) async {
-    final EpisodeTrackerNotifier tracker =
-        ref.read(episodeTrackerNotifierProvider(trackerArg).notifier);
+    final EpisodeTrackerNotifier tracker = ref.read(
+      episodeTrackerNotifierProvider(trackerArg).notifier,
+    );
     final DateTime now = DateTime.now();
     final DateTime? current = watchedAt;
     // The picker asserts initialDate <= lastDate; a skewed clock breaks that.
-    final DateTime initial =
-        current == null || current.isAfter(now) ? now : current;
+    final DateTime initial = current == null || current.isAfter(now)
+        ? now
+        : current;
     final DualDateResult? picked = await showDualDatePickerResult(
       context: context,
       initialDate: initial,
@@ -1147,7 +1220,10 @@ class _WatchedDateButton extends ConsumerWidget {
     );
     if (picked == null) return;
     await tracker.setEpisodeWatchedDate(
-        episode.seasonNumber, episode.episodeNumber, picked.date);
+      episode.seasonNumber,
+      episode.episodeNumber,
+      picked.date,
+    );
   }
 
   @override
@@ -1175,10 +1251,14 @@ class _SeasonPosterTile extends StatelessWidget {
     required this.selected,
     required this.accentColor,
     required this.onTap,
+    this.anchorKey,
     this.rating,
     this.fallbackCover,
     super.key,
   });
+
+  /// Lets the list read where the poster sits on screen.
+  final GlobalKey? anchorKey;
 
   final TvSeason season;
   final DataSource source;
@@ -1227,6 +1307,7 @@ class _SeasonPosterTile extends StatelessWidget {
     );
 
     return SizedBox(
+      key: anchorKey,
       width: _width,
       child: Material(
         type: MaterialType.transparency,
@@ -1276,10 +1357,12 @@ class _SeasonPosterTile extends StatelessWidget {
                             child: LinearProgressIndicator(
                               value: watchedCount / episodeCount,
                               minHeight: _progressHeight,
-                              backgroundColor:
-                                  AppColors.background.withAlpha(160),
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(accentColor),
+                              backgroundColor: AppColors.background.withAlpha(
+                                160,
+                              ),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                accentColor,
+                              ),
                             ),
                           ),
                       ],
@@ -1328,7 +1411,7 @@ class _SeasonPosterTile extends StatelessWidget {
       remoteUrl: posterUrl,
       fit: BoxFit.cover,
       memCacheWidth: kPosterDecodeWidth,
-      placeholder: ColoredBox(color: AppColors.surfaceLight),
+      placeholder: const ImagePlaceholder(showIcon: false),
       errorWidget: _buildFallback(),
     );
   }
@@ -1340,7 +1423,7 @@ class _SeasonPosterTile extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        cover ?? ColoredBox(color: AppColors.surfaceLight),
+        cover ?? const ImagePlaceholder(showIcon: false),
         DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -1374,10 +1457,7 @@ class _SeasonPosterTile extends StatelessWidget {
 /// Star button in the season header: the picker opens under it, the value
 /// lands on the season's mark next to its note.
 class _SeasonRatingButton extends ConsumerWidget {
-  const _SeasonRatingButton({
-    required this.itemId,
-    required this.seasonNumber,
-  });
+  const _SeasonRatingButton({required this.itemId, required this.seasonNumber});
 
   final int itemId;
   final int seasonNumber;
@@ -1387,13 +1467,14 @@ class _SeasonRatingButton extends ConsumerWidget {
     // Select only this season's rating so a mark elsewhere on the item does
     // not rebuild the header.
     final double? rating = ref.watch(
-      itemMarksProvider(itemId).select(
-        (ItemMarksState s) => s.ratingFor(kUnitSeason, seasonNumber, 0),
-      ),
+      itemMarksProvider(
+        itemId,
+      ).select((ItemMarksState s) => s.ratingFor(kUnitSeason, seasonNumber, 0)),
     );
     final S l = S.of(context);
-    final Color color =
-        rating == null ? AppColors.textTertiary : AppColors.ratingStar;
+    final Color color = rating == null
+        ? AppColors.textTertiary
+        : AppColors.ratingStar;
     return Semantics(
       label: l.seasonRatingLabel,
       value: rating?.toStringAsFixed(1),

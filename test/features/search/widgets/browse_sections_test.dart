@@ -1,7 +1,7 @@
 import 'package:core/models/data_source.dart';
 import 'package:core/models/manga.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +13,7 @@ import 'package:tonkatsu_box/features/search/widgets/browse_sections_compact.dar
 import 'package:tonkatsu_box/features/search/widgets/source_error_strip.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 import 'package:tonkatsu_box/shared/theme/app_theme.dart';
 import 'package:tonkatsu_box/shared/widgets/shimmer_loading.dart';
 
@@ -75,7 +76,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
+        localizationsDelegates: kAppLocalizationsDelegates,
         supportedLocales: S.supportedLocales,
         locale: const Locale('en'),
         theme: AppTheme.darkTheme,

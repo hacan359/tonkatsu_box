@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -9,6 +9,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../models/library_stats.dart';
 import 'stats_cards.dart';
 import 'stats_section_header.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// The anime and manga cards are never merged — the per-source subgenre
 /// vocabularies differ.
@@ -48,7 +49,8 @@ class StatsSubgenresSection extends StatelessWidget {
                   for (final (int index, Widget card) in cards.indexed)
                     Padding(
                       padding: EdgeInsets.only(
-                          top: index > 0 ? AppSpacing.md : 0),
+                        top: index > 0 ? AppSpacing.md : 0,
+                      ),
                       child: card,
                     ),
                 ],
@@ -63,7 +65,8 @@ class StatsSubgenresSection extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(
-                          left: index > 0 ? AppSpacing.md : 0),
+                        left: index > 0 ? AppSpacing.md : 0,
+                      ),
                       child: card,
                     ),
                   ),
@@ -99,8 +102,10 @@ class _TagCard extends StatelessWidget {
         children: <Widget>[
           Text(
             title,
-            style: AppTypography.body
-                .copyWith(fontWeight: FontWeight.w600, color: color),
+            style: AppTypography.body.copyWith(
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Wrap(
@@ -146,11 +151,12 @@ class _TagChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          color: glassTileColor(),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color:
-                emphasized ? AppColors.textTertiary : AppColors.surfaceBorder,
+            color: emphasized
+                ? AppColors.textTertiary
+                : AppColors.surfaceBorder,
             width: 0.5,
           ),
         ),
@@ -178,8 +184,9 @@ class _TagChip extends StatelessWidget {
                   children: <InlineSpan>[
                     TextSpan(
                       text: '  ${tag.count}',
-                      style: AppTypography.caption
-                          .copyWith(color: AppColors.textTertiary),
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ],
                 ),

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:core/models/canvas_connection.dart';
 import 'package:core/models/canvas_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/canvas_connection_painter.dart';
 

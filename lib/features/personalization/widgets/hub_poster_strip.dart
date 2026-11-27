@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:core/models/image_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/glass_panel.dart';
 
 /// One poster of a hub preview, already reduced to what the strip draws.
 class HubPoster {
@@ -45,8 +46,8 @@ class HubPosterStrip extends StatelessWidget {
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           const double gap = AppSpacing.sm;
-          final int fit =
-              ((constraints.maxWidth + gap) / (posterWidth + gap)).floor();
+          final int fit = ((constraints.maxWidth + gap) / (posterWidth + gap))
+              .floor();
           final List<HubPoster> shown = posters.take(math.max(0, fit)).toList();
           if (shown.isEmpty) return HubPreviewNote(emptyText);
           return Row(
@@ -94,7 +95,7 @@ class _Poster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget placeholder = Container(
-      color: AppColors.surfaceLight,
+      color: glassTileColor(),
       alignment: Alignment.center,
       child: Icon(
         poster.placeholderIcon,

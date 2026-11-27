@@ -1,8 +1,9 @@
 import 'package:core/models/platform.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -11,6 +12,7 @@ import '../../search/handlers/media_handlers.dart';
 import '../../search/widgets/collection_chips_row.dart';
 import '../providers/recommendations_provider.dart';
 import '../widgets/recommendation_row.dart';
+import '../../../shared/widgets/frame_page.dart';
 
 /// Shows recommendation rows, or an empty/no-candidates placeholder.
 class RecommendationsScreen extends ConsumerStatefulWidget {
@@ -62,13 +64,18 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
         ? result?.rows.length
         : null;
 
-    return Material(
-      color: AppColors.background,
-      child: Column(
-        children: <Widget>[
+    return FramePage(
+      child: FrameStrip(
+        strip: <Widget>[
           _buildHeader(l, rowCount),
-          Expanded(child: _buildBody(context, l, async)),
+          // Pick target collections, then tapping a card adds straight into
+          // them (mirrors the Search tab); its own selection, not Search's.
+          if (rowCount != null)
+            CollectionChipsRow(
+              targetProvider: recommendationTargetCollectionsProvider,
+            ),
         ],
+        child: _buildBody(context, l, async),
       ),
     );
   }
@@ -153,47 +160,34 @@ class _RecommendationsScreenState extends ConsumerState<RecommendationsScreen> {
           title: l.recommendationsNoCandidates,
           hint: l.recommendationsNoCandidatesHint,
         ),
-        RecommendationStatus.ready => _buildReady(context, l, result.rows),
+        RecommendationStatus.ready => _buildRows(context, l, result.rows),
       },
-    );
-  }
-
-  Widget _buildReady(
-    BuildContext context,
-    S l,
-    List<RecommendationRowUi> rows,
-  ) {
-    return Column(
-      children: <Widget>[
-        // Pick target collections, then tapping a card adds straight into them
-        // (mirrors the Search tab); its own selection, independent of Search.
-        CollectionChipsRow(
-          targetProvider: recommendationTargetCollectionsProvider,
-        ),
-        Expanded(child: _buildRows(context, l, rows)),
-      ],
     );
   }
 
   Widget _buildRows(BuildContext context, S l, List<RecommendationRowUi> rows) {
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
+    return FrameBleed(
+      builder: (BuildContext context, EdgeInsets bars) => ListView.separated(
+        padding:
+            const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md,
+            ) +
+            bars,
+        itemCount: rows.length,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+        itemBuilder: (BuildContext context, int index) {
+          final RecommendationRowUi row = rows[index];
+          return RecommendationRowWidget(
+            eyebrow: l.recommendationsBecauseLabel,
+            headline: row.becauseTitles.join(', '),
+            genres: row.genres,
+            items: row.items,
+            ownedIds: _added,
+            onTap: (RecommendedItem item) => _onItemTap(context, item),
+          );
+        },
       ),
-      itemCount: rows.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-      itemBuilder: (BuildContext context, int index) {
-        final RecommendationRowUi row = rows[index];
-        return RecommendationRowWidget(
-          eyebrow: l.recommendationsBecauseLabel,
-          headline: row.becauseTitles.join(', '),
-          genres: row.genres,
-          items: row.items,
-          ownedIds: _added,
-          onTap: (RecommendedItem item) => _onItemTap(context, item),
-        );
-      },
     );
   }
 

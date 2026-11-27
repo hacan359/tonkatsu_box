@@ -1,8 +1,9 @@
 import 'package:core/models/canvas_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tonkatsu_box/features/collections/widgets/canvas_context_menu.dart';
 import 'package:tonkatsu_box/l10n/app_localizations.dart';
+import 'package:tonkatsu_box/shared/constants/localization_delegates.dart';
 
 void main() {
   // Ignore overflow errors in tests (known issue with long text in PopupMenu)
@@ -24,7 +25,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
@@ -60,7 +61,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: S.localizationsDelegates,
+          localizationsDelegates: kAppLocalizationsDelegates,
           supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
@@ -101,7 +102,7 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
@@ -142,7 +143,7 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
@@ -189,7 +190,7 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
@@ -233,7 +234,7 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
@@ -286,7 +287,7 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
+            localizationsDelegates: kAppLocalizationsDelegates,
             supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(

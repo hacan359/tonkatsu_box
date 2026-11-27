@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:core/models/collection.dart';
 import 'package:core/models/kodi_application_info.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,10 +11,11 @@ import '../../../core/database/database_service.dart';
 import '../../../core/services/kodi_sync_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/navigation/frame_inset.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../../shared/widgets/frame_page.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -24,6 +25,8 @@ import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/status_dot.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 const double _desktopBreakpoint = 800;
 
@@ -57,7 +60,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     super.dispose();
   }
 
-
   Future<void> _testConnection() async {
     setState(() {
       _isTesting = true;
@@ -83,10 +85,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
         setState(() {
           _isTesting = false;
           _connectionOk = true;
-          _connectionResult = S.of(context).kodiConnectedTo(
-            info.versionString,
-            info.name ?? '',
-          );
+          _connectionResult = S
+              .of(context)
+              .kodiConnectedTo(info.versionString, info.name ?? '');
         });
       }
     } on KodiApiException catch (e) {
@@ -136,15 +137,15 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
       if (mounted) {
         setState(() {
           _isSendingRaw = false;
-          _rawResponse =
-              const JsonEncoder.withIndent('  ').convert(result);
+          _rawResponse = const JsonEncoder.withIndent('  ').convert(result);
         });
       }
     } on KodiApiException catch (e) {
       if (mounted) {
         setState(() {
           _isSendingRaw = false;
-          _rawResponse = S.of(context).kodiRawError(e.message) +
+          _rawResponse =
+              S.of(context).kodiRawError(e.message) +
               (e.detail != null ? '\n${e.detail}' : '');
         });
       }
@@ -154,7 +155,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   void _startSync(KodiSettingsState settings) {
     if (settings.targetCollectionId == null) return;
 
-    ref.read(kodiSyncServiceProvider).start(
+    ref
+        .read(kodiSyncServiceProvider)
+        .start(
           intervalSeconds: settings.syncIntervalSeconds,
           targetCollectionId: settings.targetCollectionId!,
           importRatings: settings.importRatings,
@@ -193,11 +196,11 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     const List<int> intervals = <int>[30, 60, 300, 900];
     showDialog<void>(
       context: context,
-      builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).kodiSyncInterval),
+      builder: (BuildContext dialogContext) => GlassDialog(
+        title: S.of(context).kodiSyncInterval,
         children: <Widget>[
           for (final int seconds in intervals)
-            SimpleDialogOption(
+            GlassDialogOption(
               onPressed: () {
                 ref
                     .read(kodiSettingsProvider.notifier)
@@ -226,48 +229,44 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     return '${seconds ~/ 3600}h';
   }
 
-
   @override
   Widget build(BuildContext context) {
     final KodiSettingsState settings = ref.watch(kodiSettingsProvider);
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= _desktopBreakpoint;
 
-    return Column(
-      children: <Widget>[
-        const SubScreenTitleBar(title: 'Kodi'), // proper noun
-        Expanded(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isWide ? 600 : double.infinity,
-              ),
-              child: ListView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                children: <Widget>[
-                  _buildTargetSection(settings),
+    return FramePage(
+      title: 'Kodi',
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isWide ? 600 : double.infinity),
+          child: FrameBleed(
+            builder: (BuildContext context, EdgeInsets bars) => ListView(
+              padding:
+                  EdgeInsets.symmetric(
+                    horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ) +
+                  bars,
+              children: <Widget>[
+                _buildTargetSection(settings),
+                const SizedBox(height: AppSpacing.md),
+                _buildConnectionSection(settings),
+                const SizedBox(height: AppSpacing.md),
+                _buildSyncSection(settings),
+                if (settings.hasConnection) ...<Widget>[
                   const SizedBox(height: AppSpacing.md),
-                  _buildConnectionSection(settings),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildSyncSection(settings),
-                  if (settings.hasConnection) ...<Widget>[
-                    const SizedBox(height: AppSpacing.md),
-                    _buildDebugSection(settings),
-                  ],
-                  const SizedBox(height: AppSpacing.md),
+                  _buildDebugSection(settings),
                 ],
-              ),
+                const SizedBox(height: AppSpacing.md),
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
-
 
   Widget _buildConnectionSection(KodiSettingsState settings) {
     final S l = S.of(context);
@@ -354,10 +353,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   type: _isTesting
                       ? StatusType.warning
                       : _connectionResult == null
-                          ? StatusType.inactive
-                          : _connectionOk
-                              ? StatusType.success
-                              : StatusType.error,
+                      ? StatusType.inactive
+                      : _connectionOk
+                      ? StatusType.success
+                      : StatusType.error,
                 ),
               ),
               IconButton(
@@ -374,10 +373,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                 tooltip: l.kodiTestConnection,
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                ),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
             ],
           ),
@@ -385,7 +381,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
       ],
     );
   }
-
 
   bool _hasValidTarget(
     KodiSettingsState settings,
@@ -399,8 +394,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
 
   Widget _buildTargetSection(KodiSettingsState settings) {
     final S l = S.of(context);
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.watch(collectionsProvider);
+    final AsyncValue<List<Collection>> collectionsAsync = ref.watch(
+      collectionsProvider,
+    );
 
     collectionsAsync.whenData((List<Collection> cols) {
       if (settings.targetCollectionId != null &&
@@ -412,9 +408,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             _targetCleanupScheduled = false;
             return;
           }
-          ref
-              .read(kodiSettingsProvider.notifier)
-              .setTargetCollectionId(null);
+          ref.read(kodiSettingsProvider.notifier).setTargetCollectionId(null);
           _targetCleanupScheduled = false;
         });
       }
@@ -423,10 +417,8 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     final bool valid = _hasValidTarget(settings, collectionsAsync);
     final String? label = valid
         ? collectionsAsync.valueOrNull!
-            .firstWhere(
-              (Collection c) => c.id == settings.targetCollectionId,
-            )
-            .name
+              .firstWhere((Collection c) => c.id == settings.targetCollectionId)
+              .name
         : null;
 
     return SettingsGroup(
@@ -446,8 +438,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
 
   Widget _buildSyncSection(KodiSettingsState settings) {
     final S l = S.of(context);
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.watch(collectionsProvider);
+    final AsyncValue<List<Collection>> collectionsAsync = ref.watch(
+      collectionsProvider,
+    );
 
     final bool hasTarget = _hasValidTarget(settings, collectionsAsync);
     final bool canEnable = settings.hasConnection && hasTarget;
@@ -460,8 +453,8 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           subtitle: settings.enabled
               ? l.kodiEnableSyncActiveSubtitle
               : !canEnable
-                  ? l.kodiEnableSyncDisabledSubtitle
-                  : null,
+              ? l.kodiEnableSyncDisabledSubtitle
+              : null,
           showChevron: false,
           trailing: Switch(
             value: settings.enabled,
@@ -530,11 +523,11 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
 
     final Object? result = await showDialog<Object>(
       context: context,
-      builder: (BuildContext dialogContext) => SimpleDialog(
-        title: Text(S.of(context).importTargetCollection),
+      builder: (BuildContext dialogContext) => GlassDialog(
+        title: S.of(context).importTargetCollection,
         children: <Widget>[
           // Create new.
-          SimpleDialogOption(
+          GlassDialogOption(
             onPressed: () => Navigator.pop(dialogContext, 'create_new'),
             child: Row(
               children: <Widget>[
@@ -548,7 +541,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             const Divider(height: 1, indent: 16, endIndent: 16),
           // Existing collections.
           for (final Collection c in collections)
-            SimpleDialogOption(
+            GlassDialogOption(
               onPressed: () => Navigator.pop(dialogContext, c.id),
               child: Row(
                 children: <Widget>[
@@ -558,10 +551,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                     const SizedBox(width: 18),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: Text(
-                      c.name,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: Text(c.name, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
@@ -624,8 +614,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   constraints: const BoxConstraints(),
                   tooltip: l.kodiCopyLog,
                   onPressed: () {
-                    final String text =
-                        log.map((KodiLogEntry e) => e.formatted).join('\n');
+                    final String text = log
+                        .map((KodiLogEntry e) => e.formatted)
+                        .join('\n');
                     Clipboard.setData(ClipboardData(text: text));
                     context.showSnack(l.kodiLogCopied);
                   },
@@ -651,7 +642,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             constraints: const BoxConstraints(maxHeight: 200),
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: glassTileColor(),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               border: Border.all(color: AppColors.surfaceBorder),
             ),
@@ -678,7 +669,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     );
   }
 
-
   Widget _buildDebugSection(KodiSettingsState settings) {
     final S l = S.of(context);
     return SettingsGroup(
@@ -695,8 +685,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                       ? Icons.check_circle_outline
                       : Icons.error_outline,
                   size: 18,
-                  color:
-                      _connectionOk ? AppColors.statusCompleted : AppColors.error,
+                  color: _connectionOk
+                      ? AppColors.statusCompleted
+                      : AppColors.error,
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
@@ -735,10 +726,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                 .read(kodiSettingsProvider.notifier)
                 .clearLastSyncTimestamp();
             if (mounted) {
-              context.showSnack(
-                l.kodiLastSyncCleared,
-                type: SnackType.success,
-              );
+              context.showSnack(l.kodiLastSyncCleared, type: SnackType.success);
             }
           },
         ),
@@ -808,9 +796,8 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   constraints: const BoxConstraints(maxHeight: 300),
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusSm),
+                    color: glassTileColor(),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     border: Border.all(color: AppColors.surfaceBorder),
                   ),
                   child: Stack(

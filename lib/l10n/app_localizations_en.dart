@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -100,6 +101,9 @@ class SEn extends S {
 
   @override
   String get statusListening => 'Listening';
+
+  @override
+  String get statusReading => 'Reading';
 
   @override
   String get statusInProgress => 'In Progress';
@@ -656,6 +660,99 @@ class SEn extends S {
 
   @override
   String get settingsThemeEva => 'Eva Azure';
+
+  @override
+  String get settingsSkin => 'Style';
+
+  @override
+  String get settingsSkinSubtitle => 'Glass or the classic look';
+
+  @override
+  String get settingsSkinGlass => 'Glass';
+
+  @override
+  String get settingsSkinClassic => 'Classic';
+
+  @override
+  String get settingsCardLook => 'Card style';
+
+  @override
+  String get settingsCardLookSubtitle => 'How posters look in grids';
+
+  @override
+  String get settingsCardLookClassic => 'Classic';
+
+  @override
+  String get settingsCardLookCurved => 'Curved glass';
+
+  @override
+  String get settingsCardLookSlab => 'Slab';
+
+  @override
+  String get settingsCardLookJewel => 'Jewel case';
+
+  @override
+  String get settingsCardLookCinema => 'Cinema';
+
+  @override
+  String get settingsCardLookShelf => 'Shelf';
+
+  @override
+  String get settingsCardLookTilt => 'Tilt';
+
+  @override
+  String get settingsCardLookKino => 'Hover sheet';
+
+  @override
+  String get settingsCardLookMinimal => 'Minimal';
+
+  @override
+  String get settingsCardLookRibbon => 'Ribbon';
+
+  @override
+  String get settingsProxy => 'Proxy';
+
+  @override
+  String get settingsProxySubtitle =>
+      'Send the app\'s traffic through a local HTTP proxy';
+
+  @override
+  String get settingsProxyHint =>
+      'Enter the local HTTP port your VPN app opens (the Clash mixed port is usually 7890). Addresses on your own network always connect directly.';
+
+  @override
+  String get settingsProxyEnabled => 'Enable proxy';
+
+  @override
+  String get settingsProxyHost => 'Host';
+
+  @override
+  String get settingsProxyPort => 'Port';
+
+  @override
+  String get settingsProxyInvalid =>
+      'Enter a host name or IP address and a port from 1 to 65535';
+
+  @override
+  String get settingsWallpaper => 'Wallpaper';
+
+  @override
+  String get settingsWallpaperSubtitle => 'Picture behind the glass frame';
+
+  @override
+  String get settingsWallpaperDefault => 'Default';
+
+  @override
+  String get settingsWallpaperCustom => 'Your image';
+
+  @override
+  String get settingsWallpaperChoose => 'Choose image…';
+
+  @override
+  String get settingsWallpaperReset => 'Reset to default';
+
+  @override
+  String get settingsWallpaperError => 'Could not save the wallpaper';
 
   @override
   String get settingsAppLanguageSubtitle => 'Interface language';
@@ -4696,6 +4793,21 @@ class SEn extends S {
   String get settingsIntegrations => 'Integrations';
 
   @override
+  String get settingsTabProfile => 'Profile';
+
+  @override
+  String get settingsTabData => 'Data';
+
+  @override
+  String get settingsAppearanceThemeLanguage => 'Theme & language';
+
+  @override
+  String get settingsAppearanceLibrary => 'Library';
+
+  @override
+  String get settingsAppearanceScale => 'Scale';
+
+  @override
   String get settingsKodiSubtitle => 'Watch sync from Kodi media player';
 
   @override
@@ -6242,4 +6354,30 @@ class SEn extends S {
   String collectionImportSynced(String source, int count) {
     return '$source synced: $count new';
   }
+
+  @override
+  String get completeEpisodesTitle => 'Not every episode is watched';
+
+  @override
+  String get completeEpisodesBody =>
+      'Some episodes are not marked as watched. What should happen to them?';
+
+  @override
+  String get completeEpisodesMarkRest => 'Mark the rest as watched today';
+
+  @override
+  String get completeEpisodesKeep => 'Complete without marking';
+
+  @override
+  String get clearEpisodesTitle => 'Remove episode marks?';
+
+  @override
+  String get clearEpisodesBody =>
+      'Some episodes are marked as watched. Their watch dates feed your statistics.';
+
+  @override
+  String get clearEpisodesRemove => 'Remove marks';
+
+  @override
+  String get clearEpisodesKeep => 'Keep marks';
 }

@@ -34,7 +34,7 @@ Before creating an issue:
 
 ## Tech Stack
 
-Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3
+Flutter 3.50+ / Dart 3.14+ · Riverpod · SQLite · Dio · Material Design 3
 
 ## Technical Documentation
 
@@ -43,6 +43,7 @@ Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3
 | [Architecture](ARCHITECTURE.md) | Project structure, models, database |
 | [Export Format](RCOLL_FORMAT.md) | `.xcoll` / `.xcollx` file format spec |
 | [Gamepad Support](GAMEPAD.md) | Xbox controller / D-pad navigation |
+| [Themes](THEMES.md) | Palettes (colours) and skins (surfaces): how to add one |
 | [Changelog](../CHANGELOG.md) | Version history |
 
 ---

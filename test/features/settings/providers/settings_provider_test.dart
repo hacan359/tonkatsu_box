@@ -8,7 +8,9 @@ import 'package:tonkatsu_box/core/api/tmdb_api.dart';
 import 'package:tonkatsu_box/core/database/database_service.dart';
 import 'package:tonkatsu_box/features/settings/providers/settings_provider.dart';
 import 'package:tonkatsu_box/core/services/api_key_initializer.dart';
+import 'package:tonkatsu_box/core/services/wallpaper_service.dart';
 import 'package:tonkatsu_box/shared/constants/api_defaults.dart';
+import 'package:tonkatsu_box/shared/theme/app_skin_id.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -19,8 +21,10 @@ void main() {
   late MockDatabaseService mockDbService;
   late MockGameDao mockGameDao;
   late SharedPreferences prefs;
+  late MockWallpaperService mockWallpaper;
 
   setUp(() async {
+    mockWallpaper = MockWallpaperService();
     mockIgdbApi = MockIgdbApi();
     mockSteamGridDbApi = MockSteamGridDbApi();
     mockTmdbApi = MockTmdbApi();
@@ -31,10 +35,12 @@ void main() {
     when(() => mockGameDao.getPlatformCount()).thenAnswer((_) async => 0);
 
     // No real API in tests; force the OAuth call to fail.
-    when(() => mockIgdbApi.getAccessToken(
-          clientId: any(named: 'clientId'),
-          clientSecret: any(named: 'clientSecret'),
-        )).thenThrow(const IgdbApiException('Test: no real API'));
+    when(
+      () => mockIgdbApi.getAccessToken(
+        clientId: any(named: 'clientId'),
+        clientSecret: any(named: 'clientSecret'),
+      ),
+    ).thenThrow(const IgdbApiException('Test: no real API'));
   });
 
   Future<ProviderContainer> createContainer({
@@ -51,6 +57,7 @@ void main() {
         steamGridDbApiProvider.overrideWithValue(mockSteamGridDbApi),
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
         databaseServiceProvider.overrideWithValue(mockDbService),
+        wallpaperServiceProvider.overrideWithValue(mockWallpaper),
       ],
     );
     addTearDown(container.dispose);
@@ -90,9 +97,7 @@ void main() {
     });
 
     test('hasCredentials false когда clientSecret null', () {
-      const SettingsState state = SettingsState(
-        clientId: 'cid',
-      );
+      const SettingsState state = SettingsState(clientId: 'cid');
       expect(state.hasCredentials, isFalse);
     });
   });
@@ -105,26 +110,25 @@ void main() {
       );
     });
 
-    test('collectionViewModePrefix должен формировать ключ по collectionId',
-        () {
-      const int collectionId = 42;
-      const String key =
-          '${SettingsKeys.collectionViewModePrefix}$collectionId';
-      expect(key, equals('collection_view_mode_42'));
-    });
+    test(
+      'collectionViewModePrefix должен формировать ключ по collectionId',
+      () {
+        const int collectionId = 42;
+        const String key =
+            '${SettingsKeys.collectionViewModePrefix}$collectionId';
+        expect(key, equals('collection_view_mode_42'));
+      },
+    );
   });
 
   group('SettingsNotifier', () {
     group('build / _loadFromPrefs', () {
       test('должен загрузить TMDB ключ из prefs в state', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'saved_tmdb_key',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'saved_tmdb_key'},
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, equals('saved_tmdb_key'));
         // API key is set via apiKeysProvider, not _loadFromPrefs.
@@ -134,8 +138,7 @@ void main() {
       test('tmdbApiKey null когда ключ отсутствует', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, isNull);
         verifyNever(() => mockTmdbApi.setApiKey(any()));
@@ -143,13 +146,10 @@ void main() {
 
       test('tmdbApiKey null когда ключ пустой', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': '',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': ''},
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         // Empty string in prefs falls back to built-in (absent in tests).
         expect(state.tmdbApiKey, isNull);
@@ -163,8 +163,7 @@ void main() {
           },
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.steamGridDbApiKey, equals('saved_sgdb_key'));
         verifyNever(() => mockSteamGridDbApi.setApiKey(any()));
@@ -186,8 +185,7 @@ void main() {
           },
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.clientId, equals('cid'));
         expect(state.clientSecret, equals('csecret'));
@@ -196,10 +194,12 @@ void main() {
         expect(state.steamGridDbApiKey, equals('sgdb_key'));
         expect(state.tmdbApiKey, equals('tmdb_key'));
 
-        verifyNever(() => mockIgdbApi.setCredentials(
-              clientId: any(named: 'clientId'),
-              accessToken: any(named: 'accessToken'),
-            ));
+        verifyNever(
+          () => mockIgdbApi.setCredentials(
+            clientId: any(named: 'clientId'),
+            accessToken: any(named: 'accessToken'),
+          ),
+        );
         verifyNever(() => mockSteamGridDbApi.setApiKey(any()));
         verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
@@ -209,13 +209,13 @@ void main() {
       test('should preserve ключ в prefs и обновить состояние', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.setTmdbApiKey('new_tmdb_key');
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, equals('new_tmdb_key'));
         expect(prefs.getString('tmdb_api_key'), equals('new_tmdb_key'));
@@ -224,51 +224,52 @@ void main() {
 
       test('should delete ключ из prefs при пустой строке', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'existing_key',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'existing_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.setTmdbApiKey('');
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, equals(''));
         expect(prefs.getString('tmdb_api_key'), isNull);
         verify(() => mockTmdbApi.clearApiKey()).called(1);
       });
 
-      test('should call setApiKey а не clearApiKey при непустом ключе',
-          () async {
-        final ProviderContainer container = await createContainer();
+      test(
+        'should call setApiKey а не clearApiKey при непустом ключе',
+        () async {
+          final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+          final SettingsNotifier notifier = container.read(
+            settingsNotifierProvider.notifier,
+          );
 
-        await notifier.setTmdbApiKey('abc123');
+          await notifier.setTmdbApiKey('abc123');
 
-        verify(() => mockTmdbApi.setApiKey('abc123')).called(1);
-        verifyNever(() => mockTmdbApi.clearApiKey());
-      });
+          verify(() => mockTmdbApi.setApiKey('abc123')).called(1);
+          verifyNever(() => mockTmdbApi.clearApiKey());
+        },
+      );
     });
 
     group('setTmdbLanguage', () {
       test('should persist language to prefs and update state', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         // A non-default value, so the init-time setLanguage(default) call
         // doesn't get counted against this verify.
         await notifier.setTmdbLanguage('ru-RU');
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbLanguage, equals('ru-RU'));
         expect(prefs.getString('tmdb_language'), equals('ru-RU'));
@@ -278,21 +279,17 @@ void main() {
       test('should use en-US by default', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbLanguage, equals('en-US'));
       });
 
       test('должен загрузить язык из prefs при инициализации', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_language': 'en-US',
-          },
+          initialPrefs: <String, Object>{'tmdb_language': 'en-US'},
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbLanguage, equals('en-US'));
         verify(() => mockTmdbApi.setLanguage('en-US')).called(1);
@@ -303,36 +300,31 @@ void main() {
       test('should preserve ключ в prefs и обновить состояние', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.setSteamGridDbApiKey('new_sgdb_key');
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.steamGridDbApiKey, equals('new_sgdb_key'));
-        expect(
-          prefs.getString('steamgriddb_api_key'),
-          equals('new_sgdb_key'),
-        );
+        expect(prefs.getString('steamgriddb_api_key'), equals('new_sgdb_key'));
         verify(() => mockSteamGridDbApi.setApiKey('new_sgdb_key')).called(1);
       });
 
       test('should delete ключ из prefs при пустой строке', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': 'existing_key',
-          },
+          initialPrefs: <String, Object>{'steamgriddb_api_key': 'existing_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.setSteamGridDbApiKey('');
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.steamGridDbApiKey, equals(''));
         expect(prefs.getString('steamgriddb_api_key'), isNull);
@@ -386,6 +378,152 @@ void main() {
       });
     });
 
+    group('pickWallpaper', () {
+      test(
+        'should store the saved copy when the user picks an image',
+        () async {
+          when(
+            () => mockWallpaper.pickAndSave(
+              dialogTitle: any(named: 'dialogTitle'),
+              oldPath: any(named: 'oldPath'),
+            ),
+          ).thenAnswer((_) async => '/wp/new.png');
+          final ProviderContainer container = await createContainer(
+            initialPrefs: <String, Object>{'wallpaper_path': '/wp/old.png'},
+          );
+
+          final bool picked = await container
+              .read(settingsNotifierProvider.notifier)
+              .pickWallpaper(dialogTitle: 'Wallpaper');
+
+          expect(picked, isTrue);
+          expect(
+            container.read(settingsNotifierProvider).wallpaperPath,
+            '/wp/new.png',
+          );
+          expect(prefs.getString('wallpaper_path'), '/wp/new.png');
+          verify(
+            () => mockWallpaper.pickAndSave(
+              dialogTitle: 'Wallpaper',
+              oldPath: '/wp/old.png',
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'should keep the current wallpaper when the picker is cancelled',
+        () async {
+          when(
+            () => mockWallpaper.pickAndSave(
+              dialogTitle: any(named: 'dialogTitle'),
+              oldPath: any(named: 'oldPath'),
+            ),
+          ).thenAnswer((_) async => null);
+          final ProviderContainer container = await createContainer(
+            initialPrefs: <String, Object>{'wallpaper_path': '/wp/old.png'},
+          );
+
+          final bool picked = await container
+              .read(settingsNotifierProvider.notifier)
+              .pickWallpaper(dialogTitle: 'Wallpaper');
+
+          expect(picked, isFalse);
+          expect(
+            container.read(settingsNotifierProvider).wallpaperPath,
+            '/wp/old.png',
+          );
+        },
+      );
+
+      test('should rethrow and keep state when the copy fails', () async {
+        when(
+          () => mockWallpaper.pickAndSave(
+            dialogTitle: any(named: 'dialogTitle'),
+            oldPath: any(named: 'oldPath'),
+          ),
+        ).thenThrow(const WallpaperSaveException('disk full'));
+        final ProviderContainer container = await createContainer();
+
+        await expectLater(
+          container
+              .read(settingsNotifierProvider.notifier)
+              .pickWallpaper(dialogTitle: 'Wallpaper'),
+          throwsA(isA<WallpaperSaveException>()),
+        );
+        expect(container.read(settingsNotifierProvider).wallpaperPath, isNull);
+        expect(prefs.getString('wallpaper_path'), isNull);
+      });
+    });
+
+    group('resetWallpaper', () {
+      test('should clear the setting and delete the copy', () async {
+        when(() => mockWallpaper.delete(any())).thenAnswer((_) async {});
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{'wallpaper_path': '/wp/old.png'},
+        );
+
+        await container
+            .read(settingsNotifierProvider.notifier)
+            .resetWallpaper();
+
+        expect(container.read(settingsNotifierProvider).wallpaperPath, isNull);
+        expect(prefs.getString('wallpaper_path'), isNull);
+        verify(() => mockWallpaper.delete('/wp/old.png')).called(1);
+      });
+
+      test('should do nothing when no custom wallpaper is set', () async {
+        final ProviderContainer container = await createContainer();
+
+        await container
+            .read(settingsNotifierProvider.notifier)
+            .resetWallpaper();
+
+        verifyNever(() => mockWallpaper.delete(any()));
+      });
+    });
+
+    group('setAppSkin', () {
+      test('пишет app_skin и skip_picker_once', () async {
+        final ProviderContainer container = await createContainer();
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
+
+        await notifier.setAppSkin(AppSkinId.classic);
+
+        expect(
+          container.read(settingsNotifierProvider).appSkin,
+          AppSkinId.classic,
+        );
+        expect(prefs.getString('app_skin'), 'classic');
+        expect(prefs.getBool('skip_picker_once'), isTrue);
+      });
+
+      test('тот же стиль ничего не пишет', () async {
+        final ProviderContainer container = await createContainer();
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
+
+        await notifier.setAppSkin(AppSkinId.glass);
+
+        expect(prefs.getString('app_skin'), isNull);
+        expect(prefs.getBool('skip_picker_once'), isNull);
+      });
+
+      test('читает сохранённый стиль при старте', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{'app_skin': 'classic'},
+        );
+
+        expect(
+          container.read(settingsNotifierProvider).appSkin,
+          AppSkinId.classic,
+        );
+      });
+    });
+
     group('clearSettings', () {
       test('должен очистить все настройки включая TMDB ключ', () async {
         final ProviderContainer container = await createContainer(
@@ -400,8 +538,9 @@ void main() {
           },
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         SettingsState state = container.read(settingsNotifierProvider);
         expect(state.tmdbApiKey, equals('tmdb_key'));
@@ -442,13 +581,13 @@ void main() {
           },
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.clearSettings();
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.isLoading, isFalse);
         expect(state.errorMessage, isNull);
@@ -460,17 +599,17 @@ void main() {
 
     group('validateTmdbKey', () {
       test('возвращает true при валидном ключе', () async {
-        when(() => mockTmdbApi.validateApiKey('valid_key'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockTmdbApi.validateApiKey('valid_key'),
+        ).thenAnswer((_) async => true);
 
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'valid_key',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'valid_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateTmdbKey();
 
@@ -479,17 +618,17 @@ void main() {
       });
 
       test('возвращает false при невалидном ключе', () async {
-        when(() => mockTmdbApi.validateApiKey('bad_key'))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockTmdbApi.validateApiKey('bad_key'),
+        ).thenAnswer((_) async => false);
 
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'bad_key',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'bad_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateTmdbKey();
 
@@ -499,8 +638,9 @@ void main() {
       test('возвращает false когда TMDB ключ не задан', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateTmdbKey();
 
@@ -510,13 +650,12 @@ void main() {
 
       test('возвращает false когда TMDB ключ пуст', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': '',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': ''},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateTmdbKey();
 
@@ -527,17 +666,17 @@ void main() {
 
     group('validateSteamGridDbKey', () {
       test('возвращает true при валидном ключе', () async {
-        when(() => mockSteamGridDbApi.validateApiKey('valid_key'))
-            .thenAnswer((_) async => true);
+        when(
+          () => mockSteamGridDbApi.validateApiKey('valid_key'),
+        ).thenAnswer((_) async => true);
 
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': 'valid_key',
-          },
+          initialPrefs: <String, Object>{'steamgriddb_api_key': 'valid_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateSteamGridDbKey();
 
@@ -546,17 +685,17 @@ void main() {
       });
 
       test('возвращает false при невалидном ключе', () async {
-        when(() => mockSteamGridDbApi.validateApiKey('bad_key'))
-            .thenAnswer((_) async => false);
+        when(
+          () => mockSteamGridDbApi.validateApiKey('bad_key'),
+        ).thenAnswer((_) async => false);
 
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': 'bad_key',
-          },
+          initialPrefs: <String, Object>{'steamgriddb_api_key': 'bad_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateSteamGridDbKey();
 
@@ -566,8 +705,9 @@ void main() {
       test('возвращает false когда SteamGridDB ключ не задан', () async {
         final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         final bool result = await notifier.validateSteamGridDbKey();
 
@@ -577,54 +717,54 @@ void main() {
     });
 
     group('setCredentials', () {
-      test('should preserve credentials в prefs и обновить состояние',
-          () async {
-        final ProviderContainer container = await createContainer();
+      test(
+        'should preserve credentials в prefs и обновить состояние',
+        () async {
+          final ProviderContainer container = await createContainer();
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+          final SettingsNotifier notifier = container.read(
+            settingsNotifierProvider.notifier,
+          );
 
-        await notifier.setCredentials(
-          clientId: 'new_cid',
-          clientSecret: 'new_csecret',
-        );
+          await notifier.setCredentials(
+            clientId: 'new_cid',
+            clientSecret: 'new_csecret',
+          );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+          final SettingsState state = container.read(settingsNotifierProvider);
 
-        expect(state.clientId, equals('new_cid'));
-        expect(state.clientSecret, equals('new_csecret'));
-        expect(prefs.getString('igdb_client_id'), equals('new_cid'));
-        expect(prefs.getString('igdb_client_secret'), equals('new_csecret'));
-        expect(state.errorMessage, isNull);
-      });
+          expect(state.clientId, equals('new_cid'));
+          expect(state.clientSecret, equals('new_csecret'));
+          expect(prefs.getString('igdb_client_id'), equals('new_cid'));
+          expect(prefs.getString('igdb_client_secret'), equals('new_csecret'));
+          expect(state.errorMessage, isNull);
+        },
+      );
     });
 
     group('built-in API key fallback', () {
       // In tests String.fromEnvironment returns '' so ApiDefaults.hasTmdbKey
       // is false; the fallback chain is user → built-in → null.
 
-      test('при отсутствии user key и built-in key — tmdbApiKey == null',
-          () async {
-        final ProviderContainer container = await createContainer();
+      test(
+        'при отсутствии user key и built-in key — tmdbApiKey == null',
+        () async {
+          final ProviderContainer container = await createContainer();
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+          final SettingsState state = container.read(settingsNotifierProvider);
 
-        expect(state.tmdbApiKey, isNull);
-        expect(state.hasTmdbKey, isFalse);
-        expect(state.isTmdbKeyBuiltIn, isFalse);
-      });
+          expect(state.tmdbApiKey, isNull);
+          expect(state.hasTmdbKey, isFalse);
+          expect(state.isTmdbKeyBuiltIn, isFalse);
+        },
+      );
 
       test('при наличии user key — использует user key', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'user_key_123',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'user_key_123'},
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, equals('user_key_123'));
         expect(state.hasTmdbKey, isTrue);
@@ -633,40 +773,33 @@ void main() {
 
       test('isTmdbKeyBuiltIn false когда built-in ключ отсутствует', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'any_key',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'any_key'},
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.isTmdbKeyBuiltIn, isFalse);
       });
 
-      test('isSteamGridDbKeyBuiltIn false когда built-in ключ отсутствует',
-          () async {
-        final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': 'any_key',
-          },
-        );
+      test(
+        'isSteamGridDbKeyBuiltIn false когда built-in ключ отсутствует',
+        () async {
+          final ProviderContainer container = await createContainer(
+            initialPrefs: <String, Object>{'steamgriddb_api_key': 'any_key'},
+          );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+          final SettingsState state = container.read(settingsNotifierProvider);
 
-        expect(state.isSteamGridDbKeyBuiltIn, isFalse);
-      });
+          expect(state.isSteamGridDbKeyBuiltIn, isFalse);
+        },
+      );
 
       test('when empty SteamGridDB key в prefs — fallback на null', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': '',
-          },
+          initialPrefs: <String, Object>{'steamgriddb_api_key': ''},
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.steamGridDbApiKey, isNull);
         expect(state.hasSteamGridDbKey, isFalse);
@@ -680,8 +813,7 @@ void main() {
           },
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.isIgdbKeyBuiltIn, isFalse);
         expect(state.hasCredentials, isTrue);
@@ -689,18 +821,19 @@ void main() {
         expect(state.clientSecret, equals('user_csecret'));
       });
 
-      test('при отсутствии user IGDB key и built-in — credentials null',
-          () async {
-        final ProviderContainer container = await createContainer();
+      test(
+        'при отсутствии user IGDB key и built-in — credentials null',
+        () async {
+          final ProviderContainer container = await createContainer();
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+          final SettingsState state = container.read(settingsNotifierProvider);
 
-        expect(state.clientId, isNull);
-        expect(state.clientSecret, isNull);
-        expect(state.hasCredentials, isFalse);
-        expect(state.isIgdbKeyBuiltIn, isFalse);
-      });
+          expect(state.clientId, isNull);
+          expect(state.clientSecret, isNull);
+          expect(state.hasCredentials, isFalse);
+          expect(state.isIgdbKeyBuiltIn, isFalse);
+        },
+      );
 
       test('when empty IGDB key в prefs — fallback на null', () async {
         final ProviderContainer container = await createContainer(
@@ -710,8 +843,7 @@ void main() {
           },
         );
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
+        final SettingsState state = container.read(settingsNotifierProvider);
 
         expect(state.clientId, isNull);
         expect(state.clientSecret, isNull);
@@ -730,8 +862,9 @@ void main() {
           },
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.resetIgdbCredentialsToDefault();
 
@@ -741,102 +874,102 @@ void main() {
         expect(prefs.getInt('igdb_token_expires'), isNull);
       });
 
-      test('должен очистить API клиент когда built-in ключ отсутствует',
-          () async {
-        final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'igdb_client_id': 'user_cid',
-            'igdb_client_secret': 'user_csecret',
-          },
-        );
+      test(
+        'должен очистить API клиент когда built-in ключ отсутствует',
+        () async {
+          final ProviderContainer container = await createContainer(
+            initialPrefs: <String, Object>{
+              'igdb_client_id': 'user_cid',
+              'igdb_client_secret': 'user_csecret',
+            },
+          );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+          final SettingsNotifier notifier = container.read(
+            settingsNotifierProvider.notifier,
+          );
 
-        await notifier.resetIgdbCredentialsToDefault();
+          await notifier.resetIgdbCredentialsToDefault();
 
-        verify(() => mockIgdbApi.clearCredentials()).called(1);
+          verify(() => mockIgdbApi.clearCredentials()).called(1);
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
-        expect(state.clientId, equals(''));
-        expect(state.clientSecret, equals(''));
-        expect(state.connectionStatus, equals(ConnectionStatus.unknown));
-      });
+          final SettingsState state = container.read(settingsNotifierProvider);
+          expect(state.clientId, equals(''));
+          expect(state.clientSecret, equals(''));
+          expect(state.connectionStatus, equals(ConnectionStatus.unknown));
+        },
+      );
     });
 
     group('resetTmdbApiKeyToDefault', () {
       test('should delete user key из prefs', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'user_key',
-          },
+          initialPrefs: <String, Object>{'tmdb_api_key': 'user_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.resetTmdbApiKeyToDefault();
 
         expect(prefs.getString('tmdb_api_key'), isNull);
       });
 
-      test('должен очистить API клиент когда built-in ключ отсутствует',
-          () async {
-        final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'tmdb_api_key': 'user_key',
-          },
-        );
+      test(
+        'должен очистить API клиент когда built-in ключ отсутствует',
+        () async {
+          final ProviderContainer container = await createContainer(
+            initialPrefs: <String, Object>{'tmdb_api_key': 'user_key'},
+          );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+          final SettingsNotifier notifier = container.read(
+            settingsNotifierProvider.notifier,
+          );
 
-        await notifier.resetTmdbApiKeyToDefault();
+          await notifier.resetTmdbApiKeyToDefault();
 
-        verify(() => mockTmdbApi.clearApiKey()).called(1);
+          verify(() => mockTmdbApi.clearApiKey()).called(1);
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
-        expect(state.tmdbApiKey, equals(''));
-      });
+          final SettingsState state = container.read(settingsNotifierProvider);
+          expect(state.tmdbApiKey, equals(''));
+        },
+      );
     });
 
     group('resetSteamGridDbApiKeyToDefault', () {
       test('should delete user key из prefs', () async {
         final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': 'user_key',
-          },
+          initialPrefs: <String, Object>{'steamgriddb_api_key': 'user_key'},
         );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+        final SettingsNotifier notifier = container.read(
+          settingsNotifierProvider.notifier,
+        );
 
         await notifier.resetSteamGridDbApiKeyToDefault();
 
         expect(prefs.getString('steamgriddb_api_key'), isNull);
       });
 
-      test('должен очистить API клиент когда built-in ключ отсутствует',
-          () async {
-        final ProviderContainer container = await createContainer(
-          initialPrefs: <String, Object>{
-            'steamgriddb_api_key': 'user_key',
-          },
-        );
+      test(
+        'должен очистить API клиент когда built-in ключ отсутствует',
+        () async {
+          final ProviderContainer container = await createContainer(
+            initialPrefs: <String, Object>{'steamgriddb_api_key': 'user_key'},
+          );
 
-        final SettingsNotifier notifier =
-            container.read(settingsNotifierProvider.notifier);
+          final SettingsNotifier notifier = container.read(
+            settingsNotifierProvider.notifier,
+          );
 
-        await notifier.resetSteamGridDbApiKeyToDefault();
+          await notifier.resetSteamGridDbApiKeyToDefault();
 
-        verify(() => mockSteamGridDbApi.clearApiKey()).called(1);
+          verify(() => mockSteamGridDbApi.clearApiKey()).called(1);
 
-        final SettingsState state =
-            container.read(settingsNotifierProvider);
-        expect(state.steamGridDbApiKey, equals(''));
-      });
+          final SettingsState state = container.read(settingsNotifierProvider);
+          expect(state.steamGridDbApiKey, equals(''));
+        },
+      );
     });
   });
 

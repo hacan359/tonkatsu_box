@@ -21,7 +21,6 @@ import 'package:core/models/tracker_game_data.dart';
 import 'package:core/models/tracker_profile.dart';
 import 'package:core/models/wishlist_item.dart';
 import 'package:core/models/xcoll_file.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -29,12 +28,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../data/repositories/collection_repository.dart';
-import '../../shared/constants/platform_features.dart';
 import '../../data/repositories/wishlist_repository.dart';
 import '../database/database_service.dart';
 import 'config_service.dart';
 import 'export_service.dart';
 import 'import_service.dart';
+import '../../shared/services/file_dialogs.dart';
 
 const int backupFormatVersion = 3;
 
@@ -234,22 +233,15 @@ class BackupManifest {
 /// data), the wishlist and settings, restorable in a single operation.
 class BackupService {
   BackupService({
-    required DatabaseService database,
-    required ExportService exportService,
-    required ImportService importService,
-    required ConfigService configService,
-    required CollectionRepository collectionRepo,
-    required WishlistRepository wishlistRepo,
-    TrackerDao? trackerDao,
-    MoodGridDao? moodGridDao,
-  })  : _database = database,
-        _exportService = exportService,
-        _importService = importService,
-        _configService = configService,
-        _collectionRepo = collectionRepo,
-        _wishlistRepo = wishlistRepo,
-        _trackerDao = trackerDao,
-        _moodGridDao = moodGridDao;
+    required this._database,
+    required this._exportService,
+    required this._importService,
+    required this._configService,
+    required this._collectionRepo,
+    required this._wishlistRepo,
+    this._trackerDao,
+    this._moodGridDao,
+  });
 
   static final Logger _log = Logger('BackupService');
 
@@ -511,44 +503,14 @@ class BackupService {
       final String downloadName =
           'tonkatsu-backup-v$appVersion-$dateSuffix.zip';
 
-      // Web: saveFile hands the bytes to the browser as a download and
-      // returns null — there is no cancel to observe.
-      if (kIsWebBuild) {
-        await FilePicker.platform.saveFile(
-          fileName: downloadName,
-          bytes: Uint8List.fromList(zipBytes),
-        );
-        return BackupResult.success(
-          downloadName,
-          collections: collections.length,
-          items: totalItems,
-        );
-      }
-
-      final bool useAny = Platform.isAndroid || Platform.isIOS;
-      final String? outputPath = await FilePicker.platform.saveFile(
+      final String? outputPath = await saveBytesWithDialog(
         dialogTitle: 'Save Backup',
-        fileName: 'tonkatsu-backup-v$appVersion-$dateSuffix.zip',
-        type: useAny ? FileType.any : FileType.custom,
-        allowedExtensions: useAny ? null : <String>['zip'],
+        fileName: downloadName,
         bytes: Uint8List.fromList(zipBytes),
       );
 
       if (outputPath == null) {
         return const BackupResult.cancelled();
-      }
-
-      // On desktop the file must be written manually (mobile uses SAF).
-      if (!Platform.isAndroid && !Platform.isIOS) {
-        final String finalPath =
-            outputPath.endsWith('.zip') ? outputPath : '$outputPath.zip';
-        final File file = File(finalPath);
-        await file.writeAsBytes(zipBytes);
-        return BackupResult.success(
-          finalPath,
-          collections: collections.length,
-          items: totalItems,
-        );
       }
 
       return BackupResult.success(

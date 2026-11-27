@@ -1,17 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/glass_dialog.dart';
 
 class CreateTierListDialog {
   CreateTierListDialog._();
 
   static Future<String?> show(BuildContext context, {String? initialName}) {
-    final TextEditingController controller =
-        TextEditingController(text: initialName ?? '');
+    final TextEditingController controller = TextEditingController(
+      text: initialName ?? '',
+    );
     final S l = S.of(context);
     final Future<String?> result = showDialog<String>(
       context: context,
-      builder: (BuildContext ctx) => AlertDialog(
+      builder: (BuildContext ctx) => GlassAlertDialog(
         title: Text(l.tierListCreateFromCollection),
         content: TextField(
           controller: controller,

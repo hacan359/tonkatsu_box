@@ -1,5 +1,5 @@
 import 'package:core/models/tag.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -10,6 +10,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../providers/global_tags_provider.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/glass_dialog.dart';
 
 /// One editable tag row shared by both tag dialogs: tappable color dots,
 /// name with usage count, rename, delete. [leading] hosts drag or checkbox.
@@ -197,8 +199,9 @@ class _RenameTagDialog extends StatefulWidget {
 }
 
 class _RenameTagDialogState extends State<_RenameTagDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialName);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
 
   @override
   void dispose() {
@@ -209,7 +212,7 @@ class _RenameTagDialogState extends State<_RenameTagDialog> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return AlertDialog(
+    return GlassAlertDialog(
       titlePadding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.md,
@@ -272,7 +275,7 @@ class TagColorDot extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: color ?? AppColors.surfaceLight,
+            color: color ?? glassTileColor(),
             shape: BoxShape.circle,
             border: Border.all(
               color: color != null
@@ -287,8 +290,8 @@ class TagColorDot extends StatelessWidget {
                   color: AppColors.textTertiary,
                 )
               : (icon != null
-                  ? Icon(icon, size: size * 0.6, color: AppColors.onOverlay)
-                  : null),
+                    ? Icon(icon, size: size * 0.6, color: AppColors.onOverlay)
+                    : null),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -99,6 +100,9 @@ class SZh extends S {
 
   @override
   String get statusListening => '收听中';
+
+  @override
+  String get statusReading => '阅读中';
 
   @override
   String get statusInProgress => '进行中';
@@ -609,6 +613,97 @@ class SZh extends S {
 
   @override
   String get settingsThemeEva => 'Eva 蔚蓝';
+
+  @override
+  String get settingsSkin => '风格';
+
+  @override
+  String get settingsSkinSubtitle => '玻璃或经典外观';
+
+  @override
+  String get settingsSkinGlass => '玻璃';
+
+  @override
+  String get settingsSkinClassic => '经典';
+
+  @override
+  String get settingsCardLook => '卡片样式';
+
+  @override
+  String get settingsCardLookSubtitle => '海报在网格中的外观';
+
+  @override
+  String get settingsCardLookClassic => '经典';
+
+  @override
+  String get settingsCardLookCurved => '曲面玻璃';
+
+  @override
+  String get settingsCardLookSlab => '厚块';
+
+  @override
+  String get settingsCardLookJewel => '光盘盒';
+
+  @override
+  String get settingsCardLookCinema => '影院';
+
+  @override
+  String get settingsCardLookShelf => '书架';
+
+  @override
+  String get settingsCardLookTilt => '倾斜';
+
+  @override
+  String get settingsCardLookKino => '悬停面板';
+
+  @override
+  String get settingsCardLookMinimal => '极简';
+
+  @override
+  String get settingsCardLookRibbon => '条带';
+
+  @override
+  String get settingsProxy => '代理设置';
+
+  @override
+  String get settingsProxySubtitle => '通过本地 HTTP 代理转发应用流量';
+
+  @override
+  String get settingsProxyHint =>
+      '填写你的 VPN 应用开放的本地 HTTP 端口（Clash 混合端口通常为 7890）。本地网络地址始终直连。';
+
+  @override
+  String get settingsProxyEnabled => '启用代理';
+
+  @override
+  String get settingsProxyHost => '主机';
+
+  @override
+  String get settingsProxyPort => '端口';
+
+  @override
+  String get settingsProxyInvalid => '请输入主机名或 IP 地址，以及 1 到 65535 之间的端口';
+
+  @override
+  String get settingsWallpaper => '壁纸';
+
+  @override
+  String get settingsWallpaperSubtitle => '玻璃框架后的图片';
+
+  @override
+  String get settingsWallpaperDefault => '默认';
+
+  @override
+  String get settingsWallpaperCustom => '自定义图片';
+
+  @override
+  String get settingsWallpaperChoose => '选择图片…';
+
+  @override
+  String get settingsWallpaperReset => '恢复默认';
+
+  @override
+  String get settingsWallpaperError => '无法保存壁纸';
 
   @override
   String get settingsAppLanguageSubtitle => '界面语言';
@@ -4464,6 +4559,21 @@ class SZh extends S {
   String get settingsIntegrations => '集成';
 
   @override
+  String get settingsTabProfile => '个人资料';
+
+  @override
+  String get settingsTabData => '数据';
+
+  @override
+  String get settingsAppearanceThemeLanguage => '主题与语言';
+
+  @override
+  String get settingsAppearanceLibrary => '媒体库';
+
+  @override
+  String get settingsAppearanceScale => '缩放';
+
+  @override
   String get settingsKodiSubtitle => '从 Kodi 媒体播放器同步观看记录';
 
   @override
@@ -5929,4 +6039,28 @@ class SZh extends S {
   String collectionImportSynced(String source, int count) {
     return '$source 已同步：新增 $count';
   }
+
+  @override
+  String get completeEpisodesTitle => '还有未看的剧集';
+
+  @override
+  String get completeEpisodesBody => '部分剧集尚未标记为已看。要如何处理？';
+
+  @override
+  String get completeEpisodesMarkRest => '将其余剧集标记为今天已看';
+
+  @override
+  String get completeEpisodesKeep => '仅标记完成，不标记剧集';
+
+  @override
+  String get clearEpisodesTitle => '移除剧集标记？';
+
+  @override
+  String get clearEpisodesBody => '有剧集已标记为已看，其日期会计入统计。';
+
+  @override
+  String get clearEpisodesRemove => '移除标记';
+
+  @override
+  String get clearEpisodesKeep => '保留标记';
 }

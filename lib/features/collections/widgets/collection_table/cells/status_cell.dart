@@ -1,12 +1,13 @@
 import 'package:core/models/item_status.dart';
 import 'package:core/models/media_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/theme/app_colors.dart';
 import '../../../../../shared/theme/app_spacing.dart';
 import '../../../../../shared/theme/app_typography.dart';
 import '../../../../../shared/constants/item_status_ui.dart';
+import '../../../../../shared/utils/menu_position.dart';
 
 class StatusCell extends StatelessWidget {
   const StatusCell({
@@ -40,10 +41,7 @@ class StatusCell extends StatelessWidget {
             Container(
               width: 6,
               height: 6,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
             Flexible(
@@ -69,16 +67,13 @@ class StatusCell extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _showStatusPopup(context, l),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: chip,
-      ),
+      child: MouseRegion(cursor: SystemMouseCursors.click, child: chip),
     );
   }
 
   void _showStatusPopup(BuildContext context, S l) {
     final RenderBox box = context.findRenderObject()! as RenderBox;
-    final Offset offset = box.localToGlobal(Offset.zero);
+    final Offset offset = toMenuSpace(context, box.localToGlobal(Offset.zero));
     final Size size = box.size;
 
     showMenu<ItemStatus>(
@@ -106,11 +101,7 @@ class StatusCell extends StatelessWidget {
               ),
               const Spacer(),
               if (s == status)
-                Icon(
-                  Icons.check_rounded,
-                  size: 16,
-                  color: AppColors.brand,
-                ),
+                Icon(Icons.check_rounded, size: 16, color: AppColors.brand),
             ],
           ),
         );

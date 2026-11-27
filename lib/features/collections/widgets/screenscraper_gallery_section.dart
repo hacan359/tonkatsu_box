@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:core/api/image_proxy.dart';
 import 'package:core/models/image_type.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +15,9 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/screenscraper_provider.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/image_placeholder.dart';
+import '../../../shared/utils/menu_position.dart';
 
 /// Display preference for the SS gallery: full set vs only in-game screenshots.
 enum ScreenScraperGalleryMode { full, screenshotsOnly }
@@ -105,8 +108,9 @@ class ScreenScraperGallerySection extends ConsumerWidget {
           const SizedBox(width: AppSpacing.sm),
           Text(
             l.screenScraperLoading,
-            style: AppTypography.caption
-                .copyWith(color: AppColors.textSecondary),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -175,12 +179,9 @@ class ScreenScraperGallerySection extends ConsumerWidget {
     return out;
   }
 
-  Widget _buildGallery(
-    BuildContext context,
-    S l,
-    List<_GalleryEntry> entries,
-  ) {
-    final bool isScreenshotsOnly = mode == ScreenScraperGalleryMode.screenshotsOnly;
+  Widget _buildGallery(BuildContext context, S l, List<_GalleryEntry> entries) {
+    final bool isScreenshotsOnly =
+        mode == ScreenScraperGalleryMode.screenshotsOnly;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -203,8 +204,9 @@ class ScreenScraperGallerySection extends ConsumerWidget {
                 isScreenshotsOnly
                     ? l.screenScraperScreenshotsTitle
                     : l.screenScraperGalleryTitle,
-                style: AppTypography.cardTitle
-                    .copyWith(color: AppColors.textPrimary),
+                style: AppTypography.cardTitle.copyWith(
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -216,8 +218,7 @@ class ScreenScraperGallerySection extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
               itemCount: entries.length,
-              separatorBuilder: (_, _) =>
-                  const SizedBox(width: AppSpacing.sm),
+              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
               itemBuilder: (BuildContext context, int i) {
                 final _GalleryEntry e = entries[i];
                 return _Thumbnail(
@@ -281,12 +282,7 @@ class _Thumbnail extends StatelessWidget {
     if (setAsCover == null) return;
     final bool? picked = await showMenu<bool>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
+      position: menuRectAt(context, position),
       items: <PopupMenuEntry<bool>>[
         PopupMenuItem<bool>(
           value: true,
@@ -324,17 +320,9 @@ class _Thumbnail extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: entry.imageUrl,
                 fit: BoxFit.cover,
-                placeholder: (_, _) => Container(
-                  color: AppColors.surface,
-                  alignment: Alignment.center,
-                  child: const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
+                placeholder: (_, _) => const ImagePlaceholder(showIcon: false),
                 errorWidget: (_, _, _) => Container(
-                  color: AppColors.surface,
+                  color: glassTileColor(),
                   alignment: Alignment.center,
                   child: Icon(
                     Icons.broken_image_outlined,
@@ -349,8 +337,9 @@ class _Thumbnail extends StatelessWidget {
             width: width,
             child: Text(
               entry.label,
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textSecondary),
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -387,8 +376,10 @@ class _HorizontalScrollState extends State<_HorizontalScroll> {
     final double delta = event.scrollDelta.dy != 0
         ? event.scrollDelta.dy
         : event.scrollDelta.dx;
-    final double target =
-        (_controller.offset + delta).clamp(0.0, _controller.position.maxScrollExtent);
+    final double target = (_controller.offset + delta).clamp(
+      0.0,
+      _controller.position.maxScrollExtent,
+    );
     _controller.jumpTo(target);
   }
 
@@ -412,18 +403,15 @@ class _DesktopDragScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => <PointerDeviceKind>{
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+  };
 }
 
 class _FullscreenViewer extends StatefulWidget {
-  const _FullscreenViewer({
-    required this.entries,
-    required this.initialIndex,
-  });
+  const _FullscreenViewer({required this.entries, required this.initialIndex});
 
   final List<_GalleryEntry> entries;
   final int initialIndex;
@@ -433,8 +421,9 @@ class _FullscreenViewer extends StatefulWidget {
 }
 
 class _FullscreenViewerState extends State<_FullscreenViewer> {
-  late final PageController _controller =
-      PageController(initialPage: widget.initialIndex);
+  late final PageController _controller = PageController(
+    initialPage: widget.initialIndex,
+  );
   late int _current = widget.initialIndex;
   final FocusNode _focusNode = FocusNode();
 

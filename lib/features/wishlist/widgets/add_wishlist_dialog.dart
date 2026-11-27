@@ -1,6 +1,6 @@
 import 'package:core/models/media_type.dart';
 import 'package:core/models/wishlist_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
