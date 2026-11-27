@@ -22,6 +22,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.38+"></a>
   <a href="https://discord.gg/JZVNPF7cS2"><img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://boosty.to/mastermates"><img src="https://img.shields.io/badge/Boosty-support-F15F2C?logo=boosty&logoColor=white" alt="Support on Boosty"></a>
 </p>
 
 <p align="center">
@@ -57,7 +58,7 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 
 ## Contents
 
-[Languages](#languages) · [Screenshots](#screenshots) · [Features](#features) · [Download](#download) · [Quick Start](#quick-start) · [Ready-made Collections](#ready-made-collections) · [Import Your Data](#import-your-data) · [Sync & Backup](#sync--backup) · [Data Sources](#data-sources) · [Platform Support](#platform-support) · [Self-Hosting](#self-hosting-web) · [Building from Source](#building-from-source) · [Contributing](#contributing)
+[Languages](#languages) · [Screenshots](#screenshots) · [Features](#features) · [Download](#download) · [Quick Start](#quick-start) · [Ready-made Collections](#ready-made-collections) · [Import Your Data](#import-your-data) · [Sync & Backup](#sync--backup) · [Data Sources](#data-sources) · [Platform Support](#platform-support) · [Self-Hosting](#self-hosting-web) · [Building from Source](#building-from-source) · [Support](#support-the-project) · [Contributing](#contributing)
 
 ## Languages
 
@@ -405,6 +406,12 @@ flutter run -d windows  # or linux / macos / android
 ```
 
 Requires Flutter 3.38+ / Dart 3.10+. See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details.
+
+## Support the Project
+
+Tonkatsu Box is free and open source, built in my spare time. If it's useful to you, you can support development on Boosty:
+
+<a href="https://boosty.to/mastermates"><img src="https://img.shields.io/badge/Boosty-Support%20me-F15F2C?style=for-the-badge&logo=boosty&logoColor=white" alt="Support on Boosty"></a>
 
 ## Community
 
